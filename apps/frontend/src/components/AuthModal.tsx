@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Mail, Lock, User, Eye, EyeOff, X, Flag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SITE_NAME } from '@/lib/seo/site-config';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -66,8 +67,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
       await login(signInData.email, signInData.password);
       onClose();
       router.refresh();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.');
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : 'Login failed. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -82,8 +85,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
       await register(signUpData.email, signUpData.password, signUpData.fullName);
       onClose();
       router.refresh();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : 'Registration failed. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -155,7 +160,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                   {/* Logo - Top Left */}
                   <div className="flex items-center gap-2 mt-2">
                     <Flag size={28} className="text-white" />
-                    <span className="text-white font-black text-lg">FlagStock</span>
+                    <span className="text-white font-black text-lg">{SITE_NAME}</span>
                   </div>
 
                   {/* Promotional Text - Bottom Left */}

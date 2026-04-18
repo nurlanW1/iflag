@@ -4,9 +4,12 @@ import Link from 'next/link';
 import { Flag, Mail, Twitter, Facebook, Instagram, Linkedin, Github, X, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SITE_NAME } from '@/lib/seo/site-config';
+import { getPublicContactEmail, P } from '@/lib/legal/legal-placeholders';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const contactEmail = getPublicContactEmail();
   const [email, setEmail] = useState('');
   const [showNotification, setShowNotification] = useState(false);
 
@@ -50,15 +53,15 @@ export default function Footer() {
       </AnimatePresence>
 
       <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
           {/* Brand Column */}
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Flag size={32} className="text-[#009ab6]" />
-              <span className="text-2xl font-black">FlagStock</span>
+              <span className="text-2xl font-black">{SITE_NAME}</span>
             </div>
             <p className="text-white/60 text-sm mb-6">
-              The world's largest collection of high-quality flags, symbols, and related assets for your creative projects.
+              High-quality flag, symbol, and related digital assets for creative and professional projects.
             </p>
             <div className="flex gap-4">
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">
@@ -104,8 +107,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/subscriptions" className="text-white/60 hover:text-white transition-colors text-sm">
-                  Premium Plans
+                <Link href="/pricing" className="text-white/60 hover:text-white transition-colors text-sm">
+                  Pricing
                 </Link>
               </li>
             </ul>
@@ -143,6 +146,43 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Legal Column */}
+          <div>
+            <h3 className="text-lg font-bold mb-4 text-[#009ab6]">Legal</h3>
+            <ul className="space-y-3">
+              <li>
+                <Link href="/privacy" className="text-white/60 hover:text-white transition-colors text-sm">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-white/60 hover:text-white transition-colors text-sm">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link href="/refunds" className="text-white/60 hover:text-white transition-colors text-sm">
+                  Refund Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/licenses" className="text-white/60 hover:text-white transition-colors text-sm">
+                  Licensing &amp; usage
+                </Link>
+              </li>
+              <li>
+                <Link href="/cookies" className="text-white/60 hover:text-white transition-colors text-sm">
+                  Cookie Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-white/60 hover:text-white transition-colors text-sm">
+                  Legal &amp; privacy contact
+                </Link>
+              </li>
+            </ul>
+          </div>
+
           {/* Support Column */}
           <div>
             <h3 className="text-lg font-bold mb-4 text-[#009ab6]">Support</h3>
@@ -155,21 +195,6 @@ export default function Footer() {
               <li>
                 <Link href="/faq" className="text-white/60 hover:text-white transition-colors text-sm">
                   FAQ
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="text-white/60 hover:text-white transition-colors text-sm">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="text-white/60 hover:text-white transition-colors text-sm">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/licenses" className="text-white/60 hover:text-white transition-colors text-sm">
-                  License Info
                 </Link>
               </li>
             </ul>
@@ -202,25 +227,43 @@ export default function Footer() {
           </div>
         </div>
 
+        <p className="mb-6 max-w-3xl text-xs leading-relaxed text-white/50">
+          Trust &amp; billing transparency: payments and subscriptions may be processed by {P.PAYMENT_PROCESSOR}. Legal
+          pages are published as customizable templates — replace bracketed placeholders with your finalized
+          information and have counsel review for each market you serve.
+        </p>
+
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-white/60 text-sm">
-            © {currentYear} FlagStock. All rights reserved.
+            © {currentYear} {SITE_NAME}. All rights reserved.
           </p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <Link href="/terms" className="text-white/60 hover:text-white text-sm transition-colors">
               Terms
             </Link>
             <Link href="/privacy" className="text-white/60 hover:text-white text-sm transition-colors">
               Privacy
             </Link>
+            <Link href="/refunds" className="text-white/60 hover:text-white text-sm transition-colors">
+              Refunds
+            </Link>
+            <Link href="/licenses" className="text-white/60 hover:text-white text-sm transition-colors">
+              Licenses
+            </Link>
             <Link href="/cookies" className="text-white/60 hover:text-white text-sm transition-colors">
               Cookies
             </Link>
+            <Link href="/contact" className="text-white/60 hover:text-white text-sm transition-colors">
+              Contact
+            </Link>
             <div className="flex items-center gap-2 text-white text-sm">
               <Mail size={16} />
-              <a href="mailto:support@flagstock.com" className="text-white hover:text-white/80 transition-colors">
-                support@flagstock.com
+              <a
+                href={`mailto:${contactEmail}`}
+                className="text-white hover:text-white/80 transition-colors"
+              >
+                {contactEmail}
               </a>
             </div>
           </div>

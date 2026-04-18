@@ -1,0 +1,50 @@
+[
+  {
+    "id": "11111111-1111-4111-8111-111111111101",
+    "name": "Country flags",
+    "slug": "country-flags",
+    "description": "Sovereign state and region flags",
+    "kind": "country_flags",
+    "isApproved": true,
+    "parentId": null,
+    "displayOrder": 10,
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": "11111111-1111-4111-8111-111111111102",
+    "name": "Historical flags",
+    "slug": "historical-flags",
+    "description": "Former states and historical variants",
+    "kind": "historical_flags",
+    "isApproved": true,
+    "parentId": null,
+    "displayOrder": 20,
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": "11111111-1111-4111-8111-111111111103",
+    "name": "Organization flags",
+    "slug": "organization-flags",
+    "description": "International organizations and institutions",
+    "kind": "organization_flags",
+    "isApproved": true,
+    "parentId": null,
+    "displayOrder": 30,
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": "11111111-1111-4111-8111-111111111104",
+    "name": "Approved misc",
+    "slug": "other-approved",
+    "description": "Curated categories outside the main taxonomy",
+    "kind": "other",
+    "isApproved": true,
+    "parentId": null,
+    "displayOrder": 40,
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  }
+]

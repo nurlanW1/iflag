@@ -1,53 +1,94 @@
-import { Flag } from 'lucide-react';
+import Link from 'next/link';
+import { Building2 } from 'lucide-react';
+import { LegalDocumentShell } from '@/components/legal/LegalDocumentShell';
+import { legalPageMetadata } from '@/lib/legal/legal-page-metadata';
+import { P, getPublicContactEmail } from '@/lib/legal/legal-placeholders';
+import { SITE_NAME } from '@/lib/seo/site-config';
+
+export const metadata = legalPageMetadata(
+  '/about',
+  'About',
+  `About ${SITE_NAME}: a digital marketplace for flag and symbol assets. Operator details are marked as customizable placeholders.`
+);
 
 export default function AboutPage() {
+  const contactEmail = getPublicContactEmail();
+
   return (
-    <main className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        <div className="flex items-center gap-3 mb-8">
-          <Flag size={32} className="text-[#009ab6]" />
-          <h1 className="text-4xl font-black text-black">About Us</h1>
-        </div>
+    <LegalDocumentShell
+      title="About"
+      subtitle={SITE_NAME}
+      icon={<Building2 className="h-8 w-8 text-[#009ab6]" aria-hidden />}
+    >
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold text-gray-900">Operator</h2>
+        <p>
+          <strong>{P.TRADING_NAME}</strong> is operated by <strong>{P.OPERATOR_LEGAL_NAME}</strong> from{' '}
+          <strong>{P.JURISDICTION}</strong>. [PLACEHOLDER: one-paragraph company story — mission, history,
+          and what makes your catalog unique. Avoid inventing awards, customer counts, or registrations.]
+        </p>
+        <p>
+          <strong>Registered / principal address (if you publish one):</strong> {P.REGISTERED_OFFICE}.
+        </p>
+      </section>
 
-        <div className="prose prose-lg max-w-none">
-          <p className="text-lg text-gray-700 mb-6">
-            Welcome to FlagStock, the world's largest flag database and marketplace. We're dedicated to providing 
-            high-quality flag assets for designers, developers, and creators worldwide.
-          </p>
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold text-gray-900">What we offer</h2>
+        <p>
+          We host a catalog of digital flag and symbol assets for creative and professional projects — for
+          example vectors, raster images, or related media, subject to each item’s license. [PLACEHOLDER:
+          describe formats, update cadence, and any editorial standards.]
+        </p>
+      </section>
 
-          <h2 className="text-2xl font-bold text-black mt-8 mb-4">Our Mission</h2>
-          <p className="text-gray-700 mb-6">
-            Our mission is to make high-quality flag assets accessible to everyone. Whether you're working on a 
-            web project, mobile app, presentation, or any creative endeavor, we provide the flags you need in 
-            multiple formats and resolutions.
-          </p>
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold text-gray-900">Trust, payments, and policies</h2>
+        <p>
+          Purchases may be processed by <strong>{P.PAYMENT_PROCESSOR}</strong>. For usage rights, privacy,
+          refunds, and acceptable use, see:
+        </p>
+        <ul className="list-inside list-disc space-y-2 pl-1">
+          <li>
+            <Link href="/licenses" className="font-medium text-[#009ab6] hover:underline">
+              Licensing &amp; usage rights
+            </Link>
+          </li>
+          <li>
+            <Link href="/privacy" className="font-medium text-[#009ab6] hover:underline">
+              Privacy Policy
+            </Link>{' '}
+            and{' '}
+            <Link href="/cookies" className="font-medium text-[#009ab6] hover:underline">
+              Cookie Policy
+            </Link>
+          </li>
+          <li>
+            <Link href="/refunds" className="font-medium text-[#009ab6] hover:underline">
+              Refund Policy
+            </Link>{' '}
+            and{' '}
+            <Link href="/terms" className="font-medium text-[#009ab6] hover:underline">
+              Terms of Service
+            </Link>
+          </li>
+        </ul>
+        <p className="text-sm text-gray-600">
+          {P.VAT_OR_TAX_ID} [PLACEHOLDER: add regulatory or industry memberships only if true and verifiable.]
+        </p>
+      </section>
 
-          <h2 className="text-2xl font-bold text-black mt-8 mb-4">What We Offer</h2>
-          <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
-            <li>Thousands of high-resolution flag images</li>
-            <li>Vector formats (SVG, AI, EPS) for scalable designs</li>
-            <li>Raster images (PNG, JPG) in various resolutions</li>
-            <li>Video assets for dynamic presentations</li>
-            <li>Commercial licenses for professional use</li>
-            <li>Regular updates with new flags and formats</li>
-          </ul>
-
-          <h2 className="text-2xl font-bold text-black mt-8 mb-4">Our Team</h2>
-          <p className="text-gray-700 mb-6">
-            FlagStock is built by a passionate team of designers, developers, and flag enthusiasts who understand 
-            the importance of quality assets in creative projects. We're constantly working to expand our 
-            collection and improve our platform.
-          </p>
-
-          <h2 className="text-2xl font-bold text-black mt-8 mb-4">Contact Us</h2>
-          <p className="text-gray-700">
-            Have questions or suggestions? We'd love to hear from you. Reach out to us at{' '}
-            <a href="mailto:support@flagstock.com" className="text-[#009ab6] hover:underline">
-              support@flagstock.com
-            </a>
-          </p>
-        </div>
-      </div>
-    </main>
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold text-gray-900">Contact</h2>
+        <p>
+          <a className="font-medium text-[#009ab6] hover:underline" href={`mailto:${contactEmail}`}>
+            {contactEmail}
+          </a>{' '}
+          ·{' '}
+          <Link href="/contact" className="font-medium text-[#009ab6] hover:underline">
+            Contact form
+          </Link>
+        </p>
+      </section>
+    </LegalDocumentShell>
   );
 }

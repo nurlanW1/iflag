@@ -22,23 +22,45 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function syncTokensToStorage(accessToken: string, refreshToken: string) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('accessToken', accessToken);
+  localStorage.setItem('refreshToken', refreshToken);
+}
+
+function clearTokenStorage() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on mount
     const checkAuth = async () => {
       try {
+        const sessionRes = await fetch('/api/auth/session', {
+          credentials: 'include',
+        });
+        if (sessionRes.ok) {
+          const data = (await sessionRes.json()) as { user: User };
+          setUser(data.user);
+          return;
+        }
+
         const token = localStorage.getItem('accessToken');
         if (token) {
-          const userData = await api.getCurrentUser();
-          setUser(userData);
+          try {
+            const userData = await api.getCurrentUser();
+            setUser(userData);
+          } catch {
+            clearTokenStorage();
+          }
         }
-      } catch (error) {
-        // Not authenticated
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+      } catch {
+        clearTokenStorage();
       } finally {
         setLoading(false);
       }
@@ -48,37 +70,78 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const data = await api.login(email, password);
-    localStorage.setItem('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
+    const res = await fetch('/api/auth/sign-in', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password }),
+    });
+    const data = (await res.json().catch(() => ({}))) as {
+      error?: string;
+      user?: User;
+      accessToken?: string;
+      refreshToken?: string;
+    };
+    if (!res.ok) {
+      throw new Error(data.error || 'Sign in failed');
+    }
+    if (!data.user || !data.accessToken || !data.refreshToken) {
+      throw new Error('Invalid response from authentication service');
+    }
+    syncTokensToStorage(data.accessToken, data.refreshToken);
     setUser(data.user);
   };
 
   const register = async (email: string, password: string, fullName?: string) => {
-    await api.register(email, password, fullName);
-    // Auto-login after registration
-    await login(email, password);
+    const res = await fetch('/api/auth/sign-up', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        email,
+        password,
+        full_name: fullName,
+      }),
+    });
+    const data = (await res.json().catch(() => ({}))) as {
+      error?: string;
+      user?: User;
+      accessToken?: string;
+      refreshToken?: string;
+    };
+    if (!res.ok) {
+      throw new Error(data.error || 'Registration failed');
+    }
+    if (!data.user || !data.accessToken || !data.refreshToken) {
+      throw new Error(
+        data.error ||
+          'Account may have been created. Please sign in with your email and password.'
+      );
+    }
+    syncTokensToStorage(data.accessToken, data.refreshToken);
+    setUser(data.user);
   };
 
   const logout = async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (refreshToken) {
-      try {
-        await api.logout(refreshToken);
-      } catch (error) {
-        // Continue with logout even if API call fails
-      }
+    try {
+      await fetch('/api/auth/sign-out', { method: 'POST', credentials: 'include' });
+    } catch {
+      /* still clear client */
     }
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    clearTokenStorage();
     setUser(null);
   };
 
   const refreshUser = async () => {
     try {
-      const userData = await api.getCurrentUser();
-      setUser(userData);
-    } catch (error) {
+      const sessionRes = await fetch('/api/auth/session', { credentials: 'include' });
+      if (!sessionRes.ok) {
+        setUser(null);
+        return;
+      }
+      const data = (await sessionRes.json()) as { user: User };
+      setUser(data.user);
+    } catch {
       setUser(null);
     }
   };

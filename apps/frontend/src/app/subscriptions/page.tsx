@@ -1,148 +1,134 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
-import { Crown, Check } from 'lucide-react';
+import { Crown, ArrowRight } from 'lucide-react';
+import type { AccountSubscriptionSummary } from '@/types/account';
 
-export default function SubscriptionsPage() {
+/**
+ * Logged-in subscription account view. Public plan comparison and checkout live on /pricing.
+ */
+export default function SubscriptionsAccountPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [plans, setPlans] = useState<any[]>([]);
-  const [subscription, setSubscription] = useState<any>(null);
+  const [subscription, setSubscription] = useState<Record<string, unknown> | null>(null);
+  const [lsSummary, setLsSummary] = useState<AccountSubscriptionSummary | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const loadData = useCallback(async () => {
+    try {
+      const [subscriptionData, lsRes] = await Promise.all([
+        api.getMySubscription(),
+        fetch('/api/account/subscription-summary', { credentials: 'include' }),
+      ]);
+      setSubscription(subscriptionData.subscription as Record<string, unknown> | null);
+      if (lsRes.ok) {
+        setLsSummary((await lsRes.json()) as AccountSubscriptionSummary);
+      } else {
+        setLsSummary(null);
+      }
+    } catch (error) {
+      console.error('Failed to load subscription data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) {
       router.push('/login?redirect=/subscriptions');
       return;
     }
-
     loadData();
-  }, [user, router]);
-
-  const loadData = async () => {
-    try {
-      const [plansData, subscriptionData] = await Promise.all([
-        api.getPlans(),
-        api.getMySubscription(),
-      ]);
-      setPlans(plansData || []);
-      setSubscription(subscriptionData.subscription);
-    } catch (error) {
-      console.error('Failed to load subscription data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatPrice = (cents: number) => {
-    return `$${(cents / 100).toFixed(2)}`;
-  };
-
-  const formatDuration = (days: number) => {
-    if (days === 7) return 'Weekly';
-    if (days === 30) return 'Monthly';
-    return `${days} days`;
-  };
+  }, [user, router, loadData]);
 
   if (loading) {
     return (
-      <main style={{ padding: 'var(--spacing-3xl) var(--spacing-lg)' }}>
-        <div className="container" style={{ textAlign: 'center' }}>
-          <div className="spinner" style={{ margin: '0 auto' }}></div>
-        </div>
+      <main className="mx-auto max-w-2xl px-4 py-16 text-center text-gray-600">
+        Loading…
       </main>
     );
   }
 
   return (
-    <main style={{ padding: 'var(--spacing-3xl) var(--spacing-lg)' }}>
-      <div className="container">
-        <h1 style={{ marginBottom: 'var(--spacing-xl)', textAlign: 'center' }}>
-          Premium Subscriptions
-        </h1>
+    <main className="mx-auto max-w-2xl px-4 py-12">
+      <h1 className="text-2xl font-black text-gray-900">Your subscription</h1>
+      <p className="mt-1 text-sm text-gray-600">
+        Billing runs through Lemon Squeezy. Compare plans, upgrade, or start a subscription from the{' '}
+        <Link href="/pricing" className="font-semibold text-[#009ab6] hover:underline">
+          pricing page
+        </Link>
+        .
+      </p>
 
-        {subscription && (
-          <div className="card" style={{ marginBottom: 'var(--spacing-xl)', maxWidth: '600px', margin: '0 auto var(--spacing-xl)' }}>
-            <div className="card-body">
-              <h2 style={{ marginBottom: 'var(--spacing-md)' }}>Current Subscription</h2>
-              <p>
-                <strong>Status:</strong> <span className="badge badge-success">{subscription.status}</span>
-              </p>
-              <p>
-                <strong>Period:</strong> {new Date(subscription.current_period_start).toLocaleDateString()} - {new Date(subscription.current_period_end).toLocaleDateString()}
-              </p>
-              {subscription.cancel_at_period_end && (
-                <p style={{ color: 'var(--color-warning)' }}>
-                  Subscription will cancel at the end of the current period.
-                </p>
-              )}
+      <div className="mt-8 rounded-2xl border border-[#009ab6]/25 bg-[#009ab6]/5 p-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <Crown className="h-5 w-5 text-[#009ab6]" aria-hidden />
+          <h2 className="font-bold text-gray-900">Current access</h2>
+        </div>
+        {lsSummary && lsSummary.status !== 'none' ? (
+          <dl className="mt-4 space-y-2 text-sm">
+            <div className="flex justify-between gap-4">
+              <dt className="text-gray-600">Plan</dt>
+              <dd className="font-medium text-gray-900">{lsSummary.planName ?? '—'}</dd>
             </div>
-          </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-gray-600">Status</dt>
+              <dd className="font-medium capitalize text-gray-900">{lsSummary.status}</dd>
+            </div>
+            {lsSummary.renewsAt ? (
+              <div className="flex justify-between gap-4">
+                <dt className="text-gray-600">Renews / ends</dt>
+                <dd className="text-gray-900">
+                  <time dateTime={lsSummary.renewsAt}>
+                    {new Date(lsSummary.renewsAt).toLocaleString()}
+                  </time>
+                </dd>
+              </div>
+            ) : null}
+          </dl>
+        ) : (
+          <p className="mt-3 text-sm text-gray-700">
+            No active Lemon Squeezy subscription detected for this account.
+          </p>
         )}
 
-        <div className="grid grid-cols-2" style={{ gap: 'var(--spacing-xl)', maxWidth: '800px', margin: '0 auto' }}>
-          {plans.map((plan) => (
-            <div key={plan.id} className="card" style={{ position: 'relative' }}>
-              <div className="card-body">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-md)' }}>
-                  <Crown size={24} style={{ color: 'var(--color-warning)' }} />
-                  <h2>{plan.name}</h2>
-                </div>
-
-                <div style={{ marginBottom: 'var(--spacing-lg)' }}>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--color-primary)' }}>
-                    {formatPrice(plan.price_cents)}
-                  </div>
-                  <div style={{ color: 'var(--color-gray-600)' }}>
-                    per {formatDuration(plan.duration_days).toLowerCase()}
-                  </div>
-                </div>
-
-                <ul style={{ listStyle: 'none', padding: 0, marginBottom: 'var(--spacing-lg)' }}>
-                  <li style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-sm)' }}>
-                    <Check size={18} style={{ color: 'var(--color-success)' }} />
-                    Unlimited premium downloads
-                  </li>
-                  <li style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-sm)' }}>
-                    <Check size={18} style={{ color: 'var(--color-success)' }} />
-                    No watermarks
-                  </li>
-                  <li style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-sm)' }}>
-                    <Check size={18} style={{ color: 'var(--color-success)' }} />
-                    High-resolution assets
-                  </li>
-                  <li style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-sm)' }}>
-                    <Check size={18} style={{ color: 'var(--color-success)' }} />
-                    Commercial license
-                  </li>
-                  <li style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-                    <Check size={18} style={{ color: 'var(--color-success)' }} />
-                    Cancel anytime
-                  </li>
-                </ul>
-
-                <button
-                  className="btn btn-primary"
-                  style={{ width: '100%' }}
-                  onClick={() => {
-                    // TODO: Integrate with Stripe checkout
-                    alert('Stripe integration coming soon!');
-                  }}
-                >
-                  Subscribe Now
-                </button>
-              </div>
+        {!lsSummary || lsSummary.status === 'none' ? (
+          subscription ? (
+            <div className="mt-4 rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-700">
+              <p className="font-semibold text-gray-900">Legacy API subscription</p>
+              <p className="mt-1">Status: {String(subscription.status)}</p>
+              <p className="mt-1 text-xs text-gray-500">
+                Prefer the pricing page for new checkouts so billing stays in sync.
+              </p>
             </div>
-          ))}
-        </div>
-
-        <div style={{ textAlign: 'center', marginTop: 'var(--spacing-xl)', color: 'var(--color-gray-600)' }}>
-          <p>All subscriptions include full commercial licensing for all premium assets.</p>
-        </div>
+          ) : null
+        ) : null}
       </div>
+
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <Link
+          href="/pricing"
+          className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#009ab6] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#007a8a]"
+        >
+          View plans &amp; pricing
+          <ArrowRight className="h-4 w-4 opacity-90" aria-hidden />
+        </Link>
+        <Link
+          href="/dashboard/purchases"
+          className="inline-flex flex-1 items-center justify-center rounded-xl border-2 border-gray-200 bg-white px-5 py-3 text-center text-sm font-semibold text-gray-800 transition hover:border-[#009ab6] hover:text-[#009ab6]"
+        >
+          Your files &amp; downloads
+        </Link>
+      </div>
+
+      <p className="mt-8 text-xs text-gray-500">
+        To update payment details or cancel, use the customer links in your Lemon Squeezy receipt
+        emails—those URLs are signed for your account.
+      </p>
     </main>
   );
 }

@@ -1,93 +1,119 @@
-import { Flag, Cookie } from 'lucide-react';
+import Link from 'next/link';
+import { Cookie } from 'lucide-react';
+import { LegalDocumentShell } from '@/components/legal/LegalDocumentShell';
+import { legalPageMetadata } from '@/lib/legal/legal-page-metadata';
+import { P, getPublicContactEmail } from '@/lib/legal/legal-placeholders';
+
+export const metadata = legalPageMetadata(
+  '/cookies',
+  'Cookie Policy',
+  'Cookies and similar technologies used on this marketplace site. Template with customizable placeholders.'
+);
 
 export default function CookiesPage() {
+  const contactEmail = getPublicContactEmail();
+
   return (
-    <main className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        <div className="flex items-center gap-3 mb-8">
-          <Cookie size={32} className="text-[#009ab6]" />
-          <h1 className="text-4xl font-black text-black">Cookie Policy</h1>
-        </div>
+    <LegalDocumentShell
+      title="Cookie Policy"
+      subtitle={`${P.TRADING_NAME} · ${P.JURISDICTION}`}
+      icon={<Cookie className="h-8 w-8 text-[#009ab6]" aria-hidden />}
+    >
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold text-gray-900">1. Introduction</h2>
+        <p>
+          This Cookie Policy explains how <strong>{P.OPERATOR_LEGAL_NAME}</strong> uses cookies and similar
+          technologies on <strong>{P.TRADING_NAME}</strong>. It should be read alongside our{' '}
+          <Link href="/privacy" className="font-medium text-[#009ab6] hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
+        <p className="text-sm text-gray-600">Effective date: {P.EFFECTIVE_DATE}.</p>
+      </section>
 
-        <div className="prose prose-lg max-w-none">
-          <p className="text-sm text-gray-600 mb-8">Last updated: January 2024</p>
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold text-gray-900">2. What are cookies?</h2>
+        <p>
+          Cookies are small text files stored on your device. Similar technologies include local storage,
+          session storage, pixels, and software development kits (SDKs) in apps. [PLACEHOLDER: link to a
+          glossary if you maintain one.]
+        </p>
+      </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-black mb-4">What Are Cookies?</h2>
-            <p className="text-gray-700 mb-4">
-              Cookies are small text files that are placed on your computer or mobile device when you 
-              visit a website. They are widely used to make websites work more efficiently and provide 
-              information to the website owners.
-            </p>
-          </section>
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold text-gray-900">3. Categories we use</h2>
+        <p>We group technologies into the following categories:</p>
+        <ul className="list-inside list-disc space-y-2 pl-1">
+          <li>
+            <strong>Strictly necessary</strong> — required for security, load balancing, authentication,
+            cart/checkout, and basic preferences. [PLACEHOLDER: list cookie names, purposes, duration.]
+          </li>
+          <li>
+            <strong>Functional</strong> — remembers choices such as language or UI settings. [PLACEHOLDER:
+            list cookie names, purposes, duration.]
+          </li>
+          <li>
+            <strong>Analytics</strong> — helps us understand usage and improve performance. [PLACEHOLDER:
+            name vendors — e.g. Plausible, GA4 — and whether IP anonymization is enabled.]
+          </li>
+          <li>
+            <strong>Marketing / advertising</strong> — used to measure campaigns or personalize ads where
+            permitted. [PLACEHOLDER: list ad platforms; whether remarketing is used; consent requirements.]
+          </li>
+        </ul>
+      </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-black mb-4">How We Use Cookies</h2>
-            <p className="text-gray-700 mb-4">
-              FlagStock uses cookies for the following purposes:
-            </p>
-            <ul className="list-disc list-inside text-gray-700 space-y-2 mb-4">
-              <li><strong>Essential Cookies:</strong> Required for the website to function properly</li>
-              <li><strong>Authentication:</strong> To keep you logged in and maintain your session</li>
-              <li><strong>Preferences:</strong> To remember your settings and preferences</li>
-              <li><strong>Analytics:</strong> To understand how visitors use our website</li>
-              <li><strong>Marketing:</strong> To deliver relevant advertisements (with your consent)</li>
-            </ul>
-          </section>
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold text-gray-900">4. Consent and the site banner</h2>
+        <p>
+          Where required, we will request your consent before setting non-essential cookies. The banner stores
+          your choice locally so we do not ask on every visit. [PLACEHOLDER: describe how to reopen the
+          preference center; link to vendor opt-outs.]
+        </p>
+      </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-black mb-4">Types of Cookies We Use</h2>
-            <div className="space-y-4">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-semibold text-black mb-2">Session Cookies</h3>
-                <p className="text-gray-700">
-                  Temporary cookies that are deleted when you close your browser. These are essential 
-                  for the website to function.
-                </p>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-semibold text-black mb-2">Persistent Cookies</h3>
-                <p className="text-gray-700">
-                  Cookies that remain on your device for a set period or until you delete them. These 
-                  help us remember your preferences.
-                </p>
-              </div>
-            </div>
-          </section>
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold text-gray-900">5. Third parties</h2>
+        <p>
+          Payment processing may be handled by <strong>{P.PAYMENT_PROCESSOR}</strong>, which may set their own
+          strictly necessary cookies during checkout. [PLACEHOLDER: embed links to processor cookie notices.]
+        </p>
+        <p>
+          [PLACEHOLDER: social plugins, embedded videos, maps, or support chat widgets — each may set
+          cookies.]
+        </p>
+      </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-black mb-4">Managing Cookies</h2>
-            <p className="text-gray-700 mb-4">
-              You can control and manage cookies in various ways:
-            </p>
-            <ul className="list-disc list-inside text-gray-700 space-y-2 mb-4">
-              <li>Browser settings allow you to refuse or accept cookies</li>
-              <li>You can delete cookies that have already been set</li>
-              <li>Most browsers will notify you when cookies are being used</li>
-              <li>Note that blocking cookies may affect website functionality</li>
-            </ul>
-          </section>
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold text-gray-900">6. Managing cookies</h2>
+        <p>
+          You can block or delete cookies through your browser settings. Blocking strictly necessary cookies
+          may break parts of the Service (for example sign-in or checkout).
+        </p>
+      </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-black mb-4">Third-Party Cookies</h2>
-            <p className="text-gray-700 mb-4">
-              Some cookies are placed by third-party services that appear on our pages. These may 
-              include analytics services, advertising networks, and social media platforms. We do not 
-              control these cookies, so please refer to the third party's privacy policy.
-            </p>
-          </section>
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold text-gray-900">7. Do Not Track</h2>
+        <p>[PLACEHOLDER: your DNT / Global Privacy Control response, if any.]</p>
+      </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-black mb-4">Contact Us</h2>
-            <p className="text-gray-700">
-              If you have questions about our use of cookies, please contact us at{' '}
-              <a href="mailto:support@flagstock.com" className="text-[#009ab6] hover:underline">
-                support@flagstock.com
-              </a>
-            </p>
-          </section>
-        </div>
-      </div>
-    </main>
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold text-gray-900">8. Updates</h2>
+        <p>
+          We will update this policy when we change technologies or partners. [PLACEHOLDER: material change
+          notice approach.]
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold text-gray-900">9. Contact</h2>
+        <p>
+          <a className="font-medium text-[#009ab6] hover:underline" href={`mailto:${contactEmail}`}>
+            {contactEmail}
+          </a>
+        </p>
+      </section>
+    </LegalDocumentShell>
   );
 }

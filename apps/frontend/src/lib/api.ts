@@ -47,8 +47,12 @@ class ApiClient {
               return this.client(originalRequest);
             }
           } catch (refreshError) {
-            // Refresh failed, logout user
             if (typeof window !== 'undefined') {
+              try {
+                await fetch('/api/auth/sign-out', { method: 'POST', credentials: 'include' });
+              } catch {
+                /* ignore */
+              }
               localStorage.removeItem('accessToken');
               localStorage.removeItem('refreshToken');
               window.location.href = '/login';

@@ -101,7 +101,7 @@ export default function PremiumCTA({
               </ul>
             </div>
 
-            <Link href="/subscriptions" className="btn btn-primary" style={{ width: '100%' }}>
+            <Link href="/pricing" className="btn btn-primary" style={{ width: '100%' }}>
               <Crown size={18} />
               View Subscription Plans
             </Link>
@@ -124,7 +124,7 @@ export default function PremiumCTA({
         <p style={{ fontSize: '0.875rem', marginBottom: 'var(--spacing-sm)' }}>
           Premium subscription required
         </p>
-        <Link href="/subscriptions" className="btn btn-sm" style={{ backgroundColor: 'white', color: 'var(--color-warning)' }}>
+        <Link href="/pricing" className="btn btn-sm" style={{ backgroundColor: 'white', color: 'var(--color-warning)' }}>
           Subscribe Now
         </Link>
       </div>
@@ -155,7 +155,7 @@ export default function PremiumCTA({
         </div>
       </div>
       <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
-        <Link href="/subscriptions" className="btn btn-sm" style={{ backgroundColor: 'white', color: 'var(--color-warning)' }}>
+        <Link href="/pricing" className="btn btn-sm" style={{ backgroundColor: 'white', color: 'var(--color-warning)' }}>
           Get Premium
         </Link>
         <button

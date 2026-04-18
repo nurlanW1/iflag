@@ -1,28 +1,30 @@
 import { Flag, Calendar, User } from 'lucide-react';
 import Link from 'next/link';
+import { SITE_NAME } from '@/lib/seo/site-config';
 
 export default function BlogPage() {
+  const byline = `${SITE_NAME} Team`;
   const blogPosts = [
     {
       id: 1,
       title: 'The History of National Flags',
       excerpt: 'Explore the fascinating history behind some of the world\'s most iconic national flags.',
       date: '2024-01-15',
-      author: 'FlagStock Team',
+      author: byline,
     },
     {
       id: 2,
       title: 'Best Practices for Using Flags in Design',
       excerpt: 'Learn how to properly incorporate flag assets into your design projects.',
       date: '2024-01-10',
-      author: 'FlagStock Team',
+      author: byline,
     },
     {
       id: 3,
       title: 'Vector vs Raster: Choosing the Right Flag Format',
       excerpt: 'A comprehensive guide to selecting the best flag format for your project.',
       date: '2024-01-05',
-      author: 'FlagStock Team',
+      author: byline,
     },
   ];
 

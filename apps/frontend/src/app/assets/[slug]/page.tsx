@@ -56,7 +56,7 @@ export default function AssetDetailPage() {
     }
 
     if (asset.is_premium && !hasPremium) {
-      router.push('/subscriptions');
+      router.push('/pricing');
       return;
     }
 
@@ -222,7 +222,7 @@ export default function AssetDetailPage() {
                 </button>
 
                 {asset.is_premium && !hasPremium && (
-                  <Link href="/subscriptions" className="btn btn-outline" style={{ width: '100%', marginTop: 'var(--spacing-sm)' }}>
+                  <Link href="/pricing" className="btn btn-outline" style={{ width: '100%', marginTop: 'var(--spacing-sm)' }}>
                     <Crown size={18} />
                     Get Premium Access
                   </Link>

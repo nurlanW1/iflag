@@ -5,36 +5,59 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Upload, 
-  Package, 
-  Users, 
-  BarChart3, 
+import type { LucideIcon } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Upload,
+  Package,
+  Users,
+  BarChart3,
   Settings,
   LogOut,
   Flag,
-  ChevronRight
+  ChevronRight,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Spinner } from '@/components/ui/Spinner';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      router.replace('/login?callbackUrl=%2Fadmin');
+      return;
+    }
+    if (user.role !== 'admin') {
+      router.replace('/dashboard');
+    }
+  }, [loading, user, router]);
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 to-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#009ab6]"></div>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-white">
+        <Spinner size="lg" label="Loading admin" />
+      </div>
+    );
+  }
+
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-white">
+        <Spinner size="lg" label="Redirecting" />
       </div>
     );
   }
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-gray-200/80 shadow-sm sticky top-0 h-screen overflow-y-auto">
+      <aside
+        className="sticky top-0 h-screen w-72 shrink-0 overflow-y-auto border-r border-gray-200/80 bg-white shadow-sm"
+        aria-label="Admin navigation"
+      >
         <div className="p-6">
           {/* Logo & Header */}
           <div className="mb-8 pb-6 border-b border-gray-200/80">
@@ -43,14 +66,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Flag size={20} className="text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Admin Panel</h2>
-                <p className="text-xs text-gray-500">{user?.email || 'Development Mode'}</p>
+                <h2 className="text-lg font-bold text-gray-900">Admin</h2>
+                <p className="text-xs text-gray-500">{user.email}</p>
               </div>
             </Link>
           </div>
 
           {/* Navigation */}
-          <nav className="flex flex-col gap-1.5">
+          <nav className="flex flex-col gap-1.5" aria-label="Admin sections">
             <AdminNavLink href="/admin" icon={LayoutDashboard} active={pathname === '/admin'}>
               Dashboard
             </AdminNavLink>
@@ -73,23 +96,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               Settings
             </AdminNavLink>
             
-            {user && (
-              <div className="mt-6 pt-6 border-t border-gray-200/80">
-                <button
-                  onClick={logout}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-red-600 bg-red-50/50 hover:bg-red-50 rounded-xl text-sm font-medium transition-all duration-200 group"
-                >
-                  <LogOut size={18} className="group-hover:scale-110 transition-transform" />
-                  Logout
-                </button>
-              </div>
-            )}
+            <div className="mt-6 border-t border-gray-200/80 pt-6">
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="group flex w-full items-center gap-3 rounded-xl bg-red-50/50 px-4 py-2.5 text-sm font-medium text-red-600 transition-all duration-200 hover:bg-red-50"
+              >
+                <LogOut size={18} className="transition-transform group-hover:scale-110" aria-hidden />
+                Sign out
+              </button>
+            </div>
           </nav>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-h-screen">
+      <main className="min-h-screen flex-1" id="admin-main">
         <div className="p-6 lg:p-8">
           {children}
         </div>
@@ -98,14 +120,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   );
 }
 
-function AdminNavLink({ href, icon: Icon, children, active }: { 
-  href: string; 
-  icon: any; 
+function AdminNavLink({
+  href,
+  icon: Icon,
+  children,
+  active,
+}: {
+  href: string;
+  icon: LucideIcon;
   children: React.ReactNode;
   active?: boolean;
 }) {
   return (
-    <Link href={href}>
+    <Link href={href} aria-current={active ? 'page' : undefined}>
       <motion.div
         whileHover={{ x: 4 }}
         whileTap={{ scale: 0.98 }}

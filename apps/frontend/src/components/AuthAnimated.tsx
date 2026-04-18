@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Mail, Lock, User, Eye, EyeOff, Flag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SITE_NAME } from '@/lib/seo/site-config';
 
 function AuthForm() {
   const router = useRouter();
@@ -83,7 +84,7 @@ function AuthForm() {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <Flag size={32} className="text-white" />
-            <span className="text-white font-black text-xl">FlagStock</span>
+            <span className="text-white font-black text-xl">{SITE_NAME}</span>
           </div>
 
           {/* Promotional Text */}
@@ -102,7 +103,7 @@ function AuthForm() {
           {/* Logo */}
           <div className="flex items-center gap-2 mb-8">
             <Flag size={28} className="text-[#009ab6]" />
-            <span className="text-black font-black text-xl">FlagStock</span>
+            <span className="text-black font-black text-xl">{SITE_NAME}</span>
           </div>
 
           {/* Heading */}

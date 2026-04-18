@@ -1,0 +1,70 @@
+{
+  "id": "22222222-2222-4222-8222-222222222201",
+  "title": "United States — Standard",
+  "slug": "united-states-standard",
+  "description": "USA flag asset with vector and raster masters.",
+  "countryCode": "US",
+  "region": null,
+  "categorySlug": "country-flags",
+  "tags": ["usa", "stars and stripes", "north america"],
+  "thumbnailUrl": "https://picsum.photos/seed/us-thumb/400/300",
+  "previewUrl": "https://picsum.photos/seed/us-preview/1200/800",
+  "license": {
+    "summary": "Personal and commercial use after purchase",
+    "detail": "Full terms will be linked from the order confirmation."
+  },
+  "pricing": {
+    "priceCents": 899,
+    "currency": "USD"
+  },
+  "flags": {
+    "isFeatured": true,
+    "isPublished": true
+  },
+  "seo": {
+    "metaTitle": "United States flag — Flagswing",
+    "metaDescription": "High-quality United States flag files for projects.",
+    "canonicalPath": "/browse/united-states-standard",
+    "ogImageUrl": null
+  },
+  "timestamps": {
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  "files": [
+    {
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+      "tier": "preview_free",
+      "format": "png",
+      "qualityLabel": "low",
+      "storageKey": "flags/22222222-2222-4222-8222-222222222201/preview/raster_low.png",
+      "publicUrl": "https://picsum.photos/seed/us-preview-file/800/600",
+      "fileName": "us_preview_low.png",
+      "mimeType": "image/png",
+      "bytes": 120000,
+      "sortOrder": 0
+    },
+    {
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+      "tier": "pro",
+      "format": "svg",
+      "qualityLabel": "vector_master",
+      "storageKey": "flags/22222222-2222-4222-8222-222222222201/pro/vector_master.svg",
+      "fileName": "us_vector_master.svg",
+      "mimeType": "image/svg+xml",
+      "bytes": 890000,
+      "sortOrder": 1
+    },
+    {
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+      "tier": "pro",
+      "format": "png",
+      "qualityLabel": "raster_4k",
+      "storageKey": "flags/22222222-2222-4222-8222-222222222201/pro/raster_4k.png",
+      "fileName": "us_raster_4k.png",
+      "mimeType": "image/png",
+      "bytes": 4500000,
+      "sortOrder": 2
+    }
+  ]
+}

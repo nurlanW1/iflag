@@ -3,23 +3,24 @@
 import { useState } from 'react';
 import { Settings, Save, Globe, Lock, Bell, Palette, Database, Shield, Mail, Key } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getSiteOrigin, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo/site-config';
 
 export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState({
-    siteName: 'FlagStock',
-    siteDescription: 'Premium flag assets marketplace',
-    siteUrl: 'https://flagstock.com',
-    adminEmail: 'admin@flagstock.com',
+    siteName: SITE_NAME,
+    siteDescription: SITE_DESCRIPTION,
+    siteUrl: getSiteOrigin(),
+    adminEmail: 'admin@example.com',
     enableRegistration: true,
     enableEmailVerification: true,
     enableWatermarks: true,
-    watermarkText: 'FlagStock',
+    watermarkText: SITE_NAME,
     maxFileSize: 500,
     allowedFormats: ['svg', 'png', 'jpg', 'webp', 'eps'],
     enableAnalytics: true,
     enableNotifications: true,
-    notificationEmail: 'notifications@flagstock.com',
+    notificationEmail: 'notifications@example.com',
   });
 
   const handleSave = async () => {
