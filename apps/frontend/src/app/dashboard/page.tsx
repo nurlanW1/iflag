@@ -1,36 +1,30 @@
 import Link from 'next/link';
-import { LayoutDashboard, User, Package, Download, CreditCard, Settings } from 'lucide-react';
+import { LayoutDashboard, User, Package, Download, CreditCard } from 'lucide-react';
 
 const cards = [
   {
     href: '/dashboard/profile',
     title: 'Profile',
-    description: 'Name, email, and verification status.',
+    description: 'Your name, email, and account details from your sign-in provider.',
     icon: User,
   },
   {
     href: '/dashboard/purchases',
-    title: 'Your files',
-    description: 'Permanent purchases, free previews, and subscription access.',
+    title: 'Purchased files',
+    description: 'Files you own on your account (one-time purchases and grants).',
     icon: Package,
   },
   {
     href: '/dashboard/downloads',
     title: 'Downloads',
-    description: 'Recent downloads and re-download links.',
+    description: 'Download history will appear here as activity is recorded.',
     icon: Download,
   },
   {
     href: '/dashboard/subscription',
     title: 'Subscription',
-    description: 'Plan status, renewals, and link to public pricing.',
+    description: 'Plan status and renewal window when a subscription is active.',
     icon: CreditCard,
-  },
-  {
-    href: '/dashboard/settings',
-    title: 'Account settings',
-    description: 'Security and preferences.',
-    icon: Settings,
   },
 ] as const;
 
@@ -42,13 +36,13 @@ export default function DashboardOverviewPage() {
           <LayoutDashboard size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-gray-900 md:text-3xl">Dashboard</h1>
+          <h1 className="text-2xl font-black text-gray-900 md:text-3xl">Dashboard home</h1>
           <p className="mt-1 text-sm text-gray-600">
             Manage your profile, purchases, downloads, and subscription in one place.
           </p>
         </div>
       </div>
-      <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
         {cards.map((card) => {
           const Icon = card.icon;
           return (

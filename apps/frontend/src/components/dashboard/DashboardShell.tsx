@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { useClerk } from '@clerk/nextjs';
 import {
   ChevronRight,
   CreditCard,
@@ -10,42 +11,33 @@ import {
   LayoutDashboard,
   LogOut,
   Package,
-  Settings,
   User,
 } from 'lucide-react';
-import type { SessionUser } from '@/lib/auth/session.server';
+import type { DashboardAccount } from '@/lib/dashboard/account';
 
 const navItems: { href: string; label: string; icon: typeof User }[] = [
-  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Dashboard home', icon: LayoutDashboard },
   { href: '/dashboard/profile', label: 'Profile', icon: User },
-  { href: '/dashboard/purchases', label: 'Your files', icon: Package },
+  { href: '/dashboard/purchases', label: 'Purchased files', icon: Package },
   { href: '/dashboard/downloads', label: 'Downloads', icon: Download },
   { href: '/dashboard/subscription', label: 'Subscription', icon: CreditCard },
-  { href: '/dashboard/settings', label: 'Account settings', icon: Settings },
 ];
 
 export function DashboardShell({
-  user,
+  account,
   children,
 }: {
-  user: SessionUser;
+  account: DashboardAccount;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
+  const { signOut } = useClerk();
 
   async function handleSignOut() {
-    try {
-      await fetch('/api/auth/sign-out', { method: 'POST', credentials: 'include' });
-    } finally {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-      }
-      router.push('/');
-      router.refresh();
-    }
+    await signOut({ redirectUrl: '/' });
   }
+
+  const sidebarTitle = account.displayName || account.email;
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
@@ -56,9 +48,16 @@ export function DashboardShell({
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#009ab6] to-[#006d7a] shadow-lg shadow-[#009ab6]/20 transition group-hover:shadow-[#009ab6]/30">
                 <Flag size={20} className="text-white" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <h2 className="text-lg font-bold text-gray-900">My account</h2>
-                <p className="text-xs text-gray-500">{user.email}</p>
+                <p className="truncate text-xs text-gray-500" title={account.email}>
+                  {sidebarTitle}
+                </p>
+                {account.displayName ? (
+                  <p className="truncate text-xs text-gray-400" title={account.email}>
+                    {account.email}
+                  </p>
+                ) : null}
               </div>
             </Link>
           </div>
@@ -87,11 +86,11 @@ export function DashboardShell({
               );
             })}
             <div className="mt-6 border-t border-gray-200/80 pt-6">
-            <button
-              type="button"
-              onClick={() => void handleSignOut()}
-              className="flex w-full items-center gap-3 rounded-xl bg-red-50/50 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
-            >
+              <button
+                type="button"
+                onClick={() => void handleSignOut()}
+                className="flex w-full items-center gap-3 rounded-xl bg-red-50/50 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
+              >
                 <LogOut size={18} />
                 Sign out
               </button>
@@ -102,18 +101,19 @@ export function DashboardShell({
 
       <div className="min-w-0 flex-1">
         <header className="border-b border-gray-200/80 bg-white/90 px-4 py-4 backdrop-blur md:hidden">
-          <div className="flex items-center justify-between">
-            <Link href="/dashboard" className="font-bold text-gray-900">
+          <div className="flex items-center justify-between gap-2">
+            <Link href="/dashboard" className="min-w-0 truncate font-bold text-gray-900">
               My account
             </Link>
             <button
               type="button"
               onClick={() => void handleSignOut()}
-              className="text-sm font-medium text-red-600"
+              className="shrink-0 text-sm font-medium text-red-600"
             >
               Sign out
             </button>
           </div>
+          <p className="mt-1 truncate text-xs text-gray-500">{account.email}</p>
           <nav className="mt-3 flex flex-wrap gap-2" aria-label="Account shortcuts">
             {navItems.map((item) => {
               const active =

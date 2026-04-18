@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import HomePageClient from '@/components/HomePageClient';
+import HomePageClientGate from '@/components/HomePageClientGate';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { breadcrumbJsonLd } from '@/lib/seo/structured-data';
 import { SITE_DESCRIPTION, SITE_NAME, getSiteOrigin } from '@/lib/seo/site-config';
@@ -30,7 +30,7 @@ export default function HomePage() {
           ))}
         </ul>
       </nav>
-      <HomePageClient />
+      <HomePageClientGate />
     </>
   );
 }

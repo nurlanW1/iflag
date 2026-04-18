@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { CreditCard, Crown, ArrowRight, AlertTriangle } from 'lucide-react';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { fetchAccountSubscriptionSummary } from '@/lib/account/dashboard-data';
-import { getSessionUserFromCookies } from '@/lib/auth/session.server';
+import { getDashboardDataUserId } from '@/lib/dashboard/account';
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
@@ -22,10 +22,8 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default async function DashboardSubscriptionPage() {
-  const user = await getSessionUserFromCookies();
-  if (!user) return null;
-
-  const sub = await fetchAccountSubscriptionSummary(user.id);
+  const dataUserId = await getDashboardDataUserId();
+  const sub = await fetchAccountSubscriptionSummary(dataUserId);
   const hasPlan =
     sub.status === 'active' || sub.status === 'trialing' || sub.status === 'past_due';
 
@@ -33,11 +31,12 @@ export default async function DashboardSubscriptionPage() {
     <div className="max-w-3xl">
       <h1 className="text-2xl font-black text-gray-900">Subscription</h1>
       <p className="mt-1 text-sm text-gray-600">
-        Pro access through your plan is verified on every download. One-time purchases stay in{' '}
+        Subscription billing is not enabled yet. When it is, your plan status will appear here.
+        One-time purchases remain under{' '}
         <Link href="/dashboard/purchases" className="font-medium text-[#009ab6] hover:underline">
-          Your files
-        </Link>{' '}
-        even without an active subscription.
+          Purchased files
+        </Link>
+        .
       </p>
 
       {sub.lapsed && !hasPlan ? (
@@ -53,7 +52,7 @@ export default async function DashboardSubscriptionPage() {
               <time dateTime={sub.lapsed.endedAt}>
                 {new Date(sub.lapsed.endedAt).toLocaleString()}
               </time>{' '}
-              ({sub.lapsed.status}). Anything you bought outright remains available under Your files.
+              ({sub.lapsed.status}). Purchased files you own separately stay under Purchased files.
             </p>
           </div>
         </div>
@@ -64,14 +63,14 @@ export default async function DashboardSubscriptionPage() {
           <EmptyState
             icon={CreditCard}
             title="No active subscription"
-            description="Subscribe for catalog-wide Pro downloads while your plan is active, or buy individual flags to own permanently."
-            action={{ label: 'Compare plans', href: '/pricing' }}
+            description="You do not have a recurring plan on this account yet. When subscriptions launch, manage them from this page."
+            action={{ label: 'View public pricing', href: '/pricing' }}
           />
           <Link
             href="/pricing"
             className="inline-flex items-center gap-2 text-sm font-semibold text-[#009ab6] hover:underline"
           >
-            Open pricing page
+            Compare plans
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </div>
@@ -83,7 +82,7 @@ export default async function DashboardSubscriptionPage() {
               <h2 className="text-lg font-bold text-gray-900">Current plan</h2>
               <StatusBadge status={sub.status} />
             </div>
-            <p className="mt-3 text-xl font-black text-gray-900">{sub.planName ?? 'Pro'}</p>
+            <p className="mt-3 text-xl font-black text-gray-900">{sub.planName ?? 'Plan'}</p>
             {sub.renewsAt ? (
               <p className="mt-2 text-sm text-gray-700">
                 <span className="font-medium">Access through </span>
@@ -94,8 +93,8 @@ export default async function DashboardSubscriptionPage() {
             ) : null}
             {sub.status === 'past_due' ? (
               <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-900">
-                Payment issue — update billing in Lemon Squeezy (use the link from your last receipt)
-                to avoid losing Pro downloads.
+                There may be an issue with billing for this plan. Update payment details when billing
+                is connected.
               </p>
             ) : null}
             <div className="mt-6 flex flex-wrap gap-3">
@@ -103,13 +102,7 @@ export default async function DashboardSubscriptionPage() {
                 href="/pricing"
                 className="inline-flex items-center justify-center rounded-xl bg-[#009ab6] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#007a8a]"
               >
-                View pricing &amp; plans
-              </Link>
-              <Link
-                href="/subscriptions"
-                className="inline-flex items-center justify-center rounded-xl border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-800 transition hover:border-[#009ab6]"
-              >
-                Account subscription page
+                View pricing
               </Link>
             </div>
           </div>
