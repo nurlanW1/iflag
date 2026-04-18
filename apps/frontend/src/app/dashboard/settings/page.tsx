@@ -25,12 +25,12 @@ export default async function DashboardSettingsPage() {
           <h2 className="text-sm font-bold text-gray-900">Legal & policies</h2>
           <ul className="mt-3 flex flex-col gap-2 text-sm">
             <li>
-              <Link href="/privacy" className="text-[#009ab6] hover:underline">
+              <Link href="/privacy-policy" className="text-[#009ab6] hover:underline">
                 Privacy
               </Link>
             </li>
             <li>
-              <Link href="/terms" className="text-[#009ab6] hover:underline">
+              <Link href="/terms-of-service" className="text-[#009ab6] hover:underline">
                 Terms
               </Link>
             </li>

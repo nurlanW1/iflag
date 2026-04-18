@@ -8,7 +8,7 @@ import { SITE_NAME } from '@/lib/seo/site-config';
 export const metadata = legalPageMetadata(
   '/about',
   'About',
-  `About ${SITE_NAME}: a digital marketplace for flag and symbol assets. Operator details are marked as customizable placeholders.`
+  `${SITE_NAME} is a digital marketplace for flag and symbol assets in vector, raster, and related formats for designers, educators, and teams.`
 );
 
 export default function AboutPage() {
@@ -24,8 +24,9 @@ export default function AboutPage() {
         <h2 className="text-xl font-bold text-gray-900">Operator</h2>
         <p>
           <strong>{P.TRADING_NAME}</strong> is operated by <strong>{P.OPERATOR_LEGAL_NAME}</strong> from{' '}
-          <strong>{P.JURISDICTION}</strong>. [PLACEHOLDER: one-paragraph company story — mission, history,
-          and what makes your catalog unique. Avoid inventing awards, customer counts, or registrations.]
+          <strong>{P.JURISDICTION}</strong>. We focus on clear licensing, predictable downloads, and a
+          catalog structure that helps you find the right asset for presentations, apps, print, and video
+          work—without overstating affiliation with any government or organization.
         </p>
         <p>
           <strong>Registered / principal address (if you publish one):</strong> {P.REGISTERED_OFFICE}.
@@ -35,9 +36,14 @@ export default function AboutPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">What we offer</h2>
         <p>
-          We host a catalog of digital flag and symbol assets for creative and professional projects — for
-          example vectors, raster images, or related media, subject to each item’s license. [PLACEHOLDER:
-          describe formats, update cadence, and any editorial standards.]
+          We host a catalog of digital flag and symbol assets for creative and professional projects:
+          vectors, raster images, and related media where available. Each listing shows the formats you can
+          download or unlock, and the{' '}
+          <Link href="/licenses" className="font-medium text-[#009ab6] hover:underline">
+            licensing page
+          </Link>{' '}
+          explains how usage rights apply. Replace bracketed placeholders across legal documents with your
+          finalized business details before publishing to customers.
         </p>
       </section>
 
@@ -54,7 +60,7 @@ export default function AboutPage() {
             </Link>
           </li>
           <li>
-            <Link href="/privacy" className="font-medium text-[#009ab6] hover:underline">
+            <Link href="/privacy-policy" className="font-medium text-[#009ab6] hover:underline">
               Privacy Policy
             </Link>{' '}
             and{' '}
@@ -67,13 +73,14 @@ export default function AboutPage() {
               Refund Policy
             </Link>{' '}
             and{' '}
-            <Link href="/terms" className="font-medium text-[#009ab6] hover:underline">
+            <Link href="/terms-of-service" className="font-medium text-[#009ab6] hover:underline">
               Terms of Service
             </Link>
           </li>
         </ul>
         <p className="text-sm text-gray-600">
-          {P.VAT_OR_TAX_ID} [PLACEHOLDER: add regulatory or industry memberships only if true and verifiable.]
+          {P.VAT_OR_TAX_ID} List regulatory registrations or industry memberships only when they are
+          accurate and verifiable.
         </p>
       </section>
 

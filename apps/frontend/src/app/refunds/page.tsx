@@ -25,7 +25,7 @@ export default function RefundsPage() {
           This Refund Policy explains how cancellations, refunds, and billing disputes work for purchases
           made through <strong>{P.TRADING_NAME}</strong>, operated by{' '}
           <strong>{P.OPERATOR_LEGAL_NAME}</strong>. It supplements our{' '}
-          <Link href="/terms" className="font-medium text-[#009ab6] hover:underline">
+          <Link href="/terms-of-service" className="font-medium text-[#009ab6] hover:underline">
             Terms of Service
           </Link>
           .

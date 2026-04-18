@@ -24,7 +24,7 @@ export default function CookiesPage() {
         <p>
           This Cookie Policy explains how <strong>{P.OPERATOR_LEGAL_NAME}</strong> uses cookies and similar
           technologies on <strong>{P.TRADING_NAME}</strong>. It should be read alongside our{' '}
-          <Link href="/privacy" className="font-medium text-[#009ab6] hover:underline">
+          <Link href="/privacy-policy" className="font-medium text-[#009ab6] hover:underline">
             Privacy Policy
           </Link>
           .

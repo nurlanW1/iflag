@@ -15,8 +15,8 @@ const STATIC_PATHS = [
   '/faq',
   '/help',
   '/licenses',
-  '/privacy',
-  '/terms',
+  '/privacy-policy',
+  '/terms-of-service',
   '/refunds',
   '/cookies',
   '/blog',
@@ -64,7 +64,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   /** Canonical public product URLs for the marketplace catalog. */
   for (const product of listPublishedProducts()) {
     entries.push({
-      url: `${base}/browse/${product.slug}`,
+      url: `${base}/flags/${product.slug}`,
       lastModified,
       changeFrequency: 'weekly',
       priority: 0.9,

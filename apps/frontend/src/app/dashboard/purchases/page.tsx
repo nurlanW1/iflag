@@ -158,7 +158,7 @@ export default async function DashboardPurchasesPage() {
                     <time dateTime={row.grantedAt}>{new Date(row.grantedAt).toLocaleString()}</time>
                   </p>
                   <Link
-                    href={`/browse/${row.productSlug}`}
+                    href={`/flags/${row.productSlug}`}
                     className="mt-2 inline-block text-xs font-medium text-[#009ab6] hover:underline"
                   >
                     Product page
@@ -219,7 +219,7 @@ export default async function DashboardPurchasesPage() {
                     {row.format.toUpperCase()} · {row.qualityLabel} · {row.fileName}
                   </p>
                   <Link
-                    href={`/browse/${row.productSlug}`}
+                    href={`/flags/${row.productSlug}`}
                     className="mt-2 inline-block text-xs font-medium text-[#009ab6] hover:underline"
                   >
                     Product page

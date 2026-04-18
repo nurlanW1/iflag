@@ -32,6 +32,7 @@ export function getMetadataBase(): URL {
 export function buildDefaultMetadata(): Metadata {
   const origin = getSiteOrigin();
   const metadataBase = getMetadataBase();
+  const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
 
   return {
     metadataBase,
@@ -60,6 +61,15 @@ export function buildDefaultMetadata(): Metadata {
     robots: {
       index: true,
       follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
+    ...(googleVerification
+      ? { verification: { google: googleVerification } }
+      : {}),
   };
 }

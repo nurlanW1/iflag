@@ -151,12 +151,12 @@ export default function Footer() {
             <h3 className="text-lg font-bold mb-4 text-[#009ab6]">Legal</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/privacy" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/privacy-policy" className="text-white/60 hover:text-white transition-colors text-sm">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/terms-of-service" className="text-white/60 hover:text-white transition-colors text-sm">
                   Terms of Service
                 </Link>
               </li>
@@ -239,10 +239,10 @@ export default function Footer() {
             © {currentYear} {SITE_NAME}. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            <Link href="/terms" className="text-white/60 hover:text-white text-sm transition-colors">
+            <Link href="/terms-of-service" className="text-white/60 hover:text-white text-sm transition-colors">
               Terms
             </Link>
-            <Link href="/privacy" className="text-white/60 hover:text-white text-sm transition-colors">
+            <Link href="/privacy-policy" className="text-white/60 hover:text-white text-sm transition-colors">
               Privacy
             </Link>
             <Link href="/refunds" className="text-white/60 hover:text-white text-sm transition-colors">

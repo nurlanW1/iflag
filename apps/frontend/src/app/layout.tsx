@@ -9,6 +9,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { buildDefaultMetadata } from '@/lib/seo/site-config';
 import { logProductionDeploymentWarnings } from '@/lib/seo/production-warnings';
 import { organizationJsonLd, websiteJsonLd } from '@/lib/seo/structured-data';
+import { AdSenseScriptPlaceholder } from '@/components/ads/AdSensePlaceholder';
 import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 
@@ -26,6 +27,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={inter.variable}>
       <body className={inter.className}>
+        {/*
+          AdSense: after approval, load your publisher script here with next/script, e.g.
+          <Script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXX"
+            crossOrigin="anonymous" strategy="afterInteractive" />
+          Keep AdSenseScriptPlaceholder as a no-op hook for typed imports if you prefer colocating docs in code.
+        */}
+        <AdSenseScriptPlaceholder />
         <JsonLd data={[websiteJsonLd(), organizationJsonLd()]} />
         <a
           href="#site-content"

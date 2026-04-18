@@ -53,7 +53,7 @@ export function CookieNotice() {
               Cookie Policy
             </Link>{' '}
             and{' '}
-            <Link href="/privacy" className="font-medium text-[#009ab6] hover:underline">
+            <Link href="/privacy-policy" className="font-medium text-[#009ab6] hover:underline">
               Privacy Policy
             </Link>
             , and update this banner accordingly.

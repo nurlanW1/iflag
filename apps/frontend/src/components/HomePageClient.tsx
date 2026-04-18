@@ -15,15 +15,158 @@ import {
   Globe2,
   ChevronRight,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import HomeGalleryPreview from '@/components/HomeGalleryPreview';
+import { SectionReveal } from '@/components/motion/SectionReveal';
+import { useHasMounted, useRevealInView } from '@/hooks/useRevealInView';
 import { SITE_NAME } from '@/lib/seo/site-config';
 
 const TRENDING = ['usa', 'france', 'japan', 'germany', 'uk'] as const;
 
+type PricingPlan = {
+  name: string;
+  price: string;
+  period: string;
+  features: string[];
+  popular: boolean;
+  gradient: string;
+};
+
+function PlanFeatureRow({
+  feature,
+  planIdx,
+  fIdx,
+}: {
+  feature: string;
+  planIdx: number;
+  fIdx: number;
+}) {
+  const { ref, isRevealed } = useRevealInView<HTMLLIElement>();
+  return (
+    <motion.li
+      ref={ref}
+      initial={false}
+      animate={isRevealed ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+      transition={{ delay: planIdx * 0.2 + fIdx * 0.1 }}
+      className="flex items-start gap-3 text-black/80"
+    >
+      <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[#009ab6]">
+        <motion.svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="white"
+          strokeWidth="3"
+          initial={false}
+          animate={isRevealed ? { pathLength: 1 } : { pathLength: 0 }}
+          transition={{ delay: planIdx * 0.2 + fIdx * 0.1 + 0.2 }}
+        >
+          <path d="M20 6L9 17l-5-5" />
+        </motion.svg>
+      </div>
+      <span className="text-base font-medium">{feature}</span>
+    </motion.li>
+  );
+}
+
+function PricingPlanCard({ plan, idx }: { plan: PricingPlan; idx: number }) {
+  const { ref, isRevealed } = useRevealInView<HTMLDivElement>();
+  return (
+    <motion.div
+      ref={ref}
+      initial={false}
+      animate={
+        isRevealed ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 40, scale: 0.95 }
+      }
+      transition={{ duration: 0.6, delay: idx * 0.2, type: 'spring' }}
+      whileHover={{ y: -8, transition: { duration: 0.3 } }}
+      className={`group relative overflow-hidden rounded-3xl border-2 bg-gradient-to-br p-8 md:p-10 ${plan.gradient} ${
+        plan.popular
+          ? 'scale-105 border-[#009ab6] shadow-2xl shadow-[#009ab6]/20'
+          : 'border-gray-200 shadow-lg transition-all duration-500 hover:border-[#009ab6]/50'
+      }`}
+    >
+      {plan.popular ? (
+        <>
+          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-[#009ab6]/10 blur-3xl" />
+          <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-[#009ab6]/5" />
+        </>
+      ) : null}
+
+      <div className="relative z-10">
+        <div className="mb-6 flex items-baseline justify-between">
+          <h3 className="text-3xl font-black text-black md:text-4xl">{plan.name}</h3>
+          <div className="text-right">
+            <div className="text-5xl font-black leading-none text-[#009ab6] md:text-6xl">{plan.price}</div>
+            <div className="mt-1 text-sm text-black/60">{plan.period}</div>
+          </div>
+        </div>
+
+        <ul className="mb-8 space-y-4">
+          {plan.features.map((feature, fIdx) => (
+            <PlanFeatureRow key={fIdx} feature={feature} planIdx={idx} fIdx={fIdx} />
+          ))}
+        </ul>
+
+        <Link
+          href="/pricing"
+          className={`block w-full rounded-xl px-6 py-4 text-center font-bold transition-all duration-300 ${
+            plan.popular
+              ? 'bg-gradient-to-r from-[#009ab6] to-[#006d7a] text-white shadow-lg hover:from-[#007a8a] hover:to-[#005a66] hover:shadow-xl'
+              : 'border-2 border-[#009ab6] bg-white text-[#009ab6] hover:bg-[#009ab6] hover:text-white'
+          }`}
+        >
+          Get {plan.name} Plan
+        </Link>
+      </div>
+    </motion.div>
+  );
+}
+
+type StepItem = {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  step: string;
+  color: string;
+};
+
+function HowItWorksStepCard({ step, idx }: { step: StepItem; idx: number }) {
+  const { ref, isRevealed } = useRevealInView<HTMLDivElement>();
+  return (
+    <motion.div
+      ref={ref}
+      initial={false}
+      animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+      transition={{ duration: 0.6, delay: idx * 0.2 }}
+      whileHover={{ y: -8, transition: { duration: 0.3 } }}
+      className="group relative text-center"
+    >
+      <div className="absolute -top-4 left-1/2 z-10 flex h-12 w-12 -translate-x-1/2 transform items-center justify-center rounded-full border-4 border-[#009ab6] bg-white">
+        <span className="text-lg font-black text-[#009ab6]">{step.step}</span>
+      </div>
+
+      <div className="rounded-3xl border-2 border-gray-200 bg-white p-8 pt-12 shadow-lg transition-all duration-500 hover:border-[#009ab6] hover:shadow-2xl">
+        <motion.div
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          transition={{ type: 'spring', stiffness: 300 }}
+          className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br ${step.color} shadow-lg`}
+        >
+          <step.icon size={40} className="text-white" />
+        </motion.div>
+        <h3 className="mb-4 text-2xl font-bold text-black">{step.title}</h3>
+        <p className="leading-relaxed text-black/60">{step.desc}</p>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function HomePageClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [catalogScope, setCatalogScope] = useState<'all' | 'vector' | 'raster' | 'video'>('all');
+  const motionBgMounted = useHasMounted();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +215,7 @@ export default function HomePageClient() {
 
           <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-4 sm:px-6">
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
               className="w-full text-center"
@@ -130,9 +273,9 @@ export default function HomePageClient() {
                 role="search"
                 aria-label="Search flag assets"
               >
-                <div className="flex w-full items-stretch overflow-hidden rounded-full border border-white/15 bg-black/50 shadow-[0_12px_36px_rgba(0,0,0,0.3)] backdrop-blur-md">
-                  <div className="flex min-w-0 flex-1 items-center pl-3 sm:pl-6 md:pl-8">
-                    <Search className="h-4 w-4 shrink-0 text-white/80 sm:h-5 sm:w-5 md:h-6 md:w-6" aria-hidden />
+                <div className="flex w-full items-stretch overflow-hidden rounded-full border border-white/20 shadow-[0_12px_36px_rgba(0,0,0,0.3)]">
+                  <div className="flex min-w-0 flex-1 items-center rounded-l-full bg-white pl-3 sm:pl-6 md:pl-8">
+                    <Search className="h-4 w-4 shrink-0 text-black/45 sm:h-5 sm:w-5 md:h-6 md:w-6" aria-hidden />
                     <label htmlFor="hero-search" className="sr-only">
                       Search query
                     </label>
@@ -142,7 +285,7 @@ export default function HomePageClient() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Country, tag, or name…"
-                      className="min-w-0 flex-1 border-0 bg-transparent py-2.5 pl-2.5 pr-2 text-sm text-white placeholder:text-white/45 focus:outline-none focus:ring-0 sm:py-3.5 sm:pl-4 sm:pr-3 sm:text-base md:py-4 md:text-lg"
+                      className="min-w-0 flex-1 border-0 bg-transparent py-2.5 pl-2.5 pr-2 text-sm text-black placeholder:text-black/45 focus:outline-none focus:ring-0 sm:py-3.5 sm:pl-4 sm:pr-3 sm:text-base md:py-4 md:text-lg"
                       autoComplete="off"
                     />
                   </div>
@@ -176,10 +319,9 @@ export default function HomePageClient() {
         {/* Categories — full-width band (matches hero weight), larger tiles */}
         <section className="shrink-0 border-t border-gray-100 bg-gradient-to-b from-gray-50/90 to-white pb-8 pt-5 sm:pb-10 sm:pt-7 md:pb-12">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+            <SectionReveal
+              hidden={{ opacity: 0, y: 10 }}
+              visible={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
               className="mb-4 flex flex-col items-center text-center sm:mb-6"
             >
@@ -189,7 +331,7 @@ export default function HomePageClient() {
               <p className="mt-1 max-w-2xl text-sm text-black/55 sm:text-base">
                 Jump straight into a collection — two rows across the full catalog width
               </p>
-            </motion.div>
+            </SectionReveal>
 
             <div className="rounded-2xl border border-gray-200/80 bg-white/90 p-3 shadow-md backdrop-blur-sm sm:rounded-3xl sm:p-4 md:p-6">
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 md:gap-5">
@@ -245,11 +387,10 @@ export default function HomePageClient() {
             ].map((cat, idx) => {
               const CatIcon = cat.icon;
               return (
-                <motion.div
+                <SectionReveal
                   key={idx}
-                  initial={{ opacity: 0, y: 6 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
+                  hidden={{ opacity: 0, y: 6 }}
+                  visible={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, delay: idx * 0.02 }}
                   className="min-w-0"
                 >
@@ -273,7 +414,7 @@ export default function HomePageClient() {
                       aria-hidden
                     />
                   </Link>
-                </motion.div>
+                </SectionReveal>
               );
             })}
               </div>
@@ -295,11 +436,10 @@ export default function HomePageClient() {
               { number: '50K+', label: 'Downloads', icon: Download },
               { number: '5K+', label: 'Users', icon: Star },
             ].map((stat, idx) => (
-              <motion.div
+              <SectionReveal
                 key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                hidden={{ opacity: 0, y: 20 }}
+                visible={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: idx * 0.1 }}
                 className="text-center"
               >
@@ -308,7 +448,7 @@ export default function HomePageClient() {
                 </div>
                 <div className="text-4xl md:text-5xl font-black text-black mb-2">{stat.number}</div>
                 <div className="text-sm md:text-base text-black/60 font-medium">{stat.label}</div>
-              </motion.div>
+              </SectionReveal>
             ))}
           </div>
         </div>
@@ -324,10 +464,9 @@ export default function HomePageClient() {
         </div>
 
         <div className="max-w-6xl mx-auto relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <SectionReveal
+            hidden={{ opacity: 0, y: 30 }}
+            visible={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
@@ -339,7 +478,7 @@ export default function HomePageClient() {
             <p className="text-xl md:text-2xl text-black/60 max-w-2xl mx-auto">
               Unlock unlimited flag downloads, commercial use, and exclusive flag assets.
             </p>
-          </motion.div>
+          </SectionReveal>
 
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
             {[
@@ -360,80 +499,7 @@ export default function HomePageClient() {
                 gradient: 'from-[#009ab6]/5 via-[#009ab6]/10 to-[#006d7a]/5',
               },
             ].map((plan, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 40, scale: 0.95 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: idx * 0.2, type: "spring" }}
-                whileHover={{ y: -8, transition: { duration: 0.3 } }}
-                className={`group relative bg-gradient-to-br ${plan.gradient} rounded-3xl p-8 md:p-10 border-2 ${
-                  plan.popular 
-                    ? 'border-[#009ab6] shadow-2xl shadow-[#009ab6]/20 scale-105' 
-                    : 'border-gray-200 hover:border-[#009ab6]/50 shadow-lg'
-                } transition-all duration-500 overflow-hidden`}
-              >
-                {/* Decorative Elements */}
-                {plan.popular && (
-                  <>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#009ab6]/10 rounded-full blur-3xl" />
-                    <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#009ab6]/5 rounded-full" />
-                  </>
-                )}
-
-
-                <div className="relative z-10">
-                  <div className="flex items-baseline justify-between mb-6">
-                    <h3 className="text-3xl md:text-4xl font-black text-black">{plan.name}</h3>
-                    <div className="text-right">
-                      <div className="text-5xl md:text-6xl font-black text-[#009ab6] leading-none">{plan.price}</div>
-                      <div className="text-sm text-black/60 mt-1">{plan.period}</div>
-                    </div>
-                  </div>
-
-                  <ul className="space-y-4 mb-8">
-                    {plan.features.map((feature, fIdx) => (
-                      <motion.li
-                        key={fIdx}
-                        initial={{ opacity: 0, x: -20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: idx * 0.2 + fIdx * 0.1 }}
-                        className="flex items-start gap-3 text-black/80"
-                      >
-                        <div className="w-6 h-6 rounded-full bg-[#009ab6] flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <motion.svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="white"
-                            strokeWidth="3"
-                            initial={{ pathLength: 0 }}
-                            whileInView={{ pathLength: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: idx * 0.2 + fIdx * 0.1 + 0.2 }}
-                          >
-                            <path d="M20 6L9 17l-5-5" />
-                          </motion.svg>
-                        </div>
-                        <span className="text-base font-medium">{feature}</span>
-                      </motion.li>
-                    ))}
-                  </ul>
-
-                  <Link
-                    href="/pricing"
-                    className={`block w-full text-center font-bold py-4 px-6 rounded-xl transition-all duration-300 ${
-                      plan.popular
-                        ? 'bg-gradient-to-r from-[#009ab6] to-[#006d7a] hover:from-[#007a8a] hover:to-[#005a66] text-white shadow-lg hover:shadow-xl'
-                        : 'bg-white border-2 border-[#009ab6] text-[#009ab6] hover:bg-[#009ab6] hover:text-white'
-                    }`}
-                  >
-                    Get {plan.name} Plan
-                  </Link>
-                </div>
-              </motion.div>
+              <PricingPlanCard key={idx} plan={plan} idx={idx} />
             ))}
           </div>
         </div>
@@ -442,10 +508,9 @@ export default function HomePageClient() {
       {/* How It Works */}
       <section className="py-24 px-4 bg-gradient-to-b from-[#006d7a]/5 to-white">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <SectionReveal
+            hidden={{ opacity: 0, y: 20 }}
+            visible={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
@@ -453,7 +518,7 @@ export default function HomePageClient() {
             <p className="text-lg md:text-xl text-black/60 max-w-2xl mx-auto">
               Get started in three simple steps
             </p>
-          </motion.div>
+          </SectionReveal>
 
           <div className="grid md:grid-cols-3 gap-8 lg:gap-12 relative">
             {/* Connecting Line */}
@@ -482,32 +547,7 @@ export default function HomePageClient() {
                 color: 'from-teal-500 to-[#009ab6]',
               },
             ].map((step, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: idx * 0.2 }}
-                whileHover={{ y: -8, transition: { duration: 0.3 } }}
-                className="relative text-center group"
-              >
-                {/* Step Number */}
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-white border-4 border-[#009ab6] rounded-full flex items-center justify-center z-10">
-                  <span className="text-lg font-black text-[#009ab6]">{step.step}</span>
-                </div>
-
-                <div className="bg-white rounded-3xl p-8 pt-12 border-2 border-gray-200 hover:border-[#009ab6] transition-all duration-500 shadow-lg hover:shadow-2xl">
-                  <motion.div
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                    className={`w-20 h-20 bg-gradient-to-br ${step.color} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg`}
-                  >
-                    <step.icon size={40} className="text-white" />
-                  </motion.div>
-                  <h3 className="text-2xl font-bold mb-4 text-black">{step.title}</h3>
-                  <p className="text-black/60 leading-relaxed">{step.desc}</p>
-                </div>
-              </motion.div>
+              <HowItWorksStepCard key={idx} step={step} idx={idx} />
             ))}
           </div>
         </div>
@@ -517,62 +557,72 @@ export default function HomePageClient() {
       <section className="py-24 px-4 bg-gradient-to-br from-[#009ab6] via-[#006d7a] to-[#004d5a] relative overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 opacity-10">
-          <motion.div
-            animate={{
-              x: [0, 100, 0],
-              y: [0, -50, 0],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-            className="absolute top-20 left-20 w-96 h-96 bg-white rounded-full blur-3xl"
-          />
-          <motion.div
-            animate={{
-              x: [0, -100, 0],
-              y: [0, 50, 0],
-              scale: [1, 1.3, 1],
-            }}
-            transition={{
-              duration: 25,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-            className="absolute bottom-20 right-20 w-96 h-96 bg-white rounded-full blur-3xl"
-          />
+          {motionBgMounted ? (
+            <>
+              <motion.div
+                initial={false}
+                animate={{
+                  x: [0, 100, 0],
+                  y: [0, -50, 0],
+                  scale: [1, 1.2, 1],
+                }}
+                transition={{
+                  duration: 20,
+                  repeat: Infinity,
+                  ease: 'linear',
+                }}
+                className="absolute left-20 top-20 h-96 w-96 rounded-full bg-white blur-3xl"
+              />
+              <motion.div
+                initial={false}
+                animate={{
+                  x: [0, -100, 0],
+                  y: [0, 50, 0],
+                  scale: [1, 1.3, 1],
+                }}
+                transition={{
+                  duration: 25,
+                  repeat: Infinity,
+                  ease: 'linear',
+                }}
+                className="absolute bottom-20 right-20 h-96 w-96 rounded-full bg-white blur-3xl"
+              />
+            </>
+          ) : (
+            <>
+              <div className="absolute left-20 top-20 h-96 w-96 rounded-full bg-white blur-3xl" />
+              <div className="absolute bottom-20 right-20 h-96 w-96 rounded-full bg-white blur-3xl" />
+            </>
+          )}
         </div>
 
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+        <div className="relative z-10 mx-auto max-w-4xl text-center">
+          <SectionReveal
+            hidden={{ opacity: 0, y: 30 }}
+            visible={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 text-white">
+            <h2 className="mb-6 text-4xl font-black text-white md:text-5xl lg:text-6xl">
               Ready to Get Started?
             </h2>
-            <p className="text-xl md:text-2xl text-white/90 mb-10 max-w-2xl mx-auto">
+            <p className="mx-auto mb-10 max-w-2xl text-xl text-white/90 md:text-2xl">
               Join thousands of designers and developers using {SITE_NAME} for their projects
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 href="/gallery"
-                className="px-8 py-4 bg-white text-[#009ab6] font-bold rounded-xl text-lg hover:bg-gray-100 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
+                className="rounded-xl bg-white px-8 py-4 text-lg font-bold text-[#009ab6] shadow-xl transition-all duration-300 hover:scale-105 hover:bg-gray-100 hover:shadow-2xl"
               >
                 Browse Flags
               </Link>
               <Link
                 href="/pricing"
-                className="px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-xl text-lg hover:bg-white/10 transition-all duration-300"
+                className="rounded-xl border-2 border-white bg-transparent px-8 py-4 text-lg font-bold text-white transition-all duration-300 hover:bg-white/10"
               >
                 View Plans
               </Link>
             </div>
-          </motion.div>
+          </SectionReveal>
         </div>
       </section>
 

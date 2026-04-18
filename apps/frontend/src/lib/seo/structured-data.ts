@@ -54,7 +54,7 @@ export function productJsonLd(
   publicProduct?: PublicProduct | null
 ): Record<string, unknown> {
   const origin = getSiteOrigin();
-  const path = payload.canonicalPath ?? `/browse/${slug}`;
+  const path = payload.canonicalPath ?? `/flags/${slug}`;
   const productUrl = `${origin}${path}`;
   const images = [payload.image, publicProduct?.thumbnailUrl, publicProduct?.previewUrl].filter(
     (u): u is string => typeof u === 'string' && u.length > 0

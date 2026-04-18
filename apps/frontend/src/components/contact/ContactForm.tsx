@@ -68,11 +68,11 @@ export default function ContactForm() {
         <p className="mb-10 text-sm text-gray-600">
           For legal notices, privacy requests, and refund questions, use the contact details below and
           reference our{' '}
-          <Link href="/privacy" className="font-medium text-[#009ab6] hover:underline">
+          <Link href="/privacy-policy" className="font-medium text-[#009ab6] hover:underline">
             Privacy Policy
           </Link>
           ,{' '}
-          <Link href="/terms" className="font-medium text-[#009ab6] hover:underline">
+          <Link href="/terms-of-service" className="font-medium text-[#009ab6] hover:underline">
             Terms
           </Link>
           , and{' '}

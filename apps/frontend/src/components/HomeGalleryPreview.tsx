@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { SectionReveal } from '@/components/motion/SectionReveal';
 import { hasFlag } from 'country-flag-icons';
 import GalleryGrid from './GalleryGrid';
 
@@ -61,12 +62,11 @@ export default function HomeGalleryPreview() {
     <section className="py-16 md:py-24 px-4 bg-white relative">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <SectionReveal
+          hidden={{ opacity: 0, y: 20 }}
+          visible={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 md:mb-16"
+          className="mb-12 text-center md:mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-black mb-4">
             Explore Our Flag Collection
@@ -74,7 +74,7 @@ export default function HomeGalleryPreview() {
           <p className="text-lg md:text-xl text-black/60 max-w-2xl mx-auto">
             Browse through hundreds of high-quality country flags in various formats
           </p>
-        </motion.div>
+        </SectionReveal>
 
         {/* Gallery Grid with Fade Effect */}
         <div className="relative">
@@ -93,12 +93,11 @@ export default function HomeGalleryPreview() {
         </div>
 
         {/* Show More Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <SectionReveal
+          hidden={{ opacity: 0, y: 20 }}
+          visible={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex justify-center mt-8 md:mt-12"
+          className="mt-8 flex justify-center md:mt-12"
         >
           <button
             onClick={handleShowMore}
@@ -110,7 +109,7 @@ export default function HomeGalleryPreview() {
               initial={false}
             />
           </button>
-        </motion.div>
+        </SectionReveal>
       </div>
     </section>
   );

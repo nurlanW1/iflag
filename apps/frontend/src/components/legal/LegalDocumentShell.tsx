@@ -37,11 +37,11 @@ export function LegalDocumentShell({ title, subtitle, icon, children, lastUpdate
           <p>{LEGAL_TEMPLATE_NOTICE}</p>
           <p className="mt-2">
             Related:{' '}
-            <Link href="/privacy" className="font-medium text-amber-900 underline">
+            <Link href="/privacy-policy" className="font-medium text-amber-900 underline">
               Privacy
             </Link>
             {' · '}
-            <Link href="/terms" className="font-medium text-amber-900 underline">
+            <Link href="/terms-of-service" className="font-medium text-amber-900 underline">
               Terms
             </Link>
             {' · '}

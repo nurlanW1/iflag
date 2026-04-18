@@ -17,7 +17,7 @@ export function MarketplaceProductCard({
 }) {
   const formats = collectFormatLabels(product.files);
   const paid = isPaidCatalogProduct(product);
-  const href = `/browse/${product.slug}`;
+  const href = `/flags/${product.slug}`;
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-sm transition hover:border-[#009ab6]/35 hover:shadow-md">

@@ -109,7 +109,7 @@ export default function LicensesPage() {
           If access ends (for example subscription lapse or refund/chargeback), your right to use new
           downloads may end immediately and your right to continue using previously downloaded assets may be
           limited as stated in your{' '}
-          <Link href="/terms" className="font-medium text-[#009ab6] hover:underline">
+          <Link href="/terms-of-service" className="font-medium text-[#009ab6] hover:underline">
             Terms
           </Link>{' '}
           or checkout terms. [PLACEHOLDER: clarify survival for paid perpetual licenses if offered.]
