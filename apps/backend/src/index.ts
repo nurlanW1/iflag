@@ -14,8 +14,9 @@ import pool from './db.js';
 
 dotenv.config();
 
-const helmet = (helmetPackage as any).default || helmetPackage;
-const rateLimit = (rateLimitPackage as any).default || rateLimitPackage;
+/** Unwrap default interop; type `any` avoids TS merging with `typeof import(...)` (non-callable on Vercel/NodeNext). */
+const helmet: any = (helmetPackage as any).default || helmetPackage;
+const rateLimit: any = (rateLimitPackage as any).default || rateLimitPackage;
 
 const app = express();
 const port = process.env.PORT || 4000;
