@@ -2,7 +2,7 @@
 // Run this to add the countries table to your database
 // Usage: ts-node src/db/migrate-countries.ts
 
-import pool from './db.js';
+import pool from '../db.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';

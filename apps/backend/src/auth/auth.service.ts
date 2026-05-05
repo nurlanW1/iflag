@@ -1,10 +1,11 @@
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import jwt, { type SignOptions } from 'jsonwebtoken';
 import { randomBytes } from 'crypto';
 import pool from '../db.js';
 
 const JWT_SECRET: string = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || '15m';
+/** Access token TTL; number = seconds (e.g. 604800 = 7d). Env may still use a StringValue like `15m`. */
+const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN ?? '15m') as SignOptions['expiresIn'];
 const REFRESH_TOKEN_EXPIRES_DAYS = 30;
 
 export interface User {
@@ -47,7 +48,7 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 // Generate JWT access token
 export function generateAccessToken(userId: string, email: string, role: string): string {
   const payload = { userId, email, role };
-  const options = { expiresIn: JWT_EXPIRES_IN };
+  const options: SignOptions = { expiresIn: JWT_EXPIRES_IN };
   return jwt.sign(payload, JWT_SECRET, options);
 }
 

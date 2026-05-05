@@ -185,7 +185,7 @@ export async function getCountries(filters: {
   const result = await pool.query(query, params);
 
   return {
-    countries: result.rows.map(row => ({
+    countries: result.rows.map((row: any) => ({
       ...row,
       name_alt: row.name_alt || [],
       keywords: row.keywords || [],
@@ -504,7 +504,7 @@ export async function getCountryFlagFiles(
   query += ' ORDER BY variant_name, format, created_at DESC';
 
   const result = await pool.query(query, params);
-  return result.rows.map(row => ({
+  return result.rows.map((row: any) => ({
     ...row,
     tags: row.tags || [],
     metadata: row.metadata || null,
