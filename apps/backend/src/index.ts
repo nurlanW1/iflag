@@ -1,9 +1,11 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import helmet from 'helmet';
+import helmetDefault from 'helmet';
 import compression from 'compression';
-import rateLimit from 'express-rate-limit';
+import rateLimitDefault from 'express-rate-limit';
+import type { HelmetOptions } from 'helmet';
+import type { Options as RateLimitOptions, RateLimitRequestHandler } from 'express-rate-limit';
 import flagsRouter from './flags.routes.js';
 import authRouter from './auth/auth.routes.js';
 import subscriptionRouter from './subscriptions/subscription.routes.js';
@@ -13,6 +15,12 @@ import uploadRouter from './upload/upload.routes.js';
 import pool from './db.js';
 
 dotenv.config();
+
+/** Vercel + NodeNext types some CJS/ESM hybrid packages' default import as `typeof import(...)`, not callable; assert the real middleware factories. */
+const helmet = helmetDefault as (options?: Readonly<HelmetOptions>) => express.RequestHandler;
+const rateLimit = rateLimitDefault as (
+  passedOptions?: Partial<RateLimitOptions>
+) => RateLimitRequestHandler;
 
 const app = express();
 const port = process.env.PORT || 4000;

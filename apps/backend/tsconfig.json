@@ -4,7 +4,9 @@
     "outDir": "dist",
     "baseUrl": ".",
     "module": "NodeNext",
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src", "src/types"],
   "exclude": ["node_modules", "dist"]
