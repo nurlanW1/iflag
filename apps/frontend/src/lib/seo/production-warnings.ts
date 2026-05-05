@@ -1,3 +1,5 @@
+import { isClerkConfigured } from '@/lib/auth/clerk-env';
+
 /**
  * Server-only startup checks for production deployments.
  * Logs warnings (does not throw) so builds succeed while surfacing misconfiguration.
@@ -10,6 +12,12 @@ export function logProductionDeploymentWarnings(): void {
   if (!process.env.NEXT_PUBLIC_SITE_URL?.trim()) {
     console.warn(
       '[flagswing] Production: NEXT_PUBLIC_SITE_URL is not set. Canonical URLs and Open Graph may rely on VERCEL_URL; set an explicit https://… origin for stable SEO.'
+    );
+  }
+
+  if (!isClerkConfigured()) {
+    console.warn(
+      '[flagswing] Production: Clerk keys missing. Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (or CLERK_PUBLISHABLE_KEY) and CLERK_SECRET_KEY in Vercel, then redeploy.'
     );
   }
 

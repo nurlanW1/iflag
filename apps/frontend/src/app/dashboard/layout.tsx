@@ -2,8 +2,13 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
+import { isClerkConfigured } from '@/lib/auth/clerk-env';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
+  if (!isClerkConfigured()) {
+    redirect('/');
+  }
+
   const { userId } = await auth();
   if (!userId) {
     redirect('/sign-in');

@@ -1,5 +1,6 @@
 import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
+import { getClerkPublishableKey } from '@/lib/auth/clerk-env';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { CookieNotice } from '@/components/legal/CookieNotice';
@@ -25,6 +26,33 @@ export const metadata = buildDefaultMetadata();
 logProductionDeploymentWarnings();
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  const clerkPublishableKey = getClerkPublishableKey();
+  const clerkUiEnabled = Boolean(clerkPublishableKey);
+
+  const inner = (
+    <>
+      <AdSenseScriptPlaceholder />
+      <JsonLd data={[websiteJsonLd(), organizationJsonLd()]} />
+      <a
+        href="#site-content"
+        className="sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:flex focus:h-auto focus:w-auto focus:overflow-visible focus:whitespace-normal focus:rounded-lg focus:bg-gray-900 focus:px-4 focus:py-2 focus:text-sm focus:text-white focus:outline-none focus:ring-2 focus:ring-[#009ab6]"
+      >
+        Skip to main content
+      </a>
+      <AuthProvider>
+        <AuthModalProvider>
+          <Navbar clerkUiEnabled={clerkUiEnabled} />
+          <div id="site-content" tabIndex={-1}>
+            {children}
+          </div>
+          <Footer />
+          <CookieNotice />
+          <AuthModalWrapper />
+        </AuthModalProvider>
+      </AuthProvider>
+    </>
+  );
+
   return (
     <html lang="en" className={inter.variable}>
       <body className={inter.className}>
@@ -34,27 +62,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             crossOrigin="anonymous" strategy="afterInteractive" />
           Keep AdSenseScriptPlaceholder as a no-op hook for typed imports if you prefer colocating docs in code.
         */}
-        <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
-          <AdSenseScriptPlaceholder />
-          <JsonLd data={[websiteJsonLd(), organizationJsonLd()]} />
-          <a
-            href="#site-content"
-            className="sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:flex focus:h-auto focus:w-auto focus:overflow-visible focus:whitespace-normal focus:rounded-lg focus:bg-gray-900 focus:px-4 focus:py-2 focus:text-sm focus:text-white focus:outline-none focus:ring-2 focus:ring-[#009ab6]"
+        {clerkUiEnabled ? (
+          <ClerkProvider
+            publishableKey={clerkPublishableKey}
+            signInUrl="/sign-in"
+            signUpUrl="/sign-up"
           >
-            Skip to main content
-          </a>
-          <AuthProvider>
-            <AuthModalProvider>
-              <Navbar />
-              <div id="site-content" tabIndex={-1}>
-                {children}
-              </div>
-              <Footer />
-              <CookieNotice />
-              <AuthModalWrapper />
-            </AuthModalProvider>
-          </AuthProvider>
-        </ClerkProvider>
+            {inner}
+          </ClerkProvider>
+        ) : (
+          inner
+        )}
       </body>
     </html>
   );

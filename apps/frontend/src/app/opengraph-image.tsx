@@ -1,8 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { SITE_NAME } from '@/lib/seo/site-config';
 
-export const runtime = 'edge';
-
 export const alt = `${SITE_NAME} — Flag marketplace`;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';

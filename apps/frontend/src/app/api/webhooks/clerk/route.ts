@@ -42,7 +42,7 @@ export async function POST(request: Request) {
   const secret = process.env.CLERK_WEBHOOK_SECRET?.trim();
   if (!secret) {
     console.error('CLERK_WEBHOOK_SECRET is not set');
-    return NextResponse.json({ ok: false, error: 'Webhook not configured' }, { status: 500 });
+    return NextResponse.json({ ok: true, skipped: true, reason: 'webhook_not_configured' });
   }
 
   const svixId = request.headers.get('svix-id');

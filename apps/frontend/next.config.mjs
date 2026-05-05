@@ -1,6 +1,18 @@
 /** @type {import('next').NextConfig} */
+const clerkPublishableKey =
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() ||
+  process.env.CLERK_PUBLISHABLE_KEY?.trim() ||
+  '';
+
 const nextConfig = {
   reactStrictMode: true,
+  /**
+   * Ensure the publishable key is available to both server and client bundles at build time.
+   * Maps the common `CLERK_PUBLISHABLE_KEY` typo/alias to what @clerk/nextjs expects.
+   */
+  env: {
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: clerkPublishableKey,
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],

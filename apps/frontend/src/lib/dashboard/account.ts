@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { getSessionUserFromCookies } from '@/lib/auth/session.server';
+import { isClerkConfigured } from '@/lib/auth/clerk-env';
 
 /** Clerk-backed account summary for the dashboard shell (server-safe). */
 export type DashboardAccount = {
@@ -15,6 +16,10 @@ export type DashboardAccount = {
  * existing entitlements keep working during Clerk migration.
  */
 export async function getDashboardDataUserId(): Promise<string> {
+  if (!isClerkConfigured()) {
+    redirect('/');
+  }
+
   const { userId } = await auth();
   if (!userId) {
     redirect('/sign-in');

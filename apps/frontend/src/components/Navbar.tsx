@@ -22,7 +22,12 @@ function useAuthPageLinks() {
   return { signInHref: `/sign-in${suffix}`, signUpHref: `/sign-up${suffix}` };
 }
 
-export default function Navbar() {
+type NavbarProps = {
+  /** When false (no Clerk publishable key), skip Clerk UI to avoid runtime errors outside ClerkProvider. */
+  clerkUiEnabled?: boolean;
+};
+
+export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { signInHref, signUpHref } = useAuthPageLinks();
@@ -118,7 +123,7 @@ export default function Navbar() {
                     </button>
                   </div>
                 </>
-              ) : (
+              ) : clerkUiEnabled ? (
                 <>
                   <ClerkLoading>
                     <div className="flex items-center gap-3" aria-hidden>
@@ -174,6 +179,21 @@ export default function Navbar() {
                     </Show>
                   </ClerkLoaded>
                 </>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={signInHref}
+                    className="text-sm font-medium text-black/70 transition-colors hover:text-black"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href={signUpHref}
+                    className="rounded-lg bg-[#009ab6] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#007a8a]"
+                  >
+                    Sign up
+                  </Link>
+                </div>
               )}
             </div>
           </div>
@@ -252,7 +272,7 @@ export default function Navbar() {
                       Sign out
                     </button>
                   </>
-                ) : (
+                ) : clerkUiEnabled ? (
                   <>
                     <ClerkLoading>
                       <div className="space-y-2 px-4" aria-hidden>
@@ -296,6 +316,23 @@ export default function Navbar() {
                       </Show>
                     </ClerkLoaded>
                   </>
+                ) : (
+                  <div className="flex flex-col gap-2 px-4">
+                    <Link
+                      href={signInHref}
+                      className="block text-black/70 hover:text-black"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Log in
+                    </Link>
+                    <Link
+                      href={signUpHref}
+                      className="block w-full rounded-lg bg-[#009ab6] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#007a8a]"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Sign up
+                    </Link>
+                  </div>
                 )}
               </div>
             </motion.div>
