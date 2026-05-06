@@ -204,7 +204,6 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    const message = err instanceof Error ? err.message : 'Upload failed';
-    return NextResponse.json({ error: message, code: 'server_error' }, { status: 500 });
+    return NextResponse.json({ error: 'Upload failed', code: 'server_error' }, { status: 500 });
   }
 }

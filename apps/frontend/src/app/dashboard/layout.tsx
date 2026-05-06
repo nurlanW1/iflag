@@ -1,4 +1,4 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
@@ -9,19 +9,19 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     redirect('/');
   }
 
-  const { userId } = await auth();
-  if (!userId) {
+  const clerkUser = await currentUser();
+  if (!clerkUser) {
     redirect('/sign-in');
   }
 
-  const clerkUser = await currentUser();
+  const userId = clerkUser.id;
   const primaryEmail =
-    clerkUser?.primaryEmailAddress?.emailAddress ??
-    clerkUser?.emailAddresses?.[0]?.emailAddress ??
+    clerkUser.primaryEmailAddress?.emailAddress ??
+    clerkUser.emailAddresses?.[0]?.emailAddress ??
     '';
   const displayName =
-    clerkUser?.fullName?.trim() ||
-    [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(' ').trim() ||
+    clerkUser.fullName?.trim() ||
+    [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ').trim() ||
     null;
 
   return (
@@ -30,7 +30,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         clerkUserId: userId,
         email: primaryEmail || 'Signed-in user',
         displayName,
-        imageUrl: clerkUser?.imageUrl ?? null,
+        imageUrl: clerkUser.imageUrl ?? null,
       }}
     >
       {children}

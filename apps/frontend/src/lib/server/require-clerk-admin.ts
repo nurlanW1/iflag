@@ -1,54 +1,45 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import {
-  getServerAdminAllowlist,
-  normalizedEmailsFromClerkUser,
-  serverClerkUserMatchesAdmin,
-} from '@/lib/auth/admin-email';
+
+function normalizeEmail(value: string | undefined | null): string {
+  return value?.trim().toLowerCase() ?? '';
+}
 
 /**
- * API route gate: Clerk session required; any linked email must match the server allow-list.
+ * Admin API gate without relying on `clerkMiddleware()` / `auth()`.
+ * Session is read from cookies via `currentUser()`.
  */
 export async function requireClerkAdminJson(): Promise<
   | { ok: true; userId: string; email: string }
   | { ok: false; response: NextResponse }
 > {
-  const allow = getServerAdminAllowlist();
-  if (!allow.size) {
+  const expected = normalizeEmail(process.env.ADMIN_EMAIL);
+  if (!expected) {
+    console.error('[requireClerkAdminJson] ADMIN_EMAIL is not configured');
     return {
       ok: false,
-      response: NextResponse.json(
-        { error: 'Admin allow-list is not configured on the server.', code: 'config' },
-        { status: 503 }
-      ),
+      response: NextResponse.json({ error: 'Service unavailable', code: 'config' }, { status: 503 }),
     };
   }
 
-  const { userId } = await auth();
-  if (!userId) {
+  const user = await currentUser();
+  if (!user) {
     return {
       ok: false,
-      response: NextResponse.json({ error: 'Unauthorized', code: 'unauthorized' }, { status: 401 }),
+      response: NextResponse.json({ error: 'Not signed in', code: 'unauthorized' }, { status: 401 }),
     };
   }
 
-  const clerkUser = await currentUser();
-  if (!serverClerkUserMatchesAdmin(clerkUser)) {
+  const email = user.emailAddresses?.[0]?.emailAddress;
+  if (normalizeEmail(email) !== expected) {
     return {
       ok: false,
-      response: NextResponse.json(
-        { error: 'Forbidden: admin access only.', code: 'forbidden' },
-        { status: 403 }
-      ),
+      response: NextResponse.json({ error: 'Access denied', code: 'forbidden' }, { status: 403 }),
     };
   }
 
-  const candidates = normalizedEmailsFromClerkUser(clerkUser);
-  const matched = candidates.find((e) => allow.has(e)) ?? '';
   const display =
-    clerkUser?.primaryEmailAddress?.emailAddress ??
-    clerkUser?.emailAddresses?.[0]?.emailAddress ??
-    matched;
+    user.primaryEmailAddress?.emailAddress ?? user.emailAddresses?.[0]?.emailAddress ?? '';
 
-  return { ok: true, userId, email: display || matched };
+  return { ok: true, userId: user.id, email: display };
 }

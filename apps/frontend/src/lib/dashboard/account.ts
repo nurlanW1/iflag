@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { getSessionUserFromCookies } from '@/lib/auth/session.server';
 import { isClerkConfigured } from '@/lib/auth/clerk-env';
@@ -20,13 +20,14 @@ export async function getDashboardDataUserId(): Promise<string> {
     redirect('/');
   }
 
-  const { userId } = await auth();
-  if (!userId) {
+  const user = await currentUser();
+  if (!user) {
     redirect('/sign-in');
   }
+  const clerkUserId = user.id;
   const legacy = await getSessionUserFromCookies();
   if (legacy) {
     return legacy.id;
   }
-  return userId;
+  return clerkUserId;
 }
