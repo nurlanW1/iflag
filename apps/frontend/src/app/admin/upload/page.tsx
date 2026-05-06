@@ -92,10 +92,14 @@ export default function AdminFlagBlobUploadPage() {
       });
       const data = (await res.json().catch(() => ({}))) as UploadResult & {
         error?: string;
+        detail?: string;
+        code?: string;
       };
 
       if (!res.ok) {
-        throw new Error(data?.error || `Upload failed (${res.status})`);
+        const msg =
+          [data?.error, data?.detail].filter(Boolean).join(' — ') || `Upload failed (${res.status})`;
+        throw new Error(msg);
       }
 
       setResult(data);
@@ -224,7 +228,7 @@ export default function AdminFlagBlobUploadPage() {
             <input
               id="region"
               name="region"
-              maxLength={120}
+              maxLength={100}
               autoComplete="off"
               value={region}
               onChange={(e) => setRegion(e.target.value)}

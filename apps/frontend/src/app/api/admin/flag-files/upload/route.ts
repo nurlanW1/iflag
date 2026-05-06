@@ -15,7 +15,8 @@ const COUNTRY_CATEGORIES = ['country', 'autonomy', 'organization', 'historical']
 const bodySchema = z.object({
   country_name: z.string().min(1).max(255),
   country_slug: z.string().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/i),
-  region: z.string().max(120).optional().nullable(),
+  /** `countries.region` is VARCHAR(100) in Postgres — keep in sync */
+  region: z.string().max(100).optional().nullable(),
   /** Maps to `countries.category` enum when creating/finding country */
   category: z.enum(COUNTRY_CATEGORIES).default('country'),
   flag_title: z.string().min(1).max(100),
@@ -61,6 +62,10 @@ function parseTags(raw: string | undefined): string[] {
 /**
  * Protected admin upload: Vercel Blob (public read) + `country_flag_files` row in Postgres.
  */
+function isPgLikeError(err: unknown): err is { code?: string; message?: string } {
+  return typeof err === 'object' && err !== null && ('code' in err || 'message' in err);
+}
+
 export async function POST(request: Request): Promise<Response> {
   const gate = await requireClerkAdminJson();
   if (!gate.ok) return gate.response;
@@ -69,6 +74,14 @@ export async function POST(request: Request): Promise<Response> {
   if (!token) {
     return NextResponse.json(
       { error: 'BLOB_READ_WRITE_TOKEN is not configured.', code: 'config' },
+      { status: 503 }
+    );
+  }
+
+  if (!process.env.DATABASE_URL?.trim()) {
+    console.error('[admin/flag-files/upload] DATABASE_URL is not set');
+    return NextResponse.json(
+      { error: 'Database is not configured on the server.', code: 'config' },
       { status: 503 }
     );
   }
@@ -191,9 +204,14 @@ export async function POST(request: Request): Promise<Response> {
   } catch (err: unknown) {
     console.error('[admin/flag-files/upload]', err);
 
-    /** Postgres unique_country_variant_format */
-    const code = typeof err === 'object' && err && 'code' in err ? String((err as { code?: string }).code) : '';
-    if (code === '23505') {
+    /** Postgres numeric error codes (`pg` errors and some Node errors) */
+    const pgCode = isPgLikeError(err) && err.code ? String(err.code) : '';
+    const pgMessage =
+      process.env.NODE_ENV !== 'production' && isPgLikeError(err) && err.message
+        ? String(err.message)
+        : undefined;
+
+    if (pgCode === '23505') {
       return NextResponse.json(
         {
           error:
@@ -204,6 +222,55 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    return NextResponse.json({ error: 'Upload failed', code: 'server_error' }, { status: 500 });
+    if (pgCode === '22001' || pgCode === '22003') {
+      return NextResponse.json(
+        {
+          error: 'A field exceeds the maximum length allowed by the database. Shorten region or titles.',
+          code: 'validation',
+          ...(pgMessage ? { detail: pgMessage } : {}),
+        },
+        { status: 400 }
+      );
+    }
+
+    if (pgCode === '42703' || pgCode === '42P01' || pgCode === '42883' || pgCode === '42P17') {
+      return NextResponse.json(
+        {
+          error: 'Database schema or extension mismatch. Run migrations and ensure Postgres extensions exist.',
+          code: 'database_schema',
+          ...(pgMessage ? { detail: pgMessage } : {}),
+        },
+        { status: 503 }
+      );
+    }
+
+    if (pgCode === 'ECONNREFUSED' || pgCode === 'ENOTFOUND' || pgCode === '57P01') {
+      return NextResponse.json(
+        { error: 'Could not connect to the database. Check DATABASE_URL and network access.', code: 'database_unavailable' },
+        { status: 503 }
+      );
+    }
+
+    if (err instanceof Error) {
+      const m = err.message;
+      if (/blob|@vercel\/blob|Vercel/i.test(m)) {
+        return NextResponse.json(
+          {
+            error: 'File storage failed. Verify BLOB_READ_WRITE_TOKEN on the server.',
+            code: 'blob_error',
+          },
+          { status: 503 }
+        );
+      }
+    }
+
+    return NextResponse.json(
+      {
+        error: 'Upload failed',
+        code: 'server_error',
+        ...(pgMessage ? { detail: pgMessage } : {}),
+      },
+      { status: 500 }
+    );
   }
 }
