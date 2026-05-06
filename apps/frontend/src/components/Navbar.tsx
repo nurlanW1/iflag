@@ -38,8 +38,8 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
   } as const;
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-[#006d7a]/10 bg-white/95 shadow-sm backdrop-blur-md" aria-label="Primary">
-      <div className="mx-auto max-w-7xl px-4">
+    <nav className="sticky top-0 z-50 border-b border-[#006d7a]/10 bg-white/95 shadow-sm backdrop-blur-md supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]" aria-label="Primary">
+      <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6">
         <div className="flex h-16 items-center justify-between">
           <Link
             href="/"
@@ -49,7 +49,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             <span>{SITE_NAME}</span>
           </Link>
 
-          <div className="hidden items-center gap-8 lg:flex">
+          <div className="hidden items-center gap-6 md:flex md:gap-8">
             <div className="flex items-center gap-6">
               <Link
                 href="/browse"
@@ -100,7 +100,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                       className="flex items-center gap-2 text-sm text-black/70 transition-colors hover:text-black"
                     >
                       <User size={18} aria-hidden />
-                      <span className="hidden xl:inline">{user.full_name || user.email}</span>
+                      <span className="hidden min-[900px]:inline">{user.full_name || user.email}</span>
                     </Link>
                     <button
                       type="button"
@@ -161,7 +161,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                           className="flex items-center gap-2 text-sm font-medium text-black/70 transition-colors hover:text-black"
                         >
                           <User size={18} aria-hidden />
-                          <span className="hidden xl:inline">Dashboard</span>
+                          <span className="hidden min-[900px]:inline">Dashboard</span>
                         </Link>
                         <UserButton appearance={clerkAppearance} />
                       </>
@@ -190,7 +190,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen((o) => !o)}
-            className="p-2 text-black lg:hidden"
+            className="inline-flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center rounded-lg text-black md:hidden"
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-nav-menu"
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
@@ -206,7 +206,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden border-t border-[#006d7a]/10 bg-white lg:hidden"
+              className="overflow-hidden border-t border-[#006d7a]/10 bg-white md:hidden"
             >
               <div className="space-y-4 py-4">
                 <Link

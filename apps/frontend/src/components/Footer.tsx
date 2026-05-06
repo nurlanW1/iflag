@@ -30,7 +30,7 @@ export default function Footer() {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
-            className="fixed top-4 right-4 z-50 bg-white border border-gray-200 rounded-lg shadow-xl p-4 max-w-md"
+            className="fixed left-4 right-4 top-4 z-50 mx-auto max-w-md rounded-lg border border-gray-200 bg-white p-4 shadow-xl sm:left-auto sm:right-4 sm:mx-0 supports-[padding:max(0px)]:top-[max(1rem,env(safe-area-inset-top))]"
           >
             <div className="flex items-start gap-3">
               <CheckCircle className="text-green-500 flex-shrink-0 mt-0.5" size={20} />
@@ -52,7 +52,7 @@ export default function Footer() {
         )}
       </AnimatePresence>
 
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="mx-auto max-w-7xl px-3 py-12 sm:px-4 sm:py-14 md:px-6 md:py-16 supports-[padding:max(0px)]:pb-[max(3rem,env(safe-area-inset-bottom))]">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
           {/* Brand Column */}
           <div>
@@ -208,18 +208,18 @@ export default function Footer() {
             <p className="text-white/60 text-sm mb-4">
               Get the latest flags, updates, and exclusive offers delivered to your inbox.
             </p>
-            <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+            <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-2 xs:flex-row xs:items-stretch">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[#009ab6] transition-colors"
+                className="min-h-[48px] flex-1 rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/40 transition-colors focus:border-[#009ab6] focus:outline-none"
                 required
               />
               <button
                 type="submit"
-                className="px-6 py-3 bg-[#009ab6] hover:bg-[#007a8a] text-white font-semibold rounded-lg transition-colors"
+                className="min-h-[48px] shrink-0 touch-manipulation rounded-lg bg-[#009ab6] px-6 py-3 font-semibold text-white transition-colors hover:bg-[#007a8a] xs:w-auto"
               >
                 Subscribe
               </button>

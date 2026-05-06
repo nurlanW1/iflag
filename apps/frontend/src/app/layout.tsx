@@ -14,6 +14,7 @@ import { organizationJsonLd, websiteJsonLd } from '@/lib/seo/structured-data';
 import { AdSenseScriptPlaceholder } from '@/components/ads/AdSensePlaceholder';
 import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
+import type { Viewport } from 'next';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -22,6 +23,13 @@ const inter = Inter({
 });
 
 export const metadata = buildDefaultMetadata();
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#009ab6',
+};
 
 logProductionDeploymentWarnings();
 

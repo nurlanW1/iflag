@@ -1,12 +1,14 @@
 'use client';
 
 /**
- * Protected admin upload UI (access enforced by Clerk + ADMIN_EMAIL middleware).
- * Sends one file + metadata to /api/admin/flag-files/upload (Vercel Blob + Neon).
+ * Admin upload: same-origin POST with session cookies (`credentials: "include"`).
+ * Server route uses Clerk `currentUser()` only — no App Router `auth()` / middleware.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import {
   ArrowLeft,
   Upload,
@@ -15,7 +17,13 @@ import {
   AlertCircle,
   FileUp,
   ExternalLink,
+  ShieldOff,
 } from 'lucide-react';
+import { Spinner } from '@/components/ui/Spinner';
+import { getClerkPublishableKey } from '@/lib/auth/clerk-env';
+import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
+
+const UPLOAD_RELATIVE_PATH = '/api/admin/flag-files/upload';
 
 const FORMATS = ['svg', 'png', 'jpg', 'jpeg', 'webp', 'pdf', 'eps'] as const;
 const PREMIUM = ['free', 'freemium', 'paid'] as const;
@@ -34,6 +42,81 @@ type UploadResult = {
 };
 
 export default function AdminFlagBlobUploadPage() {
+  const clerkConfigured = Boolean(getClerkPublishableKey());
+  if (!clerkConfigured) {
+    return <AdminUploadFormContent />;
+  }
+  return <AdminUploadClerkGate />;
+}
+
+/** Ensures Clerk session + allow-list before showing the upload form (no server `auth()`). */
+function AdminUploadClerkGate() {
+  const router = useRouter();
+  const { user, isLoaded, isSignedIn } = useUser();
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!isSignedIn) {
+      router.replace(`/sign-in?redirect_url=${encodeURIComponent('/admin/upload')}`);
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Spinner size="lg" label="Loading" />
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Spinner size="lg" label="Redirecting to sign-in" />
+      </div>
+    );
+  }
+
+  if (!clientClerkUserMatchesAdmin(user)) {
+    return (
+      <div className="mx-auto max-w-3xl py-12">
+        <div
+          role="alert"
+          className="flex gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950"
+        >
+          <ShieldOff size={28} className="shrink-0" aria-hidden />
+          <div className="min-w-0">
+            <p className="text-lg font-bold">Access denied</p>
+            <p className="mt-2 text-sm opacity-90">
+              This upload page is restricted to administrators. Your signed-in email is not on the allow-list.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link
+                href="/access-denied?reason=forbidden"
+                className="text-sm font-semibold text-[#006d7a] underline underline-offset-2 hover:text-[#009ab6]"
+              >
+                More about access
+              </Link>
+              <Link
+                href="/admin"
+                className="rounded-xl border border-amber-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-amber-100/80"
+              >
+                Back to admin
+              </Link>
+              <Link href="/" className="rounded-xl px-4 py-2 text-sm font-medium text-gray-600 hover:underline">
+                Home
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return <AdminUploadFormContent />;
+}
+
+function AdminUploadFormContent() {
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,10 +168,10 @@ export default function AdminFlagBlobUploadPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch('/api/admin/flag-files/upload', {
+      const res = await fetch(UPLOAD_RELATIVE_PATH, {
         method: 'POST',
         body: fd,
-        credentials: 'same-origin',
+        credentials: 'include',
       });
       const data = (await res.json().catch(() => ({}))) as UploadResult & {
         error?: string;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -15,6 +15,8 @@ import {
   LogOut,
   Flag,
   ChevronRight,
+  Menu,
+  X,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Spinner } from '@/components/ui/Spinner';
@@ -135,17 +137,55 @@ function AdminChrome({
   onSignOut: () => void;
 }) {
   const pathname = usePathname();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileNavOpen]);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 supports-[padding:max(0px)]:min-h-[100dvh]">
+      {mobileNavOpen ? (
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[1px] md:hidden"
+          aria-label="Close navigation"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      ) : null}
+
       <aside
-        className="sticky top-0 h-screen w-72 shrink-0 overflow-y-auto border-r border-gray-200/80 bg-white shadow-sm"
+        className={`fixed inset-y-0 left-0 z-50 flex h-[100dvh] w-[min(18rem,calc(100vw-2.5rem))] max-w-[85vw] flex-col overflow-y-auto overscroll-contain border-r border-gray-200/80 bg-white shadow-xl transition-transform duration-200 ease-out md:sticky md:top-0 md:z-auto md:max-w-none md:h-screen md:w-72 md:shrink-0 md:translate-x-0 md:shadow-sm ${
+          mobileNavOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
         aria-label="Admin navigation"
+        id="admin-sidebar"
       >
-        <div className="p-6">
-          <div className="mb-8 pb-6 border-b border-gray-200/80">
-            <Link href="/admin" className="flex items-center gap-3 mb-3 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#009ab6] to-[#006d7a] flex items-center justify-center shadow-lg shadow-[#009ab6]/20 group-hover:shadow-xl group-hover:shadow-[#009ab6]/30 transition-all">
+        <div className="flex items-center justify-between gap-2 border-b border-gray-200/80 p-4 md:hidden">
+          <span className="truncate text-sm font-semibold text-gray-900">Menu</span>
+          <button
+            type="button"
+            className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100"
+            aria-controls="admin-sidebar"
+            aria-expanded={mobileNavOpen}
+            onClick={() => setMobileNavOpen(false)}
+          >
+            <X size={22} aria-hidden />
+          </button>
+        </div>
+        <div className="p-4 sm:p-6">
+          <div className="mb-6 hidden border-b border-gray-200/80 pb-6 md:block">
+            <Link href="/admin" className="group mb-3 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#009ab6] to-[#006d7a] shadow-lg shadow-[#009ab6]/20 transition-all group-hover:shadow-xl group-hover:shadow-[#009ab6]/30">
                 <Flag size={20} className="text-white" />
               </div>
               <div>
@@ -155,26 +195,79 @@ function AdminChrome({
             </Link>
           </div>
 
+          <div className="mb-6 border-b border-gray-200/80 pb-6 md:hidden">
+            <Link
+              href="/admin"
+              className="group flex items-center gap-3"
+              onClick={() => setMobileNavOpen(false)}
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#009ab6] to-[#006d7a] shadow-lg shadow-[#009ab6]/20">
+                <Flag size={20} className="text-white" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-lg font-bold text-gray-900">Admin</h2>
+                <p className="truncate text-xs text-gray-500" title={userEmail}>
+                  {userEmail}
+                </p>
+              </div>
+            </Link>
+          </div>
+
           <nav className="flex flex-col gap-1.5" aria-label="Admin sections">
-            <AdminNavLink href="/admin" icon={LayoutDashboard} active={pathname === '/admin'}>
+            <AdminNavLink
+              href="/admin"
+              icon={LayoutDashboard}
+              active={pathname === '/admin'}
+              onNavigate={() => setMobileNavOpen(false)}
+            >
               Dashboard
             </AdminNavLink>
-            <AdminNavLink href="/admin/countries" icon={Flag} active={pathname?.startsWith('/admin/countries')}>
+            <AdminNavLink
+              href="/admin/countries"
+              icon={Flag}
+              active={pathname?.startsWith('/admin/countries') ?? false}
+              onNavigate={() => setMobileNavOpen(false)}
+            >
               Countries
             </AdminNavLink>
-            <AdminNavLink href="/admin/upload" icon={Upload} active={pathname === '/admin/upload'}>
+            <AdminNavLink
+              href="/admin/upload"
+              icon={Upload}
+              active={pathname === '/admin/upload'}
+              onNavigate={() => setMobileNavOpen(false)}
+            >
               Upload Assets
             </AdminNavLink>
-            <AdminNavLink href="/admin/assets" icon={Package} active={pathname?.startsWith('/admin/assets')}>
+            <AdminNavLink
+              href="/admin/assets"
+              icon={Package}
+              active={pathname?.startsWith('/admin/assets') ?? false}
+              onNavigate={() => setMobileNavOpen(false)}
+            >
               Manage Assets
             </AdminNavLink>
-            <AdminNavLink href="/admin/subscriptions" icon={Users} active={pathname === '/admin/subscriptions'}>
+            <AdminNavLink
+              href="/admin/subscriptions"
+              icon={Users}
+              active={pathname?.startsWith('/admin/subscriptions') ?? false}
+              onNavigate={() => setMobileNavOpen(false)}
+            >
               Subscriptions
             </AdminNavLink>
-            <AdminNavLink href="/admin/analytics" icon={BarChart3} active={pathname === '/admin/analytics'}>
+            <AdminNavLink
+              href="/admin/analytics"
+              icon={BarChart3}
+              active={pathname?.startsWith('/admin/analytics') ?? false}
+              onNavigate={() => setMobileNavOpen(false)}
+            >
               Analytics
             </AdminNavLink>
-            <AdminNavLink href="/admin/settings" icon={Settings} active={pathname === '/admin/settings'}>
+            <AdminNavLink
+              href="/admin/settings"
+              icon={Settings}
+              active={pathname?.startsWith('/admin/settings') ?? false}
+              onNavigate={() => setMobileNavOpen(false)}
+            >
               Settings
             </AdminNavLink>
 
@@ -192,9 +285,27 @@ function AdminChrome({
         </div>
       </aside>
 
-      <main className="min-h-screen flex-1" id="admin-main">
-        <div className="p-6 lg:p-8">{children}</div>
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col pb-[env(safe-area-inset-bottom)]">
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-gray-200/80 bg-white/95 px-3 py-3 backdrop-blur-md supports-[padding:max(0px)]:pt-[max(0.75rem,env(safe-area-inset-top))] md:hidden">
+          <button
+            type="button"
+            className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-gray-800 hover:bg-gray-100"
+            aria-controls="admin-sidebar"
+            aria-expanded={mobileNavOpen}
+            aria-label="Open admin navigation"
+            onClick={() => setMobileNavOpen(true)}
+          >
+            <Menu size={22} aria-hidden />
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-gray-900">Admin</p>
+            <p className="truncate text-xs text-gray-500">{userEmail}</p>
+          </div>
+        </header>
+        <main className="min-h-screen flex-1" id="admin-main">
+          <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }
@@ -204,14 +315,16 @@ function AdminNavLink({
   icon: Icon,
   children,
   active,
+  onNavigate,
 }: {
   href: string;
   icon: LucideIcon;
   children: ReactNode;
   active?: boolean;
+  onNavigate?: () => void;
 }) {
   return (
-    <Link href={href} aria-current={active ? 'page' : undefined}>
+    <Link href={href} aria-current={active ? 'page' : undefined} onClick={onNavigate}>
       <motion.div
         whileHover={{ x: 4 }}
         whileTap={{ scale: 0.98 }}

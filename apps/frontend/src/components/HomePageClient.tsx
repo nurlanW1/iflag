@@ -82,9 +82,9 @@ function PricingPlanCard({ plan, idx }: { plan: PricingPlan; idx: number }) {
       }
       transition={{ duration: 0.6, delay: idx * 0.2, type: 'spring' }}
       whileHover={{ y: -8, transition: { duration: 0.3 } }}
-      className={`group relative overflow-hidden rounded-3xl border-2 bg-gradient-to-br p-8 md:p-10 ${plan.gradient} ${
+      className={`group relative overflow-hidden rounded-3xl border-2 bg-gradient-to-br p-6 sm:p-8 md:p-10 ${plan.gradient} ${
         plan.popular
-          ? 'scale-105 border-[#009ab6] shadow-2xl shadow-[#009ab6]/20'
+          ? 'border-[#009ab6] shadow-2xl shadow-[#009ab6]/20 sm:scale-105'
           : 'border-gray-200 shadow-lg transition-all duration-500 hover:border-[#009ab6]/50'
       }`}
     >
