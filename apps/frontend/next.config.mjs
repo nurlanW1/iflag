@@ -4,9 +4,19 @@ const clerkPublishableKey =
   process.env.CLERK_PUBLISHABLE_KEY?.trim() ||
   '';
 
-/** Expose admin allow-list email only from env (ADMIN_EMAIL mirrored for Navbar). */
-const publicAdminEmail =
-  process.env.NEXT_PUBLIC_ADMIN_EMAIL?.trim() || process.env.ADMIN_EMAIL?.trim() || '';
+/** Fallback owner allow-list when env is omitted (comma/newline-separated list allowed). */
+const DEFAULT_ADMIN_OWNER = 'nurlanrahmonqulov@gmail.com';
+
+/** Full allow-list string for client bundles (comma/semicolon/newline-separated). */
+const publicAdminAllowlist =
+  process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST?.trim() ||
+  process.env.NEXT_PUBLIC_ADMIN_EMAIL?.trim() ||
+  process.env.ADMIN_EMAIL?.trim() ||
+  DEFAULT_ADMIN_OWNER;
+
+/** Legacy single-slot env: first email from the allow-list string. */
+const publicAdminEmailFirst =
+  publicAdminAllowlist.split(/[,;\n]+/).map((s) => s.trim()).find(Boolean) || DEFAULT_ADMIN_OWNER;
 
 const nextConfig = {
   reactStrictMode: true,
@@ -16,7 +26,8 @@ const nextConfig = {
    */
   env: {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: clerkPublishableKey,
-    NEXT_PUBLIC_ADMIN_EMAIL: publicAdminEmail,
+    NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST: publicAdminAllowlist,
+    NEXT_PUBLIC_ADMIN_EMAIL: publicAdminEmailFirst,
   },
   images: {
     formats: ['image/avif', 'image/webp'],

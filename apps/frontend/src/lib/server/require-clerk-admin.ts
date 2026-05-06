@@ -1,24 +1,24 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import {
-  getConfiguredAdminEmail,
-  normalizeAdminEmail,
-  serverEmailMatchesConfiguredAdmin,
+  getServerAdminAllowlist,
+  normalizedEmailsFromClerkUser,
+  serverClerkUserMatchesAdmin,
 } from '@/lib/auth/admin-email';
 
 /**
- * API route gate: Clerk session required; primary email must match ADMIN_EMAIL server config.
+ * API route gate: Clerk session required; any linked email must match the server allow-list.
  */
 export async function requireClerkAdminJson(): Promise<
   | { ok: true; userId: string; email: string }
   | { ok: false; response: NextResponse }
 > {
-  const expected = getConfiguredAdminEmail();
-  if (!expected) {
+  const allow = getServerAdminAllowlist();
+  if (!allow.size) {
     return {
       ok: false,
       response: NextResponse.json(
-        { error: 'ADMIN_EMAIL is not configured on the server.', code: 'config' },
+        { error: 'Admin allow-list is not configured on the server.', code: 'config' },
         { status: 503 }
       ),
     };
@@ -33,13 +33,7 @@ export async function requireClerkAdminJson(): Promise<
   }
 
   const clerkUser = await currentUser();
-  const primary =
-    clerkUser?.primaryEmailAddress?.emailAddress ??
-    clerkUser?.emailAddresses?.[0]?.emailAddress ??
-    '';
-  const email = normalizeAdminEmail(primary);
-
-  if (!serverEmailMatchesConfiguredAdmin(email)) {
+  if (!serverClerkUserMatchesAdmin(clerkUser)) {
     return {
       ok: false,
       response: NextResponse.json(
@@ -49,5 +43,12 @@ export async function requireClerkAdminJson(): Promise<
     };
   }
 
-  return { ok: true, userId, email };
+  const candidates = normalizedEmailsFromClerkUser(clerkUser);
+  const matched = candidates.find((e) => allow.has(e)) ?? '';
+  const display =
+    clerkUser?.primaryEmailAddress?.emailAddress ??
+    clerkUser?.emailAddresses?.[0]?.emailAddress ??
+    matched;
+
+  return { ok: true, userId, email: display || matched };
 }

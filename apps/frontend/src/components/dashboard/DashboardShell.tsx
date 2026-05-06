@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useClerk } from '@clerk/nextjs';
+import { useClerk, useUser } from '@clerk/nextjs';
 import {
   ChevronRight,
   CreditCard,
@@ -15,7 +15,7 @@ import {
   User,
 } from 'lucide-react';
 import type { DashboardAccount } from '@/lib/dashboard/account';
-import { clerkEmailMatchesAdmin } from '@/lib/auth/admin-email';
+import { clerkEmailMatchesAdmin, clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
 
 const navItems: { href: string; label: string; icon: typeof User }[] = [
   { href: '/dashboard', label: 'Dashboard home', icon: LayoutDashboard },
@@ -34,13 +34,15 @@ export function DashboardShell({
 }) {
   const pathname = usePathname();
   const { signOut } = useClerk();
+  const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
 
   async function handleSignOut() {
     await signOut({ redirectUrl: '/' });
   }
 
-  // --- Same allowlist as Clerk /admin proxy: primary email must match admin email (see admin-email.ts). ---
-  const showAdminEntry = clerkEmailMatchesAdmin(account.email);
+  // --- Same allow-list as /admin middleware: any Clerk-linked email may match (see admin-email.ts). ---
+  const showAdminEntry =
+    (clerkLoaded && clientClerkUserMatchesAdmin(clerkUser)) || clerkEmailMatchesAdmin(account.email);
 
   const sidebarTitle = account.displayName || account.email;
 

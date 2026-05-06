@@ -1,5 +1,5 @@
 import { isClerkConfigured } from '@/lib/auth/clerk-env';
-import { getConfiguredAdminEmail } from '@/lib/auth/admin-email';
+import { isAdminAllowlistConfigured } from '@/lib/auth/admin-email';
 
 /**
  * Server-only startup checks for production deployments.
@@ -16,9 +16,9 @@ export function logProductionDeploymentWarnings(): void {
     );
   }
 
-  if (isClerkConfigured() && !getConfiguredAdminEmail()) {
+  if (isClerkConfigured() && !isAdminAllowlistConfigured()) {
     console.warn(
-      '[flagswing] Production: ADMIN_EMAIL missing. Navbar admin link stays hidden until you set ADMIN_EMAIL / NEXT_PUBLIC_ADMIN_EMAIL (mirror in next.config).'
+      '[flagswing] Production: Admin allow-list is empty. Set ADMIN_EMAIL (optional comma-separated); otherwise the built-in fallback may apply.'
     );
   }
 

@@ -23,7 +23,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUser, useClerk } from '@clerk/nextjs';
 
 import { getClerkPublishableKey } from '@/lib/auth/clerk-env';
-import { clerkEmailMatchesAdmin } from '@/lib/auth/admin-email';
+import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const clerkUiEnabled = Boolean(getClerkPublishableKey());
@@ -45,6 +45,7 @@ function AdminLayoutClerk({ children }: { children: ReactNode }) {
 
   const primaryEmail =
     user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses?.[0]?.emailAddress ?? '';
+  const isAdminUser = clientClerkUserMatchesAdmin(user);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -53,11 +54,11 @@ function AdminLayoutClerk({ children }: { children: ReactNode }) {
       router.replace(`/sign-in?redirect_url=${target}`);
       return;
     }
-    // --- Client-side defense: must match NEXT_PUBLIC_ADMIN_EMAIL (mirrors ADMIN_EMAIL in next.config). ---
-    if (!clerkEmailMatchesAdmin(primaryEmail)) {
+    // --- Client-side defense: any Clerk-linked email on the allow-list (see admin-email.ts). ---
+    if (!clientClerkUserMatchesAdmin(user)) {
       router.replace('/access-denied?reason=forbidden');
     }
-  }, [isLoaded, isSignedIn, primaryEmail, pathname, router]);
+  }, [isLoaded, isSignedIn, user, pathname, router]);
 
   if (!isLoaded) {
     return (
@@ -67,7 +68,7 @@ function AdminLayoutClerk({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!isSignedIn || !clerkEmailMatchesAdmin(primaryEmail)) {
+  if (!isSignedIn || !isAdminUser) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-white">
         <Spinner size="lg" label="Redirecting" />

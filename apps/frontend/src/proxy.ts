@@ -7,9 +7,8 @@ import { getAccessCookieName } from '@/lib/auth/cookies';
 import { getSafeInternalReturnPath } from '@/lib/auth/safe-redirect';
 import { isClerkConfigured } from '@/lib/auth/clerk-env';
 import {
-  getConfiguredAdminEmail,
-  normalizeAdminEmail,
-  serverEmailMatchesConfiguredAdmin,
+  isAdminAllowlistConfigured,
+  serverClerkUserMatchesAdmin,
 } from '@/lib/auth/admin-email';
 
 const isDashboardRoute = createRouteMatcher(['/dashboard(.*)']);
@@ -72,10 +71,10 @@ const runClerkMiddleware = clerkMiddleware(async (auth, req) => {
     await auth.protect();
   }
 
-  // --- Admin routes: Clerk session + ADMIN_EMAIL configured (see env / next.config NEXT_PUBLIC_ADMIN_EMAIL) ---
+  // --- Admin routes: Clerk session + allow-list (any linked email; see admin-email.ts) ---
   if (isAdminRoute(req)) {
-    if (!getConfiguredAdminEmail()) {
-      console.warn('[flagswing/admin] ADMIN_EMAIL is not set — /admin is disabled.');
+    if (!isAdminAllowlistConfigured()) {
+      console.warn('[flagswing/admin] Admin allow-list is empty — /admin is disabled.');
       return NextResponse.redirect(new URL('/access-denied?reason=config', req.url));
     }
 
@@ -91,12 +90,7 @@ const runClerkMiddleware = clerkMiddleware(async (auth, req) => {
     }
 
     const clerkUser = await currentUser();
-    const sessionEmail = normalizeAdminEmail(
-      clerkUser?.primaryEmailAddress?.emailAddress ??
-        clerkUser?.emailAddresses?.[0]?.emailAddress
-    );
-
-    if (!serverEmailMatchesConfiguredAdmin(sessionEmail)) {
+    if (!serverClerkUserMatchesAdmin(clerkUser)) {
       return NextResponse.redirect(new URL('/access-denied?reason=forbidden', req.url));
     }
   }
@@ -140,10 +134,3 @@ const proxy: NextProxy = async (req, event) => {
 };
 
 export default proxy;
-
-export const config = {
-  matcher: [
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    '/(api|trpc)(.*)',
-  ],
-};

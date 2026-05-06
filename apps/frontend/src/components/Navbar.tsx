@@ -4,7 +4,7 @@ import { ClerkLoaded, ClerkLoading, Show, UserButton, useUser } from '@clerk/nex
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { clerkEmailMatchesAdmin } from '@/lib/auth/admin-email';
+import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
 import { User, LogOut, Crown, Flag, Menu, X, Globe, Heart, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -355,9 +355,7 @@ function NavbarAdminNav({
 function ClerkAdminNavLink({ onNavigate }: { onNavigate?: () => void }) {
   const { user, isLoaded } = useUser();
   if (!isLoaded) return null;
-  const primary =
-    user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses?.[0]?.emailAddress;
-  if (!clerkEmailMatchesAdmin(primary)) return null;
+  if (!clientClerkUserMatchesAdmin(user)) return null;
   return <AdminNavLink variant={onNavigate ? 'mobile' : 'desktop'} onNavigate={onNavigate} />;
 }
 
@@ -377,7 +375,7 @@ function AdminNavLink({
         onClick={onNavigate}
       >
         <Globe size={18} aria-hidden />
-        Admin Panel Panel
+        Admin Panel
       </Link>
     );
   }
