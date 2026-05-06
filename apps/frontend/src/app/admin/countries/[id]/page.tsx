@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { adminApi } from '@/lib/admin-api';
-import { ArrowLeft, Save, Upload, X, Edit2, Trash2, Image as ImageIcon, CheckCircle2, AlertCircle, Globe, FileText } from 'lucide-react';
+import { ArrowLeft, Save, Upload, X, Edit2, Trash2, Image as ImageIcon, CheckCircle2, AlertCircle, Globe, FileText, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -39,6 +39,12 @@ interface FlagFile {
   premium_tier: string;
   status: string;
   created_at: string;
+}
+
+function openFlagAssetInNewTab(url: string | undefined | null): void {
+  const href = url?.trim();
+  if (!href) return;
+  window.open(href, '_blank', 'noopener,noreferrer');
 }
 
 export default function CountryDetailPage() {
@@ -466,6 +472,14 @@ export default function CountryDetailPage() {
                           )}
                         </div>
                         <div className="flex items-center gap-2 pt-2">
+                          <button
+                            type="button"
+                            onClick={() => openFlagAssetInNewTab(flag.file_url)}
+                            title="Open file in new tab"
+                            className="p-2 text-[#009ab6] hover:bg-[#009ab6]/10 rounded-lg transition-colors"
+                          >
+                            <ExternalLink size={16} />
+                          </button>
                           <button
                             onClick={() => handleDeleteFlag(flag.id)}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
