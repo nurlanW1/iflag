@@ -1,15 +1,14 @@
 'use client';
 
-import { ClerkLoaded, ClerkLoading, Show, UserButton } from '@clerk/nextjs';
+import { ClerkLoaded, ClerkLoading, Show, UserButton, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { clerkEmailMatchesAdmin } from '@/lib/auth/admin-email';
 import { User, LogOut, Crown, Flag, Menu, X, Globe, Heart, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SITE_NAME } from '@/lib/seo/site-config';
-
-const isDev = process.env.NODE_ENV === 'development';
 
 function useAuthPageLinks() {
   const pathname = usePathname() ?? '/';
@@ -31,8 +30,6 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { signInHref, signUpHref } = useAuthPageLinks();
-
-  const showAdminLink = isDev || user?.role === 'admin';
 
   const clerkAppearance = {
     elements: {
@@ -76,16 +73,8 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             </div>
 
             <div className="flex items-center gap-4 border-l border-[#006d7a]/10 pl-6">
-              {showAdminLink ? (
-                <Link
-                  href="/admin"
-                  className="flex items-center gap-2 rounded-lg border border-[#009ab6]/20 px-3 py-1.5 text-sm font-medium text-[#009ab6] transition-colors hover:bg-[#009ab6]/10 hover:text-[#007a8a]"
-                  title="Admin panel"
-                >
-                  <Globe size={18} aria-hidden />
-                  <span className="hidden xl:inline">Admin</span>
-                </Link>
-              ) : null}
+              {/* --- Admin link: Clerk path = email must match ADMIN_EMAIL; legacy = JWT role admin --- */}
+              <NavbarAdminNav clerkUiEnabled={clerkUiEnabled} legacyUser={user} />
 
               {user ? (
                 <>
@@ -242,16 +231,11 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                   <Crown size={18} className="text-[#009ab6]" aria-hidden />
                   Pricing
                 </Link>
-                {showAdminLink ? (
-                  <Link
-                    href="/admin"
-                    className="flex items-center gap-2 px-4 text-black/70 hover:text-black"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Globe size={18} aria-hidden />
-                    Admin
-                  </Link>
-                ) : null}
+                <NavbarAdminNav
+                  clerkUiEnabled={clerkUiEnabled}
+                  legacyUser={user}
+                  onNavigate={() => setMobileMenuOpen(false)}
+                />
                 {user ? (
                   <>
                     <Link
@@ -340,5 +324,72 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
         </AnimatePresence>
       </div>
     </nav>
+  );
+}
+
+/** Clerk: show only when NEXT_PUBLIC_ADMIN_EMAIL matches signed-in Clerk primary email (mirrors proxy ADMIN_EMAIL gate). Legacy: JWT user.role === 'admin`. */
+function NavbarAdminNav({
+  clerkUiEnabled,
+  legacyUser,
+  onNavigate,
+}: {
+  clerkUiEnabled: boolean;
+  legacyUser: { role?: string } | null | undefined;
+  onNavigate?: () => void;
+}) {
+  if (!clerkUiEnabled && legacyUser?.role === 'admin') {
+    return <AdminNavLink variant={onNavigate ? 'mobile' : 'desktop'} onNavigate={onNavigate} />;
+  }
+  if (!clerkUiEnabled) {
+    return null;
+  }
+  return (
+    <ClerkLoaded>
+      <Show when="signed-in">
+        <ClerkAdminNavLink onNavigate={onNavigate} />
+      </Show>
+    </ClerkLoaded>
+  );
+}
+
+function ClerkAdminNavLink({ onNavigate }: { onNavigate?: () => void }) {
+  const { user, isLoaded } = useUser();
+  if (!isLoaded) return null;
+  const primary =
+    user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses?.[0]?.emailAddress;
+  if (!clerkEmailMatchesAdmin(primary)) return null;
+  return <AdminNavLink variant={onNavigate ? 'mobile' : 'desktop'} onNavigate={onNavigate} />;
+}
+
+function AdminNavLink({
+  onNavigate,
+  variant = 'desktop',
+}: {
+  onNavigate?: () => void;
+  variant?: 'desktop' | 'mobile';
+}) {
+  if (variant === 'mobile') {
+    return (
+      <Link
+        href="/admin"
+        className="flex items-center gap-2 px-4 text-black/70 hover:text-black"
+        title="Admin panel"
+        onClick={onNavigate}
+      >
+        <Globe size={18} aria-hidden />
+        Admin
+      </Link>
+    );
+  }
+  return (
+    <Link
+      href="/admin"
+      className="flex items-center gap-2 rounded-lg border border-[#009ab6]/20 px-3 py-1.5 text-sm font-medium text-[#009ab6] transition-colors hover:bg-[#009ab6]/10 hover:text-[#007a8a]"
+      title="Admin panel"
+      onClick={onNavigate}
+    >
+      <Globe size={18} aria-hidden />
+      <span className="hidden xl:inline">Admin</span>
+    </Link>
   );
 }

@@ -4,6 +4,10 @@ const clerkPublishableKey =
   process.env.CLERK_PUBLISHABLE_KEY?.trim() ||
   '';
 
+/** Mirrored client-side so Navbar can hide /admin until it knows the Clerk user matches ADMIN_EMAIL. */
+const publicAdminEmail =
+  process.env.NEXT_PUBLIC_ADMIN_EMAIL?.trim() || process.env.ADMIN_EMAIL?.trim() || '';
+
 const nextConfig = {
   reactStrictMode: true,
   /**
@@ -12,6 +16,7 @@ const nextConfig = {
    */
   env: {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: clerkPublishableKey,
+    NEXT_PUBLIC_ADMIN_EMAIL: publicAdminEmail,
   },
   images: {
     formats: ['image/avif', 'image/webp'],

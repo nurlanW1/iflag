@@ -1,8 +1,7 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { LucideIcon } from 'lucide-react';
@@ -20,10 +19,75 @@ import {
 import { motion } from 'framer-motion';
 import { Spinner } from '@/components/ui/Spinner';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, logout } = useAuth();
+import { useAuth } from '@/contexts/AuthContext';
+import { useUser, useClerk } from '@clerk/nextjs';
+
+import { getClerkPublishableKey } from '@/lib/auth/clerk-env';
+import { clerkEmailMatchesAdmin } from '@/lib/auth/admin-email';
+
+export default function AdminLayout({ children }: { children: ReactNode }) {
+  const clerkUiEnabled = Boolean(getClerkPublishableKey());
+
+  // --- When Clerk is configured, admin access is enforced in proxy (middleware) via ADMIN_EMAIL + Clerk session. ---
+  if (clerkUiEnabled) {
+    return <AdminLayoutClerk>{children}</AdminLayoutClerk>;
+  }
+
+  // --- Legacy: JWT/cookie admin role when Clerk keys are not present (local or transitional deploys). ---
+  return <AdminLayoutLegacy>{children}</AdminLayoutLegacy>;
+}
+
+function AdminLayoutClerk({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { user, isLoaded, isSignedIn } = useUser();
+  const { signOut } = useClerk();
+
+  const primaryEmail =
+    user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses?.[0]?.emailAddress ?? '';
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!isSignedIn) {
+      const target = pathname ? encodeURIComponent(pathname) : '%2Fadmin';
+      router.replace(`/sign-in?redirect_url=${target}`);
+      return;
+    }
+    // --- Client-side defense: must match NEXT_PUBLIC_ADMIN_EMAIL (mirrors ADMIN_EMAIL in next.config). ---
+    if (!clerkEmailMatchesAdmin(primaryEmail)) {
+      router.replace('/access-denied?reason=forbidden');
+    }
+  }, [isLoaded, isSignedIn, primaryEmail, pathname, router]);
+
+  if (!isLoaded) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-white">
+        <Spinner size="lg" label="Loading admin" />
+      </div>
+    );
+  }
+
+  if (!isSignedIn || !clerkEmailMatchesAdmin(primaryEmail)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-white">
+        <Spinner size="lg" label="Redirecting" />
+      </div>
+    );
+  }
+
+  return (
+    <AdminChrome
+      userEmail={primaryEmail}
+      onSignOut={() => void signOut(() => router.push('/'))}
+    >
+      {children}
+    </AdminChrome>
+  );
+}
+
+function AdminLayoutLegacy({ children }: { children: ReactNode }) {
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (loading) return;
@@ -31,6 +95,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       router.replace('/login?callbackUrl=%2Fadmin');
       return;
     }
+    // --- Legacy admin gate: role on session from custom auth API (not Clerk). ---
     if (user.role !== 'admin') {
       router.replace('/dashboard');
     }
@@ -53,13 +118,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
+    <AdminChrome userEmail={user.email} onSignOut={() => void logout()}>
+      {children}
+    </AdminChrome>
+  );
+}
+
+function AdminChrome({
+  children,
+  userEmail,
+  onSignOut,
+}: {
+  children: ReactNode;
+  userEmail: string;
+  onSignOut: () => void;
+}) {
+  const pathname = usePathname();
+
+  return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <aside
         className="sticky top-0 h-screen w-72 shrink-0 overflow-y-auto border-r border-gray-200/80 bg-white shadow-sm"
         aria-label="Admin navigation"
       >
         <div className="p-6">
-          {/* Logo & Header */}
           <div className="mb-8 pb-6 border-b border-gray-200/80">
             <Link href="/admin" className="flex items-center gap-3 mb-3 group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#009ab6] to-[#006d7a] flex items-center justify-center shadow-lg shadow-[#009ab6]/20 group-hover:shadow-xl group-hover:shadow-[#009ab6]/30 transition-all">
@@ -67,12 +149,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Admin</h2>
-                <p className="text-xs text-gray-500">{user.email}</p>
+                <p className="text-xs text-gray-500">{userEmail}</p>
               </div>
             </Link>
           </div>
 
-          {/* Navigation */}
           <nav className="flex flex-col gap-1.5" aria-label="Admin sections">
             <AdminNavLink href="/admin" icon={LayoutDashboard} active={pathname === '/admin'}>
               Dashboard
@@ -95,11 +176,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <AdminNavLink href="/admin/settings" icon={Settings} active={pathname === '/admin/settings'}>
               Settings
             </AdminNavLink>
-            
+
             <div className="mt-6 border-t border-gray-200/80 pt-6">
               <button
                 type="button"
-                onClick={() => void logout()}
+                onClick={onSignOut}
                 className="group flex w-full items-center gap-3 rounded-xl bg-red-50/50 px-4 py-2.5 text-sm font-medium text-red-600 transition-all duration-200 hover:bg-red-50"
               >
                 <LogOut size={18} className="transition-transform group-hover:scale-110" aria-hidden />
@@ -110,11 +191,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="min-h-screen flex-1" id="admin-main">
-        <div className="p-6 lg:p-8">
-          {children}
-        </div>
+        <div className="p-6 lg:p-8">{children}</div>
       </main>
     </div>
   );
@@ -128,7 +206,7 @@ function AdminNavLink({
 }: {
   href: string;
   icon: LucideIcon;
-  children: React.ReactNode;
+  children: ReactNode;
   active?: boolean;
 }) {
   return (
@@ -146,9 +224,7 @@ function AdminNavLink({
           <Icon size={18} className={active ? 'text-white' : 'text-gray-500 group-hover:text-[#009ab6]'} />
           <span>{children}</span>
         </div>
-        {active && (
-          <ChevronRight size={16} className="text-white/80" />
-        )}
+        {active && <ChevronRight size={16} className="text-white/80" />}
       </motion.div>
     </Link>
   );

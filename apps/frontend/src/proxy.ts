@@ -1,4 +1,4 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { clerkMiddleware, createRouteMatcher, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import type { NextProxy } from 'next/server';
@@ -6,9 +6,15 @@ import { jwtVerify } from 'jose';
 import { getAccessCookieName } from '@/lib/auth/cookies';
 import { getSafeInternalReturnPath } from '@/lib/auth/safe-redirect';
 import { isClerkConfigured } from '@/lib/auth/clerk-env';
+import {
+  getConfiguredAdminEmail,
+  normalizeAdminEmail,
+  serverEmailMatchesConfiguredAdmin,
+} from '@/lib/auth/admin-email';
 
 const isDashboardRoute = createRouteMatcher(['/dashboard(.*)']);
 const isAuthPageRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)']);
+const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
 let clerkMissingProxyLogged = false;
 
@@ -66,11 +72,33 @@ const runClerkMiddleware = clerkMiddleware(async (auth, req) => {
     await auth.protect();
   }
 
-  if (req.nextUrl.pathname.startsWith('/admin')) {
-    if (!(await hasAdminAccess(req))) {
-      const login = new URL('/login', req.url);
-      login.searchParams.set('callbackUrl', `${req.nextUrl.pathname}${req.nextUrl.search}`);
-      return NextResponse.redirect(login);
+  // --- Admin routes: Clerk session required; primary email must match ADMIN_EMAIL ---
+  if (isAdminRoute(req)) {
+    const expectedAdminEmail = getConfiguredAdminEmail();
+    if (!expectedAdminEmail) {
+      console.warn('[flagswing/admin] ADMIN_EMAIL is not set; blocking /admin.');
+      return NextResponse.redirect(new URL('/access-denied?reason=config', req.url));
+    }
+
+    const { userId } = await auth();
+    if (!userId) {
+      const signIn = new URL('/sign-in', req.url);
+      const candidate = `${req.nextUrl.pathname}${req.nextUrl.search}`;
+      signIn.searchParams.set(
+        'redirect_url',
+        getSafeInternalReturnPath(candidate) ?? '/admin'
+      );
+      return NextResponse.redirect(signIn);
+    }
+
+    const clerkUser = await currentUser();
+    const sessionEmail = normalizeAdminEmail(
+      clerkUser?.primaryEmailAddress?.emailAddress ??
+        clerkUser?.emailAddresses?.[0]?.emailAddress
+    );
+
+    if (!serverEmailMatchesConfiguredAdmin(sessionEmail)) {
+      return NextResponse.redirect(new URL('/access-denied?reason=forbidden', req.url));
     }
   }
 });
@@ -94,7 +122,7 @@ async function proxyWithoutClerk(req: NextRequest): Promise<NextResponse> {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
-  if (req.nextUrl.pathname.startsWith('/admin')) {
+  if (isAdminRoute(req)) {
     if (!(await hasAdminAccess(req))) {
       const login = new URL('/login', req.url);
       login.searchParams.set('callbackUrl', `${req.nextUrl.pathname}${req.nextUrl.search}`);
