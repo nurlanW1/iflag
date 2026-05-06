@@ -327,7 +327,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
   );
 }
 
-/** Clerk: show only when NEXT_PUBLIC_ADMIN_EMAIL matches signed-in Clerk primary email (mirrors proxy ADMIN_EMAIL gate). Legacy: JWT user.role === 'admin`. */
+/** Clerk: show when allow-list matches any linked email (see admin-email.ts / middleware). Legacy: JWT user.role === 'admin`. */
 function NavbarAdminNav({
   clerkUiEnabled,
   legacyUser,

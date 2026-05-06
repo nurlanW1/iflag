@@ -28,7 +28,7 @@ import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const clerkUiEnabled = Boolean(getClerkPublishableKey());
 
-  // --- When Clerk is configured, admin access is enforced in proxy (middleware) via ADMIN_EMAIL + Clerk session. ---
+  // --- When Clerk is configured, admin access is enforced in middleware via allow-list + Clerk session. ---
   if (clerkUiEnabled) {
     return <AdminLayoutClerk>{children}</AdminLayoutClerk>;
   }

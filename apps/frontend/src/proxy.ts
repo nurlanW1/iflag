@@ -1,3 +1,7 @@
+/**
+ * Next.js 16+: use `proxy.ts` (network edge proxy) instead of deprecated `middleware.ts`.
+ * Clerk’s `clerkMiddleware()` integrates here — same matcher covers `/dashboard`, `/admin`, API routes.
+ */
 import { clerkMiddleware, createRouteMatcher, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
@@ -16,25 +20,6 @@ const isAuthPageRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)']);
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
 let clerkMissingProxyLogged = false;
-
-async function hasValidAccessToken(request: NextRequest): Promise<boolean> {
-  const token = request.cookies.get(getAccessCookieName())?.value;
-  if (!token) return false;
-
-  const secret = process.env.AUTH_JWT_SECRET?.trim();
-  if (!secret) {
-    return token.length > 20;
-  }
-
-  try {
-    await jwtVerify(token, new TextEncoder().encode(secret), {
-      algorithms: ['HS256'],
-    });
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 type JwtPayload = { role?: string };
 
@@ -100,14 +85,14 @@ const runClerkMiddleware = clerkMiddleware(async (auth, req) => {
  * Without Clerk keys, `clerkMiddleware` throws on every request in production.
  * Degrade to public traffic + legacy admin cookie checks only; keep `/dashboard` off the app shell.
  */
-async function proxyWithoutClerk(req: NextRequest): Promise<NextResponse> {
+async function withoutClerkProxy(req: NextRequest): Promise<NextResponse> {
   if (
     !clerkMissingProxyLogged &&
     (process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production')
   ) {
     clerkMissingProxyLogged = true;
     console.warn(
-      '[flagswing] Clerk is not configured (set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY). Skipping Clerk middleware.'
+      '[flagswing] Clerk is not configured (set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY). Skipping Clerk proxy.'
     );
   }
 
@@ -128,9 +113,16 @@ async function proxyWithoutClerk(req: NextRequest): Promise<NextResponse> {
 
 const proxy: NextProxy = async (req, event) => {
   if (!isClerkConfigured()) {
-    return proxyWithoutClerk(req);
+    return withoutClerkProxy(req);
   }
   return runClerkMiddleware(req, event);
 };
 
 export default proxy;
+
+export const config = {
+  matcher: [
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/(api|trpc)(.*)',
+  ],
+};
