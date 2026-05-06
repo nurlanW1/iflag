@@ -18,7 +18,7 @@ export function logProductionDeploymentWarnings(): void {
 
   if (isClerkConfigured() && !getConfiguredAdminEmail()) {
     console.warn(
-      '[flagswing] Production: Clerk is on but ADMIN_EMAIL is not set. /admin routes are blocked until you set ADMIN_EMAIL (mirrored to NEXT_PUBLIC_ADMIN_EMAIL via next.config for the Navbar).'
+      '[flagswing] Production: ADMIN_EMAIL missing. Navbar admin link stays hidden until you set ADMIN_EMAIL / NEXT_PUBLIC_ADMIN_EMAIL (mirror in next.config).'
     );
   }
 

@@ -377,7 +377,7 @@ function AdminNavLink({
         onClick={onNavigate}
       >
         <Globe size={18} aria-hidden />
-        Admin
+        Admin Panel Panel
       </Link>
     );
   }
@@ -389,7 +389,7 @@ function AdminNavLink({
       onClick={onNavigate}
     >
       <Globe size={18} aria-hidden />
-      <span className="hidden xl:inline">Admin</span>
+      <span className="hidden sm:inline">Admin Panel</span>
     </Link>
   );
 }

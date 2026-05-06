@@ -69,11 +69,51 @@ export default function AdminDashboard() {
         className="mb-8"
       >
         <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#009ab6] to-[#006d7a] bg-clip-text text-transparent">
-          Dashboard
+          Admin dashboard
         </h1>
         <p className="text-gray-600 text-lg">
-          Welcome back! Here's what's happening with your marketplace.
+          Manage countries, uploads, and marketplace assets.
         </p>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3"
+      >
+        <Link
+          href="/admin/upload"
+          className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-[#009ab6]/50 hover:shadow-md"
+        >
+          <Upload className="mb-3 text-[#009ab6]" size={28} aria-hidden />
+          <h3 className="font-bold text-gray-900">Upload Flags</h3>
+          <p className="mt-1 text-sm text-gray-600">Vercel Blob + Neon • single file</p>
+          <span className="mt-3 inline-flex text-sm font-semibold text-[#009ab6] group-hover:underline">
+            Open →
+          </span>
+        </Link>
+        <Link
+          href="/admin/countries"
+          className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-[#009ab6]/50 hover:shadow-md"
+        >
+          <Globe className="mb-3 text-[#009ab6]" size={28} aria-hidden />
+          <h3 className="font-bold text-gray-900">Manage Countries</h3>
+          <p className="mt-1 text-sm text-gray-600">Countries & metadata</p>
+          <span className="mt-3 inline-flex text-sm font-semibold text-[#009ab6] group-hover:underline">
+            Open →
+          </span>
+        </Link>
+        <Link
+          href="/admin/assets"
+          className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-[#009ab6]/50 hover:shadow-md"
+        >
+          <Package className="mb-3 text-[#009ab6]" size={28} aria-hidden />
+          <h3 className="font-bold text-gray-900">Manage Assets</h3>
+          <p className="mt-1 text-sm text-gray-600">Asset pipeline</p>
+          <span className="mt-3 inline-flex text-sm font-semibold text-[#009ab6] group-hover:underline">
+            Open →
+          </span>
+        </Link>
       </motion.div>
 
       {/* Stats Grid */}

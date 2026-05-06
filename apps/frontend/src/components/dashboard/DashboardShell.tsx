@@ -8,12 +8,14 @@ import {
   CreditCard,
   Download,
   Flag,
+  Globe,
   LayoutDashboard,
   LogOut,
   Package,
   User,
 } from 'lucide-react';
 import type { DashboardAccount } from '@/lib/dashboard/account';
+import { clerkEmailMatchesAdmin } from '@/lib/auth/admin-email';
 
 const navItems: { href: string; label: string; icon: typeof User }[] = [
   { href: '/dashboard', label: 'Dashboard home', icon: LayoutDashboard },
@@ -36,6 +38,9 @@ export function DashboardShell({
   async function handleSignOut() {
     await signOut({ redirectUrl: '/' });
   }
+
+  // --- Same allowlist as Clerk /admin proxy: primary email must match admin email (see admin-email.ts). ---
+  const showAdminEntry = clerkEmailMatchesAdmin(account.email);
 
   const sidebarTitle = account.displayName || account.email;
 
@@ -85,6 +90,15 @@ export function DashboardShell({
                 </Link>
               );
             })}
+            {showAdminEntry ? (
+              <Link
+                href="/admin"
+                className="flex items-center gap-3 rounded-xl border border-[#009ab6]/35 bg-[#009ab6]/5 px-4 py-2.5 text-sm font-semibold text-[#009ab6] transition hover:bg-[#009ab6]/10"
+              >
+                <Globe size={18} aria-hidden />
+                Admin Panel
+              </Link>
+            ) : null}
             <div className="mt-6 border-t border-gray-200/80 pt-6">
               <button
                 type="button"
@@ -133,9 +147,31 @@ export function DashboardShell({
                 </Link>
               );
             })}
+            {showAdminEntry ? (
+              <Link
+                href="/admin"
+                className="rounded-lg border border-[#009ab6]/40 bg-[#009ab6]/10 px-2 py-1 text-xs font-semibold text-[#009ab6]"
+              >
+                Admin Panel
+              </Link>
+            ) : null}
           </nav>
         </header>
         <main className="p-6 lg:p-8" id="dashboard-main">
+          {showAdminEntry && pathname === '/dashboard' ? (
+            <div className="mb-6 rounded-2xl border border-[#009ab6]/25 bg-gradient-to-r from-[#009ab6]/12 via-white to-white px-5 py-4 shadow-sm">
+              <p className="text-sm font-semibold text-gray-900">Admin</p>
+              <p className="mt-1 text-sm text-gray-600">
+                Open the admin panel to manage countries, uploads, and assets.
+              </p>
+              <Link
+                href="/admin"
+                className="mt-4 inline-flex items-center justify-center rounded-xl bg-[#009ab6] px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-[#009ab6]/25 transition hover:bg-[#007a8a]"
+              >
+                Go to Admin Panel
+              </Link>
+            </div>
+          ) : null}
           {children}
         </main>
       </div>

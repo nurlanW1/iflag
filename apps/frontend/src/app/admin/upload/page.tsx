@@ -1,668 +1,391 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { Upload, X, Check, AlertCircle, FileText, Image as ImageIcon, Video, File, Loader2, CheckCircle2, Info } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+/**
+ * Protected admin upload UI (access enforced by Clerk + ADMIN_EMAIL middleware).
+ * Sends one file + metadata to /api/admin/flag-files/upload (Vercel Blob + Neon).
+ */
 
-export default function AdminUploadPage() {
-  const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [files, setFiles] = useState<File[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [result, setResult] = useState<any>(null);
+import { useState } from 'react';
+import Link from 'next/link';
+import {
+  ArrowLeft,
+  Upload,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  FileUp,
+  ExternalLink,
+} from 'lucide-react';
+
+const FORMATS = ['svg', 'png', 'jpg', 'jpeg', 'webp', 'pdf', 'eps'] as const;
+const PREMIUM = ['free', 'freemium', 'paid'] as const;
+/** Maps to Postgres `countries.category` CHECK constraint */
+const COUNTRY_CATEGORIES = [
+  { value: 'country', label: 'Country' },
+  { value: 'autonomy', label: 'Autonomy' },
+  { value: 'organization', label: 'Organization' },
+  { value: 'historical', label: 'Historical' },
+] as const;
+
+type UploadResult = {
+  ok: boolean;
+  blob_url?: string;
+  file?: { id: string; file_url: string; file_name: string; created_at: string; status: string };
+};
+
+export default function AdminFlagBlobUploadPage() {
+  const [file, setFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  
-  // Form data
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    asset_type: 'flag',
-    category_id: '',
-    country_code: '',
-    organization_name: '',
-    is_premium: false,
-    status: 'draft',
-    tags: '',
-    style: '',
-  });
+  const [result, setResult] = useState<UploadResult | null>(null);
 
-  const [categories, setCategories] = useState<any[]>([]);
+  const [countryName, setCountryName] = useState('');
+  const [countrySlug, setCountrySlug] = useState('');
+  const [region, setRegion] = useState('');
+  const [countryCategory, setCountryCategory] = useState<(typeof COUNTRY_CATEGORIES)[number]['value']>(
+    'country'
+  );
+  const [flagTitle, setFlagTitle] = useState('');
+  const [format, setFormat] = useState<(typeof FORMATS)[number]>('svg');
+  const [premiumTier, setPremiumTier] = useState<(typeof PREMIUM)[number]>('free');
+  const [priceCents, setPriceCents] = useState(0);
+  const [tags, setTags] = useState('');
+  const [status, setStatus] = useState<'draft' | 'published'>('draft');
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
-
-  const loadCategories = async () => {
-    try {
-      const { adminApi } = await import('@/lib/admin-api');
-      const data = await adminApi.getCategories();
-      setCategories(data);
-    } catch (error) {
-      console.error('Failed to load categories:', error);
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    setFiles(prev => [...prev, ...selectedFiles]);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const droppedFiles = Array.from(e.dataTransfer.files);
-    setFiles(prev => [...prev, ...droppedFiles]);
-  };
-
-  const removeFile = (index: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  };
-
-  const getFileIcon = (file: File) => {
-    if (file.type.startsWith('image/')) return ImageIcon;
-    if (file.type.startsWith('video/')) return Video;
-    return File;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setResult(null);
 
-    if (files.length === 0) {
-      setError('Please select at least one file');
+    if (!file) {
+      setError('Choose a flag file.');
+      return;
+    }
+    if (!countryName.trim() || !countrySlug.trim()) {
+      setError('Country name and slug are required.');
+      return;
+    }
+    if (!flagTitle.trim()) {
+      setError('Flag title/name is required.');
       return;
     }
 
-    if (!formData.title.trim()) {
-      setError('Title is required');
-      return;
-    }
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('country_name', countryName.trim());
+    fd.append('country_slug', countrySlug.trim().toLowerCase());
+    fd.append('region', region.trim());
+    fd.append('category', countryCategory);
+    fd.append('flag_title', flagTitle.trim());
+    fd.append('format', format);
+    fd.append('premium_tier', premiumTier);
+    fd.append('price_cents', String(Math.max(0, Math.round(priceCents))));
+    fd.append('tags', tags.trim());
+    fd.append('status', status);
 
-    setUploading(true);
-    setUploadProgress(0);
-
-    // Simulate progress
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return prev;
-        }
-        return prev + 10;
-      });
-    }, 200);
-
+    setSubmitting(true);
     try {
-      const { adminApi } = await import('@/lib/admin-api');
-      
-      const formDataToSend = new FormData();
-      
-      // Add files
-      files.forEach(file => {
-        formDataToSend.append('files', file);
+      const res = await fetch('/api/admin/flag-files/upload', {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
       });
+      const data = (await res.json().catch(() => ({}))) as UploadResult & {
+        error?: string;
+      };
 
-      // Add form fields
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== '' && value !== null && value !== undefined) {
-          formDataToSend.append(key, value.toString());
-        }
-      });
+      if (!res.ok) {
+        throw new Error(data?.error || `Upload failed (${res.status})`);
+      }
 
-      const data = await adminApi.uploadAssets(formDataToSend);
       setResult(data);
-      setUploadProgress(100);
-      clearInterval(progressInterval);
-
-      // Reset form after successful upload
-      setTimeout(() => {
-        setFiles([]);
-        setFormData({
-          title: '',
-          description: '',
-          asset_type: 'flag',
-          category_id: '',
-          country_code: '',
-          organization_name: '',
-          is_premium: false,
-          status: 'draft',
-          tags: '',
-          style: '',
-        });
-        setResult(null);
-      }, 3000);
-    } catch (err: any) {
-      setError(err.message || 'Upload failed');
-      clearInterval(progressInterval);
+      setFile(null);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Upload failed';
+      setError(msg);
     } finally {
-      setUploading(false);
-      setUploadProgress(0);
+      setSubmitting(false);
     }
-  };
+  }
+
+  const fieldClass =
+    'mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm outline-none transition focus:border-[#009ab6] focus:ring-2 focus:ring-[#009ab6]/25';
 
   return (
-    <div className="max-w-5xl mx-auto">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#009ab6] to-[#006d7a] bg-clip-text text-transparent">
-          Upload Assets
-        </h1>
-        <p className="text-gray-600 text-lg">
-          Upload multiple files for a single flag asset with metadata
-        </p>
-      </motion.div>
-
-      {/* Alerts */}
-      <AnimatePresence>
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="mb-6 bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3"
-          >
-            <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-red-800 font-semibold">Error</p>
-              <p className="text-red-700 text-sm">{error}</p>
-            </div>
-            <button
-              onClick={() => setError(null)}
-              className="text-red-600 hover:text-red-800"
-            >
-              <X size={18} />
-            </button>
-          </motion.div>
-        )}
-
-        {result && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="mb-6 bg-green-50 border-2 border-green-200 rounded-xl p-4 flex items-start gap-3"
-          >
-            <CheckCircle2 size={20} className="text-green-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-green-800 font-semibold">Upload Successful!</p>
-              <p className="text-green-700 text-sm">
-                {result.files_uploaded} files uploaded, {result.files_processed} processed.
-              </p>
-            </div>
-            <button
-              onClick={() => setResult(null)}
-              className="text-green-600 hover:text-green-800"
-            >
-              <X size={18} />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* File Upload Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white border-2 border-gray-200/80 rounded-2xl p-6 shadow-sm"
+    <div className="mx-auto max-w-3xl">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <Link
+          href="/admin"
+          className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
         >
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Upload size={24} className="text-[#009ab6]" />
-            Files
-            <span className="text-red-500">*</span>
-          </h2>
+          <ArrowLeft size={16} aria-hidden />
+          Admin home
+        </Link>
+      </div>
 
-          {/* Drag & Drop Area */}
-          <div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`relative border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-200 ${
-              isDragging
-                ? 'border-[#009ab6] bg-[#009ab6]/5 scale-[1.02]'
-                : 'border-gray-300 hover:border-[#009ab6] hover:bg-gray-50'
-            }`}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept=".svg,.eps,.png,.jpg,.jpeg,.tiff,.tif,.mp4,.webm"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-            
-            <motion.div
-              animate={{ scale: isDragging ? 1.1 : 1 }}
-              className="flex flex-col items-center gap-4"
-            >
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
-                isDragging ? 'bg-[#009ab6]' : 'bg-gray-100'
-              } transition-colors`}>
-                <Upload size={32} className={isDragging ? 'text-white' : 'text-gray-400'} />
-              </div>
-              <div>
-                <p className="text-gray-900 font-semibold text-lg mb-1">
-                  {isDragging ? 'Drop files here' : 'Click to select files or drag and drop'}
-                </p>
-                <p className="text-sm text-gray-500">
-                  Supports: SVG, EPS, PNG, JPG, TIFF, MP4, WEBM
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Maximum 500MB per file, up to 20 files
-                </p>
-              </div>
-            </motion.div>
+      <div className="mb-8">
+        <div className="mb-3 flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#009ab6]/10 text-[#009ab6]">
+            <Upload size={24} />
           </div>
-
-          {/* Selected Files List */}
-          {files.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mt-6 space-y-2"
-            >
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                Selected Files ({files.length})
-              </h3>
-              {files.map((file, index) => {
-                const FileIcon = getFileIcon(file);
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-[#009ab6] transition-colors group"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-[#009ab6]/10 flex items-center justify-center flex-shrink-0">
-                      <FileIcon size={20} className="text-[#009ab6]" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{file.name}</p>
-                      <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFile(index);
-                      }}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                      <X size={18} />
-                    </button>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
-          )}
-        </motion.div>
-
-        {/* Metadata Form */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column */}
-          <div className="space-y-6">
-            {/* Title */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm"
-            >
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Title <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900"
-                required
-                placeholder="e.g., United States Flag"
-              />
-            </motion.div>
-
-            {/* Description */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm"
-            >
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={4}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900 resize-none"
-                placeholder="Asset description..."
-              />
-            </motion.div>
-
-            {/* Asset Type */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm"
-            >
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Asset Type <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={formData.asset_type}
-                onChange={(e) => setFormData({ ...formData, asset_type: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900 bg-white"
-                required
-              >
-                <option value="flag">Flag</option>
-                <option value="emblem">Emblem</option>
-                <option value="coat_of_arms">Coat of Arms</option>
-                <option value="symbol">Symbol</option>
-                <option value="video">Video</option>
-                <option value="animated">Animated</option>
-              </select>
-            </motion.div>
-
-            {/* Category */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm"
-            >
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                value={formData.category_id}
-                onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900 bg-white"
-              >
-                <option value="">Select category...</option>
-                {categories.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
-                ))}
-              </select>
-            </motion.div>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* Country Code */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm"
-            >
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Country Code (ISO 3166-1 alpha-3)
-              </label>
-              <input
-                type="text"
-                value={formData.country_code}
-                onChange={(e) => setFormData({ ...formData, country_code: e.target.value.toUpperCase() })}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900 font-mono text-center font-bold"
-                placeholder="USA"
-                maxLength={3}
-              />
-              <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                <Info size={12} />
-                Use 3-letter ISO code (e.g., USA, GBR, FRA)
-              </p>
-            </motion.div>
-
-            {/* Organization Name */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm"
-            >
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Organization Name
-              </label>
-              <input
-                type="text"
-                value={formData.organization_name}
-                onChange={(e) => setFormData({ ...formData, organization_name: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900"
-                placeholder="e.g., United Nations, European Union"
-              />
-            </motion.div>
-
-            {/* Style */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm"
-            >
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Style
-              </label>
-              <select
-                value={formData.style}
-                onChange={(e) => setFormData({ ...formData, style: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900 bg-white"
-              >
-                <option value="">Select style...</option>
-                <option value="flat">Flat</option>
-                <option value="waving">Waving</option>
-                <option value="icon">Icon</option>
-                <option value="round">Round</option>
-                <option value="heart">Heart Shape</option>
-                <option value="mockup">Mockup</option>
-                <option value="fx">FX / Stylized</option>
-              </select>
-            </motion.div>
-
-            {/* Tags */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm"
-            >
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Tags (comma-separated)
-              </label>
-              <input
-                type="text"
-                value={formData.tags}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900"
-                placeholder="usa, america, stars, stripes"
-              />
-              <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                <Info size={12} />
-                Separate multiple tags with commas
-              </p>
-            </motion.div>
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">Upload Flags</h1>
+            <p className="text-sm text-gray-600 md:text-base">
+              Stores the file on Vercel Blob and saves metadata to Neon Postgres (`country_flag_files`).
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* Pricing & Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm"
+      {error ? (
+        <div
+          role="alert"
+          className="mb-6 flex gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-900"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Pricing */}
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-4">
-                Pricing
-              </label>
-              <div className="flex gap-4">
-                <label className="flex-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={!formData.is_premium}
-                    onChange={() => setFormData({ ...formData, is_premium: false })}
-                    className="sr-only"
-                  />
-                  <div className={`p-4 rounded-xl border-2 transition-all ${
-                    !formData.is_premium
-                      ? 'border-[#009ab6] bg-[#009ab6]/5'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}>
-                    <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        !formData.is_premium
-                          ? 'border-[#009ab6]'
-                          : 'border-gray-300'
-                      }`}>
-                        {!formData.is_premium && (
-                          <div className="w-3 h-3 rounded-full bg-[#009ab6]" />
-                        )}
-                      </div>
-                      <span className={`font-semibold ${
-                        !formData.is_premium ? 'text-[#009ab6]' : 'text-gray-700'
-                      }`}>
-                        Free
-                      </span>
-                    </div>
-                  </div>
-                </label>
-                <label className="flex-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={formData.is_premium}
-                    onChange={() => setFormData({ ...formData, is_premium: true })}
-                    className="sr-only"
-                  />
-                  <div className={`p-4 rounded-xl border-2 transition-all ${
-                    formData.is_premium
-                      ? 'border-[#009ab6] bg-[#009ab6]/5'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}>
-                    <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        formData.is_premium
-                          ? 'border-[#009ab6]'
-                          : 'border-gray-300'
-                      }`}>
-                        {formData.is_premium && (
-                          <div className="w-3 h-3 rounded-full bg-[#009ab6]" />
-                        )}
-                      </div>
-                      <span className={`font-semibold ${
-                        formData.is_premium ? 'text-[#009ab6]' : 'text-gray-700'
-                      }`}>
-                        Premium
-                      </span>
-                    </div>
-                  </div>
-                </label>
-              </div>
-            </div>
+          <AlertCircle size={20} className="shrink-0" aria-hidden />
+          <p className="text-sm font-medium">{error}</p>
+        </div>
+      ) : null}
 
-            {/* Status */}
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-4">
-                Status
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900 bg-white"
+      {result?.ok ? (
+        <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
+          <div className="flex items-start gap-2">
+            <CheckCircle2 size={22} className="shrink-0" aria-hidden />
+            <div className="min-w-0">
+              <p className="font-bold">Uploaded successfully</p>
+              <p className="mt-1 text-sm opacity-90">URL (public):</p>
+              <a
+                href={result.blob_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex max-w-full items-center gap-1 break-all text-sm font-semibold text-[#006d7a] underline underline-offset-2 hover:text-[#009ab6]"
               >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
-              </select>
+                {result.blob_url}
+                <ExternalLink size={14} aria-hidden />
+              </a>
+              <p className="mt-2 text-xs opacity-75">
+                DB row id <code className="rounded bg-black/5 px-1">{result.file?.id}</code> · status{' '}
+                <strong>{result.file?.status}</strong>
+              </p>
             </div>
           </div>
-        </motion.div>
+        </div>
+      ) : null}
 
-        {/* Upload Progress */}
-        {uploading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="bg-white border-2 border-[#009ab6] rounded-2xl p-6 shadow-lg"
-          >
-            <div className="flex items-center gap-4 mb-4">
-              <Loader2 size={24} className="text-[#009ab6] animate-spin" />
-              <div className="flex-1">
-                <p className="font-semibold text-gray-900">Uploading files...</p>
-                <p className="text-sm text-gray-600">{uploadProgress}% complete</p>
-              </div>
-            </div>
-            <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${uploadProgress}%` }}
-                className="h-full bg-gradient-to-r from-[#009ab6] to-[#007a8a] rounded-full"
-              />
-            </div>
-          </motion.div>
-        )}
+      <form
+        onSubmit={(e) => void handleSubmit(e)}
+        className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:p-8"
+      >
+        <fieldset className="grid gap-4 sm:grid-cols-2" disabled={submitting}>
+          <legend className="sr-only">Country context</legend>
+          <div className="sm:col-span-2">
+            <label htmlFor="country_name" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+              Country name
+            </label>
+            <input
+              id="country_name"
+              name="country_name"
+              required
+              maxLength={255}
+              autoComplete="off"
+              value={countryName}
+              onChange={(e) => setCountryName(e.target.value)}
+              className={fieldClass}
+              placeholder="e.g. Uzbekistan"
+            />
+          </div>
+          <div>
+            <label htmlFor="country_slug" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+              Country slug
+            </label>
+            <input
+              id="country_slug"
+              name="country_slug"
+              required
+              maxLength={255}
+              pattern="[a-z0-9]+(-[a-z0-9]+)*"
+              value={countrySlug}
+              onChange={(e) =>
+                setCountrySlug(
+                  e.target.value
+                    .toLowerCase()
+                    .trim()
+                    .replace(/\s+/g, '-')
+                )
+              }
+              className={fieldClass}
+              placeholder="e.g. uzbekistan"
+            />
+          </div>
+          <div>
+            <label htmlFor="region" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+              Region
+            </label>
+            <input
+              id="region"
+              name="region"
+              maxLength={120}
+              autoComplete="off"
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              className={fieldClass}
+              placeholder="Optional"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label htmlFor="category" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+              Category (country type)
+            </label>
+            <select
+              id="category"
+              name="category"
+              value={countryCategory}
+              onChange={(e) =>
+                setCountryCategory(e.target.value as (typeof COUNTRY_CATEGORIES)[number]['value'])
+              }
+              className={fieldClass}
+            >
+              {COUNTRY_CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </fieldset>
 
-        {/* Submit Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="flex gap-4 justify-end pt-4"
+        <fieldset className="grid gap-4 sm:grid-cols-2" disabled={submitting}>
+          <legend className="sr-only">Flag file metadata</legend>
+          <div className="sm:col-span-2">
+            <label htmlFor="flag_title" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+              Flag title / name
+            </label>
+            <input
+              id="flag_title"
+              name="flag_title"
+              required
+              maxLength={100}
+              value={flagTitle}
+              onChange={(e) => setFlagTitle(e.target.value)}
+              className={fieldClass}
+              placeholder="e.g. Standard flat"
+            />
+          </div>
+          <div>
+            <label htmlFor="format" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+              Format
+            </label>
+            <select
+              id="format"
+              value={format}
+              onChange={(e) => setFormat(e.target.value as (typeof FORMATS)[number])}
+              className={fieldClass}
+            >
+              {FORMATS.map((f) => (
+                <option key={f} value={f}>
+                  {f.toUpperCase()}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="premium_tier" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+              Premium tier
+            </label>
+            <select
+              id="premium_tier"
+              value={premiumTier}
+              onChange={(e) => setPremiumTier(e.target.value as (typeof PREMIUM)[number])}
+              className={fieldClass}
+            >
+              {PREMIUM.map((p) => (
+                <option key={p} value={p}>
+                  {p.charAt(0).toUpperCase() + p.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="price_cents" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+              Price (USD cents)
+            </label>
+            <input
+              id="price_cents"
+              name="price_cents"
+              type="number"
+              min={0}
+              step={1}
+              value={priceCents}
+              onChange={(e) => setPriceCents(Number(e.target.value) || 0)}
+              className={fieldClass}
+            />
+          </div>
+          <div>
+            <label htmlFor="status" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+              Status
+            </label>
+            <select id="status" value={status} onChange={(e) => setStatus(e.target.value as 'draft' | 'published')} className={fieldClass}>
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label htmlFor="tags" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+              Tags (comma-separated)
+            </label>
+            <input
+              id="tags"
+              name="tags"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              className={fieldClass}
+              placeholder="vector, svg, ..."
+            />
+          </div>
+        </fieldset>
+
+        <div>
+          <label className="flex cursor-pointer flex-col rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/80 p-6 transition hover:border-[#009ab6]/60 hover:bg-white">
+            <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+              <FileUp size={18} className="text-[#009ab6]" aria-hidden />
+              Choose file
+            </span>
+            <span className="mt-2 text-xs text-gray-600">One upload per submission (PNG, SVG, …)</span>
+            <input
+              type="file"
+              disabled={submitting}
+              accept=".svg,.png,.jpg,.jpeg,.webp,.pdf,.eps"
+              className="mt-4 text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-[#009ab6] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                setFile(f ?? null);
+              }}
+            />
+            {file ? (
+              <p className="mt-3 truncate text-xs text-gray-800" title={file.name}>
+                Selected: <strong>{file.name}</strong> ({(file.size / 1024).toFixed(1)} KB)
+              </p>
+            ) : null}
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          disabled={submitting || !file}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#009ab6] to-[#007a8a] py-4 text-base font-black text-white shadow-lg shadow-[#009ab6]/25 transition hover:brightness-105 disabled:pointer-events-none disabled:opacity-50"
         >
-          <button
-            type="button"
-            onClick={() => router.back()}
-            disabled={uploading}
-            className="px-6 py-3 border-2 border-gray-300 rounded-xl font-semibold text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={uploading || files.length === 0 || !formData.title.trim()}
-            className="flex items-center gap-2 bg-gradient-to-r from-[#009ab6] to-[#007a8a] hover:from-[#007a8a] hover:to-[#006d7a] text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-[#009ab6]/20 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {uploading ? (
-              <>
-                <Loader2 size={20} className="animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              <>
-                <Upload size={20} />
-                Upload Assets
-              </>
-            )}
-          </button>
-        </motion.div>
+          {submitting ? (
+            <>
+              <Loader2 className="animate-spin" size={20} aria-hidden />
+              Uploading…
+            </>
+          ) : (
+            <>
+              <Upload size={20} aria-hidden />
+              Upload
+            </>
+          )}
+        </button>
       </form>
     </div>
   );

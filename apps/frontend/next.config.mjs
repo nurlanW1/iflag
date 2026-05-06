@@ -4,7 +4,7 @@ const clerkPublishableKey =
   process.env.CLERK_PUBLISHABLE_KEY?.trim() ||
   '';
 
-/** Mirrored client-side so Navbar can hide /admin until it knows the Clerk user matches ADMIN_EMAIL. */
+/** Expose admin allow-list email only from env (ADMIN_EMAIL mirrored for Navbar). */
 const publicAdminEmail =
   process.env.NEXT_PUBLIC_ADMIN_EMAIL?.trim() || process.env.ADMIN_EMAIL?.trim() || '';
 

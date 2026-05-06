@@ -72,11 +72,10 @@ const runClerkMiddleware = clerkMiddleware(async (auth, req) => {
     await auth.protect();
   }
 
-  // --- Admin routes: Clerk session required; primary email must match ADMIN_EMAIL ---
+  // --- Admin routes: Clerk session + ADMIN_EMAIL configured (see env / next.config NEXT_PUBLIC_ADMIN_EMAIL) ---
   if (isAdminRoute(req)) {
-    const expectedAdminEmail = getConfiguredAdminEmail();
-    if (!expectedAdminEmail) {
-      console.warn('[flagswing/admin] ADMIN_EMAIL is not set; blocking /admin.');
+    if (!getConfiguredAdminEmail()) {
+      console.warn('[flagswing/admin] ADMIN_EMAIL is not set — /admin is disabled.');
       return NextResponse.redirect(new URL('/access-denied?reason=config', req.url));
     }
 
