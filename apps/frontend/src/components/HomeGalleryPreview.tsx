@@ -87,6 +87,7 @@ export default function HomeGalleryPreview() {
               countries={countries}
               disableScrollReveal
               preferImageThumbnails
+              largeTiles
             />
           </div>
         </div>
