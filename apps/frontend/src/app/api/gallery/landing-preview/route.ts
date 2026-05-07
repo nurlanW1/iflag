@@ -6,6 +6,16 @@ function countryToSlug(country: string): string {
   return country.toLowerCase().replace(/\s+/g, '-');
 }
 
+/** Fisher–Yates shuffle (random preview order each request). */
+function shuffle<T>(items: T[]): T[] {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 /** CDN-only flag list for the home page grid — no local `flag_stock` folder required. */
 export async function GET() {
   try {
@@ -30,9 +40,11 @@ export async function GET() {
       }
     });
 
-    rows.sort((a, b) => a.name.localeCompare(b.name));
     const limit = 24;
-    return NextResponse.json({ countries: rows.slice(0, limit) });
+    return NextResponse.json(
+      { countries: shuffle(rows).slice(0, limit) },
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
   } catch (error) {
     console.error('Error building landing gallery preview:', error);
     return NextResponse.json({ countries: [] }, { status: 500 });

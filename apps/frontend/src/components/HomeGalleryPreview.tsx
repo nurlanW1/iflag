@@ -25,7 +25,7 @@ export default function HomeGalleryPreview() {
 
   const loadCountries = async () => {
     try {
-      const response = await fetch('/api/gallery/landing-preview');
+      const response = await fetch('/api/gallery/landing-preview', { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setCountries(data.countries || []);
@@ -83,7 +83,11 @@ export default function HomeGalleryPreview() {
           
           {/* Gallery Grid - Limited to 3 rows, not scrollable */}
           <div className="overflow-hidden">
-            <GalleryGrid countries={countries} />
+            <GalleryGrid
+              countries={countries}
+              disableScrollReveal
+              preferImageThumbnails
+            />
           </div>
         </div>
 
