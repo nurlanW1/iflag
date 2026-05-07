@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { SectionReveal } from '@/components/motion/SectionReveal';
-import { hasFlag } from 'country-flag-icons';
 import GalleryGrid from './GalleryGrid';
 
 interface Country {
@@ -26,14 +25,10 @@ export default function HomeGalleryPreview() {
 
   const loadCountries = async () => {
     try {
-      const response = await fetch('/api/gallery/countries');
+      const response = await fetch('/api/gallery/landing-preview');
       if (response.ok) {
         const data = await response.json();
-        // Take first 24 countries to ensure 3 rows on all screen sizes
-        // Mobile: 3 per row × 3 rows = 9 (shows 9)
-        // Tablet: 4-5 per row × 3 rows = 12-15 (shows 15)
-        // Desktop: 6-8 per row × 3 rows = 18-24 (shows 24)
-        setCountries((data.countries || []).slice(0, 24));
+        setCountries(data.countries || []);
       }
     } catch (error) {
       console.error('Failed to load countries:', error);

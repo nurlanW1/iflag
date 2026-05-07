@@ -7,22 +7,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { hasFlag } from 'country-flag-icons';
 import { getCountryCode } from '@/lib/country-mapping';
-
-// Flag Icon Component - using SVG from CDN
-function FlagIcon({ code, className }: { code: string | null; className?: string }) {
-  if (!code || !hasFlag(code)) {
-    return null;
-  }
-
-  return (
-    <img
-      src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${code}.svg`}
-      alt={`${code} flag`}
-      className={className}
-      loading="lazy"
-    />
-  );
-}
+import FlagCssIcon from '@/components/FlagCssIcon';
 
 interface Format {
   id: string;
@@ -198,7 +183,7 @@ export default function CountryDetailPage() {
           <div className="flex items-center gap-4 mb-2">
             {countryCode && hasFlag(countryCode) && (
               <div className="w-16 h-12 flex-shrink-0">
-                <FlagIcon code={countryCode} className="w-full h-full object-contain" />
+                <FlagCssIcon code={countryCode} className="h-full w-full" />
               </div>
             )}
             <h1 className="text-4xl md:text-5xl font-bold text-black">

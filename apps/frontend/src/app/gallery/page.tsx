@@ -5,6 +5,7 @@ import { Search, Folder, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { hasFlag } from 'country-flag-icons';
+import FlagCssIcon from '@/components/FlagCssIcon';
 
 interface Country {
   name: string;
@@ -12,23 +13,6 @@ interface Country {
   code: string | null;
   count: number;
   thumbnail: string;
-}
-
-// Flag Icon Component - using SVG from CDN
-function FlagIcon({ code, className }: { code: string | null; className?: string }) {
-  if (!code || !hasFlag(code)) {
-    return null;
-  }
-
-  // Use CDN URL for flag icons
-  return (
-    <img
-      src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${code}.svg`}
-      alt={`${code} flag`}
-      className={className}
-      loading="lazy"
-    />
-  );
 }
 
 export default function GalleryPage() {
@@ -137,8 +121,8 @@ export default function GalleryPage() {
                   {/* Thumbnail */}
                   <div className="aspect-square bg-[#006d7a]/5 relative overflow-hidden flex items-center justify-center">
                     {country.code && hasFlag(country.code) ? (
-                      <div className="w-full h-full flex items-center justify-center p-4">
-                        <FlagIcon code={country.code} className="w-full h-full object-contain" />
+                      <div className="flex h-full w-full items-center justify-center p-4">
+                        <FlagCssIcon code={country.code} className="h-full w-full" />
                       </div>
                     ) : (
                       <img

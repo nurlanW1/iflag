@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { hasFlag } from 'country-flag-icons';
+import FlagCssIcon from '@/components/FlagCssIcon';
 import { useRevealInView } from '@/hooks/useRevealInView';
 
 interface Country {
@@ -28,9 +29,9 @@ function GalleryCell({ country, idx }: { country: Country; idx: number }) {
     >
       <div className="aspect-square bg-[#006d7a]/5 rounded-lg overflow-hidden border border-[#006d7a]/10 hover:border-[#009ab6] hover:shadow-md transition-all duration-300 flex items-center justify-center p-2">
         {country.code && hasFlag(country.code) ? (
-          <FlagIcon
+          <FlagCssIcon
             code={country.code}
-            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+            className="h-full w-full group-hover:scale-110 transition-transform duration-300"
           />
         ) : (
           <img
@@ -48,22 +49,6 @@ function GalleryCell({ country, idx }: { country: Country; idx: number }) {
         {country.name}
       </p>
     </motion.div>
-  );
-}
-
-// Flag Icon Component - using SVG from CDN
-function FlagIcon({ code, className }: { code: string | null; className?: string }) {
-  if (!code || !hasFlag(code)) {
-    return null;
-  }
-
-  return (
-    <img
-      src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${code}.svg`}
-      alt={`${code} flag`}
-      className={className}
-      loading="lazy"
-    />
   );
 }
 
