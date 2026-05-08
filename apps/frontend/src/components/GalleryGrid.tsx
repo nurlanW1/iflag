@@ -52,7 +52,7 @@ function GalleryCell({
       <div
         className={
           largeTiles
-            ? 'aspect-square min-h-0 rounded-xl sm:rounded-2xl bg-[#006d7a]/5 overflow-hidden border-2 border-[#006d7a]/15 hover:border-[#009ab6] hover:shadow-lg transition-all duration-300 flex items-center justify-center p-2 sm:p-3 md:p-4'
+            ? 'aspect-square min-h-0 rounded-xl sm:rounded-2xl bg-[#006d7a]/5 overflow-hidden border-2 border-[#006d7a]/15 hover:border-[#009ab6] hover:shadow-lg transition-all duration-300 flex items-center justify-center p-1 sm:p-2 md:p-2.5'
             : 'aspect-square bg-[#006d7a]/5 rounded-lg overflow-hidden border border-[#006d7a]/10 hover:border-[#009ab6] hover:shadow-md transition-all duration-300 flex items-center justify-center p-2'
         }
       >
@@ -93,7 +93,7 @@ export default function GalleryGrid({
   largeTiles = false,
 }: GalleryGridProps) {
   const gridClassName = largeTiles
-    ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5 sm:gap-6 md:gap-8 lg:gap-10'
+    ? 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 sm:gap-8 md:gap-10 lg:gap-12'
     : 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6';
 
   return (

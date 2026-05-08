@@ -182,7 +182,7 @@ export default function CountryDetailPage() {
           </Link>
           <div className="flex items-center gap-4 mb-2">
             {countryCode && hasFlag(countryCode) && (
-              <div className="w-16 h-12 flex-shrink-0">
+              <div className="w-28 h-[5.25rem] sm:w-32 sm:h-24 flex-shrink-0">
                 <FlagCssIcon code={countryCode} className="h-full w-full" />
               </div>
             )}
