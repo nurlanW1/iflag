@@ -4,6 +4,7 @@ import {
   getServerAdminAllowlist,
   normalizedEmailsFromClerkUser,
 } from '@/lib/auth/admin-email';
+import { isClerkConfigured } from '@/lib/auth/clerk-env';
 
 /**
  * Admin API gate without `auth()` / `clerkMiddleware()`.
@@ -27,6 +28,19 @@ export async function requireClerkAdminJson(): Promise<
     user = await currentUser();
   } catch (e) {
     console.error('[requireClerkAdminJson] currentUser() failed:', e);
+    if (!isClerkConfigured()) {
+      return {
+        ok: false,
+        response: NextResponse.json(
+          {
+            error:
+              'Clerk is not configured on the server (set CLERK_SECRET_KEY and publishable key).',
+            code: 'config',
+          },
+          { status: 503 }
+        ),
+      };
+    }
     return {
       ok: false,
       response: NextResponse.json({ error: 'Not signed in', code: 'unauthorized' }, { status: 401 }),

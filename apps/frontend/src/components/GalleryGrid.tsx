@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { hasFlag } from 'country-flag-icons';
 import FlagCssIcon from '@/components/FlagCssIcon';
@@ -21,6 +22,8 @@ interface GalleryGridProps {
   preferImageThumbnails?: boolean;
   /** Fewer columns per row so each flag tile is larger (home landing). */
   largeTiles?: boolean;
+  /** Each tile links to `/gallery/[slug]` (e.g. landing “folder” → gallery country page). */
+  linkToCountryGallery?: boolean;
 }
 
 function GalleryCell({
@@ -29,30 +32,26 @@ function GalleryCell({
   disableScrollReveal,
   preferImageThumbnails,
   largeTiles,
+  linkToCountryGallery,
 }: {
   country: Country;
   idx: number;
   disableScrollReveal?: boolean;
   preferImageThumbnails?: boolean;
   largeTiles?: boolean;
+  linkToCountryGallery?: boolean;
 }) {
   const { ref, isRevealed } = useRevealInView<HTMLDivElement>();
   const visible = disableScrollReveal || isRevealed;
   const useImg =
     preferImageThumbnails || !country.code || !hasFlag(country.code);
 
-  return (
-    <motion.div
-      ref={ref}
-      initial={false}
-      animate={visible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.3, delay: disableScrollReveal ? 0 : idx * 0.02 }}
-      className="group"
-    >
+  const tile = (
+    <>
       <div
         className={
           largeTiles
-            ? 'aspect-square min-h-0 rounded-xl sm:rounded-2xl bg-[#006d7a]/5 overflow-hidden border-2 border-[#006d7a]/15 hover:border-[#009ab6] hover:shadow-lg transition-all duration-300 flex items-center justify-center p-1 sm:p-2 md:p-2.5'
+            ? 'aspect-square min-h-0 rounded-xl sm:rounded-2xl bg-[#006d7a]/5 overflow-hidden border-2 border-[#006d7a]/15 hover:border-[#009ab6] hover:shadow-lg transition-all duration-300 flex items-center justify-center p-1.5 sm:p-2.5 md:p-3'
             : 'aspect-square bg-[#006d7a]/5 rounded-lg overflow-hidden border border-[#006d7a]/10 hover:border-[#009ab6] hover:shadow-md transition-all duration-300 flex items-center justify-center p-2'
         }
       >
@@ -76,12 +75,33 @@ function GalleryCell({
       <p
         className={
           largeTiles
-            ? 'text-sm sm:text-base font-medium text-black/70 text-center mt-2 sm:mt-3 truncate px-1'
+            ? 'text-sm sm:text-base md:text-lg font-medium text-black/70 text-center mt-2 sm:mt-3 truncate px-1'
             : 'text-xs md:text-sm font-medium text-black/70 text-center mt-2 truncate px-1'
         }
       >
         {country.name}
       </p>
+    </>
+  );
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={false}
+      animate={visible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.3, delay: disableScrollReveal ? 0 : idx * 0.02 }}
+      className="group"
+    >
+      {linkToCountryGallery ? (
+        <Link
+          href={`/gallery/${country.slug}`}
+          className="block cursor-pointer text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#009ab6] focus-visible:ring-offset-2 rounded-xl"
+        >
+          {tile}
+        </Link>
+      ) : (
+        tile
+      )}
     </motion.div>
   );
 }
@@ -91,9 +111,10 @@ export default function GalleryGrid({
   disableScrollReveal = false,
   preferImageThumbnails = false,
   largeTiles = false,
+  linkToCountryGallery = false,
 }: GalleryGridProps) {
   const gridClassName = largeTiles
-    ? 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 sm:gap-8 md:gap-10 lg:gap-12'
+    ? 'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-7 sm:gap-9 md:gap-11 lg:gap-12 xl:gap-14'
     : 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6';
 
   return (
@@ -106,6 +127,7 @@ export default function GalleryGrid({
           disableScrollReveal={disableScrollReveal}
           preferImageThumbnails={preferImageThumbnails}
           largeTiles={largeTiles}
+          linkToCountryGallery={linkToCountryGallery}
         />
       ))}
     </div>

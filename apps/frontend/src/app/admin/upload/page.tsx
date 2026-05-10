@@ -23,7 +23,8 @@ import { Spinner } from '@/components/ui/Spinner';
 import { getClerkPublishableKey } from '@/lib/auth/clerk-env';
 import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
 
-const UPLOAD_RELATIVE_PATH = '/api/admin/flag-files/upload';
+/** Same-origin only — never use NEXT_PUBLIC_API_URL or an external host (cookies won’t attach). */
+const UPLOAD_RELATIVE_PATH = '/api/admin/upload';
 
 const FORMATS = ['svg', 'png', 'jpg', 'jpeg', 'webp', 'pdf', 'eps'] as const;
 const PREMIUM = ['free', 'freemium', 'paid'] as const;
@@ -133,7 +134,7 @@ function AdminUploadFormContent() {
   const [premiumTier, setPremiumTier] = useState<(typeof PREMIUM)[number]>('free');
   const [priceCents, setPriceCents] = useState(0);
   const [tags, setTags] = useState('');
-  const [status, setStatus] = useState<'draft' | 'published'>('draft');
+  const [status, setStatus] = useState<'draft' | 'published'>('published');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

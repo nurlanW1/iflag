@@ -25,7 +25,7 @@ const bodySchema = z.object({
   price_cents: z.coerce.number().int().min(0),
   tags: z.string().optional(),
   /** draft | published stored on country_flag_files.status */
-  status: z.enum(['draft', 'published']).default('draft'),
+  status: z.enum(['draft', 'published']).default('published'),
 });
 
 async function resolveCountryId(
@@ -108,7 +108,7 @@ export async function POST(request: Request): Promise<Response> {
     premium_tier: String(formData.get('premium_tier') ?? ''),
     price_cents: formData.get('price_cents') ?? '0',
     tags: formData.get('tags') ? String(formData.get('tags')) : undefined,
-    status: String(formData.get('status') ?? 'draft'),
+    status: String(formData.get('status') ?? 'published'),
   });
 
   if (!fields.success) {

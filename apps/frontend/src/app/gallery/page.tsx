@@ -106,7 +106,7 @@ export default function GalleryPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-5 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
             {filteredCountries.map((country, idx) => (
               <motion.div
                 key={country.slug}
@@ -121,7 +121,7 @@ export default function GalleryPage() {
                   {/* Thumbnail */}
                   <div className="aspect-square bg-[#006d7a]/5 relative overflow-hidden flex items-center justify-center">
                     {country.code && hasFlag(country.code) ? (
-                      <div className="flex h-full w-full items-center justify-center p-2 sm:p-3">
+                      <div className="flex h-full w-full items-center justify-center p-3 sm:p-4 md:p-5">
                         <FlagCssIcon code={country.code} className="h-full w-full" />
                       </div>
                     ) : (

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import GalleryGrid from './GalleryGrid';
@@ -108,6 +107,7 @@ export default function HomeGalleryPreview() {
               disableScrollReveal
               preferImageThumbnails
               largeTiles
+              linkToCountryGallery
             />
           </div>
         </div>
@@ -116,7 +116,7 @@ export default function HomeGalleryPreview() {
           hidden={{ opacity: 0, y: 20 }}
           visible={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-8 flex flex-col items-center gap-4 md:mt-12"
+          className="mt-8 flex justify-center md:mt-12"
         >
           {!expanded && allCountries.length > PREVIEW_COUNT ? (
             <button
@@ -139,12 +139,6 @@ export default function HomeGalleryPreview() {
               Show less
             </button>
           ) : null}
-          <Link
-            href="/gallery"
-            className="text-[#009ab6] font-semibold text-base hover:text-[#007a8a] underline-offset-4 hover:underline"
-          >
-            Open full gallery
-          </Link>
         </SectionReveal>
       </div>
     </section>
