@@ -28,6 +28,10 @@ export function ProductDetailView({ slug, product }: Props) {
   const categoryName = category?.name ?? 'Catalog';
   const paid = isPaidCatalogProduct(publicProduct);
   const formatLabels = collectFormatLabels(publicProduct.files);
+  const previewFile = product.files.find(
+    (f) =>
+      f.tier === 'preview_free' && f.publicUrl != null && String(f.publicUrl).trim() !== ''
+  );
 
   const canonicalPath = marketplaceProductCanonicalPath(product.slug);
 
@@ -192,14 +196,13 @@ export function ProductDetailView({ slug, product }: Props) {
               </ul>
             </div>
 
-            {publicProduct.freeDownloadUrl ? (
+            {previewFile ? (
               <a
-                href={publicProduct.freeDownloadUrl}
+                href={`/api/marketplace/files/${product.id}/${previewFile.id}/download`}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                rel="noopener noreferrer"
               >
                 <Download size={18} aria-hidden />
-                Free preview download
+                Preview download
               </a>
             ) : (
               <p className="text-xs text-gray-500">

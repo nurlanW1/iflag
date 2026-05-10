@@ -10,7 +10,8 @@ type RouteParams = { params: Promise<{ productId: string; fileId: string }> };
 
 /**
  * Server-authoritative download entrypoint.
- * - preview_free + publicUrl → 302 to CDN/public asset
+ * - preview_free + publicUrl + entitled user → 302 to CDN/public asset
+ * - preview_free + anonymous / not entitled → 401 / 403
  * - pro + entitled → presigned URL when R2 signing is configured; otherwise 503
  * - pro + not entitled → 403
  */

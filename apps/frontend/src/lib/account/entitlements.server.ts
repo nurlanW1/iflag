@@ -29,6 +29,19 @@ export function isMarketplaceOwnerDownloadBypass(email: string | null | undefine
   return getMarketplaceOwnerDownloadEmails().includes(n);
 }
 
+/** Any non-expired purchase/admin grant on this product (used for preview tier unlock). */
+function hasAnyPurchaseOrAdminGrantForProduct(userId: string, productId: string): boolean {
+  const store = getMarketplaceStore();
+  const now = Date.now();
+  return store.downloadAccess.some(
+    (g) =>
+      g.userId === userId &&
+      g.productId === productId &&
+      (g.source === 'purchase' || g.source === 'admin_grant') &&
+      (g.expiresAt == null || new Date(g.expiresAt).getTime() > now)
+  );
+}
+
 /**
  * Build entitlement snapshot for **one concrete file** (server-side).
  * - Purchase: exact `DownloadAccess` row for that file, non-expired, purchase/admin_grant.
@@ -87,10 +100,23 @@ export function resolveAuthenticatedFileDownload(
   }
 
   if (file.tier === 'preview_free') {
-    if (file.publicUrl) {
+    if (!file.publicUrl) {
+      return { kind: 'denied', reason: 'NOT_FOUND' };
+    }
+    if (!userId) {
+      return { kind: 'denied', reason: 'NOT_AUTHENTICATED' };
+    }
+    if (isMarketplaceOwnerDownloadBypass(userEmail)) {
       return { kind: 'public_preview', publicUrl: file.publicUrl };
     }
-    return { kind: 'denied', reason: 'NOT_FOUND' };
+    const snap = getUserEntitlementSnapshot(userId, productId, fileId);
+    if (snap.hasActiveSubscription) {
+      return { kind: 'public_preview', publicUrl: file.publicUrl };
+    }
+    if (hasAnyPurchaseOrAdminGrantForProduct(userId, productId)) {
+      return { kind: 'public_preview', publicUrl: file.publicUrl };
+    }
+    return { kind: 'denied', reason: 'NOT_ENTITLED' };
   }
 
   if (file.tier === 'pro') {

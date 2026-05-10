@@ -12,8 +12,8 @@ export interface PublicProductFile {
   mimeType: string;
   bytes: number | null;
   sortOrder: number;
-  /** Only set for preview_free when a public URL exists */
-  downloadUrl: string | null;
+  /** Always null — use gated `/api/marketplace/files/.../download` (raw CDN URLs are not exposed). */
+  downloadUrl: null;
 }
 
 export interface PublicProduct {
@@ -27,8 +27,13 @@ export interface PublicProduct {
   tags: string[];
   thumbnailUrl: string | null;
   previewUrl: string | null;
-  /** Public low-quality download — never set pro master URLs here */
-  freeDownloadUrl: string | null;
+  /**
+   * Always null in API responses — preview files use the gated download route only.
+   * @deprecated Prefer `hasPreviewDownload`.
+   */
+  freeDownloadUrl: null;
+  /** Product has a preview file that can be downloaded after auth + entitlement. */
+  hasPreviewDownload: boolean;
   files: PublicProductFile[];
   license: Product['license'];
   priceCents: number;
@@ -40,7 +45,6 @@ export interface PublicProduct {
 }
 
 function toPublicFile(f: ProductFile): PublicProductFile {
-  const isPreview = f.tier === 'preview_free';
   return {
     id: f.id,
     tier: f.tier,
@@ -50,11 +54,15 @@ function toPublicFile(f: ProductFile): PublicProductFile {
     mimeType: f.mimeType,
     bytes: f.bytes,
     sortOrder: f.sortOrder,
-    downloadUrl: isPreview ? f.publicUrl : null,
+    downloadUrl: null,
   };
 }
 
 export function toPublicProduct(p: Product): PublicProduct {
+  const hasPreviewDownload = p.files.some(
+    (f) =>
+      f.tier === 'preview_free' && f.publicUrl != null && String(f.publicUrl).trim() !== ''
+  );
   return {
     id: p.id,
     title: p.title,
@@ -66,7 +74,8 @@ export function toPublicProduct(p: Product): PublicProduct {
     tags: p.tags,
     thumbnailUrl: p.thumbnailUrl,
     previewUrl: p.previewUrl,
-    freeDownloadUrl: p.freeDownloadUrl,
+    freeDownloadUrl: null,
+    hasPreviewDownload,
     files: p.files.map(toPublicFile),
     license: p.license,
     priceCents: p.priceCents,
