@@ -61,7 +61,10 @@ function LoginForm() {
           <h1 className="text-3xl font-black text-gray-900">Sign in</h1>
           <p className="mt-2 text-sm text-gray-600">
             New here?{' '}
-            <Link href="/register" className="font-semibold text-[#009ab6] hover:underline">
+            <Link
+              href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+              className="font-semibold text-[#009ab6] hover:underline"
+            >
               Create an account
             </Link>
           </p>

@@ -62,7 +62,10 @@ function RegisterForm() {
           <h1 className="text-3xl font-black text-gray-900">Create an account</h1>
           <p className="mt-2 text-sm text-gray-600">
             Already have an account?{' '}
-            <Link href="/login" className="font-semibold text-[#009ab6] hover:underline">
+            <Link
+              href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+              className="font-semibold text-[#009ab6] hover:underline"
+            >
               Sign in
             </Link>
           </p>

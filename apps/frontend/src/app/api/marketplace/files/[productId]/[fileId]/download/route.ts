@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSessionUserFromCookies } from '@/lib/auth/session.server';
+import { sanitizeCallbackUrl } from '@/lib/auth/callback-url';
 import { resolveAuthenticatedFileDownload } from '@/lib/account/entitlements.server';
 import { getProductById } from '@/services/marketplace/product-service';
 import { requestProSignedDownloadUrl } from '@/lib/storage/signed-download';
@@ -8,14 +9,21 @@ export const runtime = 'nodejs';
 
 type RouteParams = { params: Promise<{ productId: string; fileId: string }> };
 
+/** Top-level browser navigations (e.g. user clicked a download link) — prefer UX redirects over raw JSON. */
+function isBrowserDocumentNavigation(request: Request): boolean {
+  if (request.headers.get('sec-fetch-mode') === 'navigate') return true;
+  const accept = request.headers.get('accept') ?? '';
+  return accept.includes('text/html');
+}
+
 /**
  * Server-authoritative download entrypoint.
  * - preview_free + publicUrl + entitled user → 302 to CDN/public asset
- * - preview_free + anonymous / not entitled → 401 / 403
+ * - preview_free + anonymous / not entitled → 401 / 403 (HTML navigations → login / pricing)
  * - pro + entitled → presigned URL when R2 signing is configured; otherwise 503
  * - pro + not entitled → 403
  */
-export async function GET(_request: Request, { params }: RouteParams) {
+export async function GET(request: Request, { params }: RouteParams) {
   const { productId, fileId } = await params;
   const user = await getSessionUserFromCookies();
   const userId = user?.id ?? null;
@@ -27,6 +35,17 @@ export async function GET(_request: Request, { params }: RouteParams) {
   }
 
   if (resolution.kind === 'denied') {
+    const returnPath = sanitizeCallbackUrl(new URL(request.url).pathname + new URL(request.url).search, '/browse');
+    if (resolution.reason === 'NOT_AUTHENTICATED' && isBrowserDocumentNavigation(request)) {
+      const login = new URL('/login', request.url);
+      login.searchParams.set('callbackUrl', returnPath);
+      return NextResponse.redirect(login);
+    }
+    if (resolution.reason === 'NOT_ENTITLED' && isBrowserDocumentNavigation(request)) {
+      const pricing = new URL('/pricing', request.url);
+      pricing.searchParams.set('callbackUrl', returnPath);
+      return NextResponse.redirect(pricing);
+    }
     const status =
       resolution.reason === 'NOT_AUTHENTICATED'
         ? 401
