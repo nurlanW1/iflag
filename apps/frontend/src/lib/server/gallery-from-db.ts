@@ -9,6 +9,8 @@ export type GalleryCountrySummary = {
   thumbnail: string;
 };
 
+export type GalleryPremiumTier = 'free' | 'freemium' | 'paid';
+
 type FlagFileRow = {
   id: string;
   file_url: string;
@@ -18,6 +20,8 @@ type FlagFileRow = {
   variant_name: string | null;
   width: number | null;
   height: number | null;
+  premium_tier: string | null;
+  thumbnail_url: string | null;
 };
 
 export function formatToCategory(fmt: string): 'vector' | 'raster' | 'video' {
@@ -45,10 +49,22 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
+function normalizePremiumTier(raw: string | null | undefined): GalleryPremiumTier {
+  const t = (raw ?? 'free').toLowerCase();
+  if (t === 'freemium' || t === 'paid') return t;
+  return 'free';
+}
+
+function flagIconFallback(code: string | null): string {
+  if (code) {
+    return `https://purecatamphetamine.github.io/country-flag-icons/3x2/${code.toUpperCase()}.svg`;
+  }
+  return '/placeholder-flag.jpg';
+}
+
 /**
  * Public gallery: countries with at least one published flag file on Blob/DB.
- * Does not filter by `countries.status` so admin-created stub countries (`draft`)
- * still appear once they have published assets.
+ * Thumbnails avoid leaking paid `file_url` when a dedicated `thumbnail_url` exists or tier is non-free.
  */
 export async function fetchGalleryCountriesFromDb(pool: Pool): Promise<GalleryCountrySummary[]> {
   const result = await pool.query<{
@@ -64,7 +80,13 @@ export async function fetchGalleryCountriesFromDb(pool: Pool): Promise<GalleryCo
        c.iso_alpha_2,
        COUNT(cff.id)::int AS cnt,
        (
-         SELECT cff_thumb.file_url
+         SELECT
+           CASE
+             WHEN NULLIF(trim(cff_thumb.thumbnail_url), '') IS NOT NULL THEN trim(cff_thumb.thumbnail_url)
+             WHEN lower(coalesce(cff_thumb.premium_tier, 'free')) = 'free'
+                  AND NULLIF(trim(cff_thumb.file_url), '') IS NOT NULL THEN trim(cff_thumb.file_url)
+             ELSE NULL
+           END
          FROM country_flag_files cff_thumb
          WHERE cff_thumb.country_id = c.id
            AND cff_thumb.status = 'published'
@@ -84,9 +106,7 @@ export async function fetchGalleryCountriesFromDb(pool: Pool): Promise<GalleryCo
       typeof row.cnt === 'string' ? Number.parseInt(row.cnt, 10) : Number(row.cnt);
     const code =
       row.iso_alpha_2?.trim()?.toUpperCase() || getCountryCode(row.name)?.toUpperCase() || null;
-    const thumb =
-      row.thumbnail_url?.trim() ||
-      (code ? `https://purecatamphetamine.github.io/country-flag-icons/3x2/${code.toUpperCase()}.svg` : '/placeholder-flag.jpg');
+    const thumb = row.thumbnail_url?.trim() || flagIconFallback(code);
 
     out.push({
       name: row.name,
@@ -112,7 +132,16 @@ export type CountryGalleryPayload = {
       formatCode: string;
       category: 'vector' | 'raster' | 'video';
       file: string;
-      url: string;
+      /**
+       * Legacy disk-only gallery (`flag_stock`). Never set for Neon `country_flag_files` rows —
+       * use `previewUrl` + protected download.
+       */
+      url?: string;
+      /** Safe image for <img> — never the paid master when `premiumTier` is paid/freemium without thumbnail. */
+      previewUrl: string;
+      premiumTier: GalleryPremiumTier;
+      /** When true, downloads must use `/api/download/[id]` (Clerk + plan gate). */
+      downloadProtected: boolean;
       size: string;
       dimensions: string;
     }[];
@@ -128,7 +157,8 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
   if (!countryRow) return null;
 
   const fRes = await pool.query<FlagFileRow>(
-    `SELECT id, file_url, file_name, file_size_bytes::text, format, variant_name, width, height
+    `SELECT id, file_url, file_name, file_size_bytes::text, format, variant_name, width, height,
+            premium_tier, thumbnail_url
      FROM country_flag_files
      WHERE country_id = $1 AND status = 'published'
      ORDER BY variant_name NULLS LAST, format, created_at ASC`,
@@ -162,11 +192,20 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
     const nbytes = Number.parseInt(String(r.file_size_bytes), 10);
     const sz = Number.isFinite(nbytes) ? nbytes : 0;
     const ext = formatExtension(r.format);
+    const tier = normalizePremiumTier(r.premium_tier);
 
     const dim =
       r.width && r.height && r.width > 0 && r.height > 0
         ? `${r.width}×${r.height} px`
         : 'Original';
+
+    let previewUrl = r.thumbnail_url?.trim() || '';
+    if (!previewUrl && tier === 'free' && r.file_url?.trim()) {
+      previewUrl = r.file_url.trim();
+    }
+    if (!previewUrl) {
+      previewUrl = flagIconFallback(mappedCode);
+    }
 
     g.formats.push({
       id: String(r.id),
@@ -174,7 +213,9 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
       formatCode: ext,
       category: formatToCategory(r.format),
       file: r.file_name,
-      url: r.file_url,
+      previewUrl,
+      premiumTier: tier,
+      downloadProtected: true,
       size: formatFileSize(sz),
       dimensions: dim,
     });
@@ -190,7 +231,7 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
       return i === -1 ? 999 : i;
     };
     const sorted = [...formats].sort((a, b) => rank(a.formatCode) - rank(b.formatCode));
-    return sorted[0]?.url || formats[0]!.url;
+    return sorted[0]?.previewUrl || formats[0]!.previewUrl;
   }
 
   for (const g of groups.values()) {

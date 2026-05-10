@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { SignUp } from '@clerk/nextjs';
+import { SignUpRedirectClient } from './sign-up-redirect-client';
 
 export default function SignUpPage() {
   return (
@@ -9,12 +11,18 @@ export default function SignUpPage() {
           ← Back to site
         </Link>
       </p>
-      <SignUp
-        routing="path"
-        path="/sign-up"
-        signInUrl="/sign-in"
-        fallbackRedirectUrl="/dashboard"
-      />
+      <Suspense
+        fallback={
+          <SignUp
+            routing="path"
+            path="/sign-up"
+            signInUrl="/sign-in"
+            fallbackRedirectUrl="/dashboard"
+          />
+        }
+      >
+        <SignUpRedirectClient />
+      </Suspense>
     </div>
   );
 }

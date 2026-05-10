@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Download, Share2, Heart, FileImage, FileType, Video, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useRouter, usePathname } from 'next/navigation';
+import { ArrowLeft, Download, FileImage, FileType, Video, Check } from 'lucide-react';
 import Link from 'next/link';
+import { useUser } from '@clerk/nextjs';
 import { hasFlag } from 'country-flag-icons';
 import { getCountryCode } from '@/lib/country-mapping';
+import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
 import FlagCssIcon from '@/components/FlagCssIcon';
+
+type PremiumTier = 'free' | 'freemium' | 'paid';
 
 interface Format {
   id: string;
@@ -15,7 +18,11 @@ interface Format {
   formatCode: string;
   category: 'vector' | 'raster' | 'video';
   file: string;
-  url: string;
+  /** Legacy disk gallery only */
+  url?: string;
+  previewUrl: string;
+  premiumTier: PremiumTier;
+  downloadProtected: boolean;
   size: string;
   dimensions: string;
 }
@@ -37,9 +44,17 @@ interface CountryData {
   variants: Variant[];
 }
 
+function previewSrc(f: Format): string {
+  return f.previewUrl || f.url || '';
+}
+
 export default function CountryDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
+  const { user, isLoaded: clerkLoaded, isSignedIn } = useUser();
+  const isAdmin = clientClerkUserMatchesAdmin(user);
+
   const [data, setData] = useState<CountryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
@@ -47,21 +62,49 @@ export default function CountryDetailPage() {
   const [downloading, setDownloading] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'vector' | 'raster' | 'video'>('raster');
   const [countryCode, setCountryCode] = useState<string | null>(null);
+  const [hasActivePlan, setHasActivePlan] = useState(false);
+  const [planLoaded, setPlanLoaded] = useState(false);
+
+  const redirectBack = encodeURIComponent(pathname || '/gallery');
 
   useEffect(() => {
     if (params.slug) {
-      loadCountryData(params.slug as string);
+      void loadCountryData(params.slug as string);
     }
   }, [params.slug]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadPlan() {
+      if (!isSignedIn) {
+        setHasActivePlan(false);
+        setPlanLoaded(true);
+        return;
+      }
+      setPlanLoaded(false);
+      try {
+        const r = await fetch('/api/account/flagswing-plan', { credentials: 'include' });
+        const j = (await r.json()) as { hasActivePlan?: boolean };
+        if (!cancelled) setHasActivePlan(Boolean(j.hasActivePlan));
+      } catch {
+        if (!cancelled) setHasActivePlan(false);
+      } finally {
+        if (!cancelled) setPlanLoaded(true);
+      }
+    }
+    if (clerkLoaded) void loadPlan();
+    return () => {
+      cancelled = true;
+    };
+  }, [isSignedIn, clerkLoaded]);
 
   const loadCountryData = async (slug: string) => {
     setLoading(true);
     try {
       const response = await fetch(`/api/gallery/country/${slug}`);
       if (response.ok) {
-        const countryData = await response.json();
+        const countryData = (await response.json()) as CountryData;
         setData(countryData);
-        // Get country code for flag icon
         if (countryData.country?.code) {
           setCountryCode(countryData.country.code);
         } else if (countryData.country?.name) {
@@ -83,61 +126,129 @@ export default function CountryDetailPage() {
     }
   };
 
-  const handleDownload = async (format: Format) => {
-    setDownloading(format.id);
-    try {
-      // Fetch the image as blob to ensure proper download
-      const response = await fetch(format.url);
-      if (!response.ok) {
-        throw new Error('Failed to fetch image');
-      }
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      
-      // Create download link
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${data?.country.name || 'flag'}-${format.formatCode}.${format.formatCode}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Clean up the URL
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Download failed:', error);
-      // Fallback: try direct download
+  const handleLegacyDiskDownload = useCallback(
+    async (format: Format) => {
+      const src = format.url;
+      if (!src) return;
+      setDownloading(format.id);
       try {
+        const response = await fetch(src);
+        if (!response.ok) throw new Error('Failed to fetch image');
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.href = format.url;
+        link.href = url;
         link.download = `${data?.country.name || 'flag'}-${format.formatCode}.${format.formatCode}`;
-        link.target = '_blank';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-      } catch (fallbackError) {
-        console.error('Fallback download failed:', fallbackError);
-        alert('Download failed. Please try again.');
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Download failed:', error);
+        try {
+          const link = document.createElement('a');
+          link.href = src;
+          link.download = `${data?.country.name || 'flag'}-${format.formatCode}.${format.formatCode}`;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } catch {
+          alert('Download failed. Please try again.');
+        }
+      } finally {
+        setDownloading(null);
       }
-    } finally {
-      setDownloading(null);
-    }
-  };
+    },
+    [data?.country.name]
+  );
 
-  // Filter formats by active tab
-  const filteredFormats = selectedVariant?.formats.filter(format => {
+  const handleProtectedDownload = useCallback(
+    async (format: Format) => {
+      setDownloading(format.id);
+      try {
+        const res = await fetch(`/api/download/${format.id}`, {
+          credentials: 'include',
+          redirect: 'manual',
+        });
+        if (res.status === 401) {
+          router.push(`/sign-in?redirect_url=${redirectBack}`);
+          return;
+        }
+        if (res.status === 403) {
+          router.push('/pricing');
+          return;
+        }
+        if (res.status >= 300 && res.status < 400) {
+          const loc = res.headers.get('Location');
+          if (loc) {
+            window.location.href = loc;
+            return;
+          }
+        }
+        window.location.href = `/api/download/${format.id}`;
+      } finally {
+        setDownloading(null);
+      }
+    },
+    [router, redirectBack]
+  );
+
+  const downloadLabel = useCallback(
+    (format: Format): string => {
+      if (!format.downloadProtected && format.url) {
+        return `Download ${format.format}`;
+      }
+      if (!isSignedIn) return 'Sign in to download';
+      if (format.premiumTier !== 'free' && !isAdmin) {
+        if (!planLoaded) return '…';
+        if (!hasActivePlan) return 'Upgrade to download';
+      }
+      return `Download ${format.format}`;
+    },
+    [isSignedIn, isAdmin, hasActivePlan, planLoaded]
+  );
+
+  const onDownloadPress = useCallback(
+    (format: Format) => {
+      if (!format.downloadProtected && format.url) {
+        void handleLegacyDiskDownload(format);
+        return;
+      }
+      if (!isSignedIn) {
+        router.push(`/sign-in?redirect_url=${redirectBack}`);
+        return;
+      }
+      if (format.premiumTier !== 'free' && !isAdmin && !hasActivePlan) {
+        if (!planLoaded) return;
+        router.push('/pricing');
+        return;
+      }
+      void handleProtectedDownload(format);
+    },
+    [
+      handleLegacyDiskDownload,
+      handleProtectedDownload,
+      isSignedIn,
+      isAdmin,
+      hasActivePlan,
+      planLoaded,
+      router,
+      redirectBack,
+    ]
+  );
+
+  const filteredFormats = selectedVariant?.formats.filter((format) => {
     if (activeTab === 'vector') return format.category === 'vector';
     if (activeTab === 'raster') return format.category === 'raster';
     if (activeTab === 'video') return format.category === 'video';
     return true;
   }) || [];
 
-  // Count formats by category
   const formatCounts = {
-    vector: selectedVariant?.formats.filter(f => f.category === 'vector').length || 0,
-    raster: selectedVariant?.formats.filter(f => f.category === 'raster').length || 0,
-    video: selectedVariant?.formats.filter(f => f.category === 'video').length || 0,
+    vector: selectedVariant?.formats.filter((f) => f.category === 'vector').length || 0,
+    raster: selectedVariant?.formats.filter((f) => f.category === 'raster').length || 0,
+    video: selectedVariant?.formats.filter((f) => f.category === 'video').length || 0,
   };
 
   if (loading) {
@@ -156,10 +267,7 @@ export default function CountryDetailPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-20">
             <p className="text-black/60 text-lg mb-4">Country not found</p>
-            <Link
-              href="/gallery"
-              className="text-[#009ab6] hover:text-[#007a8a] font-semibold"
-            >
+            <Link href="/gallery" className="text-[#009ab6] hover:text-[#007a8a] font-semibold">
               Back to Gallery
             </Link>
           </div>
@@ -168,9 +276,17 @@ export default function CountryDetailPage() {
     );
   }
 
+  const mainButtonDisabled =
+    (selectedFormat &&
+      selectedFormat.downloadProtected &&
+      isSignedIn &&
+      selectedFormat.premiumTier !== 'free' &&
+      !isAdmin &&
+      !planLoaded) ||
+    downloading === selectedFormat?.id;
+
   return (
     <main className="min-h-screen bg-white">
-      {/* Header */}
       <div className="bg-[#006d7a]/5 border-b border-[#006d7a]/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <Link
@@ -186,9 +302,7 @@ export default function CountryDetailPage() {
                 <FlagCssIcon code={countryCode} className="h-full w-full" />
               </div>
             )}
-            <h1 className="text-4xl md:text-5xl font-bold text-black">
-              {data.country.name} Flags
-            </h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-black">{data.country.name} Flags</h1>
           </div>
           <p className="text-black/60">
             {data.variants.length} {data.variants.length === 1 ? 'variant' : 'variants'} available
@@ -198,14 +312,12 @@ export default function CountryDetailPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left: Preview and Variants */}
           <div className="lg:col-span-2">
-            {/* Main Preview */}
             {selectedVariant && selectedFormat && (
               <div className="bg-white border-2 border-[#006d7a]/10 rounded-xl overflow-hidden mb-6">
                 <div className="aspect-video bg-[#006d7a]/5 relative flex items-center justify-center p-8">
                   <img
-                    src={selectedFormat.url}
+                    src={previewSrc(selectedFormat)}
                     alt={`${data.country.name} ${selectedVariant.name}`}
                     className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
                     onError={(e) => {
@@ -216,10 +328,10 @@ export default function CountryDetailPage() {
                 <div className="p-6">
                   <h2 className="text-2xl font-bold text-black mb-2">{selectedVariant.name}</h2>
                   <p className="text-black/60 mb-4">Select a format below to download</p>
-                  {/* Direct Download Button */}
                   <button
-                    onClick={() => handleDownload(selectedFormat)}
-                    disabled={downloading === selectedFormat.id}
+                    type="button"
+                    onClick={() => onDownloadPress(selectedFormat)}
+                    disabled={!!mainButtonDisabled}
                     className="w-full px-6 py-3 bg-[#009ab6] hover:bg-[#007a8a] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
                   >
                     {downloading === selectedFormat.id ? (
@@ -230,15 +342,22 @@ export default function CountryDetailPage() {
                     ) : (
                       <>
                         <Download size={20} />
-                        <span>Download {selectedFormat.format}</span>
+                        <span>{downloadLabel(selectedFormat)}</span>
                       </>
                     )}
                   </button>
+                  {!isSignedIn ? (
+                    <p className="mt-2 text-center text-xs text-black/50">
+                      No account?{' '}
+                      <Link href={`/sign-up?redirect_url=${redirectBack}`} className="text-[#009ab6] font-semibold hover:underline">
+                        Sign up
+                      </Link>
+                    </p>
+                  ) : null}
                 </div>
               </div>
             )}
 
-            {/* All Flags Grid - Show all JPG images */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-black mb-4">
                 Available Flags ({data.variants.length})
@@ -264,7 +383,7 @@ export default function CountryDetailPage() {
                       <div className="aspect-video bg-[#006d7a]/5 relative overflow-hidden">
                         {format ? (
                           <img
-                            src={format.url}
+                            src={previewSrc(format)}
                             alt={variant.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                             onError={(e) => {
@@ -278,7 +397,6 @@ export default function CountryDetailPage() {
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                           />
                         )}
-                        {/* Download overlay on hover */}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                           <div className="bg-white rounded-full p-2 shadow-lg">
                             <Download size={20} className="text-[#009ab6]" />
@@ -287,9 +405,9 @@ export default function CountryDetailPage() {
                       </div>
                       <div className="p-3">
                         <p className="text-sm font-medium text-black text-center truncate">{variant.name}</p>
-                        {format && (
+                        {format ? (
                           <p className="text-xs text-black/60 text-center mt-1">{format.format}</p>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   );
@@ -298,15 +416,14 @@ export default function CountryDetailPage() {
             </div>
           </div>
 
-          {/* Right: Formats */}
           <div className="lg:col-span-1">
             <div className="bg-white border-2 border-[#006d7a]/10 rounded-xl p-6 sticky top-8">
               <h3 className="text-xl font-bold text-black mb-4">Download Formats</h3>
-              
-              {/* Format Tabs */}
+
               <div className="flex gap-2 mb-4 border-b border-[#006d7a]/10">
                 {formatCounts.vector > 0 && (
                   <button
+                    type="button"
                     onClick={() => setActiveTab('vector')}
                     className={`px-4 py-2 text-sm font-medium transition-colors ${
                       activeTab === 'vector'
@@ -320,6 +437,7 @@ export default function CountryDetailPage() {
                 )}
                 {formatCounts.raster > 0 && (
                   <button
+                    type="button"
                     onClick={() => setActiveTab('raster')}
                     className={`px-4 py-2 text-sm font-medium transition-colors ${
                       activeTab === 'raster'
@@ -333,6 +451,7 @@ export default function CountryDetailPage() {
                 )}
                 {formatCounts.video > 0 && (
                   <button
+                    type="button"
                     onClick={() => setActiveTab('video')}
                     className={`px-4 py-2 text-sm font-medium transition-colors ${
                       activeTab === 'video'
@@ -346,55 +465,62 @@ export default function CountryDetailPage() {
                 )}
               </div>
 
-              {/* Formats List */}
               <div className="space-y-3">
                 {filteredFormats.length === 0 ? (
                   <p className="text-black/60 text-sm text-center py-4">
                     No {activeTab} formats available
                   </p>
                 ) : (
-                  filteredFormats.map((format) => (
-                    <div
-                      key={format.id}
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        selectedFormat?.id === format.id
-                          ? 'border-[#009ab6] bg-[#009ab6]/5'
-                          : 'border-[#006d7a]/10 hover:border-[#009ab6]/50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <p className="font-semibold text-black">{format.format}</p>
-                          <p className="text-xs text-black/60">
-                            {format.dimensions} • {format.size}
-                          </p>
-                        </div>
-                        {selectedFormat?.id === format.id && (
-                          <Check size={20} className="text-[#009ab6]" />
-                        )}
-                      </div>
-                      <button
-                        onClick={() => {
-                          setSelectedFormat(format);
-                          handleDownload(format);
-                        }}
-                        disabled={downloading === format.id}
-                        className="w-full px-4 py-2 bg-[#009ab6] hover:bg-[#007a8a] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  filteredFormats.map((format) => {
+                    const rowBusy =
+                      downloading === format.id ||
+                      (format.downloadProtected &&
+                        isSignedIn &&
+                        format.premiumTier !== 'free' &&
+                        !isAdmin &&
+                        !planLoaded);
+                    return (
+                      <div
+                        key={format.id}
+                        className={`p-4 rounded-lg border-2 transition-all ${
+                          selectedFormat?.id === format.id
+                            ? 'border-[#009ab6] bg-[#009ab6]/5'
+                            : 'border-[#006d7a]/10 hover:border-[#009ab6]/50'
+                        }`}
                       >
-                        {downloading === format.id ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                            <span>Downloading...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Download size={16} />
-                            <span>Download</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  ))
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <p className="font-semibold text-black">{format.format}</p>
+                            <p className="text-xs text-black/60">
+                              {format.dimensions} • {format.size}
+                            </p>
+                          </div>
+                          {selectedFormat?.id === format.id && <Check size={20} className="text-[#009ab6]" />}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedFormat(format);
+                            onDownloadPress(format);
+                          }}
+                          disabled={!!rowBusy}
+                          className="w-full px-4 py-2 bg-[#009ab6] hover:bg-[#007a8a] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {downloading === format.id ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                              <span>Downloading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Download size={16} />
+                              <span>{downloadLabel(format)}</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>

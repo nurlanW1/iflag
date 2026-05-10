@@ -74,6 +74,9 @@ function loadFromFlagStock(countrySlug: string) {
       category: 'vector' | 'raster' | 'video';
       file: string;
       url: string;
+      previewUrl: string;
+      premiumTier: 'free';
+      downloadProtected: boolean;
       size: string;
       dimensions: string;
     }>;
@@ -105,11 +108,12 @@ function loadFromFlagStock(countrySlug: string) {
             // ignore
           }
 
+          const imageUrl = `/api/gallery/image?file=${encodeURIComponent(file)}`;
           variants.push({
             id: fileId,
             name: 'Standard Flag',
             type: 'standard',
-            thumbnail: `/api/gallery/image?file=${encodeURIComponent(file)}`,
+            thumbnail: imageUrl,
             formats: [
               {
                 id: `${fileId}-jpg`,
@@ -117,7 +121,10 @@ function loadFromFlagStock(countrySlug: string) {
                 formatCode: 'jpg',
                 category: 'raster',
                 file: file,
-                url: `/api/gallery/image?file=${encodeURIComponent(file)}`,
+                url: imageUrl,
+                previewUrl: imageUrl,
+                premiumTier: 'free',
+                downloadProtected: false,
                 size: fileSize,
                 dimensions: dimensions,
               },
