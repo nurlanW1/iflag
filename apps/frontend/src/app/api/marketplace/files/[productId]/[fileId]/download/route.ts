@@ -19,7 +19,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
   const user = await getSessionUserFromCookies();
   const userId = user?.id ?? null;
 
-  const resolution = resolveAuthenticatedFileDownload(userId, productId, fileId);
+  const resolution = resolveAuthenticatedFileDownload(userId, user?.email, productId, fileId);
 
   if (resolution.kind === 'public_preview') {
     return NextResponse.redirect(resolution.publicUrl);

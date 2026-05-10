@@ -2,6 +2,33 @@ import { getMarketplaceStore } from '@/services/marketplace/memory-store';
 import { getProductById } from '@/services/marketplace/product-service';
 import type { ProductEntitlementSnapshot } from '@/lib/storage/download-access';
 
+const DEFAULT_OWNER_DOWNLOAD_EMAIL = 'nurlanrahmonqulov@gmail.com';
+
+function normalizeMarketplaceEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+/**
+ * Emails that may download **pro** marketplace files without purchase/subscription.
+ * Set `MARKETPLACE_OWNER_DOWNLOAD_EMAILS` to a comma-separated list; defaults to the site owner.
+ */
+export function getMarketplaceOwnerDownloadEmails(): string[] {
+  const raw = process.env.MARKETPLACE_OWNER_DOWNLOAD_EMAILS;
+  if (raw && raw.trim()) {
+    return raw
+      .split(/[,;\n]+/)
+      .map((s) => normalizeMarketplaceEmail(s))
+      .filter(Boolean);
+  }
+  return [normalizeMarketplaceEmail(DEFAULT_OWNER_DOWNLOAD_EMAIL)];
+}
+
+export function isMarketplaceOwnerDownloadBypass(email: string | null | undefined): boolean {
+  if (!email?.trim()) return false;
+  const n = normalizeMarketplaceEmail(email);
+  return getMarketplaceOwnerDownloadEmails().includes(n);
+}
+
 /**
  * Build entitlement snapshot for **one concrete file** (server-side).
  * - Purchase: exact `DownloadAccess` row for that file, non-expired, purchase/admin_grant.
@@ -35,7 +62,7 @@ export function getUserEntitlementSnapshot(
 
 export type ResolvedFileDownload =
   | { kind: 'public_preview'; publicUrl: string }
-  | { kind: 'pro_entitled'; via: 'purchase' | 'subscription' }
+  | { kind: 'pro_entitled'; via: 'purchase' | 'subscription' | 'owner' }
   | {
       kind: 'denied';
       reason: 'NOT_FOUND' | 'NOT_AUTHENTICATED' | 'NOT_ENTITLED' | 'NOT_PUBLISHED';
@@ -46,6 +73,7 @@ export type ResolvedFileDownload =
  */
 export function resolveAuthenticatedFileDownload(
   userId: string | null,
+  userEmail: string | null | undefined,
   productId: string,
   fileId: string
 ): ResolvedFileDownload {
@@ -68,6 +96,9 @@ export function resolveAuthenticatedFileDownload(
   if (file.tier === 'pro') {
     if (!userId) {
       return { kind: 'denied', reason: 'NOT_AUTHENTICATED' };
+    }
+    if (isMarketplaceOwnerDownloadBypass(userEmail)) {
+      return { kind: 'pro_entitled', via: 'owner' };
     }
     const snap = getUserEntitlementSnapshot(userId, productId, fileId);
     if (snap.hasActiveSubscription) {
