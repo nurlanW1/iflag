@@ -1,7 +1,7 @@
 import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { requireClerkAdminJson } from '@/lib/server/require-clerk-admin';
+import { requireClerkAdminBearerJson } from '@/lib/server/require-clerk-admin-bearer';
 import { getDb } from '@/lib/server/db';
 
 export const runtime = 'nodejs';
@@ -67,7 +67,7 @@ function isPgLikeError(err: unknown): err is { code?: string; message?: string }
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const gate = await requireClerkAdminJson();
+  const gate = await requireClerkAdminBearerJson(request);
   if (!gate.ok) return gate.response;
 
   const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();

@@ -1,14 +1,15 @@
 'use client';
 
 /**
- * Admin upload: same-origin POST with session cookies (`credentials: "include"`).
- * Server route uses Clerk `currentUser()` only — no App Router `auth()` / middleware.
+ * Admin upload: same-origin POST with `credentials: "include"` and
+ * `Authorization: Bearer <Clerk session JWT>` from `useAuth().getToken()`.
+ * Server verifies the JWT with Clerk (CLERK_SECRET_KEY) and checks admin allow-list.
  */
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import {
   ArrowLeft,
   Upload,
@@ -50,10 +51,11 @@ export default function AdminFlagBlobUploadPage() {
   return <AdminUploadClerkGate />;
 }
 
-/** Ensures Clerk session + allow-list before showing the upload form (no server `auth()`). */
+/** Ensures Clerk session + allow-list before showing the upload form. */
 function AdminUploadClerkGate() {
   const router = useRouter();
   const { user, isLoaded, isSignedIn } = useUser();
+  const { getToken } = useAuth();
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -114,10 +116,14 @@ function AdminUploadClerkGate() {
     );
   }
 
-  return <AdminUploadFormContent />;
+  return <AdminUploadFormContent getToken={getToken} />;
 }
 
-function AdminUploadFormContent() {
+function AdminUploadFormContent({
+  getToken,
+}: {
+  getToken?: () => Promise<string | null>;
+}) {
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -169,10 +175,20 @@ function AdminUploadFormContent() {
 
     setSubmitting(true);
     try {
+      let headers: HeadersInit | undefined;
+      if (getToken) {
+        const token = await getToken();
+        if (!token?.trim()) {
+          throw new Error('Not signed in');
+        }
+        headers = { Authorization: `Bearer ${token}` };
+      }
+
       const res = await fetch(UPLOAD_RELATIVE_PATH, {
         method: 'POST',
         body: fd,
         credentials: 'include',
+        headers,
       });
       const data = (await res.json().catch(() => ({}))) as UploadResult & {
         error?: string;
