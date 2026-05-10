@@ -1,5 +1,5 @@
+import 'dotenv/config';
 import express from 'express';
-import dotenv from 'dotenv';
 import cors from 'cors';
 import helmetPackage from "helmet";
 import compression from 'compression';
@@ -11,8 +11,6 @@ import assetRouter from './assets/asset.routes.js';
 import adminRouter from './admin/admin.routes.js';
 import uploadRouter from './upload/upload.routes.js';
 import pool from './db.js';
-
-dotenv.config();
 
 /** Unwrap default interop; type `any` avoids TS merging with `typeof import(...)` (non-callable on Vercel/NodeNext). */
 const helmet: any = (helmetPackage as any).default || helmetPackage;
