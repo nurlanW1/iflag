@@ -8,11 +8,12 @@ import {
   type SyntheticEvent,
 } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import { ArrowLeft, Download, FileImage, FileType, Video, Check } from 'lucide-react';
+import { ArrowLeft, Download, FileImage, FileType, Video } from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
 import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
+import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
 
 type PremiumTier = 'free' | 'freemium' | 'paid';
 
@@ -95,6 +96,13 @@ function imgErrorFallbackChain(
   }
   el.onerror = null;
   el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
+}
+
+function shortVariantLabel(name: string): string {
+  const marker = ' · ';
+  const i = name.indexOf(marker);
+  if (i >= 0) return name.slice(0, i).trim();
+  return name;
 }
 
 export default function CountryDetailPage() {
@@ -324,28 +332,37 @@ export default function CountryDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-white">
-        <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#009ab6]"></div>
-        </div>
+      <main className="flex min-h-screen items-center justify-center bg-stone-50">
+        <div
+          className="h-9 w-9 animate-spin rounded-full border-[3px] border-stone-200 border-t-[#009ab6]"
+          aria-hidden
+        />
       </main>
     );
   }
 
   if (!data) {
     return (
-      <main className="min-h-screen bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-20">
-            <p className="text-black/60 text-lg mb-4">Country not found</p>
-            <Link href="/gallery" className="text-[#009ab6] hover:text-[#007a8a] font-semibold">
-              Back to Gallery
-            </Link>
-          </div>
+      <main className="min-h-screen bg-stone-50">
+        <div className="mx-auto max-w-lg px-4 py-24 text-center">
+          <p className="text-lg font-medium text-stone-900">Couldn&apos;t load this gallery item</p>
+          <Link
+            href="/gallery"
+            className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[#009ab6] hover:text-[#007a94]"
+          >
+            <ArrowLeft size={16} />
+            Back to gallery
+          </Link>
         </div>
       </main>
     );
   }
+
+  const pageTitle = resolveGalleryDisplayName(
+    data.country.name,
+    data.country.code ?? null,
+    data.country.slug,
+  );
 
   const mainButtonDisabled =
     (selectedFormat &&
@@ -356,56 +373,41 @@ export default function CountryDetailPage() {
       !planLoaded) ||
     downloading === selectedFormat?.id;
 
-  const heroFormat = selectedFormat ?? data.variants[0]?.formats?.[0] ?? null;
-  const heroPreviewSrc = heroFormat ? previewSrcUi(heroFormat) : '';
-
   return (
-    <main className="min-h-screen bg-white">
-      <div className="bg-[#006d7a]/5 border-b border-[#006d7a]/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Link
-            href="/gallery"
-            className="inline-flex items-center gap-2 text-black/60 hover:text-black mb-4 transition-colors"
-          >
-            <ArrowLeft size={18} />
-            <span>Back to Gallery</span>
-          </Link>
-          <div className="flex items-center gap-4 mb-2">
-            {heroPreviewSrc ? (
-              <div className="w-28 h-[5.25rem] sm:w-32 sm:h-24 shrink-0 overflow-hidden rounded-lg border border-[#006d7a]/15 bg-white shadow-sm flex items-center justify-center p-1">
-                {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
-                <img
-                  key={heroFormat?.id ?? 'hero-header'}
-                  src={heroPreviewSrc}
-                  alt=""
-                  className="h-full w-full object-contain"
-                  referrerPolicy="no-referrer"
-                  decoding="async"
-                  onError={(e) =>
-                    imgErrorFallbackChain(e, selectedVariant?.thumbnail ? [selectedVariant.thumbnail] : [])
-                  }
-                />
-              </div>
-            ) : null}
-            <h1 className="text-4xl md:text-5xl font-bold text-black">{data.country.name} Flags</h1>
-          </div>
-          <p className="text-black/60">
-            {data.variants.length} {data.variants.length === 1 ? 'variant' : 'variants'} available
-          </p>
-        </div>
-      </div>
+    <main className="min-h-screen bg-stone-50 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:pb-14">
+      <div className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6 lg:px-10 lg:pb-28">
+        <Link
+          href="/gallery"
+          className="group inline-flex items-center gap-1.5 text-sm text-stone-500 transition-colors hover:text-stone-900"
+        >
+          <ArrowLeft size={15} strokeWidth={2} className="transition-transform group-hover:-translate-x-0.5" />
+          Gallery
+        </Link>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            {selectedVariant && selectedFormat && (
-              <div className="bg-white border-2 border-[#006d7a]/10 rounded-xl overflow-hidden mb-6">
-                <div className="aspect-video bg-[#006d7a]/5 relative flex items-center justify-center p-8">
+        <header className="mt-8 border-b border-stone-200/80 pb-10">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-400">Download</p>
+          <h1 className="mt-2 text-balance font-semibold tracking-tight text-stone-900 text-4xl sm:text-[2.65rem] sm:leading-[1.1]">
+            {pageTitle}
+          </h1>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-stone-500">
+            {data.variants.length === 1
+              ? 'One file in this listing.'
+              : `${data.variants.length} uploads available.`}{' '}
+            Choose format on the right, preview updates here — one download button.
+          </p>
+        </header>
+
+        <div className="mt-10 flex flex-col gap-12 lg:mt-14 lg:flex-row lg:gap-14 lg:items-start">
+          <div className="min-w-0 flex-1 space-y-8">
+            {selectedVariant && selectedFormat ? (
+              <div className="overflow-hidden rounded-[1.75rem] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70">
+                <div className="flex min-h-[14rem] items-center justify-center bg-[linear-gradient(145deg,#f5f5f4_0%,#fafaf9_48%,#eef2ef_100%)] px-4 py-10 sm:min-h-[16rem] sm:px-8 sm:py-12">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
                   <img
                     key={`${selectedVariant.id}-${selectedFormat.id}`}
                     src={previewSrcUi(selectedFormat)}
-                    alt={`${data.country.name} ${selectedVariant.name}`}
-                    className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                    alt=""
+                    className="max-h-[min(52vh,28rem)] w-auto max-w-full object-contain drop-shadow-md"
                     referrerPolicy="no-referrer"
                     decoding="async"
                     onError={(e) =>
@@ -413,233 +415,271 @@ export default function CountryDetailPage() {
                     }
                   />
                 </div>
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold text-black mb-2">{selectedVariant.name}</h2>
-                  <p className="text-black/60 mb-4">Select a format below to download</p>
-                  <button
-                    type="button"
-                    onClick={() => onDownloadPress(selectedFormat)}
-                    disabled={!!mainButtonDisabled}
-                    className="w-full px-6 py-3 bg-[#009ab6] hover:bg-[#007a8a] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
-                  >
-                    {downloading === selectedFormat.id ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                        <span>Downloading...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Download size={20} />
-                        <span>{downloadLabel(selectedFormat)}</span>
-                      </>
-                    )}
-                  </button>
-                  {!isSignedIn ? (
-                    <p className="mt-2 text-center text-xs text-black/50">
-                      No account?{' '}
-                      <Link href={`/sign-up?redirect_url=${redirectBack}`} className="text-[#009ab6] font-semibold hover:underline">
-                        Sign up
-                      </Link>
+                <div className="flex flex-col gap-4 border-t border-stone-100 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="truncate text-[15px] font-medium text-stone-900" title={selectedVariant.name}>
+                      {shortVariantLabel(selectedVariant.name)}
                     </p>
-                  ) : null}
+                    {shortVariantLabel(selectedVariant.name) !== selectedVariant.name.trim() ? (
+                      <p className="mt-1 text-xs text-stone-500">{selectedVariant.name}</p>
+                    ) : null}
+                  </div>
+                  <span className="shrink-0 self-start rounded-full bg-stone-100 px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-wide text-stone-600 tabular-nums sm:self-center">
+                    {selectedFormat.format}
+                  </span>
                 </div>
               </div>
-            )}
+            ) : null}
 
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-black mb-4">
-                Available Flags ({data.variants.length})
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {data.variants.map((variant) => {
-                  const format = variant.formats?.[0];
-                  return (
-                    <div
-                      key={variant.id}
-                      className={`group relative bg-white border-2 rounded-lg overflow-hidden transition-all cursor-pointer ${
-                        selectedVariant?.id === variant.id
-                          ? 'border-[#009ab6] shadow-lg'
-                          : 'border-[#006d7a]/10 hover:border-[#009ab6] hover:shadow-md'
-                      }`}
-                      onClick={() => {
-                        setSelectedVariant(variant);
-                        if (variant.formats && variant.formats.length > 0) {
-                          const f0 = variant.formats[0];
-                          setSelectedFormat(f0);
-                          if (f0.category === 'vector' || f0.category === 'raster' || f0.category === 'video') {
-                            setActiveTab(f0.category);
+            {data.variants.length > 1 ? (
+              <section>
+                <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-400">
+                  More versions
+                </h2>
+                <div className="mt-4 flex gap-3 overflow-x-auto pb-2 pt-0.5">
+                  {data.variants.map((variant) => {
+                    const format = variant.formats?.[0];
+                    const active = selectedVariant?.id === variant.id;
+                    return (
+                      <button
+                        key={variant.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedVariant(variant);
+                          if (variant.formats && variant.formats.length > 0) {
+                            const f0 = variant.formats[0];
+                            setSelectedFormat(f0);
+                            if (
+                              f0.category === 'vector' ||
+                              f0.category === 'raster' ||
+                              f0.category === 'video'
+                            ) {
+                              setActiveTab(f0.category);
+                            }
                           }
-                        }
-                      }}
-                    >
-                      <div className="aspect-video bg-[#006d7a]/5 relative overflow-hidden">
-                        {format ? (
-                          <img
-                            key={`${variant.id}-${format.id}-thumb`}
-                            src={previewSrcUi(format)}
-                            alt={variant.name}
-                            className="w-full h-full object-contain p-1 bg-[#006d7a]/5 group-hover:scale-[1.02] transition-transform duration-300"
-                            referrerPolicy="no-referrer"
-                            decoding="async"
-                            onError={(e) => imgErrorFallbackChain(e, [variant.thumbnail])}
-                          />
-                        ) : (
-                          <img
-                            key={`${variant.id}-vt`}
-                            src={variant.thumbnail}
-                            alt={variant.name}
-                            className="w-full h-full object-contain p-1 bg-[#006d7a]/5"
-                            referrerPolicy="no-referrer"
-                            decoding="async"
-                            onError={(e) => imgErrorFallbackChain(e, [])}
-                          />
-                        )}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                          <div className="bg-white rounded-full p-2 shadow-lg">
-                            <Download size={20} className="text-[#009ab6]" />
-                          </div>
+                        }}
+                        className={`w-[7.25rem] shrink-0 snap-start rounded-2xl p-2 text-center transition-all ${
+                          active
+                            ? 'bg-white shadow-md ring-2 ring-[#009ab6]/55'
+                            : 'bg-white/60 ring-1 ring-stone-200/90 hover:bg-white hover:shadow-sm'
+                        }`}
+                      >
+                        <div className="relative aspect-video overflow-hidden rounded-xl bg-stone-100">
+                          {format ? (
+                            <img
+                              key={`${variant.id}-${format.id}-thumb`}
+                              src={previewSrcUi(format)}
+                              alt=""
+                              className="h-full w-full object-contain p-1"
+                              referrerPolicy="no-referrer"
+                              decoding="async"
+                              onError={(e) => imgErrorFallbackChain(e, [variant.thumbnail])}
+                            />
+                          ) : (
+                            <img
+                              key={`${variant.id}-vt`}
+                              src={variant.thumbnail}
+                              alt=""
+                              className="h-full w-full object-contain p-1"
+                              referrerPolicy="no-referrer"
+                              decoding="async"
+                              onError={(e) => imgErrorFallbackChain(e, [])}
+                            />
+                          )}
                         </div>
-                      </div>
-                      <div className="p-3">
-                        <p className="text-sm font-medium text-black text-center truncate">{variant.name}</p>
-                        {format ? (
-                          <p className="text-xs text-black/60 text-center mt-1">{format.format}</p>
-                        ) : null}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+                        <p className="mt-2 truncate px-0.5 text-[11px] font-medium leading-snug text-stone-700" title={variant.name}>
+                          {shortVariantLabel(variant.name)}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : null}
           </div>
 
-          <div className="lg:col-span-1">
-            <div className="bg-white border-2 border-[#006d7a]/10 rounded-xl p-6 sticky top-8">
-              <h3 className="text-xl font-bold text-black mb-4">Download Formats</h3>
+          <aside className="lg:sticky lg:top-[5.25rem] w-full lg:max-w-[22rem] shrink-0 self-start lg:self-stretch">
+            <div className="rounded-[1.375rem] bg-white px-5 py-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.06)] ring-1 ring-stone-200/80 lg:px-6">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-400">Format</h2>
+                  <p className="mt-1 text-lg font-semibold tracking-tight text-stone-900">Export</p>
+                </div>
+              </div>
 
-              <div className="flex gap-2 mb-4 border-b border-[#006d7a]/10">
-                {formatCounts.vector > 0 && (
+              <div className="mt-5 flex flex-wrap gap-1 rounded-xl bg-stone-100 p-1">
+                {formatCounts.vector > 0 ? (
                   <button
                     type="button"
                     onClick={() => {
                       setActiveTab('vector');
                       applyFlatSelection(allFormatsFlat.find((f) => f.category === 'vector'));
                     }}
-                    className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`flex min-w-[4.75rem] flex-1 items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[11px] font-semibold transition-all sm:text-xs ${
                       activeTab === 'vector'
-                        ? 'text-[#009ab6] border-b-2 border-[#009ab6]'
-                        : 'text-black/60 hover:text-black'
+                        ? 'bg-white text-stone-900 shadow-sm'
+                        : 'text-stone-500 hover:text-stone-800'
                     }`}
                   >
-                    <FileType size={16} className="inline mr-1" />
-                    Vector ({formatCounts.vector})
+                    <FileType size={14} />
+                    Vector
+                    <span className="tabular-nums text-stone-400">{formatCounts.vector}</span>
                   </button>
-                )}
-                {formatCounts.raster > 0 && (
+                ) : null}
+                {formatCounts.raster > 0 ? (
                   <button
                     type="button"
                     onClick={() => {
                       setActiveTab('raster');
                       applyFlatSelection(allFormatsFlat.find((f) => f.category === 'raster'));
                     }}
-                    className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`flex min-w-[4.75rem] flex-1 items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[11px] font-semibold transition-all sm:text-xs ${
                       activeTab === 'raster'
-                        ? 'text-[#009ab6] border-b-2 border-[#009ab6]'
-                        : 'text-black/60 hover:text-black'
+                        ? 'bg-white text-stone-900 shadow-sm'
+                        : 'text-stone-500 hover:text-stone-800'
                     }`}
                   >
-                    <FileImage size={16} className="inline mr-1" />
-                    Raster ({formatCounts.raster})
+                    <FileImage size={14} />
+                    Raster
+                    <span className="tabular-nums text-stone-400">{formatCounts.raster}</span>
                   </button>
-                )}
-                {formatCounts.video > 0 && (
+                ) : null}
+                {formatCounts.video > 0 ? (
                   <button
                     type="button"
                     onClick={() => {
                       setActiveTab('video');
                       applyFlatSelection(allFormatsFlat.find((f) => f.category === 'video'));
                     }}
-                    className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`flex min-w-[4.75rem] flex-1 items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[11px] font-semibold transition-all sm:text-xs ${
                       activeTab === 'video'
-                        ? 'text-[#009ab6] border-b-2 border-[#009ab6]'
-                        : 'text-black/60 hover:text-black'
+                        ? 'bg-white text-stone-900 shadow-sm'
+                        : 'text-stone-500 hover:text-stone-800'
                     }`}
                   >
-                    <Video size={16} className="inline mr-1" />
-                    Video ({formatCounts.video})
+                    <Video size={14} />
+                    Video
+                    <span className="tabular-nums text-stone-400">{formatCounts.video}</span>
                   </button>
-                )}
+                ) : null}
               </div>
 
-              <div className="space-y-3">
+              <div className="mt-5 space-y-1.5">
                 {filteredFormats.length === 0 ? (
-                  <p className="text-black/60 text-sm text-center py-4">
-                    No {activeTab} formats available
+                  <p className="rounded-xl bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">
+                    No {activeTab} files in this listing.
                   </p>
                 ) : (
                   filteredFormats.map((format) => {
-                    const rowBusy =
-                      downloading === format.id ||
-                      (format.downloadProtected &&
-                        isSignedIn &&
-                        format.premiumTier !== 'free' &&
-                        !isAdmin &&
-                        !planLoaded);
+                    const selected = selectedFormat?.id === format.id;
                     return (
-                      <div
+                      <button
                         key={format.id}
+                        type="button"
                         onClick={() => applyFlatSelection(format)}
-                        className={`cursor-pointer p-4 rounded-lg border-2 transition-all ${
-                          selectedFormat?.id === format.id
-                            ? 'border-[#009ab6] bg-[#009ab6]/5'
-                            : 'border-[#006d7a]/10 hover:border-[#009ab6]/50'
+                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-left transition-all ${
+                          selected
+                            ? 'bg-[#009ab6]/10 ring-1 ring-[#009ab6]/30'
+                            : 'hover:bg-stone-50'
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="min-w-0 pr-2">
-                            <p className="font-semibold text-black">{format.format}</p>
-                            <p className="text-xs text-black/60 truncate" title={format.variantName}>
-                              {format.variantName}
-                            </p>
-                            <p className="text-xs text-black/60 mt-0.5">
-                              {format.dimensions} • {format.size}
-                            </p>
-                          </div>
-                          {selectedFormat?.id === format.id && (
-                            <Check size={20} className="shrink-0 text-[#009ab6]" />
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            applyFlatSelection(format);
-                            onDownloadPress(format);
-                          }}
-                          disabled={!!rowBusy}
-                          className="w-full px-4 py-2 bg-[#009ab6] hover:bg-[#007a8a] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        <span
+                          className={`relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                            selected ? 'border-[#009ab6]' : 'border-stone-300'
+                          }`}
+                          aria-hidden
                         >
-                          {downloading === format.id ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                              <span>Downloading...</span>
-                            </>
-                          ) : (
-                            <>
-                              <Download size={16} />
-                              <span>{downloadLabel(format)}</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
+                          {selected ? (
+                            <span className="h-2.5 w-2.5 rounded-full bg-[#009ab6]" />
+                          ) : null}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-stone-900">{format.format}</span>
+                          </div>
+                          <p
+                            className="mt-0.5 truncate text-xs text-stone-500"
+                            title={format.variantName}
+                          >
+                            {shortVariantLabel(format.variantName)} · {format.dimensions} · {format.size}
+                          </p>
+                        </div>
+                      </button>
                     );
                   })
                 )}
               </div>
+
+              {/* Desktop: primary action inside panel */}
+              {selectedFormat ? (
+                <div className="mt-8 hidden lg:block lg:space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => onDownloadPress(selectedFormat)}
+                    disabled={!!mainButtonDisabled}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#009ab6] py-4 text-[15px] font-semibold text-white shadow-[0_2px_14px_-2px_rgba(0,154,182,0.45)] transition-all hover:bg-[#008aaa] hover:shadow-[0_4px_20px_-4px_rgba(0,154,182,0.5)] disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    {downloading === selectedFormat.id ? (
+                      <>
+                        <div className="h-5 w-5 animate-spin rounded-full border-[2.5px] border-white/30 border-t-white" />
+                        Processing…
+                      </>
+                    ) : (
+                      <>
+                        <Download size={18} strokeWidth={2} />
+                        {downloadLabel(selectedFormat)}
+                      </>
+                    )}
+                  </button>
+                  {!isSignedIn ? (
+                    <p className="text-center text-xs text-stone-500">
+                      <Link
+                        href={`/sign-up?redirect_url=${redirectBack}`}
+                        className="font-medium text-[#009ab6] hover:underline"
+                      >
+                        Create an account
+                      </Link>{' '}
+                      for synced downloads.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
-          </div>
+          </aside>
         </div>
       </div>
+
+      {/* Mobile: single sticky download bar */}
+      {selectedFormat ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200/90 bg-white/85 px-4 py-3 backdrop-blur-lg lg:hidden [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
+          {!isSignedIn ? (
+            <p className="mb-2 text-center text-[11px] text-stone-500">
+              <Link href={`/sign-up?redirect_url=${redirectBack}`} className="text-[#009ab6] font-medium">
+                Sign up
+              </Link>{' '}
+              optional
+            </p>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => onDownloadPress(selectedFormat)}
+            disabled={!!mainButtonDisabled}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#009ab6] py-3.5 text-[15px] font-semibold text-white shadow-[0_-2px_18px_-4px_rgba(0,154,182,0.35)] disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            {downloading === selectedFormat.id ? (
+              <>
+                <div className="h-5 w-5 animate-spin rounded-full border-[2.5px] border-white/30 border-t-white" />
+                Processing…
+              </>
+            ) : (
+              <>
+                <Download size={18} strokeWidth={2} />
+                {downloadLabel(selectedFormat)}
+              </>
+            )}
+          </button>
+        </div>
+      ) : null}
     </main>
   );
 }

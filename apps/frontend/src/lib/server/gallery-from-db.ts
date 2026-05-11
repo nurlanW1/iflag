@@ -1,7 +1,7 @@
 import type { Pool } from 'pg';
-import { getCountryName } from '@/lib/country-code-to-name';
 import { getCountryCode } from '@/lib/country-mapping';
 import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
+import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
 
 export type GalleryCountrySummary = {
   name: string;
@@ -69,76 +69,6 @@ function isImgPreviewableFormat(fmt: string): boolean {
   return ['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(f);
 }
 
-/** Human-readable titles for `/gallery` summaries when DB rows use file-style names. */
-function prettifyTechnicalLabel(raw: string): string {
-  if (!raw.trim()) return raw || '';
-  return raw
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(' ');
-}
-
-function deriveCoreCountryToken(storedName: string, slug: string): string {
-  const primary = (storedName || slug || '').trim();
-  if (!primary) return '';
-  let s = primary.replace(/_/g, ' ').trim();
-  s = s.replace(/\bnational\s+flag\s+of\s+/gi, '').trim();
-  s = s.replace(/^flag\s+of\s+/i, '').trim();
-  s = s.replace(/\s+flag\s*$/i, '').trim();
-  return s;
-}
-
-/** ISO name first, then name/slug-derived mapping, else prettified slug. */
-export function resolveGalleryDisplayName(
-  storedName: string,
-  isoAlpha2: string | null,
-  slug: string,
-): string {
-  const iso = isoAlpha2?.trim().toUpperCase();
-  if (iso) {
-    const canonical = getCountryName(iso);
-    if (canonical) return canonical;
-  }
-
-  const core = deriveCoreCountryToken(storedName, slug);
-  const titleWords = core
-    ? core
-        .split(/\s+/)
-        .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : ''))
-        .join(' ')
-    : '';
-
-  if (titleWords) {
-    let mapped =
-      getCountryCode(titleWords) ||
-      getCountryCode(core.charAt(0).toUpperCase() + core.slice(1).toLowerCase());
-
-    const fromSlugHyphen = slug
-      .split('-')
-      .filter(Boolean)
-      .map((segment) =>
-        segment
-          .replace(/_/g, ' ')
-          .split(/\s+/)
-          .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : ''))
-          .join(' '),
-      )
-      .join(' ');
-    if (!mapped && fromSlugHyphen) {
-      mapped = getCountryCode(fromSlugHyphen);
-    }
-
-    if (mapped) {
-      const canon = getCountryName(mapped);
-      if (canon) return canon;
-    }
-    return titleWords;
-  }
-
-  return prettifyTechnicalLabel((slug || storedName || '').replace(/-|_/g, ' '));
-}
-
 export function applyGalleryDisplayNames(rows: GalleryCountrySummary[]): GalleryCountrySummary[] {
   return rows.map((c) => ({
     ...c,
@@ -159,7 +89,9 @@ export function isPackFallbackFlagThumbnail(url: string | null | undefined): boo
 
 /**
  * Public gallery: countries with at least one published flag file on Blob/DB.
- * Thumbnails avoid leaking paid `file_url` when a dedicated `thumbnail_url` exists or tier is non-free.
+ * List thumbnails avoid exposing paid `file_url` when tier is non-free and there is no
+ * `thumbnail_url` — in that case we still list the country and use an inline SVG placeholder so
+ * the grid is not silently empty while detail pages resolve previews per-row.
  */
 export async function fetchGalleryCountriesFromDb(
   pool: Pool,
@@ -220,8 +152,10 @@ export async function fetchGalleryCountriesFromDb(
       typeof row.cnt === 'string' ? Number.parseInt(row.cnt, 10) : Number(row.cnt);
     const code =
       row.iso_alpha_2?.trim()?.toUpperCase() || getCountryCode(row.name)?.toUpperCase() || null;
-    const thumb = row.thumbnail_url?.trim();
-    if (!thumb || isPackFallbackFlagThumbnail(thumb)) continue;
+    let thumb = row.thumbnail_url?.trim() ?? '';
+    if (!thumb || isPackFallbackFlagThumbnail(thumb)) {
+      thumb = FLAG_THUMB_PLACEHOLDER_DATA_URL;
+    }
 
     out.push({
       name: row.name,
