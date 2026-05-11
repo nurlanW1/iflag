@@ -5,8 +5,15 @@ import { serverClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
 import { getDb } from '@/lib/server/db';
 import { hasActiveClerkSubscription } from '@/lib/server/clerk-active-plan';
 import { freeTierRequiresSignIn } from '@/lib/server/flagswing-download-policy';
+import { siteProxiedBlobUrl } from '@/lib/server/blob-site-proxy';
 
 export const runtime = 'nodejs';
+
+function redirectLocation(req: Request, href: string): string {
+  const h = href.trim();
+  if (h.startsWith('/')) return new URL(h, new URL(req.url).origin).toString();
+  return h;
+}
 
 type PremiumTier = 'free' | 'freemium' | 'paid';
 
@@ -80,14 +87,14 @@ export async function GET(
   const isAdmin = serverClerkUserMatchesAdmin(user);
 
   if (isAdmin) {
-    return NextResponse.redirect(fileUrl, 302);
+    return NextResponse.redirect(redirectLocation(_request, siteProxiedBlobUrl(fileUrl)), 302);
   }
 
   if (tier === 'free') {
     if (freeTierRequiresSignIn() && !user?.id) {
       return NextResponse.json({ error: 'Not signed in', code: 'NOT_AUTHENTICATED' }, { status: 401 });
     }
-    return NextResponse.redirect(fileUrl, 302);
+    return NextResponse.redirect(redirectLocation(_request, siteProxiedBlobUrl(fileUrl)), 302);
   }
 
   // freemium | paid
@@ -109,5 +116,5 @@ export async function GET(
     );
   }
 
-  return NextResponse.redirect(fileUrl, 302);
+  return NextResponse.redirect(redirectLocation(_request, siteProxiedBlobUrl(fileUrl)), 302);
 }

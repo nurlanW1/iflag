@@ -8,11 +8,24 @@ import {
   type SyntheticEvent,
 } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import { ArrowLeft, Download, FileImage, FileType, Video } from 'lucide-react';
+import {
+  ArrowLeft,
+  Download,
+  FileImage,
+  FileType,
+  Video,
+  Layers,
+  Cpu,
+  Lock,
+  SlidersHorizontal,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
-import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
+import {
+  FLAG_THUMB_PLACEHOLDER_DATA_URL,
+  flagThumbPlaceholderForFileId,
+} from '@/lib/flag-thumbnail-fallback';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
 
 type PremiumTier = 'free' | 'freemium' | 'paid';
@@ -82,6 +95,7 @@ function previewSrcUi(f: Format): string {
 function imgErrorFallbackChain(
   e: SyntheticEvent<HTMLImageElement, Event>,
   fallbacks: readonly string[],
+  lastResortSrc: string = FLAG_THUMB_PLACEHOLDER_DATA_URL,
 ) {
   const el = e.target as HTMLImageElement;
   let i = Number(el.dataset.previewFallbackIx || 0);
@@ -95,7 +109,7 @@ function imgErrorFallbackChain(
     }
   }
   el.onerror = null;
-  el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
+  el.src = lastResortSrc;
 }
 
 function shortVariantLabel(name: string): string {
@@ -103,6 +117,12 @@ function shortVariantLabel(name: string): string {
   const i = name.indexOf(marker);
   if (i >= 0) return name.slice(0, i).trim();
   return name;
+}
+
+function tierBadge(format: Format): string | null {
+  if (format.premiumTier === 'paid') return 'Paid';
+  if (format.premiumTier === 'freemium') return 'Premium';
+  return null;
 }
 
 export default function CountryDetailPage() {
@@ -391,9 +411,9 @@ export default function CountryDetailPage() {
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-stone-500">
             {data.variants.length === 1
-              ? 'One file in this listing.'
-              : `${data.variants.length} uploads available.`}{' '}
-            Choose format on the right, preview updates here — one download button.
+              ? 'Single edition.'
+              : `${data.variants.length} editions.`}{' '}
+            Tune variant and export on the panel — the preview follows your choice.
           </p>
         </header>
 
@@ -411,7 +431,7 @@ export default function CountryDetailPage() {
                     referrerPolicy="no-referrer"
                     decoding="async"
                     onError={(e) =>
-                      imgErrorFallbackChain(e, [selectedVariant.thumbnail])
+                      imgErrorFallbackChain(e, [selectedVariant.thumbnail], flagThumbPlaceholderForFileId(selectedFormat.id))
                     }
                   />
                 </div>
@@ -431,184 +451,270 @@ export default function CountryDetailPage() {
               </div>
             ) : null}
 
-            {data.variants.length > 1 ? (
-              <section>
-                <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-400">
-                  More versions
-                </h2>
-                <div className="mt-4 flex gap-3 overflow-x-auto pb-2 pt-0.5">
-                  {data.variants.map((variant) => {
-                    const format = variant.formats?.[0];
-                    const active = selectedVariant?.id === variant.id;
-                    return (
-                      <button
-                        key={variant.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedVariant(variant);
-                          if (variant.formats && variant.formats.length > 0) {
-                            const f0 = variant.formats[0];
-                            setSelectedFormat(f0);
-                            if (
-                              f0.category === 'vector' ||
-                              f0.category === 'raster' ||
-                              f0.category === 'video'
-                            ) {
-                              setActiveTab(f0.category);
-                            }
-                          }
-                        }}
-                        className={`w-[7.25rem] shrink-0 snap-start rounded-2xl p-2 text-center transition-all ${
-                          active
-                            ? 'bg-white shadow-md ring-2 ring-[#009ab6]/55'
-                            : 'bg-white/60 ring-1 ring-stone-200/90 hover:bg-white hover:shadow-sm'
-                        }`}
-                      >
-                        <div className="relative aspect-video overflow-hidden rounded-xl bg-stone-100">
-                          {format ? (
-                            <img
-                              key={`${variant.id}-${format.id}-thumb`}
-                              src={previewSrcUi(format)}
-                              alt=""
-                              className="h-full w-full object-contain p-1"
-                              referrerPolicy="no-referrer"
-                              decoding="async"
-                              onError={(e) => imgErrorFallbackChain(e, [variant.thumbnail])}
-                            />
-                          ) : (
-                            <img
-                              key={`${variant.id}-vt`}
-                              src={variant.thumbnail}
-                              alt=""
-                              className="h-full w-full object-contain p-1"
-                              referrerPolicy="no-referrer"
-                              decoding="async"
-                              onError={(e) => imgErrorFallbackChain(e, [])}
-                            />
-                          )}
-                        </div>
-                        <p className="mt-2 truncate px-0.5 text-[11px] font-medium leading-snug text-stone-700" title={variant.name}>
-                          {shortVariantLabel(variant.name)}
-                        </p>
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
-            ) : null}
           </div>
 
-          <aside className="lg:sticky lg:top-[5.25rem] w-full lg:max-w-[22rem] shrink-0 self-start lg:self-stretch">
-            <div className="rounded-[1.375rem] bg-white px-5 py-6 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.06)] ring-1 ring-stone-200/80 lg:px-6">
-              <div className="flex items-start justify-between gap-2">
+          <aside className="w-full shrink-0 self-start lg:sticky lg:top-[5.25rem] lg:max-w-[24rem] lg:self-stretch">
+            <div className="overflow-hidden rounded-[1.375rem] bg-gradient-to-b from-white to-stone-50/95 px-5 py-7 shadow-[0_14px_50px_-24px_rgba(15,23,42,0.35)] ring-1 ring-stone-200/90 lg:px-6">
+              <div className="flex items-start justify-between gap-3 border-b border-stone-100/90 pb-5">
                 <div>
-                  <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-400">Format</h2>
-                  <p className="mt-1 text-lg font-semibold tracking-tight text-stone-900">Export</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-400">
+                    Choices
+                  </p>
+                  <h2 className="mt-1.5 font-semibold tracking-tight text-xl text-stone-900 leading-snug">
+                    Edition & export
+                  </h2>
+                  <p className="mt-1.5 max-w-[15rem] text-xs leading-snug text-stone-500">
+                    Pick shape or style first, then the file category and format.
+                  </p>
+                </div>
+                <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#009ab6]/10 text-[#009ab6] sm:flex">
+                  <Cpu size={20} aria-hidden />
                 </div>
               </div>
 
-              <div className="mt-5 flex flex-wrap gap-1 rounded-xl bg-stone-100 p-1">
-                {formatCounts.vector > 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('vector');
-                      applyFlatSelection(allFormatsFlat.find((f) => f.category === 'vector'));
-                    }}
-                    className={`flex min-w-[4.75rem] flex-1 items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[11px] font-semibold transition-all sm:text-xs ${
-                      activeTab === 'vector'
-                        ? 'bg-white text-stone-900 shadow-sm'
-                        : 'text-stone-500 hover:text-stone-800'
-                    }`}
-                  >
-                    <FileType size={14} />
-                    Vector
-                    <span className="tabular-nums text-stone-400">{formatCounts.vector}</span>
-                  </button>
-                ) : null}
-                {formatCounts.raster > 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('raster');
-                      applyFlatSelection(allFormatsFlat.find((f) => f.category === 'raster'));
-                    }}
-                    className={`flex min-w-[4.75rem] flex-1 items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[11px] font-semibold transition-all sm:text-xs ${
-                      activeTab === 'raster'
-                        ? 'bg-white text-stone-900 shadow-sm'
-                        : 'text-stone-500 hover:text-stone-800'
-                    }`}
-                  >
-                    <FileImage size={14} />
-                    Raster
-                    <span className="tabular-nums text-stone-400">{formatCounts.raster}</span>
-                  </button>
-                ) : null}
-                {formatCounts.video > 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('video');
-                      applyFlatSelection(allFormatsFlat.find((f) => f.category === 'video'));
-                    }}
-                    className={`flex min-w-[4.75rem] flex-1 items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[11px] font-semibold transition-all sm:text-xs ${
-                      activeTab === 'video'
-                        ? 'bg-white text-stone-900 shadow-sm'
-                        : 'text-stone-500 hover:text-stone-800'
-                    }`}
-                  >
-                    <Video size={14} />
-                    Video
-                    <span className="tabular-nums text-stone-400">{formatCounts.video}</span>
-                  </button>
-                ) : null}
-              </div>
-
-              <div className="mt-5 space-y-1.5">
-                {filteredFormats.length === 0 ? (
-                  <p className="rounded-xl bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">
-                    No {activeTab} files in this listing.
-                  </p>
-                ) : (
-                  filteredFormats.map((format) => {
-                    const selected = selectedFormat?.id === format.id;
-                    return (
-                      <button
-                        key={format.id}
-                        type="button"
-                        onClick={() => applyFlatSelection(format)}
-                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-left transition-all ${
-                          selected
-                            ? 'bg-[#009ab6]/10 ring-1 ring-[#009ab6]/30'
-                            : 'hover:bg-stone-50'
-                        }`}
-                      >
-                        <span
-                          className={`relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                            selected ? 'border-[#009ab6]' : 'border-stone-300'
+              {data.variants.length >= 1 ? (
+                <section className="mt-6">
+                  <div className="mb-3 flex items-center gap-2">
+                    <Layers size={14} className="text-stone-400" aria-hidden />
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                      Edition · style
+                    </span>
+                  </div>
+                  <div className="-mx-5 flex gap-2.5 overflow-x-auto pb-3 pl-5 pr-5 pt-0.5 [scrollbar-width:thin] lg:-mx-6 lg:pl-6 lg:pr-6">
+                    {data.variants.map((variant) => {
+                      const vf = variant.formats?.[0];
+                      const active = selectedVariant?.id === variant.id;
+                      return (
+                        <button
+                          key={variant.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedVariant(variant);
+                            if (variant.formats?.length) {
+                              const f0 = variant.formats[0];
+                              setSelectedFormat(f0);
+                              if (
+                                f0.category === 'vector' ||
+                                f0.category === 'raster' ||
+                                f0.category === 'video'
+                              ) {
+                                setActiveTab(f0.category);
+                              }
+                            }
+                          }}
+                          className={`w-[84px] shrink-0 snap-start text-left transition-[box-shadow,transform] ${
+                            active ? 'scale-[1.02]' : 'hover:scale-[1.01]'
                           }`}
-                          aria-hidden
                         >
-                          {selected ? (
-                            <span className="h-2.5 w-2.5 rounded-full bg-[#009ab6]" />
-                          ) : null}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-stone-900">{format.format}</span>
-                          </div>
-                          <p
-                            className="mt-0.5 truncate text-xs text-stone-500"
-                            title={format.variantName}
+                          <div
+                            className={`rounded-2xl p-2 transition-all ${
+                              active
+                                ? 'bg-white shadow-[0_10px_30px_-12px_rgba(0,154,182,0.55)] ring-2 ring-[#009ab6]'
+                                : 'bg-stone-100/80 ring-1 ring-stone-200/80 hover:bg-white hover:ring-stone-300'
+                            }`}
                           >
-                            {shortVariantLabel(format.variantName)} · {format.dimensions} · {format.size}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })
-                )}
-              </div>
+                            <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-stone-200/40">
+                              {vf ? (
+                                <img
+                                  key={`${variant.id}-${vf.id}-ed`}
+                                  src={previewSrcUi(vf)}
+                                  alt=""
+                                  className="h-full w-full object-contain p-1"
+                                  referrerPolicy="no-referrer"
+                                  decoding="async"
+                                  onError={(e) =>
+                                    imgErrorFallbackChain(
+                                      e,
+                                      [variant.thumbnail],
+                                      flagThumbPlaceholderForFileId(vf.id),
+                                    )
+                                  }
+                                />
+                              ) : (
+                                <img
+                                  key={`${variant.id}-ved`}
+                                  src={variant.thumbnail}
+                                  alt=""
+                                  className="h-full w-full object-contain p-1"
+                                  referrerPolicy="no-referrer"
+                                  decoding="async"
+                                  onError={(e) =>
+                                    imgErrorFallbackChain(
+                                      e,
+                                      [],
+                                      flagThumbPlaceholderForFileId(variant.id),
+                                    )
+                                  }
+                                />
+                              )}
+                            </div>
+                            <p
+                              className="mt-2 line-clamp-2 min-h-[2.25rem] px-0.5 text-[10px] font-semibold leading-tight text-stone-800"
+                              title={variant.name}
+                            >
+                              {shortVariantLabel(variant.name)}
+                            </p>
+                            {vf ? (
+                              <p className="mt-0.5 px-0.5 text-[9px] font-medium uppercase tracking-wide text-stone-400">
+                                {vf.format}
+                              </p>
+                            ) : null}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              ) : null}
+
+              <section className={data.variants.length >= 2 ? 'mt-2 border-t border-stone-100/90 pt-6' : 'mt-6'}>
+                <div className="mb-3 flex items-center gap-2">
+                  <SlidersHorizontal size={14} className="text-stone-400" aria-hidden />
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                    Output category
+                  </span>
+                </div>
+                <div className="grid grid-flow-col gap-1 auto-cols-fr rounded-[0.875rem] bg-stone-200/60 p-1">
+                  {formatCounts.vector > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('vector');
+                        applyFlatSelection(allFormatsFlat.find((f) => f.category === 'vector'));
+                      }}
+                      className={`flex flex-col items-center gap-1 rounded-lg px-1.5 py-2.5 text-center transition-all sm:flex-row sm:justify-center sm:gap-2 sm:py-3 ${
+                        activeTab === 'vector'
+                          ? 'bg-white text-stone-900 shadow-sm shadow-stone-900/8'
+                          : 'text-stone-500 hover:text-stone-800'
+                      }`}
+                    >
+                      <FileType size={16} strokeWidth={2} className="shrink-0 opacity-85" />
+                      <span className="text-[10px] font-bold uppercase tracking-wide sm:text-xs">
+                        Vector
+                      </span>
+                      <span className="text-[10px] tabular-nums text-stone-400 sm:text-xs">
+                        ({formatCounts.vector})
+                      </span>
+                    </button>
+                  ) : null}
+                  {formatCounts.raster > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('raster');
+                        applyFlatSelection(allFormatsFlat.find((f) => f.category === 'raster'));
+                      }}
+                      className={`flex flex-col items-center gap-1 rounded-lg px-1.5 py-2.5 text-center transition-all sm:flex-row sm:justify-center sm:gap-2 sm:py-3 ${
+                        activeTab === 'raster'
+                          ? 'bg-white text-stone-900 shadow-sm shadow-stone-900/8'
+                          : 'text-stone-500 hover:text-stone-800'
+                      }`}
+                    >
+                      <FileImage size={16} strokeWidth={2} className="shrink-0 opacity-85" />
+                      <span className="text-[10px] font-bold uppercase tracking-wide sm:text-xs">
+                        Raster
+                      </span>
+                      <span className="text-[10px] tabular-nums text-stone-400 sm:text-xs">
+                        ({formatCounts.raster})
+                      </span>
+                    </button>
+                  ) : null}
+                  {formatCounts.video > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('video');
+                        applyFlatSelection(allFormatsFlat.find((f) => f.category === 'video'));
+                      }}
+                      className={`flex flex-col items-center gap-1 rounded-lg px-1.5 py-2.5 text-center transition-all sm:flex-row sm:justify-center sm:gap-2 sm:py-3 ${
+                        activeTab === 'video'
+                          ? 'bg-white text-stone-900 shadow-sm shadow-stone-900/8'
+                          : 'text-stone-500 hover:text-stone-800'
+                      }`}
+                    >
+                      <Video size={16} strokeWidth={2} className="shrink-0 opacity-85" />
+                      <span className="text-[10px] font-bold uppercase tracking-wide sm:text-xs">
+                        Video
+                      </span>
+                      <span className="text-[10px] tabular-nums text-stone-400 sm:text-xs">
+                        ({formatCounts.video})
+                      </span>
+                    </button>
+                  ) : null}
+                </div>
+              </section>
+
+              <section className="mt-6">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                    File formats
+                  </span>
+                  <span className="rounded-full bg-stone-100 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-stone-500">
+                    Active: {activeTab}
+                  </span>
+                </div>
+                <div className="max-h-[min(42vh,20rem)] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
+                  {filteredFormats.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50/70 px-4 py-10 text-center text-sm text-stone-500">
+                      No matching files in{' '}
+                      <span className="font-semibold lowercase text-stone-700">{activeTab}</span>.
+                    </div>
+                  ) : (
+                    filteredFormats.map((format) => {
+                      const selected = selectedFormat?.id === format.id;
+                      const badge = tierBadge(format);
+                      return (
+                        <button
+                          key={format.id}
+                          type="button"
+                          onClick={() => applyFlatSelection(format)}
+                          className={`group flex w-full items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition-all sm:gap-4 sm:py-3.5 ${
+                            selected
+                              ? 'border-[#009ab6]/45 bg-gradient-to-br from-[#009ab6]/[0.07] to-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] ring-[3px] ring-[#009ab6]/20'
+                              : 'border-transparent bg-stone-50/85 hover:border-stone-200 hover:bg-white'
+                          }`}
+                        >
+                          <div
+                            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl font-mono text-[11px] font-bold uppercase leading-none tracking-wide sm:h-[3.25rem] sm:w-[3.25rem] sm:text-xs ${
+                              selected
+                                ? 'bg-[#009ab6] text-white shadow-inner'
+                                : 'bg-white text-stone-700 shadow-sm ring-1 ring-stone-200/80 group-hover:text-stone-900'
+                            }`}
+                          >
+                            {format.format}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <span className="text-sm font-semibold text-stone-900">{format.file}</span>
+                              {badge ? (
+                                <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-900 ring-1 ring-amber-200/80">
+                                  <Lock size={9} aria-hidden /> {badge}
+                                </span>
+                              ) : null}
+                            </div>
+                            <p
+                              className="mt-0.5 truncate text-[11px] text-stone-500 sm:text-xs"
+                              title={format.variantName}
+                            >
+                              {shortVariantLabel(format.variantName)} · {format.dimensions} · {format.size}
+                            </p>
+                          </div>
+                          <span
+                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                              selected ? 'border-[#009ab6]' : 'border-stone-300 group-hover:border-stone-400'
+                            }`}
+                            aria-hidden
+                          >
+                            {selected ? (
+                              <span className="h-2.5 w-2.5 rounded-full bg-[#009ab6]" />
+                            ) : null}
+                          </span>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </section>
 
               {/* Desktop: primary action inside panel */}
               {selectedFormat ? (

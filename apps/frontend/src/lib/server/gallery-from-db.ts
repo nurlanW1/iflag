@@ -1,7 +1,11 @@
 import type { Pool } from 'pg';
 import { getCountryCode } from '@/lib/country-mapping';
-import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
+import {
+  FLAG_THUMB_PLACEHOLDER_DATA_URL,
+  flagThumbPlaceholderForFileId,
+} from '@/lib/flag-thumbnail-fallback';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
+import { siteProxiedBlobUrl } from '@/lib/server/blob-site-proxy';
 
 export type GalleryCountrySummary = {
   name: string;
@@ -162,7 +166,7 @@ export async function fetchGalleryCountriesFromDb(
       slug: row.slug,
       code: code || null,
       count: Number.isFinite(count) ? count : 0,
-      thumbnail: thumb,
+      thumbnail: siteProxiedBlobUrl(thumb),
     });
   }
   return out;
@@ -238,14 +242,21 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
         ? `${r.width}×${r.height} px`
         : 'Original';
 
-    let previewUrl = r.thumbnail_url?.trim() || '';
+    /** Prefer raster/SVG `file_url` so each edition differs — many rows share one generic `thumbnail_url`. */
+    const thumbStored = r.thumbnail_url?.trim() || '';
     const fileUrl = r.file_url?.trim() || '';
-    if (!previewUrl && isImgPreviewableFormat(r.format) && fileUrl) {
+    let previewUrl = '';
+    if (isImgPreviewableFormat(r.format) && fileUrl) {
+      previewUrl = fileUrl;
+    } else if (thumbStored) {
+      previewUrl = thumbStored;
+    } else if (fileUrl) {
       previewUrl = fileUrl;
     }
     if (!previewUrl) {
-      previewUrl = FLAG_THUMB_PLACEHOLDER_DATA_URL;
+      previewUrl = flagThumbPlaceholderForFileId(String(r.id));
     }
+    previewUrl = siteProxiedBlobUrl(previewUrl);
 
     const formatRow: CountryGalleryPayload['variants'][number]['formats'][number] = {
       id: String(r.id),
