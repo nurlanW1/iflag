@@ -1,5 +1,4 @@
 import './globals.css';
-import 'flag-icons/css/flag-icons.min.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import { getClerkPublishableKey } from '@/lib/auth/clerk-env';
 import Navbar from '@/components/Navbar';

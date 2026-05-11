@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { getCountryCode } from '@/lib/country-mapping';
-import { getCountryName } from '@/lib/country-code-to-name';
-import { countries, hasFlag } from 'country-flag-icons';
 import { getDb } from '@/lib/server/db';
-import { fetchGalleryCountriesFromDb, type GalleryCountrySummary } from '@/lib/server/gallery-from-db';
+import {
+  applyGalleryDisplayNames,
+  fetchGalleryCountriesFromDb,
+  isPackFallbackFlagThumbnail,
+  type GalleryCountrySummary,
+  type GalleryCountryListFilters,
+} from '@/lib/server/gallery-from-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,12 +28,41 @@ function countryToSlug(country: string): string {
 
 function mergeStockOnlyIntoDb(dbList: GalleryCountrySummary[], stockList: GalleryCountrySummary[]) {
   const seen = new Set(dbList.map((c) => c.slug.toLowerCase()));
-  const extra = stockList.filter((c) => !seen.has(c.slug.toLowerCase()));
+  const extra = stockList.filter(
+    (c) => !seen.has(c.slug.toLowerCase()) && !isPackFallbackFlagThumbnail(c.thumbnail),
+  );
   return [...dbList, ...extra].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
+ * `kind` mirrors home “Browse by region” tiles (organizations, autonomy, historical).
+ */
+function parseGalleryListFilters(searchParams: URLSearchParams): GalleryCountryListFilters | null {
+  const kindRaw = searchParams.get('kind')?.trim().toLowerCase() || '';
+  const kindMap: Partial<Record<string, NonNullable<GalleryCountryListFilters['dbCategory']>>> = {
+    organization: 'organization',
+    organizations: 'organization',
+    autonomy: 'autonomy',
+    historical: 'historical',
+    'historical-flag': 'historical',
+  };
+
+  const dbCategory = kindRaw ? kindMap[kindRaw] : undefined;
+
+  const regionRaw = searchParams.get('region')?.trim() || '';
+
+  if (dbCategory) {
+    return { dbCategory };
+  }
+  if (regionRaw) {
+    return { region: regionRaw };
+  }
+  return null;
+}
+
+/**
  * Loads gallery countries from local `flag_stock` (legacy / dev). Safe on Vercel when folder is absent.
+ * Only includes countries that actually have a real local file — no generic CSS / CDN flag icons are seeded.
  */
 function loadFromFlagStock(): GalleryCountrySummary[] {
   const possiblePaths = [
@@ -54,66 +87,33 @@ function loadFromFlagStock(): GalleryCountrySummary[] {
   }
 
   const countryMap = new Map<string, GalleryCountrySummary>();
-  const codeMap = new Map<string, string>();
-
-  countries.forEach((code) => {
-    if (hasFlag(code)) {
-      const countryName = getCountryName(code) || code;
-      const countrySlug = countryToSlug(countryName);
-
-      if (!codeMap.has(code)) {
-        codeMap.set(code, countryName);
-        countryMap.set(countryName, {
-          name: countryName,
-          slug: countrySlug,
-          code: code,
-          count: 0,
-          thumbnail: `https://purecatamphetamine.github.io/country-flag-icons/3x2/${code}.svg`,
-        });
-      }
-    }
-  });
 
   try {
     const files = fs.readdirSync(flagStockPath);
 
     files.forEach((file) => {
       const lowerFile = file.toLowerCase();
-      if (lowerFile.endsWith('.jpg') || lowerFile.endsWith('.jpeg')) {
-        const countryName = filenameToCountryName(file);
-        const countrySlug = countryToSlug(countryName);
-        const countryCode = getCountryCode(countryName);
+      if (!(lowerFile.endsWith('.jpg') || lowerFile.endsWith('.jpeg'))) return;
 
-        let existingCountry = countryMap.get(countryName);
+      const countryName = filenameToCountryName(file);
+      const countrySlug = countryToSlug(countryName);
+      const countryCode = getCountryCode(countryName);
+      const thumbnail = `/api/gallery/image?file=${encodeURIComponent(file)}`;
 
-        if (!existingCountry && countryCode && codeMap.has(countryCode)) {
-          const mappedName = codeMap.get(countryCode)!;
-          existingCountry = countryMap.get(mappedName);
-        }
-
-        if (existingCountry) {
-          existingCountry.count += 1;
-          existingCountry.thumbnail = `/api/gallery/image?file=${encodeURIComponent(file)}`;
-        } else if (countryCode && codeMap.has(countryCode)) {
-          const mappedName = codeMap.get(countryCode)!;
-          const existing = countryMap.get(mappedName);
-          if (existing) {
-            existing.count += 1;
-            existing.thumbnail = `/api/gallery/image?file=${encodeURIComponent(file)}`;
-          }
-        } else {
-          countryMap.set(countryName, {
-            name: countryName,
-            slug: countrySlug,
-            code: countryCode,
-            count: 1,
-            thumbnail: `/api/gallery/image?file=${encodeURIComponent(file)}`,
-          });
-          if (countryCode) {
-            codeMap.set(countryCode, countryName);
-          }
-        }
+      const existing = countryMap.get(countryName);
+      if (existing) {
+        existing.count += 1;
+        existing.thumbnail = thumbnail;
+        return;
       }
+
+      countryMap.set(countryName, {
+        name: countryName,
+        slug: countrySlug,
+        code: countryCode,
+        count: 1,
+        thumbnail,
+      });
     });
   } catch (err) {
     console.error(`Error reading directory ${flagStockPath}:`, err);
@@ -122,18 +122,27 @@ function loadFromFlagStock(): GalleryCountrySummary[] {
   return Array.from(countryMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const filters = parseGalleryListFilters(new URL(request.url).searchParams);
+
     const stockCountries = loadFromFlagStock();
 
     if (process.env.DATABASE_URL?.trim()) {
       try {
         const pool = getDb();
-        const fromDb = await fetchGalleryCountriesFromDb(pool);
+        const fromDb = await fetchGalleryCountriesFromDb(pool, filters ?? null);
+        // Region / taxonomy filters: DB only (flag_stock rows have no region metadata).
+        if (filters != null) {
+          return NextResponse.json(
+            { countries: applyGalleryDisplayNames(fromDb) },
+            { headers: { 'Cache-Control': 'no-store' } },
+          );
+        }
         if (fromDb.length > 0) {
           return NextResponse.json(
-            { countries: mergeStockOnlyIntoDb(fromDb, stockCountries) },
-            { headers: { 'Cache-Control': 'no-store' } }
+            { countries: applyGalleryDisplayNames(mergeStockOnlyIntoDb(fromDb, stockCountries)) },
+            { headers: { 'Cache-Control': 'no-store' } },
           );
         }
       } catch (err) {
@@ -141,11 +150,16 @@ export async function GET() {
       }
     }
 
+    if (filters != null) {
+      return NextResponse.json({ countries: [] }, { headers: { 'Cache-Control': 'no-store' } });
+    }
+
     if (stockCountries.length === 0) {
       console.log('[gallery/countries] no flag_stock and no published DB rows');
     }
 
-    return NextResponse.json({ countries: stockCountries });
+    const stockOnlyReal = stockCountries.filter((c) => !isPackFallbackFlagThumbnail(c.thumbnail));
+    return NextResponse.json({ countries: applyGalleryDisplayNames(stockOnlyReal) });
   } catch (error) {
     console.error('Error loading countries:', error);
     return NextResponse.json({ countries: [] }, { status: 500 });

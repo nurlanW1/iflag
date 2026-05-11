@@ -1,5 +1,7 @@
 import type { Pool } from 'pg';
+import { getCountryName } from '@/lib/country-code-to-name';
 import { getCountryCode } from '@/lib/country-mapping';
+import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
 
 export type GalleryCountrySummary = {
   name: string;
@@ -7,6 +9,12 @@ export type GalleryCountrySummary = {
   code: string | null;
   count: number;
   thumbnail: string;
+};
+
+/** Narrow gallery list — matches `countries.region` / `countries.category` in Postgres. */
+export type GalleryCountryListFilters = {
+  region?: string | null;
+  dbCategory?: 'country' | 'autonomy' | 'organization' | 'historical' | null;
 };
 
 export type GalleryPremiumTier = 'free' | 'freemium' | 'paid';
@@ -55,18 +63,111 @@ function normalizePremiumTier(raw: string | null | undefined): GalleryPremiumTie
   return 'free';
 }
 
-function flagIconFallback(code: string | null): string {
-  if (code) {
-    return `https://purecatamphetamine.github.io/country-flag-icons/3x2/${code.toUpperCase()}.svg`;
+/** Raster + SVG work in <img>; EPS/PDF need a generated thumb. */
+function isImgPreviewableFormat(fmt: string): boolean {
+  const f = fmt.toLowerCase();
+  return ['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(f);
+}
+
+/** Human-readable titles for `/gallery` summaries when DB rows use file-style names. */
+function prettifyTechnicalLabel(raw: string): string {
+  if (!raw.trim()) return raw || '';
+  return raw
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function deriveCoreCountryToken(storedName: string, slug: string): string {
+  const primary = (storedName || slug || '').trim();
+  if (!primary) return '';
+  let s = primary.replace(/_/g, ' ').trim();
+  s = s.replace(/\bnational\s+flag\s+of\s+/gi, '').trim();
+  s = s.replace(/^flag\s+of\s+/i, '').trim();
+  s = s.replace(/\s+flag\s*$/i, '').trim();
+  return s;
+}
+
+/** ISO name first, then name/slug-derived mapping, else prettified slug. */
+export function resolveGalleryDisplayName(
+  storedName: string,
+  isoAlpha2: string | null,
+  slug: string,
+): string {
+  const iso = isoAlpha2?.trim().toUpperCase();
+  if (iso) {
+    const canonical = getCountryName(iso);
+    if (canonical) return canonical;
   }
-  return '/placeholder-flag.jpg';
+
+  const core = deriveCoreCountryToken(storedName, slug);
+  const titleWords = core
+    ? core
+        .split(/\s+/)
+        .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : ''))
+        .join(' ')
+    : '';
+
+  if (titleWords) {
+    let mapped =
+      getCountryCode(titleWords) ||
+      getCountryCode(core.charAt(0).toUpperCase() + core.slice(1).toLowerCase());
+
+    const fromSlugHyphen = slug
+      .split('-')
+      .filter(Boolean)
+      .map((segment) =>
+        segment
+          .replace(/_/g, ' ')
+          .split(/\s+/)
+          .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : ''))
+          .join(' '),
+      )
+      .join(' ');
+    if (!mapped && fromSlugHyphen) {
+      mapped = getCountryCode(fromSlugHyphen);
+    }
+
+    if (mapped) {
+      const canon = getCountryName(mapped);
+      if (canon) return canon;
+    }
+    return titleWords;
+  }
+
+  return prettifyTechnicalLabel((slug || storedName || '').replace(/-|_/g, ' '));
+}
+
+export function applyGalleryDisplayNames(rows: GalleryCountrySummary[]): GalleryCountrySummary[] {
+  return rows.map((c) => ({
+    ...c,
+    name: resolveGalleryDisplayName(c.name, c.code, c.slug),
+  }));
+}
+
+/** SVG packs / generic placeholders — not site-upload previews. */
+export function isPackFallbackFlagThumbnail(url: string | null | undefined): boolean {
+  if (!url?.trim()) return true;
+  const u = url.trim().toLowerCase();
+  return (
+    u.includes('purecatamphetamine.github.io') ||
+    u.includes('country-flag-icons/3x2/') ||
+    u === '/placeholder-flag.jpg'
+  );
 }
 
 /**
  * Public gallery: countries with at least one published flag file on Blob/DB.
  * Thumbnails avoid leaking paid `file_url` when a dedicated `thumbnail_url` exists or tier is non-free.
  */
-export async function fetchGalleryCountriesFromDb(pool: Pool): Promise<GalleryCountrySummary[]> {
+export async function fetchGalleryCountriesFromDb(
+  pool: Pool,
+  filters: GalleryCountryListFilters | null = null,
+): Promise<GalleryCountrySummary[]> {
+  const regionParam = filters?.region?.trim() || null;
+  const catParam = filters?.dbCategory?.trim().toLowerCase() || null;
+
   const result = await pool.query<{
     name: string;
     slug: string;
@@ -82,22 +183,35 @@ export async function fetchGalleryCountriesFromDb(pool: Pool): Promise<GalleryCo
        (
          SELECT
            CASE
-             WHEN NULLIF(trim(cff_thumb.thumbnail_url), '') IS NOT NULL THEN trim(cff_thumb.thumbnail_url)
-             WHEN lower(coalesce(cff_thumb.premium_tier, 'free')) = 'free'
-                  AND NULLIF(trim(cff_thumb.file_url), '') IS NOT NULL THEN trim(cff_thumb.file_url)
+             WHEN NULLIF(trim(f.thumbnail_url), '') IS NOT NULL THEN trim(f.thumbnail_url)
+             WHEN lower(coalesce(f.premium_tier, 'free')) = 'free'
+                  AND NULLIF(trim(f.file_url), '') IS NOT NULL THEN trim(f.file_url)
              ELSE NULL
            END
-         FROM country_flag_files cff_thumb
-         WHERE cff_thumb.country_id = c.id
-           AND cff_thumb.status = 'published'
-         ORDER BY cff_thumb.created_at DESC
+         FROM country_flag_files f
+         WHERE f.country_id = c.id
+           AND f.status = 'published'
+         ORDER BY
+           CASE
+             WHEN NULLIF(trim(f.thumbnail_url), '') IS NOT NULL THEN 0
+             WHEN lower(coalesce(f.premium_tier, 'free')) = 'free'
+                  AND NULLIF(trim(f.file_url), '') IS NOT NULL THEN 1
+             ELSE 2
+           END ASC,
+           f.created_at DESC
          LIMIT 1
        ) AS thumbnail_url
      FROM countries c
      INNER JOIN country_flag_files cff
        ON cff.country_id = c.id AND cff.status = 'published'
+     WHERE ($1::text IS NULL OR lower(trim(coalesce(c.region::text, ''))) = lower(trim($1)))
+       AND (
+         $2::text IS NULL
+         OR lower(trim(coalesce(c.category::text, 'country'))) = lower(trim($2))
+       )
      GROUP BY c.id, c.name, c.slug, c.iso_alpha_2
-     ORDER BY c.name ASC`
+     ORDER BY c.name ASC`,
+    [regionParam, catParam],
   );
 
   const out: GalleryCountrySummary[] = [];
@@ -106,7 +220,8 @@ export async function fetchGalleryCountriesFromDb(pool: Pool): Promise<GalleryCo
       typeof row.cnt === 'string' ? Number.parseInt(row.cnt, 10) : Number(row.cnt);
     const code =
       row.iso_alpha_2?.trim()?.toUpperCase() || getCountryCode(row.name)?.toUpperCase() || null;
-    const thumb = row.thumbnail_url?.trim() || flagIconFallback(code);
+    const thumb = row.thumbnail_url?.trim();
+    if (!thumb || isPackFallbackFlagThumbnail(thumb)) continue;
 
     out.push({
       name: row.name,
@@ -137,7 +252,7 @@ export type CountryGalleryPayload = {
        * use `previewUrl` + protected download.
        */
       url?: string;
-      /** Safe image for <img> — never the paid master when `premiumTier` is paid/freemium without thumbnail. */
+      /** Safe image for <img>; prefers `thumbnail_url`, else public `file_url` for raster/SVG tiers. EPS/PDF need `thumbnail_url`. */
       previewUrl: string;
       premiumTier: GalleryPremiumTier;
       /** When true, downloads must use `/api/download/[id]` (Clerk + plan gate). */
@@ -147,6 +262,12 @@ export type CountryGalleryPayload = {
     }[];
   }[];
 };
+
+function truncateDisplayPath(name: string, max = 80): string {
+  const t = name.trim();
+  if (t.length <= max) return t;
+  return `${t.slice(0, max - 1)}…`;
+}
 
 export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promise<CountryGalleryPayload | null> {
   const cRes = await pool.query<{ id: string; name: string; slug: string; iso_alpha_2: string | null }>(
@@ -170,25 +291,9 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
   const iso = countryRow.iso_alpha_2?.trim()?.toUpperCase() || null;
   const mappedCode = iso || getCountryCode(countryRow.name)?.toUpperCase() || null;
 
-  type GroupAcc = {
-    displayName: string;
-    formats: CountryGalleryPayload['variants'][number]['formats'];
-  };
-
-  const groups = new Map<string, GroupAcc>();
+  const variants: CountryGalleryPayload['variants'] = [];
 
   for (const r of fRes.rows) {
-    const displayName = (r.variant_name?.trim() || r.file_name).trim();
-    const groupKey = displayName.toLowerCase() || String(r.id);
-    let g = groups.get(groupKey);
-    if (!g) {
-      g = {
-        displayName,
-        formats: [],
-      };
-      groups.set(groupKey, g);
-    }
-
     const nbytes = Number.parseInt(String(r.file_size_bytes), 10);
     const sz = Number.isFinite(nbytes) ? nbytes : 0;
     const ext = formatExtension(r.format);
@@ -200,14 +305,15 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
         : 'Original';
 
     let previewUrl = r.thumbnail_url?.trim() || '';
-    if (!previewUrl && tier === 'free' && r.file_url?.trim()) {
-      previewUrl = r.file_url.trim();
+    const fileUrl = r.file_url?.trim() || '';
+    if (!previewUrl && isImgPreviewableFormat(r.format) && fileUrl) {
+      previewUrl = fileUrl;
     }
     if (!previewUrl) {
-      previewUrl = flagIconFallback(mappedCode);
+      previewUrl = FLAG_THUMB_PLACEHOLDER_DATA_URL;
     }
 
-    g.formats.push({
+    const formatRow: CountryGalleryPayload['variants'][number]['formats'][number] = {
       id: String(r.id),
       format: formatDisplayName(r.format),
       formatCode: ext,
@@ -218,33 +324,17 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
       downloadProtected: true,
       size: formatFileSize(sz),
       dimensions: dim,
-    });
-  }
-
-  const variants: CountryGalleryPayload['variants'] = [];
-  let idx = 0;
-  const thumbOrder = ['png', 'webp', 'jpg', 'jpeg', 'svg', 'pdf', 'eps'];
-
-  function pickThumbnail(formats: GroupAcc['formats']): string {
-    const rank = (code: string) => {
-      const i = thumbOrder.indexOf(code);
-      return i === -1 ? 999 : i;
     };
-    const sorted = [...formats].sort((a, b) => rank(a.formatCode) - rank(b.formatCode));
-    return sorted[0]?.previewUrl || formats[0]!.previewUrl;
-  }
 
-  for (const g of groups.values()) {
-    const variantId =
-      `${countryRow.slug}-` +
-      g.displayName.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase() +
-      `-v${idx++}`;
+    const baseLabel = (r.variant_name?.trim() || r.file_name.replace(/\.[^.]+$/, '')).trim() || r.file_name;
+    const variantLabel = truncateDisplayPath(`${baseLabel} · ${formatRow.format}`, 96);
+
     variants.push({
-      id: variantId,
-      name: g.displayName,
+      id: `${countryRow.slug}-file-${r.id}`,
+      name: variantLabel,
       type: 'standard',
-      thumbnail: pickThumbnail(g.formats),
-      formats: g.formats,
+      thumbnail: formatRow.previewUrl,
+      formats: [formatRow],
     });
   }
 

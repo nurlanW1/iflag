@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { Suspense, useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Search, Folder, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { hasFlag } from 'country-flag-icons';
-import FlagCssIcon from '@/components/FlagCssIcon';
+import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
 
 interface Country {
   name: string;
@@ -15,19 +15,36 @@ interface Country {
   thumbnail: string;
 }
 
-export default function GalleryPage() {
+function GalleryContent() {
+  const sp = useSearchParams();
+  const region = sp.get('region');
+  const kind = sp.get('kind');
+
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const filterLabel = useMemo(() => {
+    const ks = kind?.trim();
+    const rg = region?.trim();
+    if (ks === 'organizations') return 'Organizations';
+    if (ks === 'autonomy') return 'Autonomy regions';
+    if (ks === 'historical') return 'Historical flags';
+    if (rg) return rg;
+    return null;
+  }, [kind, region]);
 
   useEffect(() => {
-    loadCountries();
-  }, []);
+    const q = new URLSearchParams();
+    if (region?.trim()) q.set('region', region.trim());
+    if (kind?.trim()) q.set('kind', kind.trim());
+    const path = `/api/gallery/countries${q.size > 0 ? `?${q.toString()}` : ''}`;
+    loadCountries(path);
+  }, [region, kind]);
 
-  const loadCountries = async () => {
+  const loadCountries = async (path = '/api/gallery/countries') => {
     setLoading(true);
     try {
-      const response = await fetch('/api/gallery/countries');
+      const response = await fetch(path, { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setCountries(data.countries || []);
@@ -39,34 +56,43 @@ export default function GalleryPage() {
     }
   };
 
-  // Filter countries based on search query
   const filteredCountries = useMemo(() => {
     if (!searchQuery.trim()) return countries;
-    
     const query = searchQuery.toLowerCase();
-    return countries.filter(country => 
-      country.name.toLowerCase().includes(query)
-    );
+    return countries.filter((country) => country.name.toLowerCase().includes(query));
   }, [countries, searchQuery]);
 
   return (
     <main className="min-h-screen bg-white">
-      {/* Header Section */}
       <div className="bg-[#006d7a]/5 border-b border-[#006d7a]/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-black mb-2">
-            Flag Gallery
-          </h1>
-          <p className="text-black/60 text-lg mb-6">
-            Browse flags by country - {countries.length} countries available
-          </p>
-          
-          {/* Search Bar */}
+          <h1 className="text-4xl md:text-5xl font-bold text-black mb-2">Flag Gallery</h1>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-black/60 text-lg mb-6">
+            <p>
+              {filterLabel ? (
+                <>
+                  <span>{filterLabel}</span>
+                  {' · '}
+                  <span>
+                    {countries.length} {countries.length === 1 ? 'country' : 'countries'}
+                  </span>
+                </>
+              ) : (
+                <>Browse flags by country — {countries.length} listed</>
+              )}
+            </p>
+            {filterLabel ? (
+              <Link
+                href="/gallery"
+                className="text-sm font-semibold text-[#009ab6] hover:text-[#007a8a]"
+              >
+                Clear filter
+              </Link>
+            ) : null}
+          </div>
+
           <div className="max-w-2xl">
-            <form 
-              onSubmit={(e) => { e.preventDefault(); }} 
-              className="relative"
-            >
+            <form onSubmit={(e) => { e.preventDefault(); }} className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black/40" size={20} />
               <input
                 type="text"
@@ -80,9 +106,7 @@ export default function GalleryPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Results Count */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-black/60 text-sm">
             {filteredCountries.length} {filteredCountries.length === 1 ? 'country' : 'countries'} found
@@ -90,20 +114,26 @@ export default function GalleryPage() {
           </p>
         </div>
 
-        {/* Countries Grid */}
         {loading ? (
           <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#009ab6]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#009ab6]" />
           </div>
         ) : filteredCountries.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-black/60 text-lg mb-4">No countries found</p>
-            <button
-              onClick={() => setSearchQuery('')}
-              className="text-[#009ab6] hover:text-[#007a8a] font-semibold"
-            >
-              Clear search
-            </button>
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="text-[#009ab6] hover:text-[#007a8a] font-semibold"
+              >
+                Clear search
+              </button>
+            ) : filterLabel ? (
+              <Link href="/gallery" className="text-[#009ab6] font-semibold hover:underline">
+                View all countries (set Region in Admin for each upload)
+              </Link>
+            ) : null}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
@@ -118,39 +148,36 @@ export default function GalleryPage() {
                   href={`/gallery/${country.slug}`}
                   className="group block bg-white rounded-xl border-2 border-[#006d7a]/10 hover:border-[#009ab6] hover:shadow-lg transition-all duration-300 overflow-hidden"
                 >
-                  {/* Thumbnail */}
-                  <div className="aspect-square bg-[#006d7a]/5 relative overflow-hidden flex items-center justify-center">
-                    {country.code && hasFlag(country.code) ? (
-                      <div className="flex h-full w-full items-center justify-center p-3 sm:p-4 md:p-5">
-                        <FlagCssIcon code={country.code} className="h-full w-full" />
-                      </div>
-                    ) : (
-                      <img
-                        src={country.thumbnail}
-                        alt={`${country.name} flag`}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        loading="lazy"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/placeholder-flag.jpg';
-                        }}
-                      />
-                    )}
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                  <div className="aspect-square bg-[#006d7a]/5 relative overflow-hidden flex items-center justify-center p-3 sm:p-4 md:p-5">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN / blob previews */}
+                    <img
+                      key={country.thumbnail}
+                      src={country.thumbnail?.trim() || FLAG_THUMB_PLACEHOLDER_DATA_URL}
+                      alt={`${country.name} flag`}
+                      className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      decoding="async"
+                      onError={(e) => {
+                        const el = e.target as HTMLImageElement;
+                        el.onerror = null;
+                        el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
+                      }}
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                         <ArrowRight size={24} className="text-white" />
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Country Info */}
+
                   <div className="p-4">
                     <div className="flex items-center gap-2 mb-1">
                       <Folder size={16} className="text-[#009ab6] flex-shrink-0" />
                       <h3 className="text-sm font-bold text-black truncate">{country.name}</h3>
                     </div>
                     <p className="text-xs text-black/60">
-                      {country.count} {country.count === 1 ? 'flag' : 'flags'}
+                      {country.count} {country.count === 1 ? 'flag file' : 'flag files'}
                     </p>
                   </div>
                 </Link>
@@ -160,5 +187,19 @@ export default function GalleryPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function GalleryPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-white flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#009ab6]" />
+        </main>
+      }
+    >
+      <GalleryContent />
+    </Suspense>
   );
 }

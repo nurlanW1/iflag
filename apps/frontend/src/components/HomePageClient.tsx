@@ -386,6 +386,14 @@ export default function HomePageClient() {
               },
             ].map((cat, idx) => {
               const CatIcon = cat.icon;
+              const galleryHref =
+                cat.name === 'Organizations'
+                  ? '/gallery?kind=organizations'
+                  : cat.name === 'Autonomy'
+                    ? '/gallery?kind=autonomy'
+                    : cat.name === 'Historical Flag'
+                      ? '/gallery?kind=historical'
+                      : `/gallery?region=${encodeURIComponent(cat.name)}`;
               return (
                 <SectionReveal
                   key={idx}
@@ -395,7 +403,7 @@ export default function HomePageClient() {
                   className="min-w-0"
                 >
                   <Link
-                    href={`/assets?category=${cat.name.toLowerCase()}`}
+                    href={galleryHref}
                     className={`group flex min-h-[3.25rem] w-full items-center gap-3 rounded-xl border border-gray-200/90 bg-white px-3 py-2.5 transition-all duration-200 hover:border-[#009ab6] hover:bg-[#009ab6]/[0.05] hover:shadow-lg hover:shadow-[#009ab6]/12 sm:min-h-[3.75rem] sm:gap-4 sm:rounded-2xl sm:px-4 sm:py-3 md:min-h-[4.25rem] md:px-5 md:py-3.5`}
                   >
                     <div

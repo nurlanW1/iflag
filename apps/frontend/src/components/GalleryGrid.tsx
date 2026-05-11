@@ -2,9 +2,8 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { hasFlag } from 'country-flag-icons';
-import FlagCssIcon from '@/components/FlagCssIcon';
 import { useRevealInView } from '@/hooks/useRevealInView';
+import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
 
 interface Country {
   name: string;
@@ -18,7 +17,7 @@ interface GalleryGridProps {
   countries: Country[];
   /** Skip scroll-triggered reveal — avoids empty-looking grid when IntersectionObserver never fires. */
   disableScrollReveal?: boolean;
-  /** Use thumbnail image URLs (reliable previews); set on home landing section. */
+  /** Kept for backward compatibility — uploaded thumbnails are now always used. */
   preferImageThumbnails?: boolean;
   /** Fewer columns per row so each flag tile is larger (home landing). */
   largeTiles?: boolean;
@@ -30,21 +29,18 @@ function GalleryCell({
   country,
   idx,
   disableScrollReveal,
-  preferImageThumbnails,
   largeTiles,
   linkToCountryGallery,
 }: {
   country: Country;
   idx: number;
   disableScrollReveal?: boolean;
-  preferImageThumbnails?: boolean;
   largeTiles?: boolean;
   linkToCountryGallery?: boolean;
 }) {
   const { ref, isRevealed } = useRevealInView<HTMLDivElement>();
   const visible = disableScrollReveal || isRevealed;
-  const useImg =
-    preferImageThumbnails || !country.code || !hasFlag(country.code);
+  const src = country.thumbnail?.trim() || FLAG_THUMB_PLACEHOLDER_DATA_URL;
 
   const tile = (
     <>
@@ -55,22 +51,21 @@ function GalleryCell({
             : 'aspect-square bg-[#006d7a]/5 rounded-lg overflow-hidden border border-[#006d7a]/10 hover:border-[#009ab6] hover:shadow-md transition-all duration-300 flex items-center justify-center p-2'
         }
       >
-        {useImg ? (
-          <img
-            src={country.thumbnail}
-            alt={`${country.name} flag`}
-            className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-300"
-            loading="lazy"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder-flag.jpg';
-            }}
-          />
-        ) : (
-          <FlagCssIcon
-            code={country.code}
-            className="h-full w-full group-hover:scale-110 transition-transform duration-300"
-          />
-        )}
+        {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN / blob previews */}
+        <img
+          key={src}
+          src={src}
+          alt={`${country.name} flag`}
+          className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-300"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          decoding="async"
+          onError={(e) => {
+            const el = e.target as HTMLImageElement;
+            el.onerror = null;
+            el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
+          }}
+        />
       </div>
       <p
         className={
@@ -109,7 +104,6 @@ function GalleryCell({
 export default function GalleryGrid({
   countries,
   disableScrollReveal = false,
-  preferImageThumbnails = false,
   largeTiles = false,
   linkToCountryGallery = false,
 }: GalleryGridProps) {
@@ -125,7 +119,6 @@ export default function GalleryGrid({
           country={country}
           idx={idx}
           disableScrollReveal={disableScrollReveal}
-          preferImageThumbnails={preferImageThumbnails}
           largeTiles={largeTiles}
           linkToCountryGallery={linkToCountryGallery}
         />

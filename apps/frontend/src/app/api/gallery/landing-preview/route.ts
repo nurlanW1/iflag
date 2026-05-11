@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
-import { countries, hasFlag } from 'country-flag-icons';
-import { getCountryName } from '@/lib/country-code-to-name';
-
-function countryToSlug(country: string): string {
-  return country.toLowerCase().replace(/\s+/g, '-');
-}
+import { getDb } from '@/lib/server/db';
+import { fetchGalleryCountriesFromDb, applyGalleryDisplayNames, type GalleryCountrySummary } from '@/lib/server/gallery-from-db';
 
 /** Fisher–Yates shuffle (random preview order each request). */
 function shuffle<T>(items: T[]): T[] {
@@ -16,49 +12,23 @@ function shuffle<T>(items: T[]): T[] {
   return out;
 }
 
-function buildAllRows(): {
-  name: string;
-  slug: string;
-  code: string | null;
-  count: number;
-  thumbnail: string;
-}[] {
-  const rows: {
-    name: string;
-    slug: string;
-    code: string | null;
-    count: number;
-    thumbnail: string;
-  }[] = [];
-
-  countries.forEach((code) => {
-    if (hasFlag(code)) {
-      const countryName = getCountryName(code) || code;
-      rows.push({
-        name: countryName,
-        slug: countryToSlug(countryName),
-        code,
-        count: 0,
-        thumbnail: `https://purecatamphetamine.github.io/country-flag-icons/3x2/${code}.svg`,
-      });
-    }
-  });
-
-  rows.sort((a, b) => a.name.localeCompare(b.name));
-  return rows;
-}
-
 /**
- * CDN-only flag list for the home page grid — no local `flag_stock` folder required.
+ * Landing gallery preview: only countries with real uploaded/published preview URLs
+ * (same source as `/api/gallery/countries` DB path — no CSS pack or external SVG fallbacks).
  * - Default: random 24-tile preview.
- * - `?full=1`: full list, sorted by country name (same order as expand-on-home).
+ * - `?full=1`: full list, sorted by country name.
  */
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const full = searchParams.get('full') === '1';
 
-    const rows = buildAllRows();
+    let rows: GalleryCountrySummary[] = [];
+    if (process.env.DATABASE_URL?.trim()) {
+      rows = applyGalleryDisplayNames(await fetchGalleryCountriesFromDb(getDb()));
+    }
+
+    rows = [...rows].sort((a, b) => a.name.localeCompare(b.name));
 
     if (full) {
       return NextResponse.json(
@@ -74,6 +44,6 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     console.error('Error building landing gallery preview:', error);
-    return NextResponse.json({ countries: [] }, { status: 500 });
+    return NextResponse.json({ countries: [] }, { status: 200 });
   }
 }

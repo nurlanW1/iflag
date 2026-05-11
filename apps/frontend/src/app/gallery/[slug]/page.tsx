@@ -1,14 +1,18 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  type SyntheticEvent,
+} from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { ArrowLeft, Download, FileImage, FileType, Video, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
-import { hasFlag } from 'country-flag-icons';
-import { getCountryCode } from '@/lib/country-mapping';
 import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
-import FlagCssIcon from '@/components/FlagCssIcon';
+import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
 
 type PremiumTier = 'free' | 'freemium' | 'paid';
 
@@ -35,6 +39,9 @@ interface Variant {
   formats: Format[];
 }
 
+/** Flattened row for sidebar: same as `Format` plus parent variant refs. */
+type FormatWithVariant = Format & { variantId: string; variantName: string };
+
 interface CountryData {
   country: {
     name: string;
@@ -46,6 +53,48 @@ interface CountryData {
 
 function previewSrc(f: Format): string {
   return f.previewUrl || f.url || '';
+}
+
+/** Stable display URL per file row (helps when multiple rows share one CDN blob path). Avoid mutating signed URLs. */
+function looksSignedDeliveryUrl(src: string): boolean {
+  return /([?&](?:X-Amz-Signature|X-Amz-Credential|signature|sig|token)=|\bsig=)/i.test(
+    src,
+  );
+}
+
+function previewSrcUi(f: Format): string {
+  const base = previewSrc(f);
+  if (!base || base.startsWith('data:')) return base;
+  if (looksSignedDeliveryUrl(base)) return base;
+  try {
+    const origin =
+      typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+    const u = new URL(base, origin);
+    u.searchParams.set('pv', f.id);
+    return /^https?:/i.test(base) ? u.href : `${u.pathname}${u.search}${u.hash}`;
+  } catch {
+    const sep = base.includes('?') ? '&' : '?';
+    return `${base}${sep}pv=${encodeURIComponent(f.id)}`;
+  }
+}
+
+function imgErrorFallbackChain(
+  e: SyntheticEvent<HTMLImageElement, Event>,
+  fallbacks: readonly string[],
+) {
+  const el = e.target as HTMLImageElement;
+  let i = Number(el.dataset.previewFallbackIx || 0);
+  if (!Number.isFinite(i)) i = 0;
+  for (; i < fallbacks.length; i++) {
+    const next = fallbacks[i];
+    if (next?.trim() && el.src !== next) {
+      el.dataset.previewFallbackIx = String(i + 1);
+      el.src = next;
+      return;
+    }
+  }
+  el.onerror = null;
+  el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
 }
 
 export default function CountryDetailPage() {
@@ -61,7 +110,6 @@ export default function CountryDetailPage() {
   const [selectedFormat, setSelectedFormat] = useState<Format | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'vector' | 'raster' | 'video'>('raster');
-  const [countryCode, setCountryCode] = useState<string | null>(null);
   const [hasActivePlan, setHasActivePlan] = useState(false);
   const [planLoaded, setPlanLoaded] = useState(false);
 
@@ -105,15 +153,14 @@ export default function CountryDetailPage() {
       if (response.ok) {
         const countryData = (await response.json()) as CountryData;
         setData(countryData);
-        if (countryData.country?.code) {
-          setCountryCode(countryData.country.code);
-        } else if (countryData.country?.name) {
-          setCountryCode(getCountryCode(countryData.country.name));
-        }
         if (countryData.variants && countryData.variants.length > 0) {
           setSelectedVariant(countryData.variants[0]);
           if (countryData.variants[0].formats && countryData.variants[0].formats.length > 0) {
-            setSelectedFormat(countryData.variants[0].formats[0]);
+            const firstFmt = countryData.variants[0].formats[0];
+            setSelectedFormat(firstFmt);
+            if (firstFmt.category === 'vector' || firstFmt.category === 'raster' || firstFmt.category === 'video') {
+              setActiveTab(firstFmt.category);
+            }
           }
         }
       } else {
@@ -238,18 +285,42 @@ export default function CountryDetailPage() {
     ]
   );
 
-  const filteredFormats = selectedVariant?.formats.filter((format) => {
-    if (activeTab === 'vector') return format.category === 'vector';
-    if (activeTab === 'raster') return format.category === 'raster';
-    if (activeTab === 'video') return format.category === 'video';
-    return true;
-  }) || [];
+  const allFormatsFlat = useMemo((): FormatWithVariant[] => {
+    if (!data?.variants?.length) return [];
+    return data.variants.flatMap((v) =>
+      (v.formats ?? []).map((f) => ({
+        ...f,
+        variantId: v.id,
+        variantName: v.name,
+      })),
+    );
+  }, [data]);
 
-  const formatCounts = {
-    vector: selectedVariant?.formats.filter((f) => f.category === 'vector').length || 0,
-    raster: selectedVariant?.formats.filter((f) => f.category === 'raster').length || 0,
-    video: selectedVariant?.formats.filter((f) => f.category === 'video').length || 0,
-  };
+  const formatCounts = useMemo(
+    () => ({
+      vector: allFormatsFlat.filter((f) => f.category === 'vector').length,
+      raster: allFormatsFlat.filter((f) => f.category === 'raster').length,
+      video: allFormatsFlat.filter((f) => f.category === 'video').length,
+    }),
+    [allFormatsFlat],
+  );
+
+  const filteredFormats = useMemo(() => {
+    return allFormatsFlat.filter((format) => {
+      if (activeTab === 'vector') return format.category === 'vector';
+      if (activeTab === 'raster') return format.category === 'raster';
+      if (activeTab === 'video') return format.category === 'video';
+      return true;
+    });
+  }, [allFormatsFlat, activeTab]);
+
+  const applyFlatSelection = useCallback((entry: FormatWithVariant | undefined) => {
+    if (!entry || !data?.variants?.length) return;
+    const v = data.variants.find((x) => x.id === entry.variantId);
+    if (!v) return;
+    setSelectedVariant(v);
+    setSelectedFormat(entry);
+  }, [data]);
 
   if (loading) {
     return (
@@ -285,6 +356,9 @@ export default function CountryDetailPage() {
       !planLoaded) ||
     downloading === selectedFormat?.id;
 
+  const heroFormat = selectedFormat ?? data.variants[0]?.formats?.[0] ?? null;
+  const heroPreviewSrc = heroFormat ? previewSrcUi(heroFormat) : '';
+
   return (
     <main className="min-h-screen bg-white">
       <div className="bg-[#006d7a]/5 border-b border-[#006d7a]/10">
@@ -297,11 +371,22 @@ export default function CountryDetailPage() {
             <span>Back to Gallery</span>
           </Link>
           <div className="flex items-center gap-4 mb-2">
-            {countryCode && hasFlag(countryCode) && (
-              <div className="w-28 h-[5.25rem] sm:w-32 sm:h-24 flex-shrink-0">
-                <FlagCssIcon code={countryCode} className="h-full w-full" />
+            {heroPreviewSrc ? (
+              <div className="w-28 h-[5.25rem] sm:w-32 sm:h-24 shrink-0 overflow-hidden rounded-lg border border-[#006d7a]/15 bg-white shadow-sm flex items-center justify-center p-1">
+                {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
+                <img
+                  key={heroFormat?.id ?? 'hero-header'}
+                  src={heroPreviewSrc}
+                  alt=""
+                  className="h-full w-full object-contain"
+                  referrerPolicy="no-referrer"
+                  decoding="async"
+                  onError={(e) =>
+                    imgErrorFallbackChain(e, selectedVariant?.thumbnail ? [selectedVariant.thumbnail] : [])
+                  }
+                />
               </div>
-            )}
+            ) : null}
             <h1 className="text-4xl md:text-5xl font-bold text-black">{data.country.name} Flags</h1>
           </div>
           <p className="text-black/60">
@@ -317,12 +402,15 @@ export default function CountryDetailPage() {
               <div className="bg-white border-2 border-[#006d7a]/10 rounded-xl overflow-hidden mb-6">
                 <div className="aspect-video bg-[#006d7a]/5 relative flex items-center justify-center p-8">
                   <img
-                    src={previewSrc(selectedFormat)}
+                    key={`${selectedVariant.id}-${selectedFormat.id}`}
+                    src={previewSrcUi(selectedFormat)}
                     alt={`${data.country.name} ${selectedVariant.name}`}
                     className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = selectedVariant.thumbnail;
-                    }}
+                    referrerPolicy="no-referrer"
+                    decoding="async"
+                    onError={(e) =>
+                      imgErrorFallbackChain(e, [selectedVariant.thumbnail])
+                    }
                   />
                 </div>
                 <div className="p-6">
@@ -376,25 +464,34 @@ export default function CountryDetailPage() {
                       onClick={() => {
                         setSelectedVariant(variant);
                         if (variant.formats && variant.formats.length > 0) {
-                          setSelectedFormat(variant.formats[0]);
+                          const f0 = variant.formats[0];
+                          setSelectedFormat(f0);
+                          if (f0.category === 'vector' || f0.category === 'raster' || f0.category === 'video') {
+                            setActiveTab(f0.category);
+                          }
                         }
                       }}
                     >
                       <div className="aspect-video bg-[#006d7a]/5 relative overflow-hidden">
                         {format ? (
                           <img
-                            src={previewSrc(format)}
+                            key={`${variant.id}-${format.id}-thumb`}
+                            src={previewSrcUi(format)}
                             alt={variant.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = variant.thumbnail;
-                            }}
+                            className="w-full h-full object-contain p-1 bg-[#006d7a]/5 group-hover:scale-[1.02] transition-transform duration-300"
+                            referrerPolicy="no-referrer"
+                            decoding="async"
+                            onError={(e) => imgErrorFallbackChain(e, [variant.thumbnail])}
                           />
                         ) : (
                           <img
+                            key={`${variant.id}-vt`}
                             src={variant.thumbnail}
                             alt={variant.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            className="w-full h-full object-contain p-1 bg-[#006d7a]/5"
+                            referrerPolicy="no-referrer"
+                            decoding="async"
+                            onError={(e) => imgErrorFallbackChain(e, [])}
                           />
                         )}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -424,7 +521,10 @@ export default function CountryDetailPage() {
                 {formatCounts.vector > 0 && (
                   <button
                     type="button"
-                    onClick={() => setActiveTab('vector')}
+                    onClick={() => {
+                      setActiveTab('vector');
+                      applyFlatSelection(allFormatsFlat.find((f) => f.category === 'vector'));
+                    }}
                     className={`px-4 py-2 text-sm font-medium transition-colors ${
                       activeTab === 'vector'
                         ? 'text-[#009ab6] border-b-2 border-[#009ab6]'
@@ -438,7 +538,10 @@ export default function CountryDetailPage() {
                 {formatCounts.raster > 0 && (
                   <button
                     type="button"
-                    onClick={() => setActiveTab('raster')}
+                    onClick={() => {
+                      setActiveTab('raster');
+                      applyFlatSelection(allFormatsFlat.find((f) => f.category === 'raster'));
+                    }}
                     className={`px-4 py-2 text-sm font-medium transition-colors ${
                       activeTab === 'raster'
                         ? 'text-[#009ab6] border-b-2 border-[#009ab6]'
@@ -452,7 +555,10 @@ export default function CountryDetailPage() {
                 {formatCounts.video > 0 && (
                   <button
                     type="button"
-                    onClick={() => setActiveTab('video')}
+                    onClick={() => {
+                      setActiveTab('video');
+                      applyFlatSelection(allFormatsFlat.find((f) => f.category === 'video'));
+                    }}
                     className={`px-4 py-2 text-sm font-medium transition-colors ${
                       activeTab === 'video'
                         ? 'text-[#009ab6] border-b-2 border-[#009ab6]'
@@ -482,25 +588,32 @@ export default function CountryDetailPage() {
                     return (
                       <div
                         key={format.id}
-                        className={`p-4 rounded-lg border-2 transition-all ${
+                        onClick={() => applyFlatSelection(format)}
+                        className={`cursor-pointer p-4 rounded-lg border-2 transition-all ${
                           selectedFormat?.id === format.id
                             ? 'border-[#009ab6] bg-[#009ab6]/5'
                             : 'border-[#006d7a]/10 hover:border-[#009ab6]/50'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <div>
+                          <div className="min-w-0 pr-2">
                             <p className="font-semibold text-black">{format.format}</p>
-                            <p className="text-xs text-black/60">
+                            <p className="text-xs text-black/60 truncate" title={format.variantName}>
+                              {format.variantName}
+                            </p>
+                            <p className="text-xs text-black/60 mt-0.5">
                               {format.dimensions} • {format.size}
                             </p>
                           </div>
-                          {selectedFormat?.id === format.id && <Check size={20} className="text-[#009ab6]" />}
+                          {selectedFormat?.id === format.id && (
+                            <Check size={20} className="shrink-0 text-[#009ab6]" />
+                          )}
                         </div>
                         <button
                           type="button"
-                          onClick={() => {
-                            setSelectedFormat(format);
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            applyFlatSelection(format);
                             onDownloadPress(format);
                           }}
                           disabled={!!rowBusy}
