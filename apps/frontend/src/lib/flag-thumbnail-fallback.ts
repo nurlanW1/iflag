@@ -8,12 +8,6 @@ export const FLAG_THUMB_PLACEHOLDER_DATA_URL =
       '</svg>',
   );
 
-/** True when the gallery API fell back to the generic star tile (no real preview URL). */
-export function isGenericFlagThumbPlaceholder(url: string | null | undefined): boolean {
-  const t = url?.trim() ?? '';
-  return t.length === 0 || t === FLAG_THUMB_PLACEHOLDER_DATA_URL;
-}
-
 function hueFromStableId(seed: string): number {
   let h = 0;
   for (let i = 0; i < seed.length; i++) {

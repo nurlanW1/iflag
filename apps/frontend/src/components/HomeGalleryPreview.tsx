@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { SectionReveal } from '@/components/motion/SectionReveal';
-import { applyLandingRasterThumbnails } from '@/lib/landing-preview-thumbnails';
 import GalleryGrid from './GalleryGrid';
 
 interface Country {
@@ -27,22 +26,22 @@ export default function HomeGalleryPreview() {
 
   const loadCountries = async () => {
     try {
-      const stockRes = await fetch('/api/gallery/countries', { cache: 'no-store' });
-      if (stockRes.ok) {
-        const data = await stockRes.json();
-        const list = data.countries || [];
-        if (list.length > 0) {
-          setAllCountries(applyLandingRasterThumbnails(list));
-          return;
-        }
-      }
-
       const previewRes = await fetch('/api/gallery/landing-preview?full=1', {
         cache: 'no-store',
       });
       if (previewRes.ok) {
         const data = await previewRes.json();
-        setAllCountries(applyLandingRasterThumbnails(data.countries || []));
+        const list = data.countries || [];
+        if (list.length > 0) {
+          setAllCountries(list);
+          return;
+        }
+      }
+
+      const stockRes = await fetch('/api/gallery/countries', { cache: 'no-store' });
+      if (stockRes.ok) {
+        const data = await stockRes.json();
+        setAllCountries(data.countries || []);
       }
     } catch (error) {
       console.error('Failed to load countries:', error);
