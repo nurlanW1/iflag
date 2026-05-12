@@ -393,17 +393,17 @@ export default function CountryDetailPage() {
     downloading === selectedFormat?.id;
 
   return (
-    <main className="min-h-screen bg-stone-50 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:pb-14">
-      <div className="mx-auto max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:px-10 lg:pb-28">
+    <main className="min-h-screen bg-stone-50 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:h-[calc(100vh-4rem)] lg:overflow-hidden lg:pb-0">
+      <div className="mx-auto h-full w-full px-3 pb-24 pt-4 sm:px-5 lg:px-6 lg:pb-4">
         <Link
           href="/gallery"
-          className="group inline-flex items-center gap-1.5 text-sm text-stone-500 transition-colors hover:text-stone-900"
+          className="group inline-flex items-center gap-1.5 text-sm text-stone-500 transition-colors hover:text-stone-900 lg:hidden"
         >
           <ArrowLeft size={15} strokeWidth={2} className="transition-transform group-hover:-translate-x-0.5" />
           Gallery
         </Link>
 
-        <header className="mt-8 border-b border-stone-200/80 pb-8">
+        <header className="mt-6 border-b border-stone-200/80 pb-6 lg:hidden">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-400">Download</p>
           <h1 className="mt-2 text-balance font-semibold tracking-tight text-stone-900 text-4xl sm:text-[2.65rem] sm:leading-[1.1]">
             {pageTitle}
@@ -416,17 +416,17 @@ export default function CountryDetailPage() {
           </p>
         </header>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start xl:grid-cols-[minmax(0,1fr)_23rem]">
-          <div className="min-w-0 space-y-5">
+        <div className="mt-6 grid gap-5 lg:mt-0 lg:h-full lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-stretch xl:grid-cols-[minmax(0,1fr)_23rem] 2xl:grid-cols-[minmax(0,1fr)_24rem]">
+          <div className="flex min-w-0 flex-col gap-4 lg:min-h-0">
             {selectedVariant && selectedFormat ? (
-              <div className="overflow-hidden rounded-[1.5rem] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70">
-                <div className="flex min-h-[20rem] items-center justify-center bg-[#6b6b68] px-4 py-8 sm:min-h-[26rem] lg:min-h-[31rem] xl:min-h-[34rem]">
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.35rem] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70">
+                <div className="flex min-h-[20rem] flex-1 items-center justify-center bg-[#6b6b68] px-4 py-6 sm:min-h-[26rem] lg:min-h-0 xl:px-8">
                   {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
                   <img
                     key={`${selectedVariant.id}-${selectedFormat.id}`}
                     src={previewSrcUi(selectedFormat)}
                     alt={`${pageTitle} ${selectedFormat.format} preview`}
-                    className="max-h-[min(62vh,34rem)] w-auto max-w-full object-contain drop-shadow-[0_16px_22px_rgba(0,0,0,0.25)]"
+                    className="max-h-full w-auto max-w-full object-contain drop-shadow-[0_16px_22px_rgba(0,0,0,0.25)]"
                     referrerPolicy="no-referrer"
                     decoding="async"
                     onError={(e) =>
@@ -434,7 +434,7 @@ export default function CountryDetailPage() {
                     }
                   />
                 </div>
-                <div className="flex flex-col gap-3 border-t border-stone-100 px-5 py-4 text-center sm:px-6">
+                <div className="flex shrink-0 flex-col gap-2 border-t border-stone-100 px-5 py-3 text-center sm:px-6">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-stone-600" title={selectedVariant.name}>
                       {shortVariantLabel(selectedVariant.name)}
@@ -451,7 +451,7 @@ export default function CountryDetailPage() {
             ) : null}
 
             {allFormatsFlat.length > 0 ? (
-              <section className="rounded-[1.25rem] bg-white px-4 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70 sm:px-5">
+              <section className="shrink-0 rounded-[1.15rem] bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70 sm:px-5">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">
@@ -522,8 +522,8 @@ export default function CountryDetailPage() {
 
           </div>
 
-          <aside className="w-full shrink-0 self-start lg:sticky lg:top-[5.25rem]">
-            <div className="overflow-hidden rounded-[1.25rem] bg-white px-5 py-6 shadow-[0_14px_50px_-24px_rgba(15,23,42,0.35)] ring-1 ring-stone-200/90">
+          <aside className="w-full shrink-0 self-start lg:h-full lg:min-h-0">
+            <div className="h-full overflow-y-auto rounded-[1.25rem] bg-white px-5 py-6 shadow-[0_14px_50px_-24px_rgba(15,23,42,0.35)] ring-1 ring-stone-200/90 [scrollbar-width:thin]">
               <div className="flex items-start justify-between gap-3 border-b border-stone-100/90 pb-5">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-400">
