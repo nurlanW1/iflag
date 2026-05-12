@@ -229,7 +229,49 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
   const iso = countryRow.iso_alpha_2?.trim()?.toUpperCase() || null;
   const mappedCode = iso || getCountryCode(countryRow.name)?.toUpperCase() || null;
 
-  const variants: CountryGalleryPayload['variants'] = [];
+  /**
+   * Display order: AI → SVG → EPS → JPG → PNG. Anything else falls to the end (e.g. PDF, MP4).
+   * Mirrors the 5-slot download grid on the detail page.
+   */
+  const FORMAT_DISPLAY_ORDER: Record<string, number> = {
+    ai: 0,
+    svg: 1,
+    eps: 2,
+    jpg: 3,
+    jpeg: 3,
+    png: 4,
+  };
+
+  /** Higher score = better candidate for the variant cover thumbnail (image you can render in `<img>`). */
+  function thumbScoreForFormat(fmt: string): number {
+    const f = fmt.toLowerCase();
+    if (f === 'png') return 5;
+    if (f === 'jpg' || f === 'jpeg' || f === 'webp') return 4;
+    if (f === 'svg') return 3;
+    return 0;
+  }
+
+  function variantGroupKey(row: FlagFileRow): string {
+    const named = row.variant_name?.trim();
+    if (named) return `n:${named.toLowerCase()}`;
+    /** Strip extension to merge {name}.png + {name}.jpg + {name}.svg into one design. */
+    const base = row.file_name.replace(/\.[^.]+$/, '').trim();
+    return `f:${base.toLowerCase()}`;
+  }
+
+  type FormatRow = CountryGalleryPayload['variants'][number]['formats'][number];
+
+  type VariantBuilder = {
+    id: string;
+    name: string;
+    type: string;
+    thumbnail: string;
+    thumbScore: number;
+    formats: FormatRow[];
+  };
+
+  const builders = new Map<string, VariantBuilder>();
+  let variantIdx = 0;
 
   for (const r of fRes.rows) {
     const nbytes = Number.parseInt(String(r.file_size_bytes), 10);
@@ -258,7 +300,7 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
     }
     previewUrl = siteProxiedBlobUrl(previewUrl);
 
-    const formatRow: CountryGalleryPayload['variants'][number]['formats'][number] = {
+    const formatRow: FormatRow = {
       id: String(r.id),
       format: formatDisplayName(r.format),
       formatCode: ext,
@@ -271,17 +313,48 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
       dimensions: dim,
     };
 
-    const baseLabel = (r.variant_name?.trim() || r.file_name.replace(/\.[^.]+$/, '')).trim() || r.file_name;
-    const variantLabel = truncateDisplayPath(`${baseLabel} · ${formatRow.format}`, 96);
+    const key = variantGroupKey(r);
+    let builder = builders.get(key);
+    if (!builder) {
+      const displayName =
+        (r.variant_name?.trim() || r.file_name.replace(/\.[^.]+$/, '').trim()) || r.file_name;
+      builder = {
+        id: `${countryRow.slug}-design-${variantIdx++}`,
+        name: truncateDisplayPath(displayName, 96),
+        type: 'design',
+        thumbnail: '',
+        thumbScore: -1,
+        formats: [],
+      };
+      builders.set(key, builder);
+    }
+    builder.formats.push(formatRow);
 
-    variants.push({
-      id: `${countryRow.slug}-file-${r.id}`,
-      name: variantLabel,
-      type: 'standard',
-      thumbnail: formatRow.previewUrl,
-      formats: [formatRow],
-    });
+    const score = thumbScoreForFormat(r.format);
+    if (score > builder.thumbScore) {
+      builder.thumbScore = score;
+      builder.thumbnail = previewUrl;
+    }
   }
+
+  const variants: CountryGalleryPayload['variants'] = Array.from(builders.values()).map((b) => {
+    const sortedFormats = [...b.formats].sort((a, c) => {
+      const ai = FORMAT_DISPLAY_ORDER[a.formatCode] ?? 9;
+      const ci = FORMAT_DISPLAY_ORDER[c.formatCode] ?? 9;
+      if (ai !== ci) return ai - ci;
+      return a.file.localeCompare(c.file);
+    });
+    const cover =
+      b.thumbnail || sortedFormats[0]?.previewUrl || flagThumbPlaceholderForFileId(b.id);
+    return {
+      id: b.id,
+      name: b.name,
+      type: b.type,
+      thumbnail: cover,
+      formats: sortedFormats,
+    };
+  });
+  variants.sort((a, b) => a.name.localeCompare(b.name));
 
   return {
     country: {

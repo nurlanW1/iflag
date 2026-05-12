@@ -8,16 +8,7 @@ import {
   type SyntheticEvent,
 } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import {
-  ArrowLeft,
-  Download,
-  FileImage,
-  FileType,
-  Video,
-  Cpu,
-  Lock,
-  SlidersHorizontal,
-} from 'lucide-react';
+import { ArrowLeft, Download, Lock, Sparkles, ImageOff, Heart, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
@@ -52,9 +43,6 @@ interface Variant {
   formats: Format[];
 }
 
-/** Flattened row for sidebar: same as `Format` plus parent variant refs. */
-type FormatWithVariant = Format & { variantId: string; variantName: string };
-
 interface CountryData {
   country: {
     name: string;
@@ -64,15 +52,66 @@ interface CountryData {
   variants: Variant[];
 }
 
+const CANONICAL_FORMATS = ['AI', 'SVG', 'EPS', 'JPG', 'PNG'] as const;
+type CanonicalFormatId = (typeof CANONICAL_FORMATS)[number];
+
+/** Visual identity per format slot — keeps the 5 download cards distinguishable at a glance. */
+const FORMAT_META: Record<CanonicalFormatId, { label: string; subtitle: string; accent: string; pill: string }> = {
+  AI: {
+    label: 'AI',
+    subtitle: 'Adobe Illustrator',
+    accent: 'from-amber-100 to-amber-50 text-amber-900 ring-amber-200',
+    pill: 'bg-amber-500',
+  },
+  SVG: {
+    label: 'SVG',
+    subtitle: 'Scalable vector',
+    accent: 'from-sky-100 to-sky-50 text-sky-900 ring-sky-200',
+    pill: 'bg-sky-500',
+  },
+  EPS: {
+    label: 'EPS',
+    subtitle: 'Encapsulated PS',
+    accent: 'from-violet-100 to-violet-50 text-violet-900 ring-violet-200',
+    pill: 'bg-violet-500',
+  },
+  JPG: {
+    label: 'JPG',
+    subtitle: 'Photo raster',
+    accent: 'from-rose-100 to-rose-50 text-rose-900 ring-rose-200',
+    pill: 'bg-rose-500',
+  },
+  PNG: {
+    label: 'PNG',
+    subtitle: 'Transparent',
+    accent: 'from-emerald-100 to-emerald-50 text-emerald-900 ring-emerald-200',
+    pill: 'bg-emerald-500',
+  },
+};
+
+/** Priority for *auto* selection when a variant changes; preview-friendly first. */
+const DEFAULT_PICK_ORDER: CanonicalFormatId[] = ['PNG', 'JPG', 'SVG', 'EPS', 'AI'];
+
+function findFormatBySlot(variant: Variant | null, slot: CanonicalFormatId): Format | null {
+  if (!variant) return null;
+  return variant.formats.find((f) => f.format.toUpperCase() === slot) ?? null;
+}
+
+function pickDefaultFormat(variant: Variant): Format | null {
+  for (const slot of DEFAULT_PICK_ORDER) {
+    const f = findFormatBySlot(variant, slot);
+    if (f) return f;
+  }
+  return variant.formats[0] ?? null;
+}
+
 function previewSrc(f: Format): string {
   return f.previewUrl || f.url || '';
 }
 
 /** Stable display URL per file row (helps when multiple rows share one CDN blob path). Avoid mutating signed URLs. */
 function looksSignedDeliveryUrl(src: string): boolean {
-  return /([?&](?:X-Amz-Signature|X-Amz-Credential|signature|sig|token)=|\bsig=)/i.test(
-    src,
-  );
+  return /([?&](?:X-Amz-Signature|X-Amz-Credential|signature|sig|token)=|\bsig=)/i.test(src);
 }
 
 function previewSrcUi(f: Format): string {
@@ -89,6 +128,14 @@ function previewSrcUi(f: Format): string {
     const sep = base.includes('?') ? '&' : '?';
     return `${base}${sep}pv=${encodeURIComponent(f.id)}`;
   }
+}
+
+function bigPreviewSrc(variant: Variant | null, format: Format | null): string {
+  if (!variant) return FLAG_THUMB_PLACEHOLDER_DATA_URL;
+  if (format && (format.category === 'raster' || format.formatCode === 'svg')) {
+    return previewSrcUi(format);
+  }
+  return variant.thumbnail || FLAG_THUMB_PLACEHOLDER_DATA_URL;
 }
 
 function imgErrorFallbackChain(
@@ -111,13 +158,6 @@ function imgErrorFallbackChain(
   el.src = lastResortSrc;
 }
 
-function shortVariantLabel(name: string): string {
-  const marker = ' · ';
-  const i = name.indexOf(marker);
-  if (i >= 0) return name.slice(0, i).trim();
-  return name;
-}
-
 function tierBadge(format: Format): string | null {
   if (format.premiumTier === 'paid') return 'Paid';
   if (format.premiumTier === 'freemium') return 'Premium';
@@ -136,7 +176,6 @@ export default function CountryDetailPage() {
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<Format | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'vector' | 'raster' | 'video'>('raster');
   const [hasActivePlan, setHasActivePlan] = useState(false);
   const [planLoaded, setPlanLoaded] = useState(false);
 
@@ -180,16 +219,9 @@ export default function CountryDetailPage() {
       if (response.ok) {
         const countryData = (await response.json()) as CountryData;
         setData(countryData);
-        if (countryData.variants && countryData.variants.length > 0) {
-          setSelectedVariant(countryData.variants[0]);
-          if (countryData.variants[0].formats && countryData.variants[0].formats.length > 0) {
-            const firstFmt = countryData.variants[0].formats[0];
-            setSelectedFormat(firstFmt);
-            if (firstFmt.category === 'vector' || firstFmt.category === 'raster' || firstFmt.category === 'video') {
-              setActiveTab(firstFmt.category);
-            }
-          }
-        }
+        const firstVariant = countryData.variants?.[0] ?? null;
+        setSelectedVariant(firstVariant);
+        setSelectedFormat(firstVariant ? pickDefaultFormat(firstVariant) : null);
       } else {
         console.error('Failed to load country data');
       }
@@ -199,6 +231,20 @@ export default function CountryDetailPage() {
       setLoading(false);
     }
   };
+
+  const onPickVariant = useCallback((variant: Variant) => {
+    setSelectedVariant(variant);
+    setSelectedFormat(pickDefaultFormat(variant));
+  }, []);
+
+  const onPickSlot = useCallback(
+    (slot: CanonicalFormatId) => {
+      if (!selectedVariant) return;
+      const next = findFormatBySlot(selectedVariant, slot);
+      if (next) setSelectedFormat(next);
+    },
+    [selectedVariant],
+  );
 
   const handleLegacyDiskDownload = useCallback(
     async (format: Format) => {
@@ -234,7 +280,7 @@ export default function CountryDetailPage() {
         setDownloading(null);
       }
     },
-    [data?.country.name]
+    [data?.country.name],
   );
 
   const handleProtectedDownload = useCallback(
@@ -265,7 +311,7 @@ export default function CountryDetailPage() {
         setDownloading(null);
       }
     },
-    [router, redirectBack]
+    [router, redirectBack],
   );
 
   const downloadLabel = useCallback(
@@ -275,12 +321,12 @@ export default function CountryDetailPage() {
       }
       if (!isSignedIn) return 'Sign in to download';
       if (format.premiumTier !== 'free' && !isAdmin) {
-        if (!planLoaded) return '…';
+        if (!planLoaded) return 'Checking plan…';
         if (!hasActivePlan) return 'Upgrade to download';
       }
       return `Download ${format.format}`;
     },
-    [isSignedIn, isAdmin, hasActivePlan, planLoaded]
+    [isSignedIn, isAdmin, hasActivePlan, planLoaded],
   );
 
   const onDownloadPress = useCallback(
@@ -309,45 +355,17 @@ export default function CountryDetailPage() {
       planLoaded,
       router,
       redirectBack,
-    ]
+    ],
   );
 
-  const allFormatsFlat = useMemo((): FormatWithVariant[] => {
-    if (!data?.variants?.length) return [];
-    return data.variants.flatMap((v) =>
-      (v.formats ?? []).map((f) => ({
-        ...f,
-        variantId: v.id,
-        variantName: v.name,
-      })),
-    );
-  }, [data]);
-
-  const formatCounts = useMemo(
-    () => ({
-      vector: allFormatsFlat.filter((f) => f.category === 'vector').length,
-      raster: allFormatsFlat.filter((f) => f.category === 'raster').length,
-      video: allFormatsFlat.filter((f) => f.category === 'video').length,
-    }),
-    [allFormatsFlat],
-  );
-
-  const filteredFormats = useMemo(() => {
-    return allFormatsFlat.filter((format) => {
-      if (activeTab === 'vector') return format.category === 'vector';
-      if (activeTab === 'raster') return format.category === 'raster';
-      if (activeTab === 'video') return format.category === 'video';
-      return true;
-    });
-  }, [allFormatsFlat, activeTab]);
-
-  const applyFlatSelection = useCallback((entry: FormatWithVariant | undefined) => {
-    if (!entry || !data?.variants?.length) return;
-    const v = data.variants.find((x) => x.id === entry.variantId);
-    if (!v) return;
-    setSelectedVariant(v);
-    setSelectedFormat(entry);
-  }, [data]);
+  const availabilityForSelectedVariant = useMemo(() => {
+    const map: Partial<Record<CanonicalFormatId, Format>> = {};
+    for (const slot of CANONICAL_FORMATS) {
+      const f = findFormatBySlot(selectedVariant, slot);
+      if (f) map[slot] = f;
+    }
+    return map;
+  }, [selectedVariant]);
 
   if (loading) {
     return (
@@ -364,7 +382,12 @@ export default function CountryDetailPage() {
     return (
       <main className="min-h-screen bg-stone-50">
         <div className="mx-auto max-w-lg px-4 py-24 text-center">
-          <p className="text-lg font-medium text-stone-900">Couldn&apos;t load this gallery item</p>
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 text-stone-400">
+            <ImageOff size={24} aria-hidden />
+          </div>
+          <p className="text-lg font-medium text-stone-900">
+            Couldn&apos;t load this flag collection
+          </p>
           <Link
             href="/gallery"
             className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[#009ab6] hover:text-[#007a94]"
@@ -383,321 +406,288 @@ export default function CountryDetailPage() {
     data.country.slug,
   );
 
-  const mainButtonDisabled =
-    (selectedFormat &&
-      selectedFormat.downloadProtected &&
+  const downloadDisabled =
+    !selectedFormat ||
+    downloading === selectedFormat.id ||
+    (selectedFormat.downloadProtected &&
       isSignedIn &&
       selectedFormat.premiumTier !== 'free' &&
       !isAdmin &&
-      !planLoaded) ||
-    downloading === selectedFormat?.id;
+      !planLoaded);
 
   return (
-    <main className="min-h-screen bg-stone-50 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:h-[calc(100vh-4rem)] lg:overflow-hidden lg:pb-0">
-      <div className="mx-auto h-full w-full px-3 pb-24 pt-4 sm:px-5 lg:px-6 lg:pb-4">
-        <Link
-          href="/gallery"
-          className="group inline-flex items-center gap-1.5 text-sm text-stone-500 transition-colors hover:text-stone-900 lg:hidden"
-        >
-          <ArrowLeft size={15} strokeWidth={2} className="transition-transform group-hover:-translate-x-0.5" />
-          Gallery
-        </Link>
+    <main className="min-h-screen bg-stone-50 pb-[calc(7rem+env(safe-area-inset-bottom,0px))] lg:pb-12">
+      <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8 lg:pt-8">
+        <nav className="flex items-center gap-2 text-xs font-medium text-stone-500">
+          <Link
+            href="/gallery"
+            className="group inline-flex items-center gap-1.5 transition-colors hover:text-stone-900"
+          >
+            <ArrowLeft
+              size={14}
+              strokeWidth={2}
+              className="transition-transform group-hover:-translate-x-0.5"
+            />
+            Gallery
+          </Link>
+          <span className="text-stone-300">/</span>
+          <span className="truncate text-stone-700">{pageTitle}</span>
+        </nav>
 
-        <header className="mt-6 border-b border-stone-200/80 pb-6 lg:hidden">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-400">Download</p>
-          <h1 className="mt-2 text-balance font-semibold tracking-tight text-stone-900 text-4xl sm:text-[2.65rem] sm:leading-[1.1]">
-            {pageTitle}
-          </h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-stone-500">
-            {data.variants.length === 1
-              ? 'Single edition.'
-              : `${data.variants.length} editions.`}{' '}
-            Tune variant and export on the panel — the preview follows your choice.
-          </p>
+        <header className="mt-5 flex flex-wrap items-end justify-between gap-4 border-b border-stone-200/80 pb-5">
+          <div>
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-400">
+              <Sparkles size={12} className="text-[#009ab6]" aria-hidden />
+              Flag collection
+              {data.country.code ? (
+                <span className="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-stone-600">
+                  {data.country.code}
+                </span>
+              ) : null}
+            </div>
+            <h1 className="mt-2 text-balance text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+              {pageTitle}
+            </h1>
+            <p className="mt-1.5 text-sm text-stone-500">
+              <span className="font-semibold text-stone-800">{data.variants.length}</span>{' '}
+              {data.variants.length === 1 ? 'design' : 'designs'} ·{' '}
+              <span className="font-semibold text-stone-800">
+                {data.variants.reduce((s, v) => s + v.formats.length, 0)}
+              </span>{' '}
+              total files
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition-colors hover:bg-stone-50"
+              aria-label="Save to favorites"
+            >
+              <Heart size={14} aria-hidden />
+              Save
+            </button>
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition-colors hover:bg-stone-50"
+              aria-label="Share collection"
+              onClick={() => {
+                if (typeof window === 'undefined') return;
+                const url = window.location.href;
+                if (navigator.share) {
+                  void navigator.share({ title: pageTitle, url }).catch(() => {
+                    void navigator.clipboard.writeText(url);
+                  });
+                } else {
+                  void navigator.clipboard.writeText(url);
+                }
+              }}
+            >
+              <Share2 size={14} aria-hidden />
+              Share
+            </button>
+          </div>
         </header>
 
-        <div className="mt-6 grid gap-5 lg:mt-0 lg:h-full lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-stretch xl:grid-cols-[minmax(0,1fr)_23rem] 2xl:grid-cols-[minmax(0,1fr)_24rem]">
-          <div className="flex min-w-0 flex-col gap-4 lg:min-h-0">
-            {selectedVariant && selectedFormat ? (
-              <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.35rem] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70">
-                <div className="flex min-h-[20rem] flex-1 items-center justify-center bg-[#6b6b68] px-4 py-6 sm:min-h-[26rem] lg:min-h-0 xl:px-8">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start xl:grid-cols-[minmax(0,1fr)_24rem]">
+          <div className="space-y-5">
+            {selectedVariant ? (
+              <div className="overflow-hidden rounded-[1.5rem] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70">
+                <div
+                  className="relative flex min-h-[22rem] items-center justify-center px-4 py-8 sm:min-h-[28rem] sm:px-8 sm:py-10 lg:min-h-[32rem]"
+                  style={{ background: 'linear-gradient(145deg,#f5f5f4 0%,#fafaf9 48%,#eef2ef 100%)' }}
+                >
+                  {selectedFormat && tierBadge(selectedFormat) ? (
+                    <span className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-900 ring-1 ring-amber-200/80">
+                      <Lock size={10} aria-hidden /> {tierBadge(selectedFormat)}
+                    </span>
+                  ) : null}
                   {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
                   <img
-                    key={`${selectedVariant.id}-${selectedFormat.id}`}
-                    src={previewSrcUi(selectedFormat)}
-                    alt={`${pageTitle} ${selectedFormat.format} preview`}
-                    className="max-h-full w-auto max-w-full object-contain drop-shadow-[0_16px_22px_rgba(0,0,0,0.25)]"
+                    key={`${selectedVariant.id}-${selectedFormat?.id ?? 'cover'}`}
+                    src={bigPreviewSrc(selectedVariant, selectedFormat)}
+                    alt={`${pageTitle} — ${selectedVariant.name}`}
+                    className="max-h-[min(58vh,32rem)] w-auto max-w-full object-contain drop-shadow-[0_18px_28px_rgba(0,0,0,0.18)]"
                     referrerPolicy="no-referrer"
                     decoding="async"
                     onError={(e) =>
-                      imgErrorFallbackChain(e, [selectedVariant.thumbnail], flagThumbPlaceholderForFileId(selectedFormat.id))
+                      imgErrorFallbackChain(
+                        e,
+                        [selectedVariant.thumbnail],
+                        flagThumbPlaceholderForFileId(selectedVariant.id),
+                      )
                     }
                   />
                 </div>
-                <div className="flex shrink-0 flex-col gap-2 border-t border-stone-100 px-5 py-3 text-center sm:px-6">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-stone-600" title={selectedVariant.name}>
-                      {shortVariantLabel(selectedVariant.name)}
-                    </p>
-                    {shortVariantLabel(selectedVariant.name) !== selectedVariant.name.trim() ? (
-                      <p className="mt-1 text-xs text-stone-500">{selectedVariant.name}</p>
-                    ) : null}
-                  </div>
-                  <span className="mx-auto shrink-0 rounded-full bg-stone-100 px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-wide text-stone-600 tabular-nums">
-                    {selectedFormat.format}
-                  </span>
+                <div className="flex flex-col gap-1 border-t border-stone-100 px-5 py-3 text-center sm:px-6">
+                  <p className="truncate text-sm font-medium text-stone-700" title={selectedVariant.name}>
+                    {selectedVariant.name}
+                  </p>
+                  <p className="text-xs text-stone-500">
+                    {selectedVariant.formats.length} format
+                    {selectedVariant.formats.length === 1 ? '' : 's'} available
+                  </p>
                 </div>
               </div>
             ) : null}
 
-            {allFormatsFlat.length > 0 ? (
-              <section className="shrink-0 rounded-[1.15rem] bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70 sm:px-5">
+            {data.variants.length > 1 ? (
+              <section className="rounded-[1.25rem] bg-white px-4 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70 sm:px-5">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">
-                      More from this flag
+                      Other designs
                     </p>
                     <h2 className="mt-1 text-sm font-semibold text-stone-900">
-                      Other shapes and formats
+                      Choose another shape or style
                     </h2>
                   </div>
                   <span className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-500">
-                    {allFormatsFlat.length}
+                    {data.variants.length}
                   </span>
                 </div>
 
-                <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:thin] sm:-mx-5 sm:px-5">
-                  {allFormatsFlat.map((format) => {
-                    const selected = selectedFormat?.id === format.id;
-                    const badge = tierBadge(format);
+                <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:thin] sm:-mx-5 sm:px-5">
+                  {data.variants.map((v) => {
+                    const isActive = selectedVariant?.id === v.id;
                     return (
                       <button
-                        key={`${format.variantId}-${format.id}-thumb`}
+                        key={v.id}
                         type="button"
-                        onClick={() => applyFlatSelection(format)}
-                        className={`group w-24 shrink-0 text-left transition-transform hover:-translate-y-0.5 ${
-                          selected ? '-translate-y-0.5' : ''
+                        onClick={() => onPickVariant(v)}
+                        className={`group w-[7.5rem] shrink-0 text-left transition-transform sm:w-32 ${
+                          isActive ? '-translate-y-0.5' : 'hover:-translate-y-0.5'
                         }`}
                       >
                         <div
-                          className={`aspect-[4/3] overflow-hidden rounded-xl bg-stone-200 transition-all ${
-                            selected
-                              ? 'ring-2 ring-[#009ab6] ring-offset-2 ring-offset-white'
+                          className={`relative aspect-square overflow-hidden rounded-2xl bg-stone-100 transition-all ${
+                            isActive
+                              ? 'ring-2 ring-[#009ab6] ring-offset-2 ring-offset-white shadow-[0_10px_30px_-14px_rgba(0,154,182,0.5)]'
                               : 'ring-1 ring-stone-200 group-hover:ring-stone-300'
                           }`}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
                           <img
-                            src={previewSrcUi(format)}
-                            alt=""
-                            className="h-full w-full object-cover"
-                            referrerPolicy="no-referrer"
-                            decoding="async"
+                            src={v.thumbnail}
+                            alt={v.name}
                             loading="lazy"
+                            decoding="async"
+                            referrerPolicy="no-referrer"
+                            className="h-full w-full object-cover"
                             onError={(e) =>
                               imgErrorFallbackChain(
                                 e,
-                                [format.previewUrl],
-                                flagThumbPlaceholderForFileId(format.id),
+                                [],
+                                flagThumbPlaceholderForFileId(v.id),
                               )
                             }
                           />
-                        </div>
-                        <div className="mt-2 flex items-center gap-1.5">
-                          <span className="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-stone-600">
-                            {format.format}
+                          <span className="absolute right-1.5 top-1.5 rounded-md bg-black/55 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                            {v.formats.length}
                           </span>
-                          {badge ? (
-                            <span className="rounded bg-amber-100 px-1 py-0.5 text-[9px] font-bold uppercase text-amber-900">
-                              {badge}
-                            </span>
-                          ) : null}
                         </div>
+                        <p
+                          className={`mt-2 line-clamp-2 px-0.5 text-[11px] font-medium leading-tight ${
+                            isActive ? 'text-stone-900' : 'text-stone-600'
+                          }`}
+                          title={v.name}
+                        >
+                          {v.name}
+                        </p>
                       </button>
                     );
                   })}
                 </div>
               </section>
             ) : null}
-
           </div>
 
-          <aside className="w-full shrink-0 self-start lg:h-full lg:min-h-0">
-            <div className="h-full overflow-y-auto rounded-[1.25rem] bg-white px-5 py-6 shadow-[0_14px_50px_-24px_rgba(15,23,42,0.35)] ring-1 ring-stone-200/90 [scrollbar-width:thin]">
-              <div className="flex items-start justify-between gap-3 border-b border-stone-100/90 pb-5">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-400">
-                    Download
-                  </p>
-                  <h2 className="mt-1.5 font-semibold tracking-tight text-xl text-stone-900 leading-snug">
-                    {selectedFormat ? selectedFormat.format : 'Select file'}
-                  </h2>
-                  <p className="mt-1.5 max-w-[15rem] text-xs leading-snug text-stone-500">
-                    Choose a file type and download the selected preview.
-                  </p>
-                </div>
-                <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#009ab6]/10 text-[#009ab6] sm:flex">
-                  <Cpu size={20} aria-hidden />
-                </div>
+          <aside className="w-full shrink-0 self-start lg:sticky lg:top-[5rem]">
+            <div className="overflow-hidden rounded-[1.25rem] bg-white px-5 py-6 shadow-[0_14px_50px_-24px_rgba(15,23,42,0.35)] ring-1 ring-stone-200/90">
+              <div className="border-b border-stone-100 pb-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-400">
+                  Download formats
+                </p>
+                <h2 className="mt-1.5 text-lg font-semibold tracking-tight text-stone-900">
+                  Pick any of 5 file types
+                </h2>
+                <p className="mt-1.5 text-xs leading-snug text-stone-500">
+                  AI · SVG · EPS keep crisp at any size. JPG · PNG are ready for the web.
+                </p>
               </div>
 
-              <section className="mt-6">
-                <div className="mb-3 flex items-center gap-2">
-                  <SlidersHorizontal size={14} className="text-stone-400" aria-hidden />
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
-                    Output category
-                  </span>
-                </div>
-                <div className="grid grid-flow-col gap-1 auto-cols-fr rounded-[0.875rem] bg-stone-200/60 p-1">
-                  {formatCounts.vector > 0 ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveTab('vector');
-                        applyFlatSelection(allFormatsFlat.find((f) => f.category === 'vector'));
-                      }}
-                      className={`flex flex-col items-center gap-1 rounded-lg px-1.5 py-2.5 text-center transition-all sm:flex-row sm:justify-center sm:gap-2 sm:py-3 ${
-                        activeTab === 'vector'
-                          ? 'bg-white text-stone-900 shadow-sm shadow-stone-900/8'
-                          : 'text-stone-500 hover:text-stone-800'
-                      }`}
-                    >
-                      <FileType size={16} strokeWidth={2} className="shrink-0 opacity-85" />
-                      <span className="text-[10px] font-bold uppercase tracking-wide sm:text-xs">
-                        Vector
-                      </span>
-                      <span className="text-[10px] tabular-nums text-stone-400 sm:text-xs">
-                        ({formatCounts.vector})
-                      </span>
-                    </button>
-                  ) : null}
-                  {formatCounts.raster > 0 ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveTab('raster');
-                        applyFlatSelection(allFormatsFlat.find((f) => f.category === 'raster'));
-                      }}
-                      className={`flex flex-col items-center gap-1 rounded-lg px-1.5 py-2.5 text-center transition-all sm:flex-row sm:justify-center sm:gap-2 sm:py-3 ${
-                        activeTab === 'raster'
-                          ? 'bg-white text-stone-900 shadow-sm shadow-stone-900/8'
-                          : 'text-stone-500 hover:text-stone-800'
-                      }`}
-                    >
-                      <FileImage size={16} strokeWidth={2} className="shrink-0 opacity-85" />
-                      <span className="text-[10px] font-bold uppercase tracking-wide sm:text-xs">
-                        Raster
-                      </span>
-                      <span className="text-[10px] tabular-nums text-stone-400 sm:text-xs">
-                        ({formatCounts.raster})
-                      </span>
-                    </button>
-                  ) : null}
-                  {formatCounts.video > 0 ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveTab('video');
-                        applyFlatSelection(allFormatsFlat.find((f) => f.category === 'video'));
-                      }}
-                      className={`flex flex-col items-center gap-1 rounded-lg px-1.5 py-2.5 text-center transition-all sm:flex-row sm:justify-center sm:gap-2 sm:py-3 ${
-                        activeTab === 'video'
-                          ? 'bg-white text-stone-900 shadow-sm shadow-stone-900/8'
-                          : 'text-stone-500 hover:text-stone-800'
-                      }`}
-                    >
-                      <Video size={16} strokeWidth={2} className="shrink-0 opacity-85" />
-                      <span className="text-[10px] font-bold uppercase tracking-wide sm:text-xs">
-                        Video
-                      </span>
-                      <span className="text-[10px] tabular-nums text-stone-400 sm:text-xs">
-                        ({formatCounts.video})
-                      </span>
-                    </button>
-                  ) : null}
-                </div>
-              </section>
-
-              <section className="mt-6">
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
-                    File formats
-                  </span>
-                  <span className="rounded-full bg-stone-100 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-stone-500">
-                    Active: {activeTab}
-                  </span>
-                </div>
-                <div className="max-h-[min(42vh,20rem)] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
-                  {filteredFormats.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50/70 px-4 py-10 text-center text-sm text-stone-500">
-                      No matching files in{' '}
-                      <span className="font-semibold lowercase text-stone-700">{activeTab}</span>.
-                    </div>
-                  ) : (
-                    filteredFormats.map((format) => {
-                      const selected = selectedFormat?.id === format.id;
-                      const badge = tierBadge(format);
-                      return (
-                        <button
-                          key={format.id}
-                          type="button"
-                          onClick={() => applyFlatSelection(format)}
-                          className={`group flex w-full items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition-all sm:gap-4 sm:py-3.5 ${
-                            selected
-                              ? 'border-[#009ab6]/45 bg-gradient-to-br from-[#009ab6]/[0.07] to-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] ring-[3px] ring-[#009ab6]/20'
-                              : 'border-transparent bg-stone-50/85 hover:border-stone-200 hover:bg-white'
+              <ul className="mt-4 space-y-2">
+                {CANONICAL_FORMATS.map((slot) => {
+                  const fmt = availabilityForSelectedVariant[slot] ?? null;
+                  const meta = FORMAT_META[slot];
+                  const available = !!fmt;
+                  const isSelected = available && selectedFormat?.id === fmt!.id;
+                  const badge = available ? tierBadge(fmt!) : null;
+                  return (
+                    <li key={slot}>
+                      <button
+                        type="button"
+                        disabled={!available}
+                        onClick={() => onPickSlot(slot)}
+                        aria-pressed={isSelected}
+                        className={`group flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-all sm:gap-4 sm:px-3.5 sm:py-3 ${
+                          isSelected
+                            ? 'border-[#009ab6] bg-gradient-to-br from-[#009ab6]/[0.07] to-white ring-[3px] ring-[#009ab6]/20'
+                            : available
+                              ? 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50'
+                              : 'cursor-not-allowed border-stone-100 bg-stone-50/60 opacity-65'
+                        }`}
+                      >
+                        <div
+                          className={`flex h-12 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br font-mono text-sm font-extrabold tracking-tight ring-1 sm:h-[3.25rem] sm:w-[3.75rem] ${
+                            available ? meta.accent : 'from-stone-100 to-stone-50 text-stone-400 ring-stone-200'
                           }`}
                         >
-                          <div
-                            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl font-mono text-[11px] font-bold uppercase leading-none tracking-wide sm:h-[3.25rem] sm:w-[3.25rem] sm:text-xs ${
-                              selected
-                                ? 'bg-[#009ab6] text-white shadow-inner'
-                                : 'bg-white text-stone-700 shadow-sm ring-1 ring-stone-200/80 group-hover:text-stone-900'
-                            }`}
-                          >
-                            {format.format}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                              <span className="text-sm font-semibold text-stone-900">{format.file}</span>
-                              {badge ? (
-                                <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-900 ring-1 ring-amber-200/80">
-                                  <Lock size={9} aria-hidden /> {badge}
-                                </span>
-                              ) : null}
-                            </div>
-                            <p
-                              className="mt-0.5 truncate text-[11px] text-stone-500 sm:text-xs"
-                              title={format.variantName}
-                            >
-                              {shortVariantLabel(format.variantName)} · {format.dimensions} · {format.size}
-                            </p>
-                          </div>
-                          <span
-                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                              selected ? 'border-[#009ab6]' : 'border-stone-300 group-hover:border-stone-400'
-                            }`}
-                            aria-hidden
-                          >
-                            {selected ? (
-                              <span className="h-2.5 w-2.5 rounded-full bg-[#009ab6]" />
+                          {meta.label}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-stone-900">{meta.label}</span>
+                            <span className={`h-1.5 w-1.5 rounded-full ${available ? meta.pill : 'bg-stone-300'}`} />
+                            <span className="text-[11px] uppercase tracking-wide text-stone-400">
+                              {meta.subtitle}
+                            </span>
+                            {badge ? (
+                              <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-900 ring-1 ring-amber-200/80">
+                                <Lock size={9} aria-hidden /> {badge}
+                              </span>
                             ) : null}
-                          </span>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-              </section>
+                          </div>
+                          <p className="mt-0.5 truncate text-[11px] text-stone-500 sm:text-xs">
+                            {available
+                              ? `${fmt!.dimensions} · ${fmt!.size}`
+                              : 'Not available for this design'}
+                          </p>
+                        </div>
+                        <span
+                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                            isSelected
+                              ? 'border-[#009ab6]'
+                              : available
+                                ? 'border-stone-300 group-hover:border-stone-400'
+                                : 'border-stone-200'
+                          }`}
+                          aria-hidden
+                        >
+                          {isSelected ? <span className="h-2.5 w-2.5 rounded-full bg-[#009ab6]" /> : null}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
 
-              {/* Desktop: primary action inside panel */}
               {selectedFormat ? (
-                <div className="mt-8 hidden lg:block lg:space-y-2">
+                <div className="mt-5 hidden lg:block lg:space-y-2">
                   <button
                     type="button"
                     onClick={() => onDownloadPress(selectedFormat)}
-                    disabled={!!mainButtonDisabled}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#009ab6] py-4 text-[15px] font-semibold text-white shadow-[0_2px_14px_-2px_rgba(0,154,182,0.45)] transition-all hover:bg-[#008aaa] hover:shadow-[0_4px_20px_-4px_rgba(0,154,182,0.5)] disabled:cursor-not-allowed disabled:opacity-45"
+                    disabled={!!downloadDisabled}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#009ab6] to-[#007a94] py-3.5 text-[15px] font-semibold text-white shadow-[0_2px_14px_-2px_rgba(0,154,182,0.45)] transition-all hover:from-[#008aaa] hover:to-[#006d80] hover:shadow-[0_4px_20px_-4px_rgba(0,154,182,0.5)] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {downloading === selectedFormat.id ? (
                       <>
@@ -729,22 +719,13 @@ export default function CountryDetailPage() {
         </div>
       </div>
 
-      {/* Mobile: single sticky download bar */}
       {selectedFormat ? (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200/90 bg-white/85 px-4 py-3 backdrop-blur-lg lg:hidden [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
-          {!isSignedIn ? (
-            <p className="mb-2 text-center text-[11px] text-stone-500">
-              <Link href={`/sign-up?redirect_url=${redirectBack}`} className="text-[#009ab6] font-medium">
-                Sign up
-              </Link>{' '}
-              optional
-            </p>
-          ) : null}
           <button
             type="button"
             onClick={() => onDownloadPress(selectedFormat)}
-            disabled={!!mainButtonDisabled}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#009ab6] py-3.5 text-[15px] font-semibold text-white shadow-[0_-2px_18px_-4px_rgba(0,154,182,0.35)] disabled:cursor-not-allowed disabled:opacity-45"
+            disabled={!!downloadDisabled}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#009ab6] py-3.5 text-[15px] font-semibold text-white shadow-[0_-2px_18px_-4px_rgba(0,154,182,0.35)] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {downloading === selectedFormat.id ? (
               <>
