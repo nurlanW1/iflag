@@ -14,7 +14,6 @@ import {
   FileImage,
   FileType,
   Video,
-  Layers,
   Cpu,
   Lock,
   SlidersHorizontal,
@@ -395,7 +394,7 @@ export default function CountryDetailPage() {
 
   return (
     <main className="min-h-screen bg-stone-50 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:pb-14">
-      <div className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6 lg:px-10 lg:pb-28">
+      <div className="mx-auto max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:px-10 lg:pb-28">
         <Link
           href="/gallery"
           className="group inline-flex items-center gap-1.5 text-sm text-stone-500 transition-colors hover:text-stone-900"
@@ -404,7 +403,7 @@ export default function CountryDetailPage() {
           Gallery
         </Link>
 
-        <header className="mt-8 border-b border-stone-200/80 pb-10">
+        <header className="mt-8 border-b border-stone-200/80 pb-8">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-400">Download</p>
           <h1 className="mt-2 text-balance font-semibold tracking-tight text-stone-900 text-4xl sm:text-[2.65rem] sm:leading-[1.1]">
             {pageTitle}
@@ -417,17 +416,17 @@ export default function CountryDetailPage() {
           </p>
         </header>
 
-        <div className="mt-10 flex flex-col gap-12 lg:mt-14 lg:flex-row lg:gap-14 lg:items-start">
-          <div className="min-w-0 flex-1 space-y-8">
+        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start xl:grid-cols-[minmax(0,1fr)_23rem]">
+          <div className="min-w-0 space-y-5">
             {selectedVariant && selectedFormat ? (
-              <div className="overflow-hidden rounded-[1.75rem] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70">
-                <div className="flex min-h-[14rem] items-center justify-center bg-[linear-gradient(145deg,#f5f5f4_0%,#fafaf9_48%,#eef2ef_100%)] px-4 py-10 sm:min-h-[16rem] sm:px-8 sm:py-12">
+              <div className="overflow-hidden rounded-[1.5rem] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70">
+                <div className="flex min-h-[20rem] items-center justify-center bg-[#6b6b68] px-4 py-8 sm:min-h-[26rem] lg:min-h-[31rem] xl:min-h-[34rem]">
                   {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
                   <img
                     key={`${selectedVariant.id}-${selectedFormat.id}`}
                     src={previewSrcUi(selectedFormat)}
-                    alt=""
-                    className="max-h-[min(52vh,28rem)] w-auto max-w-full object-contain drop-shadow-md"
+                    alt={`${pageTitle} ${selectedFormat.format} preview`}
+                    className="max-h-[min(62vh,34rem)] w-auto max-w-full object-contain drop-shadow-[0_16px_22px_rgba(0,0,0,0.25)]"
                     referrerPolicy="no-referrer"
                     decoding="async"
                     onError={(e) =>
@@ -435,36 +434,106 @@ export default function CountryDetailPage() {
                     }
                   />
                 </div>
-                <div className="flex flex-col gap-4 border-t border-stone-100 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 border-t border-stone-100 px-5 py-4 text-center sm:px-6">
                   <div className="min-w-0">
-                    <p className="truncate text-[15px] font-medium text-stone-900" title={selectedVariant.name}>
+                    <p className="truncate text-sm font-medium text-stone-600" title={selectedVariant.name}>
                       {shortVariantLabel(selectedVariant.name)}
                     </p>
                     {shortVariantLabel(selectedVariant.name) !== selectedVariant.name.trim() ? (
                       <p className="mt-1 text-xs text-stone-500">{selectedVariant.name}</p>
                     ) : null}
                   </div>
-                  <span className="shrink-0 self-start rounded-full bg-stone-100 px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-wide text-stone-600 tabular-nums sm:self-center">
+                  <span className="mx-auto shrink-0 rounded-full bg-stone-100 px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-wide text-stone-600 tabular-nums">
                     {selectedFormat.format}
                   </span>
                 </div>
               </div>
             ) : null}
 
+            {allFormatsFlat.length > 0 ? (
+              <section className="rounded-[1.25rem] bg-white px-4 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70 sm:px-5">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">
+                      More from this flag
+                    </p>
+                    <h2 className="mt-1 text-sm font-semibold text-stone-900">
+                      Other shapes and formats
+                    </h2>
+                  </div>
+                  <span className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-500">
+                    {allFormatsFlat.length}
+                  </span>
+                </div>
+
+                <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:thin] sm:-mx-5 sm:px-5">
+                  {allFormatsFlat.map((format) => {
+                    const selected = selectedFormat?.id === format.id;
+                    const badge = tierBadge(format);
+                    return (
+                      <button
+                        key={`${format.variantId}-${format.id}-thumb`}
+                        type="button"
+                        onClick={() => applyFlatSelection(format)}
+                        className={`group w-24 shrink-0 text-left transition-transform hover:-translate-y-0.5 ${
+                          selected ? '-translate-y-0.5' : ''
+                        }`}
+                      >
+                        <div
+                          className={`aspect-[4/3] overflow-hidden rounded-xl bg-stone-200 transition-all ${
+                            selected
+                              ? 'ring-2 ring-[#009ab6] ring-offset-2 ring-offset-white'
+                              : 'ring-1 ring-stone-200 group-hover:ring-stone-300'
+                          }`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
+                          <img
+                            src={previewSrcUi(format)}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            referrerPolicy="no-referrer"
+                            decoding="async"
+                            loading="lazy"
+                            onError={(e) =>
+                              imgErrorFallbackChain(
+                                e,
+                                [format.previewUrl],
+                                flagThumbPlaceholderForFileId(format.id),
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="mt-2 flex items-center gap-1.5">
+                          <span className="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-stone-600">
+                            {format.format}
+                          </span>
+                          {badge ? (
+                            <span className="rounded bg-amber-100 px-1 py-0.5 text-[9px] font-bold uppercase text-amber-900">
+                              {badge}
+                            </span>
+                          ) : null}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : null}
+
           </div>
 
-          <aside className="w-full shrink-0 self-start lg:sticky lg:top-[5.25rem] lg:max-w-[24rem] lg:self-stretch">
-            <div className="overflow-hidden rounded-[1.375rem] bg-gradient-to-b from-white to-stone-50/95 px-5 py-7 shadow-[0_14px_50px_-24px_rgba(15,23,42,0.35)] ring-1 ring-stone-200/90 lg:px-6">
+          <aside className="w-full shrink-0 self-start lg:sticky lg:top-[5.25rem]">
+            <div className="overflow-hidden rounded-[1.25rem] bg-white px-5 py-6 shadow-[0_14px_50px_-24px_rgba(15,23,42,0.35)] ring-1 ring-stone-200/90">
               <div className="flex items-start justify-between gap-3 border-b border-stone-100/90 pb-5">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-400">
-                    Choices
+                    Download
                   </p>
                   <h2 className="mt-1.5 font-semibold tracking-tight text-xl text-stone-900 leading-snug">
-                    Edition & export
+                    {selectedFormat ? selectedFormat.format : 'Select file'}
                   </h2>
                   <p className="mt-1.5 max-w-[15rem] text-xs leading-snug text-stone-500">
-                    Pick shape or style first, then the file category and format.
+                    Choose a file type and download the selected preview.
                   </p>
                 </div>
                 <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#009ab6]/10 text-[#009ab6] sm:flex">
@@ -472,102 +541,7 @@ export default function CountryDetailPage() {
                 </div>
               </div>
 
-              {data.variants.length >= 1 ? (
-                <section className="mt-6">
-                  <div className="mb-3 flex items-center gap-2">
-                    <Layers size={14} className="text-stone-400" aria-hidden />
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
-                      Edition · style
-                    </span>
-                  </div>
-                  <div className="-mx-5 flex gap-2.5 overflow-x-auto pb-3 pl-5 pr-5 pt-0.5 [scrollbar-width:thin] lg:-mx-6 lg:pl-6 lg:pr-6">
-                    {data.variants.map((variant) => {
-                      const vf = variant.formats?.[0];
-                      const active = selectedVariant?.id === variant.id;
-                      return (
-                        <button
-                          key={variant.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedVariant(variant);
-                            if (variant.formats?.length) {
-                              const f0 = variant.formats[0];
-                              setSelectedFormat(f0);
-                              if (
-                                f0.category === 'vector' ||
-                                f0.category === 'raster' ||
-                                f0.category === 'video'
-                              ) {
-                                setActiveTab(f0.category);
-                              }
-                            }
-                          }}
-                          className={`w-[84px] shrink-0 snap-start text-left transition-[box-shadow,transform] ${
-                            active ? 'scale-[1.02]' : 'hover:scale-[1.01]'
-                          }`}
-                        >
-                          <div
-                            className={`rounded-2xl p-2 transition-all ${
-                              active
-                                ? 'bg-white shadow-[0_10px_30px_-12px_rgba(0,154,182,0.55)] ring-2 ring-[#009ab6]'
-                                : 'bg-stone-100/80 ring-1 ring-stone-200/80 hover:bg-white hover:ring-stone-300'
-                            }`}
-                          >
-                            <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-stone-200/40">
-                              {vf ? (
-                                <img
-                                  key={`${variant.id}-${vf.id}-ed`}
-                                  src={previewSrcUi(vf)}
-                                  alt=""
-                                  className="h-full w-full object-contain p-1"
-                                  referrerPolicy="no-referrer"
-                                  decoding="async"
-                                  onError={(e) =>
-                                    imgErrorFallbackChain(
-                                      e,
-                                      [variant.thumbnail],
-                                      flagThumbPlaceholderForFileId(vf.id),
-                                    )
-                                  }
-                                />
-                              ) : (
-                                <img
-                                  key={`${variant.id}-ved`}
-                                  src={variant.thumbnail}
-                                  alt=""
-                                  className="h-full w-full object-contain p-1"
-                                  referrerPolicy="no-referrer"
-                                  decoding="async"
-                                  onError={(e) =>
-                                    imgErrorFallbackChain(
-                                      e,
-                                      [],
-                                      flagThumbPlaceholderForFileId(variant.id),
-                                    )
-                                  }
-                                />
-                              )}
-                            </div>
-                            <p
-                              className="mt-2 line-clamp-2 min-h-[2.25rem] px-0.5 text-[10px] font-semibold leading-tight text-stone-800"
-                              title={variant.name}
-                            >
-                              {shortVariantLabel(variant.name)}
-                            </p>
-                            {vf ? (
-                              <p className="mt-0.5 px-0.5 text-[9px] font-medium uppercase tracking-wide text-stone-400">
-                                {vf.format}
-                              </p>
-                            ) : null}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </section>
-              ) : null}
-
-              <section className={data.variants.length >= 2 ? 'mt-2 border-t border-stone-100/90 pt-6' : 'mt-6'}>
+              <section className="mt-6">
                 <div className="mb-3 flex items-center gap-2">
                   <SlidersHorizontal size={14} className="text-stone-400" aria-hidden />
                   <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
