@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { SectionReveal } from '@/components/motion/SectionReveal';
+import { applyLandingRasterThumbnails } from '@/lib/landing-preview-thumbnails';
 import GalleryGrid from './GalleryGrid';
 
 interface Country {
@@ -31,7 +32,7 @@ export default function HomeGalleryPreview() {
         const data = await stockRes.json();
         const list = data.countries || [];
         if (list.length > 0) {
-          setAllCountries(list);
+          setAllCountries(applyLandingRasterThumbnails(list));
           return;
         }
       }
@@ -41,7 +42,7 @@ export default function HomeGalleryPreview() {
       });
       if (previewRes.ok) {
         const data = await previewRes.json();
-        setAllCountries(data.countries || []);
+        setAllCountries(applyLandingRasterThumbnails(data.countries || []));
       }
     } catch (error) {
       console.error('Failed to load countries:', error);
@@ -102,13 +103,14 @@ export default function HomeGalleryPreview() {
           )}
 
           <div className={expanded || allCountries.length <= PREVIEW_COUNT ? '' : 'overflow-hidden'}>
-            <GalleryGrid
-              countries={displayCountries}
-              disableScrollReveal
-              preferImageThumbnails
-              largeTiles
-              linkToCountryGallery
-            />
+            <div className="rounded-[1.75rem] border-2 border-[#006d7a]/12 bg-[#f5fafb] p-3 shadow-[0_12px_40px_-12px_rgba(0,109,122,0.18)] sm:p-4 md:p-5">
+              <GalleryGrid
+                countries={displayCountries}
+                disableScrollReveal
+                largeTiles
+                linkToCountryGallery
+              />
+            </div>
           </div>
         </div>
 
