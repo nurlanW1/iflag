@@ -3,7 +3,7 @@
  * not the in-memory marketplace demo store.
  */
 
-import { getBackendApiBaseUrl } from '@/lib/auth/backend-url';
+import { resolveBackendApiBase } from '@/lib/auth/backend-url';
 import type { AccountSubscriptionSummary } from '@/types/account';
 
 export type BillingSummaryFetch =
@@ -18,7 +18,9 @@ export async function fetchSubscriptionSummaryFromBillingApi(
   accessToken: string
 ): Promise<BillingSummaryFetch> {
   try {
-    const res = await fetch(`${getBackendApiBaseUrl()}/billing/subscription`, {
+    const api = resolveBackendApiBase();
+    if (!api.ok) return { ok: false };
+    const res = await fetch(`${api.baseUrl}/billing/subscription`, {
       headers: { Authorization: `Bearer ${accessToken.trim()}` },
       cache: 'no-store',
     });

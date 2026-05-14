@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export type CheckoutKind = 'one_time' | 'subscription';
 
@@ -39,6 +39,7 @@ export function CheckoutButton({
     try {
       const res = await fetch('/api/billing/checkout', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           kind,
@@ -57,6 +58,10 @@ export function CheckoutButton({
         return;
       }
       if (!res.ok) {
+        if (res.status === 503 && data.code === 'API_URL_MISSING') {
+          setError(data.error || 'API URL is not configured on the server.');
+          return;
+        }
         if (res.status === 503 && data.code === 'PADDLE_NOT_CONFIGURED') {
           setError(
             data.error ||
@@ -95,11 +100,19 @@ export function CheckoutButton({
       </button>
       {needsLogin ? (
         <p className="mt-2 text-xs text-red-600">
-          Please{' '}
-          <Link href="/login" className="font-medium underline">
-            sign in
+          Paddle checkout needs backend login cookies. If you signed up with Clerk, open{' '}
+          <Link href="/dashboard" className="font-medium underline">
+            Dashboard
           </Link>{' '}
-          to continue with checkout.
+          once (we link your email), then try again. Otherwise{' '}
+          <Link href="/login" className="font-medium underline">
+            sign in with email/password
+          </Link>{' '}
+          or{' '}
+          <Link href="/sign-in" className="font-medium underline">
+            Clerk
+          </Link>
+          .
         </p>
       ) : null}
       {error && !needsLogin ? (

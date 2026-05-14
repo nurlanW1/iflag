@@ -5,7 +5,7 @@ import {
   getCookieBaseOptions,
   getRefreshCookieName,
 } from '@/lib/auth/cookies';
-import { getBackendApiBaseUrl } from '@/lib/auth/backend-url';
+import { resolveBackendApiBase } from '@/lib/auth/backend-url';
 
 export async function POST() {
   const jar = await cookies();
@@ -13,9 +13,10 @@ export async function POST() {
   const refresh = jar.get(getRefreshCookieName())?.value;
   const opts = getCookieBaseOptions();
 
-  if (access && refresh) {
+  const apiBase = resolveBackendApiBase();
+  if (apiBase.ok && access && refresh) {
     try {
-      await fetch(`${getBackendApiBaseUrl()}/auth/logout`, {
+      await fetch(`${apiBase.baseUrl}/auth/logout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

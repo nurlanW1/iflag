@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getAccessTokenFromCookies, getSessionUserFromCookies } from '@/lib/auth/session.server';
-import { getBackendApiBaseUrl } from '@/lib/auth/backend-url';
+import {
+  BACKEND_UNREACHABLE_MESSAGE,
+  resolveBackendApiBase,
+} from '@/lib/auth/backend-url';
 
 export const runtime = 'nodejs';
 
@@ -15,8 +18,13 @@ export async function POST() {
   const access = await getAccessTokenFromCookies();
   if (!access) return NextResponse.json({ error: 'Missing access token' }, { status: 401 });
 
+  const apiBase = resolveBackendApiBase();
+  if (!apiBase.ok) {
+    return NextResponse.json({ error: apiBase.error, code: apiBase.code }, { status: 503 });
+  }
+
   try {
-    const r = await fetch(`${getBackendApiBaseUrl()}/billing/portal`, {
+    const r = await fetch(`${apiBase.baseUrl}/billing/portal`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -28,6 +36,6 @@ export async function POST() {
     return NextResponse.json(data, { status: r.status });
   } catch (err) {
     console.error('[billing/portal proxy] backend error:', err);
-    return NextResponse.json({ error: 'Billing service unavailable' }, { status: 502 });
+    return NextResponse.json({ error: BACKEND_UNREACHABLE_MESSAGE, code: 'API_UNREACHABLE' }, { status: 502 });
   }
 }

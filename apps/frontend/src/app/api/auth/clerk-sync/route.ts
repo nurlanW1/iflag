@@ -1,7 +1,10 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
-import { getBackendApiBaseUrl } from '@/lib/auth/backend-url';
+import {
+  BACKEND_UNREACHABLE_MESSAGE,
+  resolveBackendApiBase,
+} from '@/lib/auth/backend-url';
 import { applyAuthSessionCookies } from '@/lib/auth/session-cookies.server';
 import { isClerkConfigured } from '@/lib/auth/clerk-env';
 
@@ -16,10 +19,23 @@ export async function POST() {
     return NextResponse.json({ ok: false, error: 'Clerk not configured' }, { status: 503 });
   }
 
+  const apiBase = resolveBackendApiBase();
+  if (!apiBase.ok) {
+    return NextResponse.json(
+      { ok: false, error: apiBase.error, code: apiBase.code },
+      { status: 503 }
+    );
+  }
+
   const bridgeSecret = process.env.INTERNAL_AUTH_BRIDGE_SECRET?.trim();
   if (!bridgeSecret) {
     return NextResponse.json(
-      { ok: false, error: 'INTERNAL_AUTH_BRIDGE_SECRET is not set on the frontend server' },
+      {
+        ok: false,
+        error:
+          'INTERNAL_AUTH_BRIDGE_SECRET is missing on this server. Clerk checkout needs it (same value as backend) to issue billing cookies.',
+        code: 'BRIDGE_SECRET_MISSING',
+      },
       { status: 503 }
     );
   }
@@ -43,7 +59,7 @@ export async function POST() {
 
   let backendRes: Response;
   try {
-    backendRes = await fetch(`${getBackendApiBaseUrl()}/auth/bridge/clerk-session`, {
+    backendRes = await fetch(`${apiBase.baseUrl}/auth/bridge/clerk-session`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -55,8 +71,12 @@ export async function POST() {
         email_verified: verified,
       }),
     });
-  } catch {
-    return NextResponse.json({ error: 'Authentication service unavailable' }, { status: 503 });
+  } catch (err) {
+    console.error('[auth/clerk-sync] backend fetch failed:', err);
+    return NextResponse.json(
+      { ok: false, error: BACKEND_UNREACHABLE_MESSAGE, code: 'API_UNREACHABLE' },
+      { status: 503 }
+    );
   }
 
   if (!backendRes.ok) {
@@ -65,7 +85,7 @@ export async function POST() {
       code?: string;
     };
     return NextResponse.json(
-      { error: errBody.error || 'Bridge exchange failed', code: errBody.code },
+      { ok: false, error: errBody.error || 'Bridge exchange failed', code: errBody.code },
       { status: backendRes.status === 401 ? 401 : backendRes.status }
     );
   }

@@ -3,7 +3,7 @@ import {
   getAccessCookieName,
   getRefreshCookieName,
 } from '@/lib/auth/cookies';
-import { getBackendApiBaseUrl } from '@/lib/auth/backend-url';
+import { resolveBackendApiBase } from '@/lib/auth/backend-url';
 
 export type SessionUser = {
   id: string;
@@ -19,7 +19,9 @@ export async function getSessionUserFromCookies(): Promise<SessionUser | null> {
     return null;
   }
   try {
-    const res = await fetch(`${getBackendApiBaseUrl()}/auth/me`, {
+    const api = resolveBackendApiBase();
+    if (!api.ok) return null;
+    const res = await fetch(`${api.baseUrl}/auth/me`, {
       headers: { Authorization: `Bearer ${access}` },
       cache: 'no-store',
     });

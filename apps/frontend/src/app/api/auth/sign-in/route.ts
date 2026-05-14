@@ -1,6 +1,9 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { getBackendApiBaseUrl } from '@/lib/auth/backend-url';
+import {
+  BACKEND_UNREACHABLE_MESSAGE,
+  resolveBackendApiBase,
+} from '@/lib/auth/backend-url';
 import { applyAuthSessionCookies } from '@/lib/auth/session-cookies.server';
 
 type LoginBody = { email?: string; password?: string };
@@ -20,15 +23,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
   }
 
+  const apiBase = resolveBackendApiBase();
+  if (!apiBase.ok) {
+    return NextResponse.json(
+      { error: apiBase.error, code: apiBase.code },
+      { status: 503 }
+    );
+  }
+
   let backendRes: Response;
   try {
-    backendRes = await fetch(`${getBackendApiBaseUrl()}/auth/login`, {
+    backendRes = await fetch(`${apiBase.baseUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-  } catch {
-    return NextResponse.json({ error: 'Authentication service unavailable' }, { status: 503 });
+  } catch (err) {
+    console.error('[auth/sign-in] backend fetch failed:', err);
+    return NextResponse.json(
+      { error: BACKEND_UNREACHABLE_MESSAGE, code: 'API_UNREACHABLE' },
+      { status: 503 }
+    );
   }
 
   if (!backendRes.ok) {

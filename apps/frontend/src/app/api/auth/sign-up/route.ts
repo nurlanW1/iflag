@@ -1,13 +1,10 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import {
-  ACCESS_MAX_AGE_SECONDS,
-  REFRESH_MAX_AGE_SECONDS,
-  getAccessCookieName,
-  getCookieBaseOptions,
-  getRefreshCookieName,
-} from '@/lib/auth/cookies';
-import { getBackendApiBaseUrl } from '@/lib/auth/backend-url';
+  BACKEND_UNREACHABLE_MESSAGE,
+  resolveBackendApiBase,
+} from '@/lib/auth/backend-url';
+import { applyAuthSessionCookies } from '@/lib/auth/session-cookies.server';
 
 type RegisterBody = { email?: string; password?: string; full_name?: string };
 
@@ -27,15 +24,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
   }
 
+  const apiBase = resolveBackendApiBase();
+  if (!apiBase.ok) {
+    return NextResponse.json(
+      { error: apiBase.error, code: apiBase.code },
+      { status: 503 }
+    );
+  }
+
   let regRes: Response;
   try {
-    regRes = await fetch(`${getBackendApiBaseUrl()}/auth/register`, {
+    regRes = await fetch(`${apiBase.baseUrl}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, full_name: full_name || undefined }),
     });
-  } catch {
-    return NextResponse.json({ error: 'Authentication service unavailable' }, { status: 503 });
+  } catch (err) {
+    console.error('[auth/sign-up] register fetch failed:', err);
+    return NextResponse.json(
+      { error: BACKEND_UNREACHABLE_MESSAGE, code: 'API_UNREACHABLE' },
+      { status: 503 }
+    );
   }
 
   if (!regRes.ok) {
@@ -48,14 +57,19 @@ export async function POST(request: Request) {
 
   let loginRes: Response;
   try {
-    loginRes = await fetch(`${getBackendApiBaseUrl()}/auth/login`, {
+    loginRes = await fetch(`${apiBase.baseUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-  } catch {
+  } catch (err) {
+    console.error('[auth/sign-up] login fetch failed:', err);
     return NextResponse.json(
-      { error: 'Account created but sign-in failed. Try logging in.' },
+      {
+        error:
+          'Account may have been created but automatic sign-in failed (cannot reach API). Try signing in manually.',
+        code: 'API_UNREACHABLE',
+      },
       { status: 503 }
     );
   }
@@ -79,15 +93,10 @@ export async function POST(request: Request) {
     };
   };
 
-  const cookieOpts = getCookieBaseOptions();
   const jar = await cookies();
-  jar.set(getAccessCookieName(), data.accessToken, {
-    ...cookieOpts,
-    maxAge: ACCESS_MAX_AGE_SECONDS,
-  });
-  jar.set(getRefreshCookieName(), data.refreshToken, {
-    ...cookieOpts,
-    maxAge: REFRESH_MAX_AGE_SECONDS,
+  applyAuthSessionCookies(jar, {
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken,
   });
 
   return NextResponse.json(

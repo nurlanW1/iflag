@@ -2,7 +2,7 @@
  * Backend billing / subscription checks (Paddle + Postgres), via JWT cookie.
  */
 
-import { getBackendApiBaseUrl } from '@/lib/auth/backend-url';
+import { resolveBackendApiBase } from '@/lib/auth/backend-url';
 
 type OrdersPage = {
   orders?: Array<{
@@ -16,7 +16,9 @@ type OrdersPage = {
 /** `null` — HTTP or network failure (caller may fall back). */
 export async function fetchBackendHasPremium(accessToken: string): Promise<boolean | null> {
   try {
-    const res = await fetch(`${getBackendApiBaseUrl()}/subscriptions/check-premium`, {
+    const api = resolveBackendApiBase();
+    if (!api.ok) return null;
+    const res = await fetch(`${api.baseUrl}/subscriptions/check-premium`, {
       headers: { Authorization: `Bearer ${accessToken.trim()}` },
       cache: 'no-store',
     });
@@ -36,6 +38,8 @@ export async function fetchBackendPaidProductGrantDates(
   accessToken: string
 ): Promise<Map<string, string> | null> {
   try {
+    const api = resolveBackendApiBase();
+    if (!api.ok) return null;
     const bySlug = new Map<string, string>();
     let page = 1;
     const limit = 100;
@@ -43,7 +47,7 @@ export async function fetchBackendPaidProductGrantDates(
 
     while ((page - 1) * limit < total) {
       const res = await fetch(
-        `${getBackendApiBaseUrl()}/billing/orders?page=${page}&limit=${limit}`,
+        `${api.baseUrl}/billing/orders?page=${page}&limit=${limit}`,
         {
           headers: { Authorization: `Bearer ${accessToken.trim()}` },
           cache: 'no-store',
@@ -85,6 +89,8 @@ export type BillingOrderRow = {
 /** All pages of `/billing/orders` for the authenticated user. */
 export async function fetchAllBillingOrders(accessToken: string): Promise<BillingOrderRow[] | null> {
   try {
+    const api = resolveBackendApiBase();
+    if (!api.ok) return null;
     const out: BillingOrderRow[] = [];
     let page = 1;
     const limit = 100;
@@ -92,7 +98,7 @@ export async function fetchAllBillingOrders(accessToken: string): Promise<Billin
 
     while ((page - 1) * limit < total) {
       const res = await fetch(
-        `${getBackendApiBaseUrl()}/billing/orders?page=${page}&limit=${limit}`,
+        `${api.baseUrl}/billing/orders?page=${page}&limit=${limit}`,
         {
           headers: { Authorization: `Bearer ${accessToken.trim()}` },
           cache: 'no-store',

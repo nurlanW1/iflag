@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useClerk, useUser } from '@clerk/nextjs';
 import {
   ChevronRight,
@@ -35,6 +35,7 @@ export function DashboardShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [billingNotice, setBillingNotice] = useState<string | null>(null);
   const { signOut } = useClerk();
   const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
 
@@ -55,11 +56,20 @@ export function DashboardShell({
           reason?: string;
         };
         if (cancelled) return;
-        if (linkJson.linked || linkJson.reason === 'clerk_disabled') return;
+        if (linkJson.linked || linkJson.reason === 'clerk_disabled') {
+          setBillingNotice(null);
+          return;
+        }
 
         const syncRes = await fetch('/api/auth/clerk-sync', { method: 'POST' });
+        const syncBody = (await syncRes.json().catch(() => ({}))) as { ok?: boolean; error?: string };
         if (cancelled) return;
-        if (syncRes.ok) router.refresh();
+        if (syncRes.ok) {
+          setBillingNotice(null);
+          router.refresh();
+        } else if (syncBody.error) {
+          setBillingNotice(syncBody.error);
+        }
       } catch {
         /* ignore — user can still use Clerk-only UI */
       }
@@ -194,6 +204,20 @@ export function DashboardShell({
           </nav>
         </header>
         <main className="p-6 lg:p-8" id="dashboard-main">
+          {billingNotice ? (
+            <div
+              role="alert"
+              className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+            >
+              <p className="font-semibold">Billing / login link</p>
+              <p className="mt-1 text-amber-900/90">{billingNotice}</p>
+              <p className="mt-2 text-xs text-amber-800/80">
+                Production checklist: set <code className="rounded bg-white/80 px-1">API_URL</code> and{' '}
+                <code className="rounded bg-white/80 px-1">INTERNAL_AUTH_BRIDGE_SECRET</code> on Vercel (same secret on
+                the API server).
+              </p>
+            </div>
+          ) : null}
           {showAdminEntry && pathname === '/dashboard' ? (
             <div className="mb-6 rounded-2xl border border-[#009ab6]/25 bg-gradient-to-r from-[#009ab6]/12 via-white to-white px-5 py-4 shadow-sm">
               <p className="text-sm font-semibold text-gray-900">Admin</p>
