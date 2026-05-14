@@ -10,6 +10,10 @@ import subscriptionRouter from './subscriptions/subscription.routes.js';
 import assetRouter from './assets/asset.routes.js';
 import adminRouter from './admin/admin.routes.js';
 import uploadRouter from './upload/upload.routes.js';
+import billingRouter, {
+  lemonSqueezyWebhookHandler,
+  paddleWebhookHandler,
+} from './billing/billing.routes.js';
 import pool from './db.js';
 
 /** Unwrap default interop; type `any` avoids TS merging with `typeof import(...)` (non-callable on Vercel/NodeNext). */
@@ -31,6 +35,20 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// Billing webhooks — MUST be mounted with raw body and BEFORE `express.json()`
+// so HMAC signatures verify against the exact bytes the provider sent. Mounted
+// BEFORE the rate limiter so provider retries are not 429-ed.
+app.post(
+  '/api/billing/webhook/paddle',
+  express.raw({ type: '*/*', limit: '5mb' }),
+  paddleWebhookHandler
+);
+app.post(
+  '/api/billing/webhook/lemonsqueezy',
+  express.raw({ type: '*/*', limit: '5mb' }),
+  lemonSqueezyWebhookHandler
+);
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -47,7 +65,7 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/', authLimiter);
 
-// Body parsing
+// Body parsing (general)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -65,11 +83,16 @@ app.get('/health', async (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     name: 'Flag Stock Marketplace API',
-    version: '1.0.0',
+    version: '1.1.0',
     endpoints: {
       auth: '/api/auth',
       assets: '/api/assets',
       subscriptions: '/api/subscriptions',
+      billing: '/api/billing',
+      billing_webhook_paddle: '/api/billing/webhook/paddle',
+      billing_webhook_lemonsqueezy: '/api/billing/webhook/lemonsqueezy',
+      admin: '/api/admin',
+      admin_upload: '/api/admin/upload',
       flags: '/api/flags', // Legacy endpoint
     },
   });
@@ -77,6 +100,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/subscriptions', subscriptionRouter);
+app.use('/api/billing', billingRouter); // Billing: checkout, cancel, portal, orders (Lemon Squeezy)
 app.use('/api/assets', assetRouter);
 app.use('/api/admin', adminRouter); // Admin routes (requires admin role)
 app.use('/api/admin/upload', uploadRouter); // Upload routes (requires admin role)

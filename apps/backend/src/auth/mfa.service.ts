@@ -1,261 +1,496 @@
-// Multi-Factor Authentication Service
-// TOTP-based MFA implementation
+/**
+ * Multi-Factor Authentication service (TOTP).
+ *
+ * Flow:
+ *   1. POST /mfa/setup            → generates a pending secret + QR + backup codes
+ *   2. POST /mfa/enroll           → user types a TOTP code; if valid, activate
+ *   3. POST /login                → if mfa_enabled, returns { mfaRequired, challengeToken }
+ *   4. POST /mfa/verify           → trade challengeToken + TOTP code for real tokens
+ *   5. POST /mfa/disable          → requires password
+ *   6. POST /mfa/backup-codes     → rotate codes (requires password)
+ *
+ * Storage:
+ *   - TOTP secret: AES-256-GCM ciphertext (reversible — we need to verify codes).
+ *   - Backup codes: sha256(hex) hashes (one-time use, no need to recover).
+ */
 
+import { createHash, randomBytes } from 'crypto';
 import { authenticator } from 'otplib';
 import QRCode from 'qrcode';
 import pool from '../db.js';
-import { randomBytes } from 'crypto';
+import bcrypt from 'bcrypt';
+import {
+  encryptSecret,
+  decryptSecret,
+  hashBackupCode,
+  generateBackupCodes,
+  normalizeBackupCode,
+} from './mfa-crypto.js';
 
-export interface MFASetup {
-  secret: string;
-  qrCodeUrl: string;
-  backupCodes: string[];
+const ISSUER = process.env.MFA_ISSUER || 'Flag Stock';
+const TOTP_WINDOW = 1; // ±1 step (~30s drift) — tighter is better
+const CHALLENGE_TTL_SECONDS = parseInt(
+  process.env.MFA_CHALLENGE_TTL_SECONDS || '300',
+  10
+);
+const MAX_CHALLENGE_ATTEMPTS = 5;
+
+// Configure otplib once at module load.
+authenticator.options = {
+  window: TOTP_WINDOW,
+  step: 30,
+};
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function sha256Hex(s: string): string {
+  return createHash('sha256').update(s).digest('hex');
 }
 
-export interface MFAVerification {
-  verified: boolean;
-  sessionToken?: string;
-  expiresAt?: Date;
+function generateChallengeToken(): string {
+  return randomBytes(32).toString('hex');
 }
 
-export class MFAService {
-  private issuer = process.env.MFA_ISSUER || 'Flag Stock Admin';
-  private window = 2; // Allow 2 time steps (60 seconds) tolerance
+function normalizeTotp(code: string): string {
+  return code.replace(/\s+/g, '');
+}
 
-  /**
-   * Generate MFA secret for user
-   */
-  async generateSecret(userId: string, email: string): Promise<MFASetup> {
-    const secret = authenticator.generateSecret();
-    const serviceName = this.issuer;
-    const otpAuthUrl = authenticator.keyuri(email, serviceName, secret);
+// ---------------------------------------------------------------------------
+// Status / queries
+// ---------------------------------------------------------------------------
 
-    // Generate QR code
-    const qrCodeUrl = await QRCode.toDataURL(otpAuthUrl);
+export interface MfaStatus {
+  enabled: boolean;
+  enrolled_at: Date | null;
+  last_used: Date | null;
+  pending: boolean;
+  remaining_backup_codes: number;
+}
 
-    // Generate backup codes
-    const backupCodes = this.generateBackupCodes();
-
-    // Store secret and backup codes (encrypted)
-    await this.storeMFASecret(userId, secret, backupCodes);
-
+export async function getMfaStatus(userId: string): Promise<MfaStatus> {
+  const u = await pool.query(
+    `SELECT mfa_enabled, mfa_enrolled_at, mfa_last_used, mfa_backup_codes
+       FROM users
+      WHERE id = $1
+      LIMIT 1`,
+    [userId]
+  );
+  if (u.rows.length === 0) {
     return {
-      secret, // Only return for initial setup
-      qrCodeUrl,
-      backupCodes,
+      enabled: false,
+      enrolled_at: null,
+      last_used: null,
+      pending: false,
+      remaining_backup_codes: 0,
     };
   }
+  const row = u.rows[0];
 
-  /**
-   * Verify TOTP code
-   */
-  async verifyCode(userId: string, code: string): Promise<boolean> {
-    const mfaData = await this.getMFASecret(userId);
-    if (!mfaData || !mfaData.secret) {
-      return false;
+  const p = await pool.query(
+    `SELECT 1 FROM mfa_pending_enrollments
+      WHERE user_id = $1 AND expires_at > CURRENT_TIMESTAMP
+      LIMIT 1`,
+    [userId]
+  );
+
+  let remaining = 0;
+  if (row.mfa_backup_codes) {
+    try {
+      const arr = JSON.parse(row.mfa_backup_codes);
+      if (Array.isArray(arr)) remaining = arr.length;
+    } catch {
+      remaining = 0;
     }
-
-    // Verify TOTP
-    const isValid = authenticator.verify({
-      token: code,
-      secret: mfaData.secret,
-      window: this.window,
-    });
-
-    if (isValid) {
-      // Update last used timestamp
-      await this.updateLastUsed(userId);
-      return true;
-    }
-
-    // Check backup codes
-    if (mfaData.backupCodes && mfaData.backupCodes.includes(code)) {
-      // Remove used backup code
-      await this.removeBackupCode(userId, code);
-      return true;
-    }
-
-    return false;
   }
 
-  /**
-   * Check if user has MFA enabled
-   */
-  async isMFAEnabled(userId: string): Promise<boolean> {
-    const result = await pool.query(
-      'SELECT mfa_enabled FROM users WHERE id = $1',
-      [userId]
+  return {
+    enabled: !!row.mfa_enabled,
+    enrolled_at: row.mfa_enrolled_at,
+    last_used: row.mfa_last_used,
+    pending: p.rows.length > 0,
+    remaining_backup_codes: remaining,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Enrollment
+// ---------------------------------------------------------------------------
+
+export interface MfaSetupResult {
+  secret: string;
+  otpauth_url: string;
+  qr_code_data_url: string;
+  backup_codes: string[]; // plaintext — ONLY returned during setup
+  expires_at: Date;
+}
+
+/**
+ * Step 1 — generate a secret, QR code, backup codes. Stored in
+ * `mfa_pending_enrollments` until `/enroll` confirms.
+ */
+export async function setupMfa(
+  userId: string,
+  email: string
+): Promise<MfaSetupResult> {
+  const existing = await pool.query(
+    'SELECT mfa_enabled FROM users WHERE id = $1',
+    [userId]
+  );
+  if (existing.rows[0]?.mfa_enabled) {
+    const err: any = new Error('MFA is already enabled');
+    err.status = 409;
+    throw err;
+  }
+
+  const secret = authenticator.generateSecret();
+  const otpauthUrl = authenticator.keyuri(email, ISSUER, secret);
+  const qrCodeDataUrl = await QRCode.toDataURL(otpauthUrl);
+
+  const codes = generateBackupCodes(10);
+
+  await pool.query(
+    `INSERT INTO mfa_pending_enrollments (user_id, encrypted_secret, backup_code_hashes)
+     VALUES ($1, $2, $3::jsonb)
+     ON CONFLICT (user_id)
+     DO UPDATE SET
+       encrypted_secret = EXCLUDED.encrypted_secret,
+       backup_code_hashes = EXCLUDED.backup_code_hashes,
+       created_at = CURRENT_TIMESTAMP,
+       expires_at = CURRENT_TIMESTAMP + INTERVAL '15 minutes'`,
+    [userId, encryptSecret(secret), JSON.stringify(codes.hashes)]
+  );
+
+  return {
+    secret,
+    otpauth_url: otpauthUrl,
+    qr_code_data_url: qrCodeDataUrl,
+    backup_codes: codes.plain,
+    expires_at: new Date(Date.now() + 15 * 60_000),
+  };
+}
+
+/**
+ * Step 2 — user submits a TOTP code generated by their authenticator.
+ * If valid, MFA becomes enabled and the pending row is cleared.
+ */
+export async function confirmEnrollment(
+  userId: string,
+  totpCode: string
+): Promise<{ enabled: boolean }> {
+  const row = await pool.query(
+    `SELECT encrypted_secret, backup_code_hashes, expires_at
+       FROM mfa_pending_enrollments
+      WHERE user_id = $1
+      LIMIT 1`,
+    [userId]
+  );
+  if (row.rows.length === 0) {
+    const err: any = new Error('No pending MFA enrollment. Call /mfa/setup first.');
+    err.status = 404;
+    throw err;
+  }
+  const pending = row.rows[0];
+  if (new Date(pending.expires_at) < new Date()) {
+    await pool.query('DELETE FROM mfa_pending_enrollments WHERE user_id = $1', [userId]);
+    const err: any = new Error('Enrollment expired. Start over with /mfa/setup.');
+    err.status = 410;
+    throw err;
+  }
+
+  const secret = decryptSecret(pending.encrypted_secret);
+  const ok = authenticator.verify({
+    token: normalizeTotp(totpCode),
+    secret,
+  });
+  if (!ok) {
+    const err: any = new Error('Invalid TOTP code');
+    err.status = 400;
+    throw err;
+  }
+
+  // Activate
+  await pool.query(
+    `UPDATE users
+        SET mfa_enabled = TRUE,
+            mfa_secret = $1,
+            mfa_backup_codes = $2,
+            mfa_enrolled_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3`,
+    [
+      pending.encrypted_secret,
+      JSON.stringify(pending.backup_code_hashes),
+      userId,
+    ]
+  );
+  await pool.query('DELETE FROM mfa_pending_enrollments WHERE user_id = $1', [userId]);
+  return { enabled: true };
+}
+
+// ---------------------------------------------------------------------------
+// Login challenge flow
+// ---------------------------------------------------------------------------
+
+/**
+ * Issue a one-time MFA challenge token after a successful password check.
+ * The login route returns the token to the client, who then posts it to
+ * /mfa/verify with the TOTP/backup code.
+ */
+export async function issueChallenge(
+  userId: string,
+  meta: { ipAddress?: string; userAgent?: string } = {}
+): Promise<{ token: string; expiresAt: Date }> {
+  const token = generateChallengeToken();
+  const expiresAt = new Date(Date.now() + CHALLENGE_TTL_SECONDS * 1000);
+
+  await pool.query(
+    `INSERT INTO mfa_challenges (user_id, token_hash, expires_at, ip_address, user_agent)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [
+      userId,
+      sha256Hex(token),
+      expiresAt,
+      meta.ipAddress || null,
+      meta.userAgent || null,
+    ]
+  );
+  return { token, expiresAt };
+}
+
+/**
+ * Trade a challenge token + code for a verified user id.
+ * Caller (login route) then issues the real JWT access/refresh tokens.
+ */
+export async function verifyChallenge(
+  challengeToken: string,
+  code: string
+): Promise<{ userId: string }> {
+  if (!challengeToken || !code) {
+    const err: any = new Error('challenge token and code required');
+    err.status = 400;
+    throw err;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const ch = await client.query(
+      `SELECT id, user_id, expires_at, consumed_at, attempts
+         FROM mfa_challenges
+        WHERE token_hash = $1
+        FOR UPDATE`,
+      [sha256Hex(challengeToken)]
     );
-    return result.rows[0]?.mfa_enabled || false;
-  }
-
-  /**
-   * Enable MFA for user
-   */
-  async enableMFA(userId: string): Promise<void> {
-    await pool.query(
-      'UPDATE users SET mfa_enabled = true WHERE id = $1',
-      [userId]
-    );
-  }
-
-  /**
-   * Disable MFA for user (requires password verification)
-   */
-  async disableMFA(userId: string, password: string): Promise<boolean> {
-    // Verify password first
-    const user = await pool.query(
-      'SELECT password_hash FROM users WHERE id = $1',
-      [userId]
-    );
-
-    if (!user.rows[0]) {
-      return false;
+    if (ch.rows.length === 0) {
+      await client.query('ROLLBACK');
+      const err: any = new Error('Invalid challenge');
+      err.status = 401;
+      throw err;
+    }
+    const row = ch.rows[0];
+    if (row.consumed_at) {
+      await client.query('ROLLBACK');
+      const err: any = new Error('Challenge already used');
+      err.status = 401;
+      throw err;
+    }
+    if (new Date(row.expires_at) < new Date()) {
+      await client.query('ROLLBACK');
+      const err: any = new Error('Challenge expired');
+      err.status = 401;
+      throw err;
+    }
+    if (row.attempts >= MAX_CHALLENGE_ATTEMPTS) {
+      await client.query(
+        'UPDATE mfa_challenges SET consumed_at = CURRENT_TIMESTAMP WHERE id = $1',
+        [row.id]
+      );
+      await client.query('COMMIT');
+      const err: any = new Error('Too many attempts');
+      err.status = 429;
+      throw err;
     }
 
-    const bcrypt = require('bcrypt');
-    const isValid = await bcrypt.compare(password, user.rows[0].password_hash);
-    
-    if (!isValid) {
-      return false;
-    }
-
-    // Disable MFA
-    await pool.query(
-      'UPDATE users SET mfa_enabled = false, mfa_secret = NULL, mfa_backup_codes = NULL WHERE id = $1',
-      [userId]
+    // Bump attempts immediately (so brute-force gets capped even if code mismatches)
+    await client.query(
+      'UPDATE mfa_challenges SET attempts = attempts + 1 WHERE id = $1',
+      [row.id]
     );
 
-    return true;
-  }
-
-  /**
-   * Generate backup codes
-   */
-  private generateBackupCodes(count: number = 10): string[] {
-    const codes: string[] = [];
-    for (let i = 0; i < count; i++) {
-      // Generate 8-character alphanumeric code
-      const code = randomBytes(4).toString('hex').toUpperCase();
-      codes.push(code);
-    }
-    return codes;
-  }
-
-  /**
-   * Store MFA secret (encrypted)
-   */
-  private async storeMFASecret(
-    userId: string,
-    secret: string,
-    backupCodes: string[]
-  ): Promise<void> {
-    // Encrypt secret before storing
-    const encryptedSecret = this.encryptSecret(secret);
-    const encryptedBackupCodes = JSON.stringify(backupCodes.map(code => 
-      this.encryptSecret(code)
-    ));
-
-    await pool.query(
-      `UPDATE users 
-       SET mfa_secret = $1, mfa_backup_codes = $2 
-       WHERE id = $3`,
-      [encryptedSecret, encryptedBackupCodes, userId]
-    );
-  }
-
-  /**
-   * Get MFA secret (decrypted)
-   */
-  private async getMFASecret(userId: string): Promise<{
-    secret: string;
-    backupCodes: string[];
-  } | null> {
-    const result = await pool.query(
-      'SELECT mfa_secret, mfa_backup_codes FROM users WHERE id = $1',
-      [userId]
-    );
-
-    if (!result.rows[0] || !result.rows[0].mfa_secret) {
-      return null;
+    const verified = await verifyUserCodeInTransaction(client, row.user_id, code);
+    if (!verified) {
+      await client.query('COMMIT');
+      const err: any = new Error('Invalid code');
+      err.status = 401;
+      throw err;
     }
 
-    const secret = this.decryptSecret(result.rows[0].mfa_secret);
-    const backupCodes = result.rows[0].mfa_backup_codes
-      ? JSON.parse(result.rows[0].mfa_backup_codes).map((code: string) => 
-          this.decryptSecret(code)
-        )
-      : [];
-
-    return { secret, backupCodes };
-  }
-
-  /**
-   * Update last MFA used timestamp
-   */
-  private async updateLastUsed(userId: string): Promise<void> {
-    await pool.query(
+    // Consume challenge
+    await client.query(
+      'UPDATE mfa_challenges SET consumed_at = CURRENT_TIMESTAMP WHERE id = $1',
+      [row.id]
+    );
+    await client.query(
       'UPDATE users SET mfa_last_used = CURRENT_TIMESTAMP WHERE id = $1',
-      [userId]
+      [row.user_id]
     );
-  }
 
-  /**
-   * Remove used backup code
-   */
-  private async removeBackupCode(userId: string, code: string): Promise<void> {
-    const mfaData = await this.getMFASecret(userId);
-    if (!mfaData) return;
-
-    const updatedCodes = mfaData.backupCodes.filter(c => c !== code);
-    const encryptedBackupCodes = JSON.stringify(updatedCodes.map(c => 
-      this.encryptSecret(c)
-    ));
-
-    await pool.query(
-      'UPDATE users SET mfa_backup_codes = $1 WHERE id = $2',
-      [encryptedBackupCodes, userId]
-    );
-  }
-
-  /**
-   * Encrypt secret (simple encryption - use proper key management in production)
-   */
-  private encryptSecret(secret: string): string {
-    const crypto = require('crypto');
-    const algorithm = 'aes-256-gcm';
-    const key = Buffer.from(process.env.ENCRYPTION_KEY || 'default-key-32-chars-long!!', 'utf8');
-    const iv = crypto.randomBytes(16);
-
-    const cipher = crypto.createCipheriv(algorithm, key, iv);
-    let encrypted = cipher.update(secret, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-
-    const authTag = cipher.getAuthTag();
-
-    return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
-  }
-
-  /**
-   * Decrypt secret
-   */
-  private decryptSecret(encrypted: string): string {
-    const crypto = require('crypto');
-    const algorithm = 'aes-256-gcm';
-    const key = Buffer.from(process.env.ENCRYPTION_KEY || 'default-key-32-chars-long!!', 'utf8');
-    
-    const [ivHex, authTagHex, encryptedData] = encrypted.split(':');
-    const iv = Buffer.from(ivHex, 'hex');
-    const authTag = Buffer.from(authTagHex, 'hex');
-
-    const decipher = crypto.createDecipheriv(algorithm, key, iv);
-    decipher.setAuthTag(authTag);
-
-    let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-
-    return decrypted;
+    await client.query('COMMIT');
+    return { userId: row.user_id };
+  } catch (err) {
+    if (!(err as any).message?.includes('challenge')) {
+      try {
+        await client.query('ROLLBACK');
+      } catch {
+        // ignore
+      }
+    }
+    throw err;
+  } finally {
+    client.release();
   }
 }
 
-export const mfaService = new MFAService();
+// Helper used inside the verifyChallenge transaction.
+async function verifyUserCodeInTransaction(
+  client: any,
+  userId: string,
+  code: string
+): Promise<boolean> {
+  const u = await client.query(
+    'SELECT mfa_secret, mfa_backup_codes FROM users WHERE id = $1 LIMIT 1',
+    [userId]
+  );
+  if (u.rows.length === 0 || !u.rows[0].mfa_secret) return false;
+
+  const secret = decryptSecret(u.rows[0].mfa_secret);
+
+  // Try TOTP first
+  const totpOk = authenticator.verify({
+    token: normalizeTotp(code),
+    secret,
+  });
+  if (totpOk) return true;
+
+  // Then backup codes
+  if (!u.rows[0].mfa_backup_codes) return false;
+  let hashes: string[] = [];
+  try {
+    const parsed = JSON.parse(u.rows[0].mfa_backup_codes);
+    if (Array.isArray(parsed)) hashes = parsed;
+  } catch {
+    return false;
+  }
+  const candidate = hashBackupCode(code);
+  if (!hashes.includes(candidate)) return false;
+
+  // Consume the backup code
+  const remaining = hashes.filter((h) => h !== candidate);
+  await client.query(
+    'UPDATE users SET mfa_backup_codes = $1 WHERE id = $2',
+    [JSON.stringify(remaining), userId]
+  );
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Verify in an authenticated context (e.g. step-up for sensitive ops).
+// ---------------------------------------------------------------------------
+
+export async function verifyAuthenticatedCode(
+  userId: string,
+  code: string
+): Promise<boolean> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const ok = await verifyUserCodeInTransaction(client, userId, code);
+    if (ok) {
+      await client.query(
+        'UPDATE users SET mfa_last_used = CURRENT_TIMESTAMP WHERE id = $1',
+        [userId]
+      );
+    }
+    await client.query('COMMIT');
+    return ok;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Disable / rotate backup codes
+// ---------------------------------------------------------------------------
+
+export async function disableMfa(
+  userId: string,
+  password: string
+): Promise<boolean> {
+  const u = await pool.query(
+    'SELECT password_hash FROM users WHERE id = $1 LIMIT 1',
+    [userId]
+  );
+  if (u.rows.length === 0) return false;
+  const ok = await bcrypt.compare(password, u.rows[0].password_hash);
+  if (!ok) return false;
+
+  await pool.query(
+    `UPDATE users
+        SET mfa_enabled = FALSE,
+            mfa_secret = NULL,
+            mfa_backup_codes = NULL,
+            mfa_enrolled_at = NULL,
+            updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1`,
+    [userId]
+  );
+  await pool.query('DELETE FROM mfa_pending_enrollments WHERE user_id = $1', [userId]);
+  return true;
+}
+
+/**
+ * Rotate the backup codes. Requires password verification. Returns the new
+ * plain-text codes (only chance for the user to see them).
+ */
+export async function rotateBackupCodes(
+  userId: string,
+  password: string
+): Promise<{ codes: string[] } | null> {
+  const u = await pool.query(
+    'SELECT password_hash, mfa_enabled FROM users WHERE id = $1 LIMIT 1',
+    [userId]
+  );
+  if (u.rows.length === 0) return null;
+  if (!u.rows[0].mfa_enabled) return null;
+  const ok = await bcrypt.compare(password, u.rows[0].password_hash);
+  if (!ok) return null;
+
+  const codes = generateBackupCodes(10);
+  await pool.query(
+    'UPDATE users SET mfa_backup_codes = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+    [JSON.stringify(codes.hashes), userId]
+  );
+  return { codes: codes.plain };
+}
+
+// ---------------------------------------------------------------------------
+// Backward-compat exports
+// ---------------------------------------------------------------------------
+
+/** True if the user has MFA fully enabled. */
+export async function isMfaEnabled(userId: string): Promise<boolean> {
+  const r = await pool.query(
+    'SELECT mfa_enabled FROM users WHERE id = $1 LIMIT 1',
+    [userId]
+  );
+  return !!r.rows[0]?.mfa_enabled;
+}
+
+// Re-export the normalizer so routes can canonicalize user input before display.
+export { normalizeBackupCode };

@@ -4,7 +4,7 @@ import type { CSSProperties } from 'react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { Check, Sparkles } from 'lucide-react';
-import { LemonSqueezyCheckoutButton } from '@/components/billing/LemonSqueezyCheckoutButton';
+import { CheckoutButton } from '@/components/billing/CheckoutButton';
 import {
   PLAN_CARD_COPY,
   PRICING_CHECKOUT_DISCLAIMER,
@@ -184,19 +184,18 @@ export function PricingPlansClient() {
                   ) : null}
                   {isPro ? (
                     <>
-                      <LemonSqueezyCheckoutButton
+                      <CheckoutButton
                         kind="subscription"
                         planSlug={proSlug}
                         className="w-full rounded-xl bg-[#009ab6] py-3 text-sm font-semibold text-white transition hover:bg-[#007a8a] disabled:opacity-50"
                         style={{ width: '100%' } as CSSProperties}
                       >
                         {interval === 'annual' && !annualReady
-                          ? 'Subscribe monthly (via Lemon Squeezy)'
-                          : 'Subscribe with Lemon Squeezy'}
-                      </LemonSqueezyCheckoutButton>
+                          ? 'Subscribe monthly'
+                          : 'Subscribe'}
+                      </CheckoutButton>
                       <p className="mt-2 text-center text-xs text-gray-500">
-                        Sign in required. Map <code className="rounded bg-gray-100 px-1">{proSlug}</code>{' '}
-                        in <code className="rounded bg-gray-100 px-1">LEMONSQUEEZY_VARIANT_MAP_JSON</code>.
+                        Sign in required. Secure checkout via Paddle.
                       </p>
                     </>
                   ) : null}

@@ -1,15 +1,15 @@
 import express from 'express';
+import { getActivePlans } from './subscription.service.js';
 import {
-  getActivePlans,
   getUserActiveSubscription,
-  hasActivePremiumSubscription,
-} from './subscription.service.js';
+  hasActivePremium,
+} from '../billing/subscriptions.service.js';
 import { authenticateToken, AuthRequest } from '../auth/auth.middleware.js';
 
 const router = express.Router();
 
-// GET /api/subscriptions/plans
-router.get('/plans', async (req, res) => {
+// GET /api/subscriptions/plans — public list of active subscription plans.
+router.get('/plans', async (_req, res) => {
   try {
     const plans = await getActivePlans();
     res.json(plans);
@@ -19,24 +19,21 @@ router.get('/plans', async (req, res) => {
   }
 });
 
-// GET /api/subscriptions/my-subscription
+// GET /api/subscriptions/my-subscription — current user's active subscription.
 router.get('/my-subscription', authenticateToken, async (req: AuthRequest, res) => {
   try {
     const subscription = await getUserActiveSubscription(req.user!.userId);
-    if (!subscription) {
-      return res.json({ subscription: null });
-    }
-    res.json({ subscription });
+    res.json({ subscription: subscription ?? null });
   } catch (error) {
     console.error('Get subscription error:', error);
     res.status(500).json({ error: 'Failed to fetch subscription' });
   }
 });
 
-// GET /api/subscriptions/check-premium
+// GET /api/subscriptions/check-premium — boolean check used by frontend gates.
 router.get('/check-premium', authenticateToken, async (req: AuthRequest, res) => {
   try {
-    const hasPremium = await hasActivePremiumSubscription(req.user!.userId);
+    const hasPremium = await hasActivePremium(req.user!.userId);
     res.json({ hasPremium });
   } catch (error) {
     console.error('Check premium error:', error);

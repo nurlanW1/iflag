@@ -13,7 +13,7 @@ import {
   isPaidCatalogProduct,
 } from '@/lib/marketplace/catalog-utils';
 import { getCategoryById, listPublishedProducts } from '@/services/marketplace';
-import { LemonSqueezyCheckoutButton } from '@/components/billing/LemonSqueezyCheckoutButton';
+import { CheckoutButton } from '@/components/billing/CheckoutButton';
 import { Crown, Download } from 'lucide-react';
 import type { Product } from '@/types/marketplace';
 
@@ -215,14 +215,12 @@ export function ProductDetailView({ slug, product }: Props) {
               <div className="border-t border-gray-100 pt-6">
                 <h2 className="text-sm font-bold text-gray-900">One-time purchase</h2>
                 <p className="mt-1 text-xs text-gray-600">
-                  Buy a perpetual license for full-resolution files (checkout via Lemon Squeezy). Map this
-                  product slug to a LS variant in{' '}
-                  <code className="rounded bg-gray-100 px-1">LEMONSQUEEZY_VARIANT_MAP_JSON</code>.
+                  Buy a perpetual license for full-resolution files. Secure checkout via Paddle.
                 </p>
                 <div className="mt-3">
-                  <LemonSqueezyCheckoutButton kind="one_time" productSlug={product.slug}>
+                  <CheckoutButton kind="one_time" productSlug={product.slug}>
                     Buy this flag
-                  </LemonSqueezyCheckoutButton>
+                  </CheckoutButton>
                 </div>
               </div>
             ) : null}

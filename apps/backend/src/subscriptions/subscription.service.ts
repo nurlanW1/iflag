@@ -1,3 +1,15 @@
+/**
+ * Legacy subscription service.
+ *
+ * Most write paths are now in `src/billing/` (Lemon Squeezy webhooks + routes).
+ * This module is preserved for:
+ *   - `getActivePlans` (still used by GET /api/subscriptions/plans).
+ *   - Stripe-shaped helpers that may be wired in once Stripe is added.
+ *
+ * Prefer `billing/subscriptions.service.ts` for reads against the
+ * provider-neutral columns (billing_provider, provider_subscription_id, ...).
+ */
+
 import pool from '../db.js';
 
 export interface SubscriptionPlan {

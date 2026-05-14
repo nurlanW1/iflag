@@ -128,38 +128,60 @@ export async function registerUser(data: RegisterData): Promise<User> {
   return result.rows[0];
 }
 
-// Login user
-export async function loginUser(data: LoginData): Promise<AuthTokens> {
+/** Discriminated login result so the route can branch on `mfa_required`. */
+export type LoginResult =
+  | (AuthTokens & { mfa_required?: false })
+  | { mfa_required: true; user_id: string; email: string };
+
+/**
+ * Validate credentials. If the user has MFA enabled, do NOT issue tokens —
+ * the route will issue an MFA challenge instead. Otherwise issue full session.
+ */
+export async function loginUser(data: LoginData): Promise<LoginResult> {
   const { email, password } = data;
 
-  // Find user
   const result = await pool.query(
-    'SELECT id, email, password_hash, full_name, role, email_verified, created_at FROM users WHERE email = $1 AND is_active = TRUE',
+    `SELECT id, email, password_hash, full_name, role, email_verified, created_at,
+            mfa_enabled
+       FROM users
+      WHERE email = $1 AND is_active = TRUE`,
     [email]
   );
-
   if (result.rows.length === 0) {
     throw new Error('Invalid email or password');
   }
-
   const user = result.rows[0];
 
-  // Verify password
   const isValid = await verifyPassword(password, user.password_hash);
   if (!isValid) {
     throw new Error('Invalid email or password');
   }
 
-  // Update last login
-  await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+  if (user.mfa_enabled) {
+    // Defer last_login update until the MFA verification succeeds.
+    return { mfa_required: true, user_id: user.id, email: user.email };
+  }
 
-  // Generate tokens
+  await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+  return issueSessionTokens(user);
+}
+
+/**
+ * Issue full session tokens for a verified user record.
+ * Exported so the MFA verify route can call it after challenge success.
+ */
+export async function issueSessionTokens(user: {
+  id: string;
+  email: string;
+  full_name: string | null;
+  role: string;
+  email_verified: boolean;
+  created_at: Date;
+}): Promise<AuthTokens> {
   const accessToken = generateAccessToken(user.id, user.email, user.role);
   const refreshToken = generateRefreshToken();
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + REFRESH_TOKEN_EXPIRES_DAYS);
-
-  // Store refresh token
   await storeRefreshToken(user.id, refreshToken, expiresAt);
 
   return {
@@ -169,7 +191,7 @@ export async function loginUser(data: LoginData): Promise<AuthTokens> {
       id: user.id,
       email: user.email,
       full_name: user.full_name,
-      role: user.role,
+      role: user.role as 'user' | 'admin',
       email_verified: user.email_verified,
       created_at: user.created_at,
     },
@@ -212,4 +234,32 @@ export async function getUserById(userId: string): Promise<User | null> {
     email_verified: row.email_verified,
     created_at: row.created_at,
   };
+}
+
+// Update the user's own profile (full_name only — email/role changes are
+// separate flows because they need verification / admin checks).
+export async function updateUserProfile(
+  userId: string,
+  patch: { full_name?: string | null }
+): Promise<User | null> {
+  const updates: string[] = [];
+  const params: any[] = [];
+  let i = 0;
+
+  if (patch.full_name !== undefined) {
+    updates.push(`full_name = $${++i}`);
+    params.push(patch.full_name);
+  }
+  if (updates.length === 0) {
+    return getUserById(userId);
+  }
+
+  updates.push(`updated_at = CURRENT_TIMESTAMP`);
+  params.push(userId);
+
+  await pool.query(
+    `UPDATE users SET ${updates.join(', ')} WHERE id = $${++i} AND is_active = TRUE`,
+    params
+  );
+  return getUserById(userId);
 }

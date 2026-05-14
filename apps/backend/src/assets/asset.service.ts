@@ -1,5 +1,5 @@
 import pool from '../db.js';
-import { hasActivePremiumSubscription } from '../subscriptions/subscription.service.js';
+import { hasActivePremium } from '../billing/subscriptions.service.js';
 
 export interface Asset {
   id: string;
@@ -439,10 +439,10 @@ export async function getDownloadUrl(
     throw new Error('Asset not available');
   }
 
-  // Check if user has premium access
+  // Check if user has premium access (active OR trialing subscription).
   let hasPremium = false;
   if (userId) {
-    hasPremium = await hasActivePremiumSubscription(userId);
+    hasPremium = await hasActivePremium(userId);
   }
 
   // If asset is premium and user doesn't have premium, return watermarked version
