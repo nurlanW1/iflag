@@ -1,8 +1,8 @@
 # Backend (Node.js, Express, PostgreSQL)
 
 REST API for the flag stock marketplace. Production-ready setup with JWT auth,
-role-based access, asset CRUD, an admin CMS, and a Lemon Squeezy billing
-integration (checkouts, subscriptions, one-time orders, webhooks).
+role-based access, asset CRUD, an admin CMS, and Paddle Billing (checkouts,
+subscriptions, one-time orders, webhooks).
 
 ## Stack
 
@@ -11,13 +11,13 @@ integration (checkouts, subscriptions, one-time orders, webhooks).
 - TypeScript (ESM, NodeNext)
 - PostgreSQL (Neon-compatible)
 - Bull + Redis for the upload processing queue
-- Lemon Squeezy as Merchant of Record for payments
+- Paddle Billing as Merchant of Record for payments
 
 ## Development
 
 ```bash
 cp .env.example .env
-# Fill in DATABASE_URL, JWT_SECRET, and (when ready) LEMONSQUEEZY_* values.
+# Fill in DATABASE_URL, JWT_SECRET, and (when ready) PADDLE_* values.
 
 npm install
 npm run dev
@@ -70,16 +70,15 @@ GET    /api/subscriptions/plans
 GET    /api/subscriptions/my-subscription
 GET    /api/subscriptions/check-premium
 
-# Billing (provider-aware: Paddle [active] + Lemon Squeezy [legacy])
-POST   /api/billing/checkout              Create hosted checkout URL
+# Billing (Paddle Billing)
+POST   /api/billing/checkout              Create Paddle checkout URL
 POST   /api/billing/subscriptions/cancel  Cancel at period end
 POST   /api/billing/subscriptions/resume  Un-cancel / resume
 POST   /api/billing/subscriptions/pause   Pause subscription
 POST   /api/billing/portal                Customer portal / payment-method URL
 GET    /api/billing/orders                List one-time purchases
-GET    /api/billing/subscription          Current sub (provider-aware)
+GET    /api/billing/subscription          Current subscription
 POST   /api/billing/webhook/paddle        Public webhook (Paddle, HMAC verified)
-POST   /api/billing/webhook/lemonsqueezy  Public webhook (Lemon Squeezy, legacy)
 
 # Admin (auth + admin role)
 GET    /api/admin/stats
@@ -279,17 +278,11 @@ chunk size is 10 MB; configurable via `CHUNK_SIZE` env.
 
 ## Billing setup
 
-The backend supports both **Paddle Billing** (active default — works from
-Uzbekistan and most countries via Wise/bank transfer payouts) and
-**Lemon Squeezy** (legacy — does not support UZ payouts). The database schema
-is provider-neutral, so you can switch at any time by setting
-`BILLING_PROVIDER` env (`paddle` or `lemonsqueezy`).
+Billing uses **Paddle Billing**. Paddle is a **Merchant of Record** — it handles
+global sales tax, VAT, GST, refunds, and chargebacks on your behalf. You receive
+consolidated payouts and invoices.
 
-Both providers are **Merchants of Record** — they handle global sales tax,
-VAT, GST, refunds, and chargebacks on your behalf. You receive consolidated
-payouts and a single 1099/invoice.
-
-### Paddle Billing (recommended)
+### Paddle Billing
 
 1. **Create an account**
    - Sandbox: https://sandbox-vendors.paddle.com — for development.
@@ -307,7 +300,6 @@ payouts and a single 1099/invoice.
    - Copy the signing secret (`pdl_ntfset_…` or `ntfset_…` for sandbox).
 5. **Configure env**
    ```bash
-   BILLING_PROVIDER=paddle
    PADDLE_API_KEY=pdl_sdbx_apikey_...
    PADDLE_WEBHOOK_SECRET=ntfset_...
    PADDLE_PRICE_MAP_JSON={"subscriptionByPlanSlug":{"weekly-premium":"pri_..."}}
@@ -339,85 +331,17 @@ The HMAC is computed over `${ts}:${rawBody}` with the endpoint secret.
 We additionally enforce a 5-minute freshness window against replay attacks.
 See [`paddle-signature.ts`](src/billing/paddle/paddle-signature.ts).
 
-### Lemon Squeezy setup (legacy)
+### Customer lifecycle
 
-The backend ships ready for [Lemon Squeezy](https://lemonsqueezy.com) as the
-billing provider. Lemon Squeezy acts as the Merchant of Record, so it handles
-global sales tax, VAT, and refunds — you receive consolidated payouts.
-
-### 1. Create the store and products
-
-1. Sign up at https://app.lemonsqueezy.com and create a store.
-2. Add **one product per subscription plan** (e.g. *Weekly Premium*, *Monthly Premium*).
-   Each plan needs at least one **Variant** — the LS Variant id is what the backend talks to.
-3. Optionally add products for one-time purchases (single-asset packs, etc.).
-
-### 2. Configure environment
-
-Set these in `apps/backend/.env`:
-
-```bash
-LEMONSQUEEZY_API_KEY=lsk_live_...
-LEMONSQUEEZY_STORE_ID=12345
-LEMONSQUEEZY_SIGNING_SECRET=whsec_...
-LEMONSQUEEZY_CHECKOUT_SUCCESS_URL=https://yourdomain.com/dashboard/purchases
-LEMONSQUEEZY_TEST_MODE=true   # while testing
-
-# Map your slugs → LS variant ids
-LEMONSQUEEZY_VARIANT_MAP_JSON={"subscriptionByPlanSlug":{"weekly-premium":"100001","monthly-premium":"100002"},"oneTimeByProductSlug":{"united-states-standard":"100003"}}
-```
-
-Alternatively, leave `LEMONSQUEEZY_VARIANT_MAP_JSON` unset and write the
-variant ids directly to the database:
-
-```sql
-UPDATE subscription_plans
-   SET provider_variant_id = '100001'
- WHERE slug = 'weekly-premium';
-```
-
-### 3. Register the webhook
-
-In Lemon Squeezy dashboard:
-
-- **Settings → Webhooks → Add endpoint**
-- URL: `https://api.YOUR_DOMAIN.com/api/billing/webhook/lemonsqueezy`
-- Events: at minimum check `order_created`, `order_refunded`, and all
-  `subscription_*` events.
-- Copy the **signing secret** → `LEMONSQUEEZY_SIGNING_SECRET`.
-
-For local dev, expose the backend over a tunnel:
-
-```bash
-ngrok http 4000
-# → https://abcd1234.ngrok.app/api/billing/webhook/lemonsqueezy
-```
-
-### 4. How the flow works
-
-1. **User clicks "Subscribe"** on the frontend.
-2. Frontend calls `POST /api/billing/checkout` with `{ kind: 'subscription', planSlug }`
-   and the user's JWT cookie/Bearer.
-3. Backend resolves the LS variant id, calls LS API, returns a hosted checkout URL.
-   The custom field `user_id` is attached so webhooks can attribute the purchase.
-4. User pays on LS-hosted page; LS posts `subscription_created` (and friends) to
-   our webhook.
-5. Webhook handler verifies the HMAC, deduplicates via `webhook_deliveries`,
-   upserts a row in `user_subscriptions` with provider-neutral columns.
-6. Frontend polls `/api/subscriptions/my-subscription` (or `/check-premium`)
-   to know whether the user has access.
-
-### 5. Cancel / resume / portal
-
-- `POST /api/billing/subscriptions/cancel` — soft-cancel (active until period end).
-- `POST /api/billing/subscriptions/resume` — undo a soft-cancel.
-- `POST /api/billing/subscriptions/pause` — pause (LS supports void/free modes).
-- `POST /api/billing/portal` — returns a hosted customer portal URL.
+- `POST /api/billing/subscriptions/cancel` — cancel at period end.
+- `POST /api/billing/subscriptions/resume` — resume after cancel.
+- `POST /api/billing/subscriptions/pause` — pause (`resume_at` optional).
+- `POST /api/billing/portal` — Paddle customer portal / payment-method URL.
 
 ## Database schema
 
 - `users`, `refresh_tokens` — auth.
-- `subscription_plans` — pricing tiers. `provider_variant_id` ties them to LS.
+- `subscription_plans` — pricing tiers. `provider_variant_id` stores Paddle price ids (`pri_*`).
 - `user_subscriptions` — billing state. Provider-neutral columns
   (`billing_provider`, `provider_subscription_id`, …) live alongside legacy
   `stripe_*` columns for backward compatibility.
@@ -448,7 +372,7 @@ The migration runner resolves SQL files from `src/db/` even when running from
 - [ ] Strong `JWT_SECRET` (≥ 64 random bytes).
 - [ ] `DATABASE_URL` points at a managed Postgres (Neon, RDS, etc.).
 - [ ] Redis configured if uploads are used.
-- [ ] All `LEMONSQUEEZY_*` vars set; `LEMONSQUEEZY_TEST_MODE=false`.
-- [ ] LS webhook registered in dashboard pointing at HTTPS host.
+- [ ] All `PADDLE_*` vars set for live (API key, webhook secret, price map).
+- [ ] Paddle webhook registered at HTTPS URL `/api/billing/webhook/paddle`.
+- [ ] `subscription_plans.provider_variant_id` populated with `pri_*` where needed.
 - [ ] CDN provider configured if asset distribution is enabled.
-- [ ] `subscription_plans.provider_variant_id` populated for each plan slug.

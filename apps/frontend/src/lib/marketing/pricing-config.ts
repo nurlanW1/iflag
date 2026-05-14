@@ -1,9 +1,8 @@
 /**
  * Pricing & plan copy for the public pricing page.
  *
- * Edit amounts and bullets here to keep marketing in sync with your Lemon Squeezy store.
- * Checkout always charges what is configured in Lemon Squeezy — update display prices when you
- * change variants there so customers are not surprised at checkout.
+ * Display amounts are marketing helpers — configure matching Paddle catalog prices
+ * (`pri_*`) via backend `PADDLE_PRICE_MAP_JSON` / `subscription_plans.provider_variant_id`.
  */
 
 export type BillingInterval = 'monthly' | 'annual';
@@ -12,27 +11,27 @@ export type PlanTierId = 'free' | 'pro' | 'business';
 
 /** Shown under prices on the pricing page. */
 export const PRICING_CHECKOUT_DISCLAIMER =
-  'Final price, tax, and renewal terms are confirmed on Lemon Squeezy before you pay. License terms for each asset still apply at download.';
+  'Final price, tax, and renewal terms are confirmed at Paddle checkout before you pay. License terms for each asset still apply at download.';
 
 export const PRO_CHECKOUT = {
   monthly: {
-    /** Display only — set to match your monthly variant in Lemon Squeezy. */
+    /** Display only — align with your Paddle monthly price. */
     displayCents: 2999,
     currency: 'USD' as const,
-    /** Must match `subscriptionByPlanSlug` in `LEMONSQUEEZY_VARIANT_MAP_JSON`. */
-    lemonSqueezyPlanSlug: 'pro-monthly',
+    /** Must match a key in `PADDLE_PRICE_MAP_JSON.subscriptionByPlanSlug`. */
+    planSlug: 'pro-monthly',
   },
   annual: {
     /**
-     * Set `enabled: true` when an annual variant exists and is mapped in env.
+     * Set `enabled: true` when an annual Paddle price exists and is mapped.
      * Until then the UI shows “coming soon” for annual but keeps the data shape.
      */
     enabled: false,
     /** Example annual display; unused until `enabled` is true. */
     displayCents: 29_900,
     currency: 'USD' as const,
-    lemonSqueezyPlanSlug: 'pro-annual',
- },
+    planSlug: 'pro-annual',
+  },
 } as const;
 
 export interface ComparisonRow {
@@ -77,7 +76,7 @@ export const PRICING_COMPARISON_ROWS: ComparisonRow[] = [
     id: 'billing',
     label: 'Billing',
     free: '—',
-    pro: 'Monthly or annual (when enabled) via Lemon Squeezy',
+    pro: 'Monthly or annual (when enabled) via Paddle',
     business: 'Planned',
   },
 ];
@@ -109,7 +108,7 @@ export const PLAN_CARD_COPY: PlanCardCopy[] = [
     tagline: 'Download Pro files across the catalog while you are subscribed.',
     bullets: [
       'Pro-tier downloads for published products while your plan is active',
-      'Cancel or change billing in Lemon Squeezy',
+      'Cancel or change billing in Paddle (customer portal)',
       'One-time purchases still available if you prefer to own specific assets long-term',
     ],
     highlighted: true,

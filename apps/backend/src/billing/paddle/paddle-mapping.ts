@@ -2,7 +2,7 @@
  * Paddle Billing — map local catalog slugs ↔ Paddle price ids (`pri_*`).
  *
  * Source order (first match wins):
- *   1. `PADDLE_PRICE_MAP_JSON` env (same shape as Lemon Squeezy's variant map).
+ *   1. `PADDLE_PRICE_MAP_JSON` env (subscriptionByPlanSlug / oneTimeByProductSlug → `pri_*`).
  *   2. `subscription_plans.provider_variant_id` for the matching slug.
  */
 

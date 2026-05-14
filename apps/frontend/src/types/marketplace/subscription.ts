@@ -29,6 +29,6 @@ export interface Subscription {
   cancelAtPeriodEnd: boolean;
   createdAt: ISODateString;
   updatedAt: ISODateString;
-  /** Lemon Squeezy subscription id — required for webhook upserts / portal links. */
-  lemonSqueezyId?: string | null;
+  /** Payment-provider subscription id (in-memory demo store). Production uses backend DB. */
+  providerSubscriptionId?: string | null;
 }

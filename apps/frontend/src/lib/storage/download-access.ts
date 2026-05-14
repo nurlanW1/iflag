@@ -1,6 +1,6 @@
 /**
  * Access control for **pro** file downloads — entitlement snapshot is filled later
- * (e.g. LemonSqueezy webhooks → DB → API). No payment provider calls here.
+ * (e.g. billing webhooks → DB → API). No payment provider calls here.
  */
 
 export interface ProductEntitlementSnapshot {

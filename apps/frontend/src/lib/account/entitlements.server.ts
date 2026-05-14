@@ -1,6 +1,10 @@
 import { getMarketplaceStore } from '@/services/marketplace/memory-store';
 import { getProductById } from '@/services/marketplace/product-service';
 import type { ProductEntitlementSnapshot } from '@/lib/storage/download-access';
+import {
+  fetchBackendHasPremium,
+  fetchBackendPaidProductGrantDates,
+} from '@/lib/account/billing-access.server';
 
 const DEFAULT_OWNER_DOWNLOAD_EMAIL = 'nurlanrahmonqulov@gmail.com';
 
@@ -29,8 +33,8 @@ export function isMarketplaceOwnerDownloadBypass(email: string | null | undefine
   return getMarketplaceOwnerDownloadEmails().includes(n);
 }
 
-/** Any non-expired purchase/admin grant on this product (used for preview tier unlock). */
-function hasAnyPurchaseOrAdminGrantForProduct(userId: string, productId: string): boolean {
+/** Memory-store only: any purchase/admin grant on this product (preview unlock). */
+function hasMemoryPurchaseOrAdminGrantForProduct(userId: string, productId: string): boolean {
   const store = getMarketplaceStore();
   const now = Date.now();
   return store.downloadAccess.some(
@@ -43,9 +47,9 @@ function hasAnyPurchaseOrAdminGrantForProduct(userId: string, productId: string)
 }
 
 /**
- * Build entitlement snapshot for **one concrete file** (server-side).
- * - Purchase: exact `DownloadAccess` row for that file, non-expired, purchase/admin_grant.
- * - Subscription: active or trialing with period end in the future → all pro files in catalog.
+ * Memory-store snapshot only (demo / legacy). Production gates should use
+ * `resolveAuthenticatedFileDownload` with a backend JWT cookie so Paddle subscriptions
+ * and orders apply.
  */
 export function getUserEntitlementSnapshot(
   userId: string,
@@ -66,7 +70,7 @@ export function getUserEntitlementSnapshot(
 
   const hasActiveSubscription = store.subscriptions.some((s) => {
     if (s.userId !== userId) return false;
-    if (s.status !== 'active' && s.status !== 'trialing') return false;
+    if (s.status !== 'active' && s.status !== 'trialing' && s.status !== 'past_due') return false;
     return new Date(s.currentPeriodEnd).getTime() > now;
   });
 
@@ -83,13 +87,15 @@ export type ResolvedFileDownload =
 
 /**
  * Authoritative server-side gate for file downloads (preview redirect vs pro entitlement).
+ * When `accessToken` is set (backend JWT cookie), merges Paddle subscription + paid orders from the API.
  */
-export function resolveAuthenticatedFileDownload(
+export async function resolveAuthenticatedFileDownload(
   userId: string | null,
   userEmail: string | null | undefined,
   productId: string,
-  fileId: string
-): ResolvedFileDownload {
+  fileId: string,
+  accessToken?: string | null
+): Promise<ResolvedFileDownload> {
   const product = getProductById(productId);
   if (!product || !product.isPublished) {
     return { kind: 'denied', reason: 'NOT_PUBLISHED' };
@@ -98,6 +104,29 @@ export function resolveAuthenticatedFileDownload(
   if (!file) {
     return { kind: 'denied', reason: 'NOT_FOUND' };
   }
+
+  let billingPremium = false;
+  let billingPaidSlugs: Map<string, string> | null = null;
+
+  if (userId && accessToken?.trim()) {
+    const tok = accessToken.trim();
+    const [premium, slugDates] = await Promise.all([
+      fetchBackendHasPremium(tok),
+      fetchBackendPaidProductGrantDates(tok),
+    ]);
+    if (premium !== null) billingPremium = premium;
+    billingPaidSlugs = slugDates;
+  }
+
+  const mem = userId ? getUserEntitlementSnapshot(userId, productId, fileId) : null;
+  const memProductGrant = userId ? hasMemoryPurchaseOrAdminGrantForProduct(userId, productId) : false;
+
+  const slug = product.slug?.trim() ?? '';
+  const billingOwnsProduct =
+    Boolean(slug && billingPaidSlugs?.has(slug));
+
+  const hasActiveSubscription = Boolean(mem?.hasActiveSubscription || billingPremium);
+  const hasPurchasedFile = Boolean(mem?.hasPurchasedProduct || billingOwnsProduct);
 
   if (file.tier === 'preview_free') {
     if (!file.publicUrl) {
@@ -109,11 +138,10 @@ export function resolveAuthenticatedFileDownload(
     if (isMarketplaceOwnerDownloadBypass(userEmail)) {
       return { kind: 'public_preview', publicUrl: file.publicUrl };
     }
-    const snap = getUserEntitlementSnapshot(userId, productId, fileId);
-    if (snap.hasActiveSubscription) {
+    if (hasActiveSubscription) {
       return { kind: 'public_preview', publicUrl: file.publicUrl };
     }
-    if (hasAnyPurchaseOrAdminGrantForProduct(userId, productId)) {
+    if (memProductGrant || billingOwnsProduct) {
       return { kind: 'public_preview', publicUrl: file.publicUrl };
     }
     return { kind: 'denied', reason: 'NOT_ENTITLED' };
@@ -126,11 +154,10 @@ export function resolveAuthenticatedFileDownload(
     if (isMarketplaceOwnerDownloadBypass(userEmail)) {
       return { kind: 'pro_entitled', via: 'owner' };
     }
-    const snap = getUserEntitlementSnapshot(userId, productId, fileId);
-    if (snap.hasActiveSubscription) {
+    if (hasActiveSubscription) {
       return { kind: 'pro_entitled', via: 'subscription' };
     }
-    if (snap.hasPurchasedProduct) {
+    if (hasPurchasedFile) {
       return { kind: 'pro_entitled', via: 'purchase' };
     }
     return { kind: 'denied', reason: 'NOT_ENTITLED' };

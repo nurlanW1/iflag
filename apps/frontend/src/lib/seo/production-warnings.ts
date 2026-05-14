@@ -40,12 +40,6 @@ export function logProductionDeploymentWarnings(): void {
     );
   }
 
-  if (!process.env.LEMONSQUEEZY_API_KEY?.trim()) {
-    console.warn(
-      '[flagswing] Production: LEMONSQUEEZY_API_KEY unset. Checkout and webhooks will not work until Lemon Squeezy is configured.'
-    );
-  }
-
   const hasPublicPreviewBase =
     process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL?.trim() ||
     process.env.NEXT_PUBLIC_MARKETPLACE_PREVIEW_BASE_URL?.trim();

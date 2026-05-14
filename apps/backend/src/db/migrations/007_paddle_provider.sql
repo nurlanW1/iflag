@@ -34,6 +34,6 @@ ALTER TABLE user_subscriptions
   ADD COLUMN IF NOT EXISTS provider_product_id VARCHAR(255);
 
 COMMENT ON COLUMN subscription_plans.provider_variant_id IS
-  'Provider price/variant id. For Paddle: pri_*. For Lemon Squeezy: numeric variant id.';
+  'Provider price id for checkout (Paddle: pri_*).';
 COMMENT ON COLUMN subscription_plans.provider_product_id IS
   'Provider product id. For Paddle: pro_*. Optional grouping field.';

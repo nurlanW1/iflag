@@ -1,10 +1,14 @@
 /**
- * Account dashboard data — reads marketplace memory store (same process as webhooks).
- * Production: replace with DB queries keyed by authenticated user id.
+ * Account dashboard data — merges marketplace memory store with backend billing when JWT cookie is present.
  */
 
 import { getMarketplaceStore } from '@/services/marketplace/memory-store';
-import { listPublishedProducts } from '@/services/marketplace/product-service';
+import { listPublishedProducts, getProductBySlug } from '@/services/marketplace/product-service';
+import { fetchSubscriptionSummaryFromBillingApi } from '@/lib/account/billing-subscription.server';
+import {
+  fetchBackendPaidProductGrantDates,
+  fetchAllBillingOrders,
+} from '@/lib/account/billing-access.server';
 import type {
   AccountDownloadRow,
   AccountFreePreviewRow,
@@ -56,21 +60,30 @@ function pickLapsedSubscription(userId: string): AccountLapsedSubscription | nul
   };
 }
 
-export async function fetchAccountPurchases(userId: string): Promise<AccountPurchaseRow[]> {
+function mapBillingPurchaseStatus(st: string): AccountPurchaseRow['status'] {
+  if (st === 'refunded') return 'refunded';
+  if (st === 'paid' || st === 'partial_refund') return 'fulfilled';
+  return 'pending';
+}
+
+export async function fetchAccountPurchases(
+  userId: string,
+  accessToken?: string | null
+): Promise<AccountPurchaseRow[]> {
   const store = getMarketplaceStore();
-  const orders = [...store.ordersById.values()].filter(
+  const memoryOrders = [...store.ordersById.values()].filter(
     (o) =>
       o.userId === userId &&
       (o.status === 'paid' || o.status === 'fulfilled' || o.status === 'refunded')
   );
-  orders.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  memoryOrders.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
-  const rows: AccountPurchaseRow[] = [];
-  for (const order of orders) {
+  const memoryRows: AccountPurchaseRow[] = [];
+  for (const order of memoryOrders) {
     const items = store.orderItemsByOrderId.get(order.id) ?? [];
     for (const item of items) {
       const product = store.productsById.get(item.productId);
-      rows.push({
+      memoryRows.push({
         id: item.id,
         productTitle: product?.title ?? 'Product',
         purchasedAt: order.createdAt,
@@ -78,11 +91,37 @@ export async function fetchAccountPurchases(userId: string): Promise<AccountPurc
       });
     }
   }
-  return rows;
+
+  if (!accessToken?.trim()) return memoryRows;
+
+  const billingOrders = await fetchAllBillingOrders(accessToken.trim());
+  if (!billingOrders?.length) return memoryRows;
+
+  const billingRows: AccountPurchaseRow[] = billingOrders.map((o) => {
+    const slug = o.product_slug?.trim() ?? '';
+    const title = slug ? getProductBySlug(slug)?.title ?? slug : 'Purchase';
+    return {
+      id: `billing:${o.id}`,
+      productTitle: title,
+      purchasedAt: o.created_at || null,
+      status: mapBillingPurchaseStatus(o.status),
+    };
+  });
+
+  const merged = [...billingRows, ...memoryRows];
+  merged.sort((a, b) => {
+    const ta = a.purchasedAt ?? '';
+    const tb = b.purchasedAt ?? '';
+    return tb.localeCompare(ta);
+  });
+  return merged;
 }
 
-/** Permanent pro file entitlements (purchase / admin). */
-export async function fetchAccountOwnedFileRows(userId: string): Promise<AccountOwnedFileRow[]> {
+/** Permanent pro file entitlements (purchase / admin / Paddle one-time orders). */
+export async function fetchAccountOwnedFileRows(
+  userId: string,
+  accessToken?: string | null
+): Promise<AccountOwnedFileRow[]> {
   const store = getMarketplaceStore();
   const now = nowMs();
   const rows: AccountOwnedFileRow[] = [];
@@ -110,7 +149,40 @@ export async function fetchAccountOwnedFileRows(userId: string): Promise<Account
   }
 
   rows.sort((a, b) => b.grantedAt.localeCompare(a.grantedAt));
-  return rows;
+
+  if (!accessToken?.trim()) return rows;
+
+  const slugDates = await fetchBackendPaidProductGrantDates(accessToken.trim());
+  if (!slugDates?.size) return rows;
+
+  const seen = new Set(rows.map((r) => `${r.productId}:${r.fileId}`));
+  const billingExtras: AccountOwnedFileRow[] = [];
+
+  for (const [slug, grantedAt] of slugDates) {
+    const product = getProductBySlug(slug);
+    if (!product?.isPublished) continue;
+
+    for (const file of product.files) {
+      if (file.tier !== 'pro') continue;
+      const key = `${product.id}:${file.id}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      billingExtras.push({
+        accessId: `billing:${slug}:${file.id}`,
+        productId: product.id,
+        productSlug: product.slug,
+        productTitle: product.title,
+        fileId: file.id,
+        fileName: file.fileName,
+        format: file.format,
+        qualityLabel: file.qualityLabel,
+        grantedAt: grantedAt || new Date().toISOString(),
+      });
+    }
+  }
+
+  billingExtras.sort((a, b) => b.grantedAt.localeCompare(a.grantedAt));
+  return [...rows, ...billingExtras].sort((a, b) => b.grantedAt.localeCompare(a.grantedAt));
 }
 
 /** Catalog free previews (public URLs) — separate from paid ownership. */
@@ -139,7 +211,7 @@ export async function fetchAccountDownloads(_userId: string): Promise<AccountDow
   return [];
 }
 
-export async function fetchAccountSubscriptionSummary(
+async function subscriptionSummaryFromMemoryStore(
   userId: string
 ): Promise<AccountSubscriptionSummary> {
   const store = getMarketplaceStore();
@@ -204,10 +276,26 @@ export async function fetchAccountSubscriptionSummary(
   return { planName: plan?.name ?? null, status: 'none', renewsAt: null, lapsed };
 }
 
+/**
+ * Subscription summary for dashboard / account UI.
+ * Uses backend `/billing/subscription` when `accessToken` is available; otherwise falls back to the demo memory store.
+ */
+export async function fetchAccountSubscriptionSummary(
+  userId: string,
+  accessToken?: string | null
+): Promise<AccountSubscriptionSummary> {
+  if (accessToken?.trim()) {
+    const billing = await fetchSubscriptionSummaryFromBillingApi(accessToken.trim());
+    if (billing.ok) return billing.summary;
+  }
+  return subscriptionSummaryFromMemoryStore(userId);
+}
+
 export async function fetchAccountSubscriptionAccessPanel(
-  userId: string
+  userId: string,
+  accessToken?: string | null
 ): Promise<AccountSubscriptionAccessPanel> {
-  const summary = await fetchAccountSubscriptionSummary(userId);
+  const summary = await fetchAccountSubscriptionSummary(userId, accessToken);
   const hasProViaSubscription =
     summary.status === 'active' ||
     summary.status === 'trialing' ||

@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server';
-import { getSessionUserFromCookies } from '@/lib/auth/session.server';
+import { getSessionUserFromCookies, getAccessTokenFromCookies } from '@/lib/auth/session.server';
 import { fetchAccountSubscriptionSummary } from '@/lib/account/dashboard-data';
 
 /**
- * Current user's subscription summary from the marketplace store (Lemon Squeezy webhooks).
+ * Current user's subscription summary — prefers backend billing (Paddle / Postgres).
  */
 export async function GET() {
   const user = await getSessionUserFromCookies();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const summary = await fetchAccountSubscriptionSummary(user.id);
+  const access = await getAccessTokenFromCookies();
+  const summary = await fetchAccountSubscriptionSummary(user.id, access);
   return NextResponse.json(summary);
 }

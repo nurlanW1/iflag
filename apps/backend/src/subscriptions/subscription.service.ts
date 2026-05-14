@@ -1,7 +1,7 @@
 /**
  * Legacy subscription service.
  *
- * Most write paths are now in `src/billing/` (Lemon Squeezy webhooks + routes).
+ * Most write paths are now in `src/billing/` (Paddle webhooks + routes).
  * This module is preserved for:
  *   - `getActivePlans` (still used by GET /api/subscriptions/plans).
  *   - Stripe-shaped helpers that may be wired in once Stripe is added.

@@ -2,8 +2,13 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { Package } from 'lucide-react';
 import { EmptyState } from '@/components/dashboard/EmptyState';
-import { fetchAccountOwnedFileRows } from '@/lib/account/dashboard-data';
+import {
+  fetchAccountOwnedFileRows,
+  fetchAccountPurchases,
+} from '@/lib/account/dashboard-data';
 import { getDashboardDataUserId } from '@/lib/dashboard/account';
+import { getAccessTokenFromCookies } from '@/lib/auth/session.server';
+import type { AccountPurchaseRow } from '@/types/account';
 
 function Badge({
   children,
@@ -21,18 +26,87 @@ function Badge({
   );
 }
 
+function purchaseStatusBadge(status: AccountPurchaseRow['status']) {
+  switch (status) {
+    case 'fulfilled':
+      return <Badge className="bg-emerald-100 text-emerald-900">Paid</Badge>;
+    case 'pending':
+      return <Badge className="bg-amber-100 text-amber-900">Pending</Badge>;
+    case 'refunded':
+      return <Badge className="bg-gray-200 text-gray-800">Refunded</Badge>;
+    default:
+      return null;
+  }
+}
+
 export default async function DashboardPurchasesPage() {
   const dataUserId = await getDashboardDataUserId();
-  const ownedFiles = await fetchAccountOwnedFileRows(dataUserId);
+  const access = await getAccessTokenFromCookies();
+  const [purchases, ownedFiles] = await Promise.all([
+    fetchAccountPurchases(dataUserId, access),
+    fetchAccountOwnedFileRows(dataUserId, access),
+  ]);
   const hasOwned = ownedFiles.length > 0;
+  const hasOrders = purchases.length > 0;
 
   return (
     <div className="max-w-4xl">
       <h1 className="text-2xl font-black text-gray-900">Purchased files</h1>
       <p className="mt-1 text-sm text-gray-600">
-        One-time purchases and admin grants linked to your account. Files stay available while your
-        account is in good standing.
+        One-time purchases from Paddle (and demo/admin grants in development) linked to your account.
+        Files stay available while your account is in good standing.
       </p>
+
+      <section className="mt-10" aria-labelledby="orders-heading">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 id="orders-heading" className="text-lg font-bold text-gray-900">
+              Order history
+            </h2>
+            <p className="mt-1 text-sm text-gray-600">
+              Checkout rows from Paddle when your session is linked to the billing backend.
+            </p>
+          </div>
+        </div>
+
+        {!hasOrders ? (
+          <div className="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 px-5 py-8 text-center">
+            <p className="text-sm text-gray-600">
+              No orders synced yet. After you complete a Paddle checkout, orders appear here if backend cookies
+              match your Clerk email (open any dashboard page once to sync).
+            </p>
+          </div>
+        ) : (
+          <div className="mt-6 overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+            <table className="w-full min-w-[520px] text-left text-sm">
+              <thead className="border-b border-gray-200 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-600">
+                <tr>
+                  <th className="px-5 py-3">Product</th>
+                  <th className="px-5 py-3">Date</th>
+                  <th className="px-5 py-3 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {purchases.map((row) => (
+                  <tr key={row.id}>
+                    <td className="px-5 py-4 font-medium text-gray-900">{row.productTitle}</td>
+                    <td className="px-5 py-4 text-gray-600">
+                      {row.purchasedAt ? (
+                        <time dateTime={row.purchasedAt}>
+                          {new Date(row.purchasedAt).toLocaleString()}
+                        </time>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4 text-right">{purchaseStatusBadge(row.status)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       <section className="mt-10" aria-labelledby="owned-heading">
         <div className="flex flex-wrap items-end justify-between gap-3">

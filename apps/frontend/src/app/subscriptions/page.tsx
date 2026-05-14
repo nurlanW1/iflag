@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { api } from '@/lib/api';
 import { Crown, ArrowRight } from 'lucide-react';
 import type { AccountSubscriptionSummary } from '@/types/account';
 
@@ -14,21 +13,16 @@ import type { AccountSubscriptionSummary } from '@/types/account';
 export default function SubscriptionsAccountPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [subscription, setSubscription] = useState<Record<string, unknown> | null>(null);
-  const [lsSummary, setLsSummary] = useState<AccountSubscriptionSummary | null>(null);
+  const [billingSummary, setBillingSummary] = useState<AccountSubscriptionSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     try {
-      const [subscriptionData, lsRes] = await Promise.all([
-        api.getMySubscription(),
-        fetch('/api/account/subscription-summary', { credentials: 'include' }),
-      ]);
-      setSubscription(subscriptionData.subscription as Record<string, unknown> | null);
-      if (lsRes.ok) {
-        setLsSummary((await lsRes.json()) as AccountSubscriptionSummary);
+      const summaryRes = await fetch('/api/account/subscription-summary', { credentials: 'include' });
+      if (summaryRes.ok) {
+        setBillingSummary((await summaryRes.json()) as AccountSubscriptionSummary);
       } else {
-        setLsSummary(null);
+        setBillingSummary(null);
       }
     } catch (error) {
       console.error('Failed to load subscription data:', error);
@@ -57,7 +51,7 @@ export default function SubscriptionsAccountPage() {
     <main className="mx-auto max-w-2xl px-4 py-12">
       <h1 className="text-2xl font-black text-gray-900">Your subscription</h1>
       <p className="mt-1 text-sm text-gray-600">
-        Billing runs through Lemon Squeezy. Compare plans, upgrade, or start a subscription from the{' '}
+        Billing runs through Paddle. Compare plans, upgrade, or start a subscription from the{' '}
         <Link href="/pricing" className="font-semibold text-[#009ab6] hover:underline">
           pricing page
         </Link>
@@ -69,22 +63,22 @@ export default function SubscriptionsAccountPage() {
           <Crown className="h-5 w-5 text-[#009ab6]" aria-hidden />
           <h2 className="font-bold text-gray-900">Current access</h2>
         </div>
-        {lsSummary && lsSummary.status !== 'none' ? (
+        {billingSummary && billingSummary.status !== 'none' ? (
           <dl className="mt-4 space-y-2 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-gray-600">Plan</dt>
-              <dd className="font-medium text-gray-900">{lsSummary.planName ?? '—'}</dd>
+              <dd className="font-medium text-gray-900">{billingSummary.planName ?? '—'}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-gray-600">Status</dt>
-              <dd className="font-medium capitalize text-gray-900">{lsSummary.status}</dd>
+              <dd className="font-medium capitalize text-gray-900">{billingSummary.status}</dd>
             </div>
-            {lsSummary.renewsAt ? (
+            {billingSummary.renewsAt ? (
               <div className="flex justify-between gap-4">
                 <dt className="text-gray-600">Renews / ends</dt>
                 <dd className="text-gray-900">
-                  <time dateTime={lsSummary.renewsAt}>
-                    {new Date(lsSummary.renewsAt).toLocaleString()}
+                  <time dateTime={billingSummary.renewsAt}>
+                    {new Date(billingSummary.renewsAt).toLocaleString()}
                   </time>
                 </dd>
               </div>
@@ -92,21 +86,10 @@ export default function SubscriptionsAccountPage() {
           </dl>
         ) : (
           <p className="mt-3 text-sm text-gray-700">
-            No active Lemon Squeezy subscription detected for this account.
+            No active subscription on file for this account. If you just finished checkout, wait a few
+            seconds for webhooks to sync, then refresh.
           </p>
         )}
-
-        {!lsSummary || lsSummary.status === 'none' ? (
-          subscription ? (
-            <div className="mt-4 rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-700">
-              <p className="font-semibold text-gray-900">Legacy API subscription</p>
-              <p className="mt-1">Status: {String(subscription.status)}</p>
-              <p className="mt-1 text-xs text-gray-500">
-                Prefer the pricing page for new checkouts so billing stays in sync.
-              </p>
-            </div>
-          ) : null
-        ) : null}
       </div>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -126,8 +109,8 @@ export default function SubscriptionsAccountPage() {
       </div>
 
       <p className="mt-8 text-xs text-gray-500">
-        To update payment details or cancel, use the customer links in your Lemon Squeezy receipt
-        emails—those URLs are signed for your account.
+        To update payment details or cancel, open the Paddle customer portal from your receipt or the
+        billing section after checkout—URLs are tied to your Paddle customer record.
       </p>
     </main>
   );

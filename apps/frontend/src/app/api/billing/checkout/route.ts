@@ -7,12 +7,10 @@ export const runtime = 'nodejs';
 /**
  * Generic billing checkout proxy.
  *
- * Forwards the request to the backend's provider-aware /billing/checkout
- * endpoint. The backend decides which provider to use (Paddle by default;
- * see BILLING_PROVIDER env on the backend).
+ * Forwards the request to the backend `POST /billing/checkout` (Paddle Billing).
  *
  * Body shape:
- *   { kind: 'subscription' | 'one_time', planSlug?: string, productSlug?: string, provider?: 'paddle' | 'lemonsqueezy' }
+ *   { kind: 'subscription' | 'one_time', planSlug?: string, productSlug?: string }
  *
  * Returns the provider-specific response, typically `{ url: string }`.
  */

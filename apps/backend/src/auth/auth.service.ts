@@ -214,6 +214,77 @@ export async function logoutUser(refreshToken: string): Promise<void> {
   await deleteRefreshToken(refreshToken);
 }
 
+/** Row shape required by `issueSessionTokens`. */
+export type SessionIssuanceUser = {
+  id: string;
+  email: string;
+  full_name: string | null;
+  role: string;
+  email_verified: boolean;
+  created_at: Date;
+};
+
+/**
+ * Clerk dashboard bridge: find user by email or provision a password-unknown account.
+ * MFA-enabled accounts cannot use this path (must use password + MFA).
+ */
+export async function resolveOrProvisionUserForClerkBridge(params: {
+  email: string;
+  full_name: string | null;
+  email_verified: boolean;
+}): Promise<
+  | { ok: true; user: SessionIssuanceUser }
+  | { ok: false; code: 'MFA_REQUIRED' }
+> {
+  const email = params.email.trim().toLowerCase();
+  const existing = await pool.query(
+    `SELECT id, email, full_name, role, email_verified, created_at, mfa_enabled
+       FROM users
+      WHERE lower(email) = $1 AND is_active = TRUE`,
+    [email]
+  );
+
+  if (existing.rows.length > 0) {
+    const row = existing.rows[0];
+    if (row.mfa_enabled === true) {
+      return { ok: false, code: 'MFA_REQUIRED' };
+    }
+    await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [row.id]);
+    return {
+      ok: true,
+      user: {
+        id: row.id,
+        email: row.email,
+        full_name: row.full_name,
+        role: row.role,
+        email_verified: row.email_verified,
+        created_at: row.created_at,
+      },
+    };
+  }
+
+  const passwordHash = await hashPassword(randomBytes(48).toString('hex'));
+  const ins = await pool.query(
+    `INSERT INTO users (email, password_hash, full_name, role, email_verified)
+     VALUES ($1, $2, $3, 'user', $4)
+     RETURNING id, email, full_name, role, email_verified, created_at`,
+    [email, passwordHash, params.full_name, params.email_verified]
+  );
+  const row = ins.rows[0];
+  await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [row.id]);
+  return {
+    ok: true,
+    user: {
+      id: row.id,
+      email: row.email,
+      full_name: row.full_name,
+      role: row.role,
+      email_verified: row.email_verified,
+      created_at: row.created_at,
+    },
+  };
+}
+
 // Get user by ID
 export async function getUserById(userId: string): Promise<User | null> {
   const result = await pool.query(

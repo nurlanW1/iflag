@@ -15,6 +15,8 @@
  *   POST /forgot-password             Send password reset email (always 200)
  *   POST /reset-password              Consume reset token + set new password
  *   POST /change-password             Authenticated password change
+ *
+ *   POST /bridge/clerk-session        Internal: Clerk identity → JWT (X-Internal-Bridge-Secret)
  */
 
 import express, { type Response } from 'express';
@@ -25,6 +27,8 @@ import {
   logoutUser,
   getUserById,
   updateUserProfile,
+  issueSessionTokens,
+  resolveOrProvisionUserForClerkBridge,
 } from './auth.service.js';
 import {
   authenticateToken,
@@ -103,6 +107,51 @@ router.post('/register', async (req: AuthRequest, res: Response) => {
     }
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+/**
+ * Internal-only: trusted frontend exchanges a verified Clerk identity for backend JWT cookies.
+ * Header X-Internal-Bridge-Secret must match INTERNAL_AUTH_BRIDGE_SECRET (shared between servers).
+ */
+router.post('/bridge/clerk-session', async (req: AuthRequest, res: Response) => {
+  try {
+    const expected = process.env.INTERNAL_AUTH_BRIDGE_SECRET?.trim();
+    if (!expected) {
+      return res.status(503).json({ error: 'Clerk bridge is not configured on the server' });
+    }
+    const secret = (req.headers['x-internal-bridge-secret'] as string | undefined)?.trim();
+    if (!secret || secret !== expected) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { email, email_verified } = req.body || {};
+    const rawFull = (req.body as { full_name?: unknown })?.full_name;
+    const full_name = typeof rawFull === 'string' ? rawFull.trim() || null : null;
+
+    if (!isEmail(email)) {
+      return res.status(400).json({ error: 'Valid email is required' });
+    }
+
+    const resolved = await resolveOrProvisionUserForClerkBridge({
+      email,
+      full_name,
+      email_verified: Boolean(email_verified),
+    });
+
+    if (!resolved.ok) {
+      return res.status(403).json({
+        error:
+          'This account has MFA enabled. Sign in with email and password (and MFA) to use Paddle billing.',
+        code: resolved.code,
+      });
+    }
+
+    const tokens = await issueSessionTokens(resolved.user);
+    res.json(tokens);
+  } catch (error: unknown) {
+    console.error('[auth] clerk bridge error:', error);
+    res.status(500).json({ error: 'Bridge exchange failed' });
   }
 });
 

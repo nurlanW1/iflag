@@ -72,16 +72,3 @@ export async function markFailed(
     [deliveryId, errorMessage.slice(0, 4000)]
   );
 }
-
-/** Build an idempotency key from event metadata. */
-export function buildLemonSqueezyIdempotencyKey(payload: {
-  meta?: { event_name?: string };
-  data?: { id?: string; type?: string; attributes?: { updated_at?: string } };
-}): string | null {
-  const eventName = payload.meta?.event_name;
-  const type = payload.data?.type;
-  const id = payload.data?.id;
-  const updatedAt = payload.data?.attributes?.updated_at || '';
-  if (!eventName || !type || !id) return null;
-  return [eventName, type, id, updatedAt].join(':');
-}

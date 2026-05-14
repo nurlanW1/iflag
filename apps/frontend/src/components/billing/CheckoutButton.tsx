@@ -12,20 +12,13 @@ type Props = {
   className?: string;
   style?: React.CSSProperties;
   children: React.ReactNode;
-  /**
-   * Override the active provider (otherwise the backend decides via the
-   * BILLING_PROVIDER env). Useful for A/B testing.
-   */
-  provider?: 'paddle' | 'lemonsqueezy';
 };
 
 /**
- * Starts a hosted checkout via `/api/billing/checkout` (provider-agnostic
- * Next.js proxy → backend → Paddle / Lemon Squeezy).
+ * Starts Paddle-hosted checkout via `/api/billing/checkout` (Next.js proxy → backend).
  *
- * On success the user is redirected to the returned `url` (Paddle-hosted page
- * or LS-hosted page). Webhooks flow directly to the backend and update the
- * subscription state.
+ * On success the user is redirected to the returned `url`. Webhooks go to the backend
+ * (`/api/billing/webhook/paddle`) and update subscription / order state.
  */
 export function CheckoutButton({
   kind,
@@ -34,7 +27,6 @@ export function CheckoutButton({
   className,
   style,
   children,
-  provider,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,12 +44,12 @@ export function CheckoutButton({
           kind,
           productSlug: kind === 'one_time' ? productSlug : undefined,
           planSlug: kind === 'subscription' ? planSlug : undefined,
-          provider,
         }),
       });
       const data = (await res.json()) as {
         url?: string;
         error?: string;
+        code?: string;
         transaction_id?: string;
       };
       if (res.status === 401) {
@@ -65,6 +57,13 @@ export function CheckoutButton({
         return;
       }
       if (!res.ok) {
+        if (res.status === 503 && data.code === 'PADDLE_NOT_CONFIGURED') {
+          setError(
+            data.error ||
+              'Billing is not configured (set PADDLE_API_KEY and PADDLE_WEBHOOK_SECRET on the API server).'
+          );
+          return;
+        }
         setError(data.error || 'Checkout failed');
         return;
       }

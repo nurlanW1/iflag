@@ -103,7 +103,7 @@ export default function PremiumCTA({
 
             <Link href="/pricing" className="btn btn-primary" style={{ width: '100%' }}>
               <Crown size={18} />
-              View Subscription Plans
+              View subscription plans (Paddle checkout)
             </Link>
           </div>
         </div>
@@ -125,7 +125,7 @@ export default function PremiumCTA({
           Premium subscription required
         </p>
         <Link href="/pricing" className="btn btn-sm" style={{ backgroundColor: 'white', color: 'var(--color-warning)' }}>
-          Subscribe Now
+          Subscribe with Paddle
         </Link>
       </div>
     );
@@ -150,7 +150,7 @@ export default function PremiumCTA({
             Unlock {premiumFormatsCount} Premium Format{premiumFormatsCount > 1 ? 's' : ''}
           </strong>
           <p style={{ fontSize: '0.875rem', margin: 0, opacity: 0.9 }}>
-            Subscribe to download without watermarks
+            Subscribe to download without watermarks (subscriptions via Paddle).
           </p>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { CreditCard, Crown, ArrowRight, AlertTriangle } from 'lucide-react';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { fetchAccountSubscriptionSummary } from '@/lib/account/dashboard-data';
 import { getDashboardDataUserId } from '@/lib/dashboard/account';
+import { getAccessTokenFromCookies } from '@/lib/auth/session.server';
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
@@ -23,7 +24,8 @@ function StatusBadge({ status }: { status: string }) {
 
 export default async function DashboardSubscriptionPage() {
   const dataUserId = await getDashboardDataUserId();
-  const sub = await fetchAccountSubscriptionSummary(dataUserId);
+  const access = await getAccessTokenFromCookies();
+  const sub = await fetchAccountSubscriptionSummary(dataUserId, access);
   const hasPlan =
     sub.status === 'active' || sub.status === 'trialing' || sub.status === 'past_due';
 
@@ -31,8 +33,11 @@ export default async function DashboardSubscriptionPage() {
     <div className="max-w-3xl">
       <h1 className="text-2xl font-black text-gray-900">Subscription</h1>
       <p className="mt-1 text-sm text-gray-600">
-        Subscription billing is not enabled yet. When it is, your plan status will appear here.
-        One-time purchases remain under{' '}
+        Your Paddle subscription status syncs from our billing API. Manage checkout and plans from the{' '}
+        <Link href="/pricing" className="font-medium text-[#009ab6] hover:underline">
+          pricing page
+        </Link>
+        . One-time purchases stay under{' '}
         <Link href="/dashboard/purchases" className="font-medium text-[#009ab6] hover:underline">
           Purchased files
         </Link>
@@ -63,7 +68,7 @@ export default async function DashboardSubscriptionPage() {
           <EmptyState
             icon={CreditCard}
             title="No active subscription"
-            description="You do not have a recurring plan on this account yet. When subscriptions launch, manage them from this page."
+            description="You do not have an active subscription tied to this account in billing yet."
             action={{ label: 'View public pricing', href: '/pricing' }}
           />
           <Link

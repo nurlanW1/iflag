@@ -31,8 +31,8 @@ export function PricingPlansClient() {
   const annualReady = PRO_CHECKOUT.annual.enabled;
   const useAnnualCheckout = interval === 'annual' && annualReady;
   const proSlug = useAnnualCheckout
-    ? PRO_CHECKOUT.annual.lemonSqueezyPlanSlug
-    : PRO_CHECKOUT.monthly.lemonSqueezyPlanSlug;
+    ? PRO_CHECKOUT.annual.planSlug
+    : PRO_CHECKOUT.monthly.planSlug;
 
   const proDisplayCents = useAnnualCheckout
     ? PRO_CHECKOUT.annual.displayCents
@@ -56,7 +56,7 @@ export function PricingPlansClient() {
           </p>
         </div>
 
-        {/* Billing toggle — annual wiring is ready when you enable it in pricing-config + Lemon Squeezy */}
+        {/* Billing toggle — enable annual when mapped in pricing-config + Paddle price map */}
         <div className="mt-10 flex justify-center">
           <div
             className="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1"
@@ -77,7 +77,7 @@ export function PricingPlansClient() {
             <button
               type="button"
               onClick={() => setInterval('annual')}
-              title="Enable annual checkout in pricing-config when your Lemon Squeezy variant is live"
+              title="Enable annual checkout in pricing-config when your Paddle annual price is mapped"
               className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
                 interval === 'annual'
                   ? 'bg-white text-gray-900 shadow-sm'
@@ -137,7 +137,8 @@ export function PricingPlansClient() {
                           <p className="mt-1 text-sm text-gray-600">
                             Turn on <code className="rounded bg-gray-100 px-1 text-xs">annual.enabled</code> in{' '}
                             <code className="rounded bg-gray-100 px-1 text-xs">pricing-config.ts</code> and map{' '}
-                            <code className="rounded bg-gray-100 px-1 text-xs">pro-annual</code> in Lemon Squeezy.
+                            <code className="rounded bg-gray-100 px-1 text-xs">pro-annual</code> in{' '}
+                            <code className="rounded bg-gray-100 px-1 text-xs">PADDLE_PRICE_MAP_JSON</code>.
                           </p>
                           <p className="mt-3 text-sm text-gray-500">
                             Monthly today:{' '}
@@ -191,8 +192,8 @@ export function PricingPlansClient() {
                         style={{ width: '100%' } as CSSProperties}
                       >
                         {interval === 'annual' && !annualReady
-                          ? 'Subscribe monthly'
-                          : 'Subscribe'}
+                          ? 'Subscribe monthly with Paddle'
+                          : 'Subscribe with Paddle'}
                       </CheckoutButton>
                       <p className="mt-2 text-center text-xs text-gray-500">
                         Sign in required. Secure checkout via Paddle.

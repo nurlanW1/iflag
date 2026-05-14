@@ -1,13 +1,13 @@
 -- =============================================================================
--- Billing: Lemon Squeezy integration (provider-neutral schema)
+-- Billing: provider-neutral columns & orders (migration filename is historical).
 -- Safe to run on existing DB. Idempotent: ADD COLUMN IF NOT EXISTS / CREATE TABLE IF NOT EXISTS.
 --
--- Why: backend was originally scaffolded for Stripe (stripe_subscription_id,
--- stripe_price_id), but frontend ships with Lemon Squeezy. This migration:
+-- Why: extends Stripe-era scaffolding with neutral columns for alternate providers.
 --   1. Adds provider-neutral columns alongside Stripe ones (no data loss).
 --   2. Adds tables for one-time orders and webhook idempotency.
---   3. Backfills `billing_provider = 'lemonsqueezy'` where unset.
+--   3. Seeds legacy `billing_provider = 'lemonsqueezy'` defaults where applicable.
 --
+-- Active checkout uses Paddle; defaults switch in `007_paddle_provider.sql`.
 -- Run order: after schema.sql (v1), neon_001, neon_002.
 -- =============================================================================
 

@@ -23,7 +23,8 @@ export const P = {
   REGISTERED_OFFICE:
     '[PLACEHOLDER: Registered office or principal business address — obtain from your records; do not invent]',
   EFFECTIVE_DATE: '[PLACEHOLDER: Effective date of this document — e.g. 17 April 2026]',
-  PAYMENT_PROCESSOR: '[PLACEHOLDER: e.g. Lemon Squeezy — payment partner name]',
+  /** Merchant of Record / payment partner shown in footer & legal trust copy. */
+  PAYMENT_PROCESSOR: 'Paddle',
   SUPER_AUTHORITY:
     '[PLACEHOLDER: Supervisory or complaint body if applicable — e.g. EU/UK data authority link]',
   VAT_OR_TAX_ID: '[PLACEHOLDER: Tax / VAT ID if you publish one — or remove this sentence]',

@@ -38,6 +38,9 @@ export interface SubscriptionRow {
   customer_portal_url: string | null;
   created_at: Date;
   updated_at: Date;
+  /** Present when joined from `subscription_plans` (billing API). */
+  plan_name?: string | null;
+  plan_slug?: string | null;
 }
 
 export interface UpsertSubscriptionInput {
@@ -157,11 +160,13 @@ export async function getUserActiveSubscription(
   userId: string
 ): Promise<SubscriptionRow | null> {
   const res = await pool.query(
-    `SELECT * FROM user_subscriptions
-      WHERE user_id = $1
-        AND status IN ('active', 'trialing')
-        AND current_period_end > CURRENT_TIMESTAMP
-      ORDER BY current_period_end DESC
+    `SELECT us.*, sp.name AS plan_name, sp.slug AS plan_slug
+       FROM user_subscriptions us
+       LEFT JOIN subscription_plans sp ON sp.id = us.plan_id
+      WHERE us.user_id = $1
+        AND us.status IN ('active', 'trialing', 'past_due')
+        AND us.current_period_end > CURRENT_TIMESTAMP
+      ORDER BY us.current_period_end DESC
       LIMIT 1`,
     [userId]
   );

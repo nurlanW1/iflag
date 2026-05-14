@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { useClerk, useUser } from '@clerk/nextjs';
 import {
   ChevronRight,
@@ -33,8 +34,41 @@ export function DashboardShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { signOut } = useClerk();
   const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
+
+  /**
+   * Clerk dashboard users need backend JWT cookies for Paddle `/billing/*` proxies.
+   * Idempotent: checks `/api/auth/session-linked`, then POST `/api/auth/clerk-sync` when needed.
+   */
+  useEffect(() => {
+    if (!clerkLoaded || !clerkUser?.id) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const linkRes = await fetch('/api/auth/session-linked', { cache: 'no-store' });
+        const linkJson = (await linkRes.json()) as {
+          linked?: boolean;
+          reason?: string;
+        };
+        if (cancelled) return;
+        if (linkJson.linked || linkJson.reason === 'clerk_disabled') return;
+
+        const syncRes = await fetch('/api/auth/clerk-sync', { method: 'POST' });
+        if (cancelled) return;
+        if (syncRes.ok) router.refresh();
+      } catch {
+        /* ignore — user can still use Clerk-only UI */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [clerkLoaded, clerkUser?.id, router]);
 
   async function handleSignOut() {
     await signOut({ redirectUrl: '/' });

@@ -2,7 +2,7 @@
  * Orders service — one-time purchases (e.g. single premium asset).
  *
  * Subscriptions live in `user_subscriptions`; this table records the discrete
- * fulfilled-once-and-done transactions Lemon Squeezy emits as `order_created`
+ * fulfilled-once-and-done transactions the billing provider emits (e.g. Paddle `transaction.completed`)
  * with status=paid.
  */
 

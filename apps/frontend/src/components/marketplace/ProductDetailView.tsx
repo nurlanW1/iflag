@@ -219,7 +219,7 @@ export function ProductDetailView({ slug, product }: Props) {
                 </p>
                 <div className="mt-3">
                   <CheckoutButton kind="one_time" productSlug={product.slug}>
-                    Buy this flag
+                    Buy this flag with Paddle
                   </CheckoutButton>
                 </div>
               </div>

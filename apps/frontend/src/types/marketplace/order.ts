@@ -20,9 +20,8 @@ export interface Order {
   createdAt: ISODateString;
   updatedAt: ISODateString;
   /**
-   * When set, `externalId` is the Lemon Squeezy order id (stringified).
-   * Used for idempotent webhook fulfillment and refunds.
+   * When set, `externalId` is the provider order id (e.g. Paddle transaction/subscription id).
    */
-  externalProvider?: 'lemonsqueezy';
+  externalProvider?: 'paddle';
   externalId?: string;
 }

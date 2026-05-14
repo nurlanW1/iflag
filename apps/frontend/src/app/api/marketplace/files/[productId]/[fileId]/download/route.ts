@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSessionUserFromCookies } from '@/lib/auth/session.server';
+import { getSessionUserFromCookies, getAccessTokenFromCookies } from '@/lib/auth/session.server';
 import { sanitizeCallbackUrl } from '@/lib/auth/callback-url';
 import { resolveAuthenticatedFileDownload } from '@/lib/account/entitlements.server';
 import { getProductById } from '@/services/marketplace/product-service';
@@ -28,7 +28,14 @@ export async function GET(request: Request, { params }: RouteParams) {
   const user = await getSessionUserFromCookies();
   const userId = user?.id ?? null;
 
-  const resolution = resolveAuthenticatedFileDownload(userId, user?.email, productId, fileId);
+  const access = await getAccessTokenFromCookies();
+  const resolution = await resolveAuthenticatedFileDownload(
+    userId,
+    user?.email,
+    productId,
+    fileId,
+    access
+  );
 
   if (resolution.kind === 'public_preview') {
     return NextResponse.redirect(resolution.publicUrl);

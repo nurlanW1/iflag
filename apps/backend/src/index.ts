@@ -10,10 +10,7 @@ import subscriptionRouter from './subscriptions/subscription.routes.js';
 import assetRouter from './assets/asset.routes.js';
 import adminRouter from './admin/admin.routes.js';
 import uploadRouter from './upload/upload.routes.js';
-import billingRouter, {
-  lemonSqueezyWebhookHandler,
-  paddleWebhookHandler,
-} from './billing/billing.routes.js';
+import billingRouter, { paddleWebhookHandler } from './billing/billing.routes.js';
 import pool from './db.js';
 
 /** Unwrap default interop; type `any` avoids TS merging with `typeof import(...)` (non-callable on Vercel/NodeNext). */
@@ -42,11 +39,6 @@ app.post(
   '/api/billing/webhook/paddle',
   express.raw({ type: '*/*', limit: '5mb' }),
   paddleWebhookHandler
-);
-app.post(
-  '/api/billing/webhook/lemonsqueezy',
-  express.raw({ type: '*/*', limit: '5mb' }),
-  lemonSqueezyWebhookHandler
 );
 
 // Rate limiting
@@ -90,7 +82,6 @@ app.get('/', (req, res) => {
       subscriptions: '/api/subscriptions',
       billing: '/api/billing',
       billing_webhook_paddle: '/api/billing/webhook/paddle',
-      billing_webhook_lemonsqueezy: '/api/billing/webhook/lemonsqueezy',
       admin: '/api/admin',
       admin_upload: '/api/admin/upload',
       flags: '/api/flags', // Legacy endpoint
@@ -100,7 +91,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/subscriptions', subscriptionRouter);
-app.use('/api/billing', billingRouter); // Billing: checkout, cancel, portal, orders (Lemon Squeezy)
+app.use('/api/billing', billingRouter); // Paddle Billing: checkout, portal, subscriptions, orders
 app.use('/api/assets', assetRouter);
 app.use('/api/admin', adminRouter); // Admin routes (requires admin role)
 app.use('/api/admin/upload', uploadRouter); // Upload routes (requires admin role)
