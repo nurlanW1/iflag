@@ -51,7 +51,7 @@ export default function SubscriptionsAccountPage() {
     <main className="mx-auto max-w-2xl px-4 py-12">
       <h1 className="text-2xl font-black text-gray-900">Your subscription</h1>
       <p className="mt-1 text-sm text-gray-600">
-        Billing runs through Paddle. Compare plans, upgrade, or start a subscription from the{' '}
+        Compare Paddle plans, upgrade, or start checkout from the{' '}
         <Link href="/pricing" className="font-semibold text-[#009ab6] hover:underline">
           pricing page
         </Link>
@@ -97,7 +97,7 @@ export default function SubscriptionsAccountPage() {
           href="/pricing"
           className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#009ab6] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#007a8a]"
         >
-          View plans &amp; pricing
+          View Paddle plans &amp; pricing
           <ArrowRight className="h-4 w-4 opacity-90" aria-hidden />
         </Link>
         <Link

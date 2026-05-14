@@ -107,8 +107,12 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="text-white/60 hover:text-white transition-colors text-sm">
-                  Pricing
+                <Link
+                  href="/pricing"
+                  title="Plans and Paddle checkout"
+                  className="text-white/60 hover:text-white transition-colors text-sm"
+                >
+                  Pricing (Paddle)
                 </Link>
               </li>
             </ul>

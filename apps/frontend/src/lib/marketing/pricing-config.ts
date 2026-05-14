@@ -11,7 +11,7 @@ export type PlanTierId = 'free' | 'pro' | 'business';
 
 /** Shown under prices on the pricing page. */
 export const PRICING_CHECKOUT_DISCLAIMER =
-  'Final price, tax, and renewal terms are confirmed at Paddle checkout before you pay. License terms for each asset still apply at download.';
+  'Payments are processed by Paddle (Merchant of Record). Final price, tax, and renewal terms are confirmed at Paddle checkout before you pay. License terms for each asset still apply at download.';
 
 export const PRO_CHECKOUT = {
   monthly: {
@@ -98,7 +98,7 @@ export const PLAN_CARD_COPY: PlanCardCopy[] = [
     tagline: 'Browse the catalog and use free previews.',
     bullets: [
       'Access free preview files where we publish them',
-      'Buy individual flags anytime if you want permanent Pro access to those products',
+      'Buy individual flags anytime via Paddle checkout if you want permanent Pro access to those products',
       'No subscription required',
     ],
   },
@@ -108,8 +108,8 @@ export const PLAN_CARD_COPY: PlanCardCopy[] = [
     tagline: 'Download Pro files across the catalog while you are subscribed.',
     bullets: [
       'Pro-tier downloads for published products while your plan is active',
-      'Cancel or change billing in Paddle (customer portal)',
-      'One-time purchases still available if you prefer to own specific assets long-term',
+      'Cancel or update payment methods in your Paddle customer portal',
+      'One-time purchases via Paddle if you prefer to own specific assets long-term',
     ],
     highlighted: true,
   },

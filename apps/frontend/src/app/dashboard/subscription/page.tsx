@@ -33,7 +33,7 @@ export default async function DashboardSubscriptionPage() {
     <div className="max-w-3xl">
       <h1 className="text-2xl font-black text-gray-900">Subscription</h1>
       <p className="mt-1 text-sm text-gray-600">
-        Your Paddle subscription status syncs from our billing API. Manage checkout and plans from the{' '}
+        Manage Paddle checkout and plan upgrades from the{' '}
         <Link href="/pricing" className="font-medium text-[#009ab6] hover:underline">
           pricing page
         </Link>
@@ -69,13 +69,13 @@ export default async function DashboardSubscriptionPage() {
             icon={CreditCard}
             title="No active subscription"
             description="You do not have an active subscription tied to this account in billing yet."
-            action={{ label: 'View public pricing', href: '/pricing' }}
+            action={{ label: 'Paddle pricing & plans', href: '/pricing' }}
           />
           <Link
             href="/pricing"
             className="inline-flex items-center gap-2 text-sm font-semibold text-[#009ab6] hover:underline"
           >
-            Compare plans
+            Compare Paddle plans
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </div>
@@ -107,7 +107,7 @@ export default async function DashboardSubscriptionPage() {
                 href="/pricing"
                 className="inline-flex items-center justify-center rounded-xl bg-[#009ab6] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#007a8a]"
               >
-                View pricing
+                Paddle pricing &amp; plans
               </Link>
             </div>
           </div>

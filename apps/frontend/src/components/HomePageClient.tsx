@@ -118,7 +118,7 @@ function PricingPlanCard({ plan, idx }: { plan: PricingPlan; idx: number }) {
               : 'border-2 border-[#009ab6] bg-white text-[#009ab6] hover:bg-[#009ab6] hover:text-white'
           }`}
         >
-          Get {plan.name} Plan
+          Go to Paddle checkout
         </Link>
       </div>
     </motion.div>
@@ -484,7 +484,8 @@ export default function HomePageClient() {
             </div>
             <h2 className="text-5xl md:text-6xl font-black mb-6 text-black">Go Premium</h2>
             <p className="text-xl md:text-2xl text-black/60 max-w-2xl mx-auto">
-              Unlock unlimited flag downloads, commercial use, and exclusive flag assets.
+              Unlock unlimited flag downloads, commercial use, and exclusive flag assets. Paid plans
+              checkout through Paddle (Merchant of Record).
             </p>
           </SectionReveal>
 
@@ -510,6 +511,14 @@ export default function HomePageClient() {
               <PricingPlanCard key={idx} plan={plan} idx={idx} />
             ))}
           </div>
+
+          <p className="mt-10 text-center text-sm text-black/50 max-w-xl mx-auto">
+            Homepage amounts are illustrative — live prices and Paddle checkout are on the{' '}
+            <Link href="/pricing" className="font-semibold text-[#009ab6] hover:underline">
+              pricing page
+            </Link>
+            .
+          </p>
         </div>
       </section>
 
@@ -626,8 +635,9 @@ export default function HomePageClient() {
               <Link
                 href="/pricing"
                 className="rounded-xl border-2 border-white bg-transparent px-8 py-4 text-lg font-bold text-white transition-all duration-300 hover:bg-white/10"
+                title="Compare plans — Paddle checkout"
               >
-                View Plans
+                Paddle pricing &amp; plans
               </Link>
             </div>
           </SectionReveal>

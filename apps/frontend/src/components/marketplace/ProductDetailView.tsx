@@ -93,7 +93,7 @@ export function ProductDetailView({ slug, product }: Props) {
             <p className="text-xs font-semibold uppercase tracking-wide text-[#009ab6]">{categoryName}</p>
             <h1 className="mt-2 text-3xl font-black text-gray-900 md:text-4xl">{product.title}</h1>
             <p className="mt-3 text-sm text-gray-600">
-              Flag asset for creative projects. License terms apply per file and checkout; see sidebar for
+              Flag asset for creative projects. License terms apply per file and at Paddle checkout; see sidebar for
               formats and downloads.
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -234,7 +234,7 @@ export function ProductDetailView({ slug, product }: Props) {
                 className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#009ab6] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#007a8a]"
               >
                 <Crown size={18} aria-hidden />
-                View Pro plans
+                Pro plans (Paddle)
               </Link>
             </div>
 

@@ -52,7 +52,8 @@ export function PricingPlansClient() {
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-base text-gray-600">
             Start free with previews. Subscribe for catalog-wide Pro downloads while your plan is
-            active, or buy individual flags to keep forever—whichever fits your workflow.
+            active, or buy individual flags to keep forever—whichever fits your workflow. Paid
+            checkout is hosted by Paddle (Merchant of Record).
           </p>
         </div>
 
@@ -135,10 +136,8 @@ export function PricingPlansClient() {
                         <>
                           <p className="text-2xl font-black text-gray-900">Annual — coming soon</p>
                           <p className="mt-1 text-sm text-gray-600">
-                            Turn on <code className="rounded bg-gray-100 px-1 text-xs">annual.enabled</code> in{' '}
-                            <code className="rounded bg-gray-100 px-1 text-xs">pricing-config.ts</code> and map{' '}
-                            <code className="rounded bg-gray-100 px-1 text-xs">pro-annual</code> in{' '}
-                            <code className="rounded bg-gray-100 px-1 text-xs">PADDLE_PRICE_MAP_JSON</code>.
+                            Annual Pro billing through Paddle is not switched on yet. Subscribe monthly
+                            today — your payment still runs on Paddle&apos;s secure checkout.
                           </p>
                           <p className="mt-3 text-sm text-gray-500">
                             Monthly today:{' '}

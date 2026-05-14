@@ -65,6 +65,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
               </Link>
               <Link
                 href="/pricing"
+                title="Compare plans — Paddle checkout"
                 className="flex items-center gap-1 text-sm font-medium text-black/70 transition-colors hover:text-black"
               >
                 <Crown size={16} className="text-[#009ab6]" aria-hidden />
@@ -225,6 +226,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                 </Link>
                 <Link
                   href="/pricing"
+                  title="Compare plans — Paddle checkout"
                   className="flex items-center gap-2 px-4 text-black/70 hover:text-black"
                   onClick={() => setMobileMenuOpen(false)}
                 >

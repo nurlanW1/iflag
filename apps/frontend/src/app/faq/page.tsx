@@ -12,8 +12,14 @@ export default function FAQPage() {
       answer: 'We offer flags in multiple formats including SVG, PNG, JPG, AI, EPS, and video formats. Vector formats are perfect for scalable designs, while raster formats work great for web and print.',
     },
     {
+      question: 'How are subscriptions and purchases billed?',
+      answer:
+        'We use Paddle as Merchant of Record. Paddle runs secure checkout, calculates tax where required, and sends receipts. You manage cards and invoices through the Paddle customer portal.',
+    },
+    {
       question: 'Can I use flags for commercial projects?',
-      answer: 'Yes! With a premium subscription, you can use all flags for commercial purposes. Free downloads come with limited commercial use rights. Please check our license terms for specific details.',
+      answer:
+        'Yes! With a premium subscription, you can use all flags for commercial purposes. Free downloads come with limited commercial use rights. Please check our license terms for specific details.',
     },
     {
       question: 'How do I download flags?',

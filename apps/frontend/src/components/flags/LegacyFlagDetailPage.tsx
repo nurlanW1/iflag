@@ -429,6 +429,7 @@ export default function LegacyFlagDetailPage() {
                   <li>Premium formats: Subscription required</li>
                   <li>Watermarked previews available for free</li>
                   <li>Commercial license included with premium</li>
+                  <li>Premium subscriptions are billed through Paddle when you checkout</li>
                 </ul>
               </div>
             </div>

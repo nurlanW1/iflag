@@ -224,7 +224,7 @@ export default function AssetDetailPage() {
                 {asset.is_premium && !hasPremium && (
                   <Link href="/pricing" className="btn btn-outline" style={{ width: '100%', marginTop: 'var(--spacing-sm)' }}>
                     <Crown size={18} />
-                    Get Premium Access
+                    Paddle pricing &amp; premium
                   </Link>
                 )}
               </div>
