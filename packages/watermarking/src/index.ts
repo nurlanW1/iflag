@@ -57,6 +57,14 @@ export async function addWatermarkToImage(
   }
 }
 
+/** Alias for backend upload preview pipeline (same as {@link addWatermarkToImage}). */
+export async function addWatermarkImage(
+  imageBuffer: Buffer,
+  options: WatermarkOptions = {}
+): Promise<Buffer> {
+  return addWatermarkToImage(imageBuffer, options);
+}
+
 /**
  * Create SVG watermark overlay
  */

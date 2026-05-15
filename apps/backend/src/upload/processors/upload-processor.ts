@@ -3,7 +3,7 @@
 import { readFile, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import pool from '../../db.js';
-import { createStorageProvider, generateUniqueFilename, getAssetFolder } from 'storage';
+import { createStorageProvider, generateUniqueFilename } from 'storage';
 import { detectFormatFromFilename, FORMAT_METADATA } from 'asset-types';
 import { createProcessingJob, updateJobStatus } from '../../assets/processing-queue.service.js';
 import { validateFileFormat } from './validators/format-validator.js';
@@ -192,7 +192,7 @@ async function uploadToStorage(
   });
 
   const format_metadata = FORMAT_METADATA[context.format as keyof typeof FORMAT_METADATA];
-  const folder = getAssetFolder(format_metadata.format_category);
+  const folder = format_metadata.is_video ? 'videos' : format_metadata.is_vector ? 'vectors' : 'rasters';
   const asset_folder = `assets/${folder}/${context.upload_id}`;
 
   const urls: Record<string, string> = {};

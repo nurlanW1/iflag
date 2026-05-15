@@ -1,12 +1,28 @@
 {
   "name": "storage",
   "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./cloud-storage": {
+      "types": "./dist/cloud-storage.d.ts",
+      "import": "./dist/cloud-storage.js",
+      "default": "./dist/cloud-storage.js"
+    }
+  },
   "scripts": {
     "build": "tsc"
   },
   "dependencies": {
+    "@aws-sdk/client-cloudfront": "^3.700.0",
+    "@aws-sdk/client-s3": "^3.700.0",
+    "@aws-sdk/s3-request-presigner": "^3.700.0",
     "typescript": "^5.9.3"
   },
   "devDependencies": {
