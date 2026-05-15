@@ -2,7 +2,7 @@
 // Handles multiple file variants per asset
 
 import pool from '../db.js';
-import { AssetFormat, generateAssetFilename, FORMAT_METADATA } from 'asset-types';
+import { AssetFormat, generateAssetFilename, FORMAT_METADATA } from '../types/asset-types.js';
 import { createStorageProvider, getAssetFolder, generateUniqueFilename } from 'storage';
 
 export interface AssetFileData {

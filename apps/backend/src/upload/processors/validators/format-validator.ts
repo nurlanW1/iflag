@@ -1,6 +1,6 @@
 // Format Validator - Validates file formats
 
-import { detectFormatFromFilename, FORMAT_METADATA } from 'asset-types';
+import { detectFormatFromFilename, FORMAT_METADATA } from '../../../types/asset-types.js';
 
 export interface ValidationResult {
   valid: boolean;

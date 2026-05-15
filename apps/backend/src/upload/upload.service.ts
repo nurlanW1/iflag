@@ -6,7 +6,7 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import pool from '../db.js';
 import { createStorageProvider, generateUniqueFilename, getAssetFolder } from 'storage';
-import { detectFormatFromFilename, FORMAT_METADATA } from 'asset-types';
+import { detectFormatFromFilename, FORMAT_METADATA } from '../types/asset-types.js';
 import { createProcessingJob } from '../assets/processing-queue.service.js';
 
 const UPLOAD_TEMP_DIR = process.env.UPLOAD_TEMP_DIR || './tmp/uploads';

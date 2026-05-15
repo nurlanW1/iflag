@@ -4,7 +4,7 @@ import pool from '../db.js';
 import { Asset, CreateAssetData } from '../assets/asset.service.js';
 import { createAssetFile, CreateAssetFileParams } from '../assets/asset-file.service.js';
 import { createProcessingJob } from '../assets/processing-queue.service.js';
-import { detectFormatFromFilename } from 'asset-types';
+import { detectFormatFromFilename } from '../types/asset-types.js';
 
 export interface AdminStats {
   total_assets: number;

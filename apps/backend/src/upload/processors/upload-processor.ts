@@ -4,7 +4,7 @@ import { readFile, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import pool from '../../db.js';
 import { createStorageProvider, generateUniqueFilename } from 'storage';
-import { detectFormatFromFilename, FORMAT_METADATA } from 'asset-types';
+import { detectFormatFromFilename, FORMAT_METADATA } from '../../types/asset-types.js';
 import { createProcessingJob, updateJobStatus } from '../../assets/processing-queue.service.js';
 import { validateFileFormat } from './validators/format-validator.js';
 import { scanFile } from './scanners/virus-scanner.js';
