@@ -15,7 +15,7 @@
  */
 
 import { createHash, randomBytes } from 'crypto';
-import { authenticator } from 'otplib';
+import * as otplib from 'otplib';
 import QRCode from 'qrcode';
 import pool from '../db.js';
 import bcrypt from 'bcrypt';
@@ -34,6 +34,14 @@ const CHALLENGE_TTL_SECONDS = parseInt(
   10
 );
 const MAX_CHALLENGE_ATTEMPTS = 5;
+
+const authenticator =
+  (otplib as any).authenticator ||
+  (otplib as any).default?.authenticator;
+
+if (!authenticator) {
+  throw new Error('otplib authenticator unavailable');
+}
 
 // Configure otplib once at module load.
 authenticator.options = {
