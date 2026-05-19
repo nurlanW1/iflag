@@ -38,8 +38,14 @@ const COUNTRY_CATEGORIES = [
 ] as const;
 
 type UploadResult = {
-  ok: boolean;
-  blob_url?: string;
+  ok?: boolean;
+  success?: boolean;
+  file_url?: string;
+  file_key?: string;
+  file_name?: string;
+  format?: string;
+  country_slug?: string;
+  id?: string;
   file?: { id: string; file_url: string; file_name: string; created_at: string; status: string };
 };
 
@@ -198,11 +204,12 @@ function AdminUploadFormContent({
 
       if (!res.ok) {
         const msg =
-          [data?.error, data?.detail].filter(Boolean).join(' — ') || `Upload failed (${res.status})`;
+          [data?.error, (data as { detail?: string }).detail].filter(Boolean).join(' — ') ||
+          `Upload failed (${res.status})`;
         throw new Error(msg);
       }
 
-      setResult(data);
+      setResult(data as UploadResult);
       setFile(null);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Upload failed';
@@ -235,7 +242,7 @@ function AdminUploadFormContent({
           <div>
             <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">Upload Flags</h1>
             <p className="text-sm text-gray-600 md:text-base">
-              Stores the file on Vercel Blob and saves metadata to Neon Postgres (`country_flag_files`).
+              Stores files on **Cloudflare R2** and saves metadata to Neon (`country_flag_files`).
             </p>
           </div>
         </div>
@@ -251,26 +258,67 @@ function AdminUploadFormContent({
         </div>
       ) : null}
 
-      {result?.ok ? (
+      {result?.ok || result?.success ? (
         <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
           <div className="flex items-start gap-2">
             <CheckCircle2 size={22} className="shrink-0" aria-hidden />
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="font-bold">Uploaded successfully</p>
-              <p className="mt-1 text-sm opacity-90">URL (public):</p>
-              <a
-                href={result.blob_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex max-w-full items-center gap-1 break-all text-sm font-semibold text-[#006d7a] underline underline-offset-2 hover:text-[#009ab6]"
-              >
-                {result.blob_url}
-                <ExternalLink size={14} aria-hidden />
-              </a>
-              <p className="mt-2 text-xs opacity-75">
-                DB row id <code className="rounded bg-black/5 px-1">{result.file?.id}</code> · status{' '}
-                <strong>{result.file?.status}</strong>
+              <p className="mt-1 text-xs opacity-80">
+                Storage: Cloudflare R2 · Row{' '}
+                <code className="rounded bg-black/5 px-1">{result.file?.id ?? result.id}</code>
               </p>
+              {(() => {
+                const pub = result.file_url || result.file?.file_url;
+                const img =
+                  pub &&
+                  /\.(svg|png|jpe?g|webp)$/i.test(pub);
+                return pub && img ? (
+                  <div className="mt-4 rounded-xl border border-emerald-200/80 bg-white p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Preview</p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={pub}
+                      alt=""
+                      className="mx-auto mt-3 max-h-72 w-auto max-w-full object-contain"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                ) : pub ? (
+                  <p className="mt-3 text-sm text-stone-700">
+                    Preview is not shown for this file type (
+                    <strong>{result.format?.toUpperCase()}</strong>). Use{' '}
+                    <strong>Download file</strong> below.
+                  </p>
+                ) : null;
+              })()}
+              {result.file_key ? (
+                <p className="mt-3 break-all text-xs opacity-90">
+                  <span className="font-semibold">R2 key:</span>{' '}
+                  <code className="rounded bg-black/5 px-1">{result.file_key}</code>
+                </p>
+              ) : null}
+              <div className="mt-4 flex flex-wrap gap-3">
+                {(result.file?.id || result.id) && (
+                  <a
+                    href={`/api/download/${result.file?.id ?? result.id}`}
+                    className="inline-flex items-center rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+                  >
+                    Download file (protected route)
+                  </a>
+                )}
+                {(result.file_url || result.file?.file_url) && (
+                  <a
+                    href={result.file_url || result.file?.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm font-semibold text-[#006d7a] underline underline-offset-2 hover:text-[#009ab6]"
+                  >
+                    Open public URL
+                    <ExternalLink size={14} aria-hidden />
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </div>

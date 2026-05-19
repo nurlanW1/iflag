@@ -10,6 +10,10 @@ export interface CloudStorageConfig {
   region: string;
   accessKeyId: string;
   secretAccessKey: string;
+  /** Cloudflare R2 / MinIO — S3-compatible API URL */
+  endpoint?: string;
+  /** Public URL prefix for browser-readable objects (custom domain or R2 public bucket URL). */
+  publicBaseUrl?: string;
   cdnDomain?: string;
   cloudfrontDistributionId?: string;
   cloudfrontAccessKeyId?: string;
@@ -33,21 +37,32 @@ export class CloudStorageService {
   private s3Client: S3Client;
   private cloudfrontClient?: CloudFrontClient;
   private bucketName: string;
+  private region: string;
+  private endpoint?: string;
+  private publicBaseUrl?: string;
   private cdnDomain?: string;
   private distributionId?: string;
 
   constructor(config: CloudStorageConfig) {
     this.bucketName = config.bucketName;
+    this.region = config.region;
+    this.endpoint = config.endpoint?.replace(/\/$/, '');
+    this.publicBaseUrl = config.publicBaseUrl?.replace(/\/$/, '');
     this.cdnDomain = config.cdnDomain;
     this.distributionId = config.cloudfrontDistributionId;
 
-    this.s3Client = new S3Client({
+    const s3Opts: ConstructorParameters<typeof S3Client>[0] = {
       region: config.region,
       credentials: {
         accessKeyId: config.accessKeyId,
         secretAccessKey: config.secretAccessKey,
       },
-    });
+    };
+    if (config.endpoint?.trim()) {
+      s3Opts.endpoint = config.endpoint.trim().replace(/\/$/, '');
+      s3Opts.forcePathStyle = true;
+    }
+    this.s3Client = new S3Client(s3Opts);
 
     if (config.cloudfrontDistributionId && config.cloudfrontAccessKeyId) {
       this.cloudfrontClient = new CloudFrontClient({
@@ -116,12 +131,18 @@ export class CloudStorageService {
 
     await this.s3Client.send(command);
 
-    // Return CDN URL if configured, otherwise S3 URL
+    const pub = this.publicBaseUrl;
+    if (pub) {
+      return `${pub}/${key}`;
+    }
     if (this.cdnDomain) {
       return `https://${this.cdnDomain}/${key}`;
     }
+    if (this.endpoint) {
+      return `${this.endpoint}/${this.bucketName}/${key}`;
+    }
 
-    return `https://${this.bucketName}.s3.${this.s3Client.config.region}.amazonaws.com/${key}`;
+    return `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${key}`;
   }
 
   /**

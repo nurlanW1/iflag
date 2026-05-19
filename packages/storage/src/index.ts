@@ -1,9 +1,15 @@
 // Storage service abstraction
-// Supports local filesystem and S3-compatible storage
+// Supports local filesystem and S3-compatible storage (AWS S3, Cloudflare R2, etc.)
 
-import { writeFile, mkdir, readFile, unlink } from 'fs/promises';
+import { writeFile, mkdir, unlink } from 'fs/promises';
 import { join, dirname } from 'path';
 import { existsSync } from 'fs';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  HeadObjectCommand,
+} from '@aws-sdk/client-s3';
 
 export interface StorageProvider {
   upload(file: Buffer, filename: string, folder?: string): Promise<string>;
@@ -20,6 +26,8 @@ export interface StorageConfig {
   s3Region?: string;
   s3AccessKeyId?: string;
   s3SecretAccessKey?: string;
+  /** R2 / MinIO — e.g. https://<account_id>.r2.cloudflarestorage.com */
+  s3Endpoint?: string;
 }
 
 /**
@@ -70,54 +78,115 @@ export class LocalStorageProvider implements StorageProvider {
 }
 
 /**
- * S3-compatible storage provider
+ * S3-compatible storage (AWS S3, Cloudflare R2, etc.)
  */
 export class S3StorageProvider implements StorageProvider {
+  private client: S3Client;
   private bucket: string;
-  private region: string;
-  private accessKeyId: string;
-  private secretAccessKey: string;
-  private baseUrl: string;
+  /** Public URL prefix for stored objects (no trailing slash), e.g. R2 custom domain */
+  private publicBaseUrl: string;
 
   constructor(config: StorageConfig) {
-    if (!config.s3Bucket || !config.s3Region || !config.s3AccessKeyId || !config.s3SecretAccessKey) {
-      throw new Error('S3 configuration is incomplete');
+    if (!config.s3Bucket || !config.s3AccessKeyId || !config.s3SecretAccessKey) {
+      throw new Error('S3 configuration is incomplete (bucket + credentials required)');
     }
 
     this.bucket = config.s3Bucket;
-    this.region = config.s3Region;
-    this.accessKeyId = config.s3AccessKeyId;
-    this.secretAccessKey = config.s3SecretAccessKey;
-    this.baseUrl = config.baseUrl || `https://${this.bucket}.s3.${this.region}.amazonaws.com`;
+    this.publicBaseUrl = (config.baseUrl || '').replace(/\/$/, '');
+
+    const region = config.s3Region || 'auto';
+    const clientOpts: ConstructorParameters<typeof S3Client>[0] = {
+      region,
+      credentials: {
+        accessKeyId: config.s3AccessKeyId,
+        secretAccessKey: config.s3SecretAccessKey,
+      },
+    };
+    const ep = config.s3Endpoint?.trim();
+    if (ep) {
+      clientOpts.endpoint = ep.replace(/\/$/, '');
+      clientOpts.forcePathStyle = true;
+    }
+    this.client = new S3Client(clientOpts);
+  }
+
+  private objectKey(filename: string, folder: string = ''): string {
+    const f = folder.replace(/^\/+|\/+$/g, '');
+    return f ? `${f}/${filename}` : filename;
   }
 
   async upload(file: Buffer, filename: string, folder: string = ''): Promise<string> {
-    // In production, use AWS SDK v3
-    // For now, this is a placeholder that would need AWS SDK implementation
-    const key = folder ? `${folder}/${filename}` : filename;
-    
-    // TODO: Implement actual S3 upload using @aws-sdk/client-s3
-    // const s3Client = new S3Client({ region: this.region, credentials: {...} });
-    // await s3Client.send(new PutObjectCommand({ Bucket: this.bucket, Key: key, Body: file }));
-    
-    console.warn('S3 upload not fully implemented. Use AWS SDK in production.');
+    const key = this.objectKey(filename, folder);
+    try {
+      await this.client.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+          Body: file,
+        })
+      );
+    } catch (error) {
+      console.error('[storage] S3 upload failed', {
+        bucket: this.bucket,
+        key,
+        message: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
     return this.getUrl(filename, folder);
   }
 
   getUrl(filename: string, folder: string = ''): string {
-    const key = folder ? `${folder}/${filename}` : filename;
-    return `${this.baseUrl}/${key}`;
+    const key = this.objectKey(filename, folder);
+    if (this.publicBaseUrl) {
+      return `${this.publicBaseUrl}/${key}`;
+    }
+    return key;
   }
 
   async delete(filename: string, folder: string = ''): Promise<void> {
-    // TODO: Implement S3 delete
-    console.warn('S3 delete not fully implemented. Use AWS SDK in production.');
+    const key = this.objectKey(filename, folder);
+    try {
+      await this.client.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        })
+      );
+    } catch (error) {
+      console.error('[storage] S3 delete failed', {
+        bucket: this.bucket,
+        key,
+        message: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   }
 
   async exists(filename: string, folder: string = ''): Promise<boolean> {
-    // TODO: Implement S3 exists check
-    console.warn('S3 exists check not fully implemented. Use AWS SDK in production.');
-    return false;
+    const key = this.objectKey(filename, folder);
+    try {
+      await this.client.send(
+        new HeadObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        })
+      );
+      return true;
+    } catch (error: unknown) {
+      const name =
+        typeof error === 'object' && error !== null && 'name' in error
+          ? String((error as { name?: string }).name)
+          : '';
+      const status =
+        typeof error === 'object' && error !== null && '$metadata' in error
+          ? (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode
+          : undefined;
+      if (name === 'NotFound' || status === 404) {
+        return false;
+      }
+      throw error;
+    }
   }
 }
 

@@ -11,7 +11,7 @@
  * Plus:
  *   POST /direct          single-shot multipart upload for small files
  *   POST /admin/cleanup   purge expired sessions/temp files
- *   POST /flag            legacy base64 → Vercel Blob (kept for backwards compat)
+ *   POST /flag            legacy base64 → Cloudflare R2 (was Vercel Blob)
  *
  * All endpoints require an admin user (mounted under /api/admin/upload, but we
  * enforce locally so the router can also be reused under a different prefix).
@@ -19,7 +19,7 @@
 
 import express, { type Request, type Response, type Router } from 'express';
 import multer from 'multer';
-import { put } from '@vercel/blob';
+import { requireR2Config, uploadFileToR2, slugifySegment } from '../storage/r2.js';
 import pool from '../db.js';
 import {
   authenticateToken,
@@ -344,7 +344,7 @@ router.post('/admin/cleanup', async (_req: AuthRequest, res: Response) => {
 });
 
 // ---------------------------------------------------------------------------
-// Legacy: POST /flag — base64 → Vercel Blob (kept so existing callers keep
+// Legacy: POST /flag — base64 → Cloudflare R2 (kept so existing callers keep
 // working until they migrate to the chunked pipeline).
 // ---------------------------------------------------------------------------
 
@@ -356,16 +356,17 @@ router.post('/flag', async (req: Request, res: Response) => {
     }
 
     const buffer = Buffer.from(file, 'base64');
-    const blob = await put(`flags/${sanitizeFileName(name)}.svg`, buffer, {
-      access: 'public',
-    });
+    const cfg = requireR2Config();
+    const safe = slugifySegment(sanitizeFileName(name).replace(/\.svg$/i, ''));
+    const objectKey = `flags/legacy/${safe}/${Date.now()}-${safe}.svg`;
+    const { publicUrl } = await uploadFileToR2(buffer, objectKey, 'image/svg+xml', cfg);
 
     await pool.query(
       'INSERT INTO flags (name, country, file_url) VALUES ($1, $2, $3)',
-      [name, country || null, blob.url]
+      [name, country || null, publicUrl]
     );
 
-    res.json({ success: true, url: blob.url });
+    res.json({ success: true, url: publicUrl, key: objectKey });
   } catch (err) {
     sendError(res, err);
   }

@@ -4,6 +4,7 @@ import { readFile, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import pool from '../../db.js';
 import { createStorageProvider, generateUniqueFilename } from 'storage';
+import { resolveStorageProviderConfig } from '../../storage/storage-env.js';
 import { detectFormatFromFilename, FORMAT_METADATA } from '../../types/asset-types.js';
 import { createProcessingJob, updateJobStatus } from '../../assets/processing-queue.service.js';
 import { validateFileFormat } from './validators/format-validator.js';
@@ -185,11 +186,7 @@ async function uploadToStorage(
   previews: Array<{ type: string; buffer: Buffer; width?: number; height?: number }>,
   rollback: RollbackContext
 ): Promise<Record<string, string>> {
-  const storage = createStorageProvider({
-    type: process.env.STORAGE_TYPE === 's3' ? 's3' : 'local',
-    baseUrl: process.env.STORAGE_BASE_URL || 'http://localhost:4000/uploads',
-    basePath: process.env.STORAGE_BASE_PATH || './uploads',
-  });
+  const storage = createStorageProvider(resolveStorageProviderConfig());
 
   const format_metadata = FORMAT_METADATA[context.format as keyof typeof FORMAT_METADATA];
   const folder = format_metadata.is_video ? 'videos' : format_metadata.is_vector ? 'vectors' : 'rasters';
@@ -341,9 +338,7 @@ async function rollbackUpload(rollback: RollbackContext): Promise<void> {
   console.log('Rolling back upload:', rollback);
 
   // Delete files from storage
-  const storage = createStorageProvider({
-    type: process.env.STORAGE_TYPE === 's3' ? 's3' : 'local',
-  });
+  const storage = createStorageProvider(resolveStorageProviderConfig());
 
   for (const file_path of rollback.files_created) {
     try {

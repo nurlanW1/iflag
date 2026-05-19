@@ -102,7 +102,7 @@ GET    /api/admin/upload/:upload_id/status             Poll progress
 DELETE /api/admin/upload/:upload_id                    Cancel + cleanup
 POST   /api/admin/upload/direct                        Small-file one-shot multipart upload
 POST   /api/admin/upload/admin/cleanup                 Sweep expired sessions
-POST   /api/admin/upload/flag                          Legacy base64 → Vercel Blob
+POST   /api/admin/upload/flag                          Legacy base64 → Cloudflare R2 (when configured)
 ```
 
 ## Email + password flows

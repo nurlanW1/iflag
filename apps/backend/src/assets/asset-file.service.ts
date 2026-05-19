@@ -4,6 +4,7 @@
 import pool from '../db.js';
 import { AssetFormat, generateAssetFilename, FORMAT_METADATA } from '../types/asset-types.js';
 import { createStorageProvider, getAssetFolder, generateUniqueFilename } from 'storage';
+import { resolveStorageProviderConfig } from '../storage/storage-env.js';
 
 export interface AssetFileData {
   id: string;
@@ -53,11 +54,7 @@ export async function createAssetFile(params: CreateAssetFileParams): Promise<As
   );
   
   // Get storage provider
-  const storage = createStorageProvider({
-    type: process.env.STORAGE_TYPE === 's3' ? 's3' : 'local',
-    baseUrl: process.env.STORAGE_BASE_URL || 'http://localhost:4000/uploads',
-    basePath: process.env.STORAGE_BASE_PATH || './uploads',
-  });
+  const storage = createStorageProvider(resolveStorageProviderConfig());
   
   // Determine folder based on format
   const formatFolder = FORMAT_METADATA[format].is_video ? 'videos' : 

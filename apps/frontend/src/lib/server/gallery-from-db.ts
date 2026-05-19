@@ -5,7 +5,8 @@ import {
   flagThumbPlaceholderForFileId,
 } from '@/lib/flag-thumbnail-fallback';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
-import { siteProxiedBlobUrl } from '@/lib/server/blob-site-proxy';
+import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
+import { freeTierRequiresSignIn } from '@/lib/server/flagswing-download-policy';
 
 export type GalleryCountrySummary = {
   name: string;
@@ -34,6 +35,9 @@ type FlagFileRow = {
   height: number | null;
   premium_tier: string | null;
   thumbnail_url: string | null;
+  preview_url: string | null;
+  file_key: string | null;
+  storage_provider: string | null;
 };
 
 export function formatToCategory(fmt: string): 'vector' | 'raster' | 'video' {
@@ -92,7 +96,7 @@ export function isPackFallbackFlagThumbnail(url: string | null | undefined): boo
 }
 
 /**
- * Public gallery: countries with at least one published flag file on Blob/DB.
+ * Public gallery: countries with at least one published flag file in Neon (R2 or legacy Blob URLs).
  * List thumbnails avoid exposing paid `file_url` when tier is non-free and there is no
  * `thumbnail_url` — in that case we still list the country and use an inline SVG placeholder so
  * the grid is not silently empty while detail pages resolve previews per-row.
@@ -119,6 +123,7 @@ export async function fetchGalleryCountriesFromDb(
        (
          SELECT
            CASE
+             WHEN NULLIF(trim(f.preview_url), '') IS NOT NULL THEN trim(f.preview_url)
              WHEN NULLIF(trim(f.thumbnail_url), '') IS NOT NULL THEN trim(f.thumbnail_url)
              WHEN lower(coalesce(f.premium_tier, 'free')) = 'free'
                   AND NULLIF(trim(f.file_url), '') IS NOT NULL THEN trim(f.file_url)
@@ -129,10 +134,11 @@ export async function fetchGalleryCountriesFromDb(
            AND f.status = 'published'
          ORDER BY
            CASE
-             WHEN NULLIF(trim(f.thumbnail_url), '') IS NOT NULL THEN 0
+             WHEN NULLIF(trim(f.preview_url), '') IS NOT NULL THEN 0
+             WHEN NULLIF(trim(f.thumbnail_url), '') IS NOT NULL THEN 1
              WHEN lower(coalesce(f.premium_tier, 'free')) = 'free'
-                  AND NULLIF(trim(f.file_url), '') IS NOT NULL THEN 1
-             ELSE 2
+                  AND NULLIF(trim(f.file_url), '') IS NOT NULL THEN 2
+             ELSE 3
            END ASC,
            f.created_at DESC
          LIMIT 1
@@ -166,7 +172,7 @@ export async function fetchGalleryCountriesFromDb(
       slug: row.slug,
       code: code || null,
       count: Number.isFinite(count) ? count : 0,
-      thumbnail: siteProxiedBlobUrl(thumb),
+      thumbnail: resolveGalleryAssetUrl(thumb),
     });
   }
   return out;
@@ -217,7 +223,7 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
 
   const fRes = await pool.query<FlagFileRow>(
     `SELECT id, file_url, file_name, file_size_bytes::text, format, variant_name, width, height,
-            premium_tier, thumbnail_url
+            premium_tier, thumbnail_url, preview_url, file_key, storage_provider
      FROM country_flag_files
      WHERE country_id = $1 AND status = 'published'
      ORDER BY variant_name NULLS LAST, format, created_at ASC`,
@@ -284,21 +290,29 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
         ? `${r.width}×${r.height} px`
         : 'Original';
 
-    /** Prefer raster/SVG `file_url` so each edition differs — many rows share one generic `thumbnail_url`. */
+    /** Prefer explicit `preview_url`, then image-capable `file_url`, then thumbnails. */
     const thumbStored = r.thumbnail_url?.trim() || '';
+    const previewStored = r.preview_url?.trim() || '';
     const fileUrl = r.file_url?.trim() || '';
-    let previewUrl = '';
-    if (isImgPreviewableFormat(r.format) && fileUrl) {
-      previewUrl = fileUrl;
+    let previewUrlRaw = '';
+    if (previewStored) {
+      previewUrlRaw = previewStored;
+    } else if (isImgPreviewableFormat(r.format) && fileUrl) {
+      previewUrlRaw = fileUrl;
     } else if (thumbStored) {
-      previewUrl = thumbStored;
+      previewUrlRaw = thumbStored;
     } else if (fileUrl) {
-      previewUrl = fileUrl;
+      previewUrlRaw = fileUrl;
     }
-    if (!previewUrl) {
-      previewUrl = flagThumbPlaceholderForFileId(String(r.id));
+    if (!previewUrlRaw) {
+      previewUrlRaw = flagThumbPlaceholderForFileId(String(r.id));
     }
-    previewUrl = siteProxiedBlobUrl(previewUrl);
+    const previewUrl = resolveGalleryAssetUrl(previewUrlRaw);
+
+    const signInForFree = freeTierRequiresSignIn();
+    const downloadProtected = tier !== 'free' || signInForFree;
+    const directDownloadUrl =
+      tier === 'free' && !signInForFree && fileUrl ? resolveGalleryAssetUrl(fileUrl) : undefined;
 
     const formatRow: FormatRow = {
       id: String(r.id),
@@ -306,9 +320,10 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
       formatCode: ext,
       category: formatToCategory(r.format),
       file: r.file_name,
+      url: directDownloadUrl,
       previewUrl,
       premiumTier: tier,
-      downloadProtected: true,
+      downloadProtected,
       size: formatFileSize(sz),
       dimensions: dim,
     };

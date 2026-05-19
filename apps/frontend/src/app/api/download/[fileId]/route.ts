@@ -5,7 +5,8 @@ import { serverClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
 import { getDb } from '@/lib/server/db';
 import { hasActiveClerkSubscription } from '@/lib/server/clerk-active-plan';
 import { freeTierRequiresSignIn } from '@/lib/server/flagswing-download-policy';
-import { siteProxiedBlobUrl } from '@/lib/server/blob-site-proxy';
+import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
+import { getPublicR2FileUrl, getSignedR2GetUrl } from '@/lib/server/cloudflare-r2';
 
 export const runtime = 'nodejs';
 
@@ -23,15 +24,23 @@ function normalizeTier(raw: string | null | undefined): PremiumTier {
   return 'free';
 }
 
+type FileRow = {
+  file_url: string | null;
+  file_key: string | null;
+  storage_provider: string | null;
+  premium_tier: string | null;
+  status: string | null;
+};
+
 /**
- * App-level protected download for `country_flag_files`.
+ * Protected download for `country_flag_files`.
  *
- * TODO(flagswing-security): Premium bytes are still served from public Blob URLs after this gate.
- * Anyone with a leaked `file_url` can bypass this route. Migrate paid masters to **private** Blob
- * (or R2) and return **short-lived signed GET URLs** here instead of `NextResponse.redirect(publicUrl)`.
+ * - Legacy `vercel_blob`: gated redirect; URLs may still be shareable (migrate to private R2).
+ * - `r2` + `file_key`: premium/freemium/admin/subscriber get **short-lived signed URLs** when AWS credentials exist.
+ * - Free tier: public URL (or legacy blob proxy) after optional sign-in policy.
  */
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ fileId: string }> }
 ) {
   if (!isClerkConfigured()) {
@@ -60,12 +69,8 @@ export async function GET(
     return NextResponse.json({ error: 'Database unavailable', code: 'DB_ERROR' }, { status: 503 });
   }
 
-  const fileRes = await pool.query<{
-    file_url: string | null;
-    premium_tier: string | null;
-    status: string | null;
-  }>(
-    `SELECT file_url, premium_tier, status
+  const fileRes = await pool.query<FileRow>(
+    `SELECT file_url, file_key, storage_provider, premium_tier, status
      FROM country_flag_files
      WHERE id = $1::uuid
      LIMIT 1`,
@@ -78,26 +83,55 @@ export async function GET(
   }
 
   const fileUrl = row.file_url?.trim();
-  if (!fileUrl) {
+  if (!fileUrl && !row.file_key?.trim()) {
     return NextResponse.json({ error: 'File not found', code: 'NOT_FOUND' }, { status: 404 });
   }
 
   const user = await currentUser();
   const tier = normalizeTier(row.premium_tier);
   const isAdmin = serverClerkUserMatchesAdmin(user);
+  const provider = (row.storage_provider || '').toLowerCase();
+  const isR2 = provider === 'r2' && !!row.file_key?.trim();
+
+  async function redirectForHref(href: string): Promise<Response> {
+    return NextResponse.redirect(redirectLocation(request, href), 302);
+  }
+
+  /** Final browser URL for bytes (public or signed). */
+  async function resolveHref(opts: { forceSigned: boolean }): Promise<string | null> {
+    const key = row.file_key?.trim();
+    if (isR2 && key) {
+      if (opts.forceSigned) {
+        const signed = await getSignedR2GetUrl(key, 600);
+        if (signed) return signed;
+        console.warn('[download] signed URL unavailable; falling back to public URL if configured');
+      }
+      const pub = getPublicR2FileUrl(key);
+      if (pub) return pub;
+    }
+    if (fileUrl) return resolveGalleryAssetUrl(fileUrl);
+    return null;
+  }
 
   if (isAdmin) {
-    return NextResponse.redirect(redirectLocation(_request, siteProxiedBlobUrl(fileUrl)), 302);
+    const href = await resolveHref({ forceSigned: true });
+    if (!href) {
+      return NextResponse.json({ error: 'File location unavailable', code: 'MISSING_URL' }, { status: 503 });
+    }
+    return redirectForHref(href);
   }
 
   if (tier === 'free') {
     if (freeTierRequiresSignIn() && !user?.id) {
       return NextResponse.json({ error: 'Not signed in', code: 'NOT_AUTHENTICATED' }, { status: 401 });
     }
-    return NextResponse.redirect(redirectLocation(_request, siteProxiedBlobUrl(fileUrl)), 302);
+    const href = await resolveHref({ forceSigned: false });
+    if (!href) {
+      return NextResponse.json({ error: 'File location unavailable', code: 'MISSING_URL' }, { status: 503 });
+    }
+    return redirectForHref(href);
   }
 
-  // freemium | paid
   if (!user?.id) {
     return NextResponse.json({ error: 'Not signed in', code: 'NOT_AUTHENTICATED' }, { status: 401 });
   }
@@ -106,7 +140,7 @@ export async function GET(
   try {
     active = await hasActiveClerkSubscription(pool, user.id);
   } catch (subErr) {
-    console.error('[download] subscription lookup failed (run neon_002 migration?):', subErr);
+    console.error('[download] subscription lookup failed:', subErr);
     active = false;
   }
   if (!active) {
@@ -116,5 +150,9 @@ export async function GET(
     );
   }
 
-  return NextResponse.redirect(redirectLocation(_request, siteProxiedBlobUrl(fileUrl)), 302);
+  const href = await resolveHref({ forceSigned: true });
+  if (!href) {
+    return NextResponse.json({ error: 'File location unavailable', code: 'MISSING_URL' }, { status: 503 });
+  }
+  return redirectForHref(href);
 }
