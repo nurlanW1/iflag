@@ -33,7 +33,7 @@ Or using TypeScript directly:
 
 ```bash
 cd apps/backend
-npx ts-node src/db/migrate-countries.ts
+npx tsx src/db/migrate-countries.ts
 ```
 
 ### 2. Create Admin User
@@ -42,13 +42,13 @@ Create your first admin user:
 
 ```bash
 cd apps/backend
-npx ts-node src/db/seed-admin.ts
+npx tsx src/db/seed-admin.ts
 ```
 
 Or set environment variables:
 
 ```bash
-ADMIN_EMAIL=your-email@example.com ADMIN_PASSWORD=secure-password npx ts-node src/db/seed-admin.ts
+ADMIN_EMAIL=your-email@example.com ADMIN_PASSWORD=secure-password npx tsx src/db/seed-admin.ts
 ```
 
 **Default credentials** (change immediately!):
@@ -184,7 +184,7 @@ The public gallery (`/gallery`) automatically reads from the countries table:
 ## Troubleshooting
 
 ### "Countries table does not exist"
-- Run the migration script: `npx ts-node src/db/migrate-countries.ts`
+- Run the migration script: `npx tsx src/db/migrate-countries.ts`
 
 ### "Access denied" or 403 errors
 - Ensure your user has `role = 'admin'` in database

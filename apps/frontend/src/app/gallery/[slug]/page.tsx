@@ -417,7 +417,7 @@ export default function CountryDetailPage() {
 
   return (
     <main className="min-h-screen bg-stone-50 pb-[calc(7rem+env(safe-area-inset-bottom,0px))] lg:pb-12">
-      <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8 lg:pt-8">
+      <div className="marketplace-shell pt-8 sm:pt-10 lg:pt-14">
         <nav className="flex items-center gap-2 text-xs font-medium text-stone-500">
           <Link
             href="/gallery"
@@ -434,7 +434,7 @@ export default function CountryDetailPage() {
           <span className="truncate text-stone-700">{pageTitle}</span>
         </nav>
 
-        <header className="mt-5 flex flex-wrap items-end justify-between gap-4 border-b border-stone-200/80 pb-5">
+        <header className="mt-6 flex flex-wrap items-end justify-between gap-5 border-b border-stone-200/80 pb-6 lg:mt-8 lg:pb-8">
           <div>
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-400">
               <Sparkles size={12} className="text-[#009ab6]" aria-hidden />
@@ -445,7 +445,7 @@ export default function CountryDetailPage() {
                 </span>
               ) : null}
             </div>
-            <h1 className="mt-2 text-balance text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+            <h1 className="mt-2 text-balance text-4xl font-semibold tracking-tight text-stone-900 sm:text-5xl xl:text-6xl xl:tracking-tight">
               {pageTitle}
             </h1>
             <p className="mt-1.5 text-sm text-stone-500">
@@ -488,12 +488,12 @@ export default function CountryDetailPage() {
           </div>
         </header>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_24rem] lg:items-start lg:gap-10 xl:grid-cols-[minmax(0,1.22fr)_26rem] xl:gap-12 2xl:gap-14">
           <div className="space-y-5">
             {selectedVariant ? (
               <div className="overflow-hidden rounded-[1.5rem] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70">
                 <div
-                  className="relative flex min-h-[22rem] items-center justify-center px-4 py-8 sm:min-h-[28rem] sm:px-8 sm:py-10 lg:min-h-[32rem]"
+                  className="relative flex min-h-[24rem] items-center justify-center px-5 py-10 sm:min-h-[30rem] sm:px-10 sm:py-12 lg:min-h-[min(62vh,36rem)] xl:min-h-[min(65vh,40rem)]"
                   style={{ background: 'linear-gradient(145deg,#f5f5f4 0%,#fafaf9 48%,#eef2ef 100%)' }}
                 >
                   {selectedFormat && tierBadge(selectedFormat) ? (
@@ -506,7 +506,7 @@ export default function CountryDetailPage() {
                     key={`${selectedVariant.id}-${selectedFormat?.id ?? 'cover'}`}
                     src={bigPreviewSrc(selectedVariant, selectedFormat)}
                     alt={`${pageTitle} — ${selectedVariant.name}`}
-                    className="max-h-[min(58vh,32rem)] w-auto max-w-full object-contain drop-shadow-[0_18px_28px_rgba(0,0,0,0.18)]"
+                    className="max-h-[min(62vh,40rem)] w-auto max-w-full object-contain drop-shadow-[0_18px_28px_rgba(0,0,0,0.18)]"
                     referrerPolicy="no-referrer"
                     decoding="async"
                     onError={(e) =>

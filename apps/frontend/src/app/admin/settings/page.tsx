@@ -65,7 +65,7 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="marketplace-shell">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

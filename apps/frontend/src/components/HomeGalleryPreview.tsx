@@ -61,8 +61,8 @@ export default function HomeGalleryPreview() {
 
   if (loading) {
     return (
-      <section className="py-16 md:py-24 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
+      <section className="bg-white py-20 md:py-28 lg:py-32">
+        <div className="marketplace-shell">
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#009ab6]"></div>
           </div>
@@ -72,19 +72,19 @@ export default function HomeGalleryPreview() {
   }
 
   return (
-    <section className="py-16 md:py-24 px-4 bg-white relative">
-      <div className="max-w-7xl mx-auto">
+    <section className="relative bg-white py-20 md:py-28 lg:py-32">
+      <div className="marketplace-shell">
         {/* Section Header */}
         <SectionReveal
           hidden={{ opacity: 0, y: 20 }}
           visible={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-12 text-center md:mb-16"
+          className="mb-12 text-center md:mb-16 lg:mb-20"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-black mb-4">
+          <h2 className="mb-4 text-4xl font-bold text-black md:mb-5 md:text-5xl xl:text-6xl">
             Explore Our Flag Collection
           </h2>
-          <p className="text-lg md:text-xl text-black/60 max-w-2xl mx-auto">
+          <p className="mx-auto max-w-none text-lg text-black/60 md:text-xl xl:text-[1.35rem]">
             Browse through hundreds of high-quality country flags in various formats
           </p>
         </SectionReveal>

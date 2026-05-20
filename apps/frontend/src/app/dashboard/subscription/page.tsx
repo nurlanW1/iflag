@@ -30,7 +30,7 @@ export default async function DashboardSubscriptionPage() {
     sub.status === 'active' || sub.status === 'trialing' || sub.status === 'past_due';
 
   return (
-    <div className="max-w-3xl">
+    <div className="w-full min-w-0">
       <h1 className="text-2xl font-black text-gray-900">Subscription</h1>
       <p className="mt-1 text-sm text-gray-600">
         Manage Paddle checkout and plan upgrades from the{' '}

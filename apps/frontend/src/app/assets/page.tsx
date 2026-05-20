@@ -73,17 +73,17 @@ export default function AssetsPage() {
     <main className="min-h-screen bg-white text-black">
       {/* Header */}
       <div className="bg-white border-b border-black/10">
-        <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="marketplace-shell py-12 sm:py-14 lg:py-20 xl:pb-24 xl:pt-24">
           <h1 className="text-5xl font-black mb-4 text-black">Browse Flags</h1>
           <p className="text-black/60 text-lg">Discover high-quality flags from around the world</p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="marketplace-shell py-10 sm:py-12 lg:py-16 xl:py-20">
         {/* Search Bar */}
         <form onSubmit={handleSearch} className="mb-6">
-          <div className="flex items-center gap-4">
-            <div className="flex-1 relative">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+              <div className="flex min-w-0 flex-1 relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black/40" size={20} />
               <input
                 type="text"
@@ -253,7 +253,7 @@ export default function AssetsPage() {
         ) : (
           <>
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
+              <div className="grid min-w-0 grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 md:gap-6 lg:grid-cols-5 lg:gap-7 xl:grid-cols-6 2xl:grid-cols-6 min-[1800px]:grid-cols-7 min-[1800px]:gap-8 mb-8">
                 {assets.map((asset, idx) => (
                   <AssetCard key={asset.id} asset={asset} index={idx} />
                 ))}

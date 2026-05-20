@@ -203,7 +203,7 @@ export function DashboardShell({
             ) : null}
           </nav>
         </header>
-        <main className="p-6 lg:p-8" id="dashboard-main">
+        <main className="p-6 md:p-8 xl:p-12 2xl:p-14" id="dashboard-main">
           {billingNotice ? (
             <div
               role="alert"

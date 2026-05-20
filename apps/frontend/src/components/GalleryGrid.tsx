@@ -108,8 +108,8 @@ export default function GalleryGrid({
   linkToCountryGallery = false,
 }: GalleryGridProps) {
   const gridClassName = largeTiles
-    ? 'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-7 sm:gap-9 md:gap-11 lg:gap-12 xl:gap-14'
-    : 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6';
+    ? 'grid min-w-0 grid-cols-2 gap-4 xs:gap-5 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 md:gap-7 lg:grid-cols-4 lg:gap-8 xl:grid-cols-5 xl:gap-9 2xl:grid-cols-6 2xl:gap-10 min-[1800px]:grid-cols-7 min-[1800px]:gap-11'
+    : 'grid min-w-0 grid-cols-2 gap-3 xs:gap-4 xs:grid-cols-3 sm:grid-cols-3 sm:gap-[0.875rem] md:grid-cols-4 md:gap-5 lg:grid-cols-5 lg:gap-6 xl:grid-cols-6 2xl:grid-cols-6 min-[1800px]:grid-cols-7 min-[1800px]:gap-7';
 
   return (
     <div className={gridClassName}>

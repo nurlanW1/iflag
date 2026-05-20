@@ -44,13 +44,13 @@ export function PricingPlansClient() {
 
   return (
     <div className="bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+      <div className="marketplace-shell py-14 sm:py-16 lg:py-20 lg:pb-24">
         <div className="text-center">
           <p className="text-sm font-semibold uppercase tracking-wide text-[#009ab6]">Pricing</p>
-          <h1 className="mt-2 text-3xl font-black text-gray-900 sm:text-4xl">
+          <h1 className="mt-2 text-4xl font-black tracking-tight text-gray-900 sm:text-5xl lg:text-6xl xl:text-7xl">
             Simple plans for creators and teams
           </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-base text-gray-600">
+          <p className="mx-auto mt-4 max-w-none text-base text-gray-600 sm:text-lg">
             Start free with previews. Subscribe for catalog-wide Pro downloads while your plan is
             active, or buy individual flags to keep forever—whichever fits your workflow. Paid
             checkout is hosted by Paddle (Merchant of Record).
@@ -94,7 +94,7 @@ export function PricingPlansClient() {
         </div>
 
         {/* Plan cards */}
-        <ul className="mt-12 grid gap-6 lg:grid-cols-3">
+        <ul className="mt-14 grid gap-8 xl:gap-10 lg:grid-cols-3">
           {PLAN_CARD_COPY.map((plan) => {
             const isPro = plan.id === 'pro';
             const isFree = plan.id === 'free';
@@ -103,7 +103,7 @@ export function PricingPlansClient() {
             return (
               <li
                 key={plan.id}
-                className={`flex flex-col rounded-2xl border p-6 shadow-sm ${
+                className={`flex flex-col rounded-2xl border p-6 shadow-sm sm:p-7 xl:p-8 ${
                   plan.highlighted
                     ? 'border-[#009ab6]/40 bg-gradient-to-b from-[#009ab6]/5 to-white ring-2 ring-[#009ab6]/20'
                     : 'border-gray-200 bg-white'
@@ -214,7 +214,7 @@ export function PricingPlansClient() {
         </ul>
 
         {/* Comparison table */}
-        <div className="mt-16">
+        <div className="mt-20 lg:mt-24">
           <div className="mb-6 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-[#009ab6]" aria-hidden />
             <h2 className="text-xl font-black text-gray-900">Compare plans</h2>

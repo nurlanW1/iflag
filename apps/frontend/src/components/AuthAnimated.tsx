@@ -61,7 +61,7 @@ function AuthForm() {
   };
 
   return (
-    <div className="relative w-full max-w-6xl min-h-[700px] bg-white rounded-3xl shadow-2xl overflow-hidden flex border border-purple-200/50">
+    <div className="relative flex w-full max-w-[min(96rem,calc(100vw-2rem))] min-h-[700px] overflow-hidden rounded-3xl border border-purple-200/50 bg-white shadow-2xl">
       {/* Left Panel - Red Gradient (1/3) */}
       <div className="w-1/3 relative overflow-hidden">
         {/* Gradient Background */}

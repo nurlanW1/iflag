@@ -122,7 +122,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-4xl min-h-[600px] bg-white rounded-3xl shadow-2xl overflow-hidden flex border border-purple-200/50 pointer-events-auto"
+              className="relative flex w-full max-w-[min(96rem,calc(100vw-2rem))] min-h-[600px] overflow-hidden rounded-3xl border border-purple-200/50 bg-white shadow-2xl pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close Button */}

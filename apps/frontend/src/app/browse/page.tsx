@@ -16,10 +16,10 @@ export const metadata: Metadata = {
 
 export default function BrowsePage() {
   return (
-    <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <header className="mb-8">
-        <h1 className="text-3xl font-black text-gray-900 md:text-4xl">Browse catalog</h1>
-        <p className="mt-2 max-w-2xl text-sm text-gray-600 md:text-base">
+    <main className="marketplace-shell min-h-screen w-full py-12 sm:py-14 lg:py-20">
+      <header className="mb-10 lg:mb-12">
+        <h1 className="text-3xl font-black text-gray-900 md:text-4xl xl:text-5xl">Browse catalog</h1>
+        <p className="mt-3 w-full max-w-none text-sm text-gray-600 md:text-base xl:text-lg">
           Search by name, country, or tag. Filter by category, free vs pro, and free preview availability.
         </p>
       </header>

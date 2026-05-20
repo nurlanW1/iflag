@@ -69,7 +69,7 @@ export function ProductDetailView({ slug, product }: Props) {
           ]),
         ]}
       />
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="marketplace-shell py-12 sm:py-14 lg:py-20">
         <nav aria-label="Breadcrumb" className="mb-6 text-sm text-gray-500">
           <ol className="flex flex-wrap gap-1">
             <li>
@@ -88,10 +88,10 @@ export function ProductDetailView({ slug, product }: Props) {
           </ol>
         </nav>
 
-        <div className="grid gap-10 lg:grid-cols-[1fr_minmax(0,24rem)]">
+        <div className="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,26rem)] xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,28rem)] xl:gap-16 2xl:gap-20">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-[#009ab6]">{categoryName}</p>
-            <h1 className="mt-2 text-3xl font-black text-gray-900 md:text-4xl">{product.title}</h1>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-900 md:text-4xl xl:text-5xl">{product.title}</h1>
             <p className="mt-3 text-sm text-gray-600">
               Flag asset for creative projects. License terms apply per file and at Paddle checkout; see sidebar for
               formats and downloads.
@@ -170,7 +170,7 @@ export function ProductDetailView({ slug, product }: Props) {
             ) : null}
           </div>
 
-          <aside className="h-fit space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:sticky lg:top-6">
+          <aside className="h-fit space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:sticky lg:top-24 xl:p-8">
             <div>
               <h2 className="text-sm font-bold text-gray-900">File formats</h2>
               {formatLabels.length > 0 ? (
@@ -252,7 +252,7 @@ export function ProductDetailView({ slug, product }: Props) {
             <h2 id="related-heading" className="text-xl font-black text-gray-900">
               Related in {categoryName}
             </h2>
-            <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <ul className="mt-10 grid min-w-0 grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6 md:gap-7 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 2xl:gap-8">
               {relatedPublic.map(({ product: rp, categoryName: cn }) => (
                 <li key={rp.id}>
                   <MarketplaceProductCard product={rp} categoryName={cn} />

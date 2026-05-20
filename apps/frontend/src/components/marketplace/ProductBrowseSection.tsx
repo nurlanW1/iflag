@@ -168,9 +168,9 @@ export function ProductBrowseSection({
   };
 
   return (
-    <div className={className}>
-      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <form onSubmit={onSubmitSearch} className="flex w-full max-w-xl flex-1 gap-2">
+    <div className={['min-w-0', className].filter(Boolean).join(' ') || 'min-w-0'}>
+      <div className="mb-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
+        <form onSubmit={onSubmitSearch} className="flex min-w-0 w-full flex-1 gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
@@ -280,7 +280,7 @@ export function ProductBrowseSection({
           <Spinner size="lg" label="Loading catalog" />
         </div>
       ) : (
-        <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <ul className="grid min-w-0 grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 md:gap-6 lg:grid-cols-5 lg:gap-7 xl:grid-cols-6 2xl:grid-cols-6 min-[1700px]:grid-cols-7 min-[1700px]:gap-8">
           {items.map((p) => (
             <li key={p.id}>
               <MarketplaceProductCard

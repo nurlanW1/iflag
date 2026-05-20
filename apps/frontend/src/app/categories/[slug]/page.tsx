@@ -65,7 +65,7 @@ export default async function CategoryPage({ params }: Props) {
           ]),
         ]}
       />
-      <main className="max-w-4xl mx-auto px-4 py-12">
+      <main className="marketplace-shell py-12 sm:py-14">
         <article>
           <h1 className="text-3xl font-black text-black mb-4">{category.name}</h1>
           {category.description ? (

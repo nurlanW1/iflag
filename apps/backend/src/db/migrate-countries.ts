@@ -1,6 +1,6 @@
 // Migration Script for Countries Table
 // Run this to add the countries table to your database
-// Usage: ts-node src/db/migrate-countries.ts
+// Usage: tsx src/db/migrate-countries.ts
 
 import pool from '../db.js';
 import { readFileSync } from 'fs';

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SITE_NAME } from '@/lib/seo/site-config';
 import { getPublicContactEmail, P } from '@/lib/legal/legal-placeholders';
+import { PageShell } from '@/components/layout';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -52,8 +53,8 @@ export default function Footer() {
         )}
       </AnimatePresence>
 
-      <div className="mx-auto max-w-7xl px-3 py-12 sm:px-4 sm:py-14 md:px-6 md:py-16 supports-[padding:max(0px)]:pb-[max(3rem,env(safe-area-inset-bottom))]">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
+      <PageShell className="py-14 sm:py-16 md:py-20 supports-[padding:max(0px)]:pb-[max(3rem,env(safe-area-inset-bottom))]">
+        <div className="mb-16 grid grid-cols-1 gap-14 md:grid-cols-2 md:gap-16 lg:grid-cols-5 lg:gap-20 xl:gap-24">
           {/* Brand Column */}
           <div>
             <div className="flex items-center gap-2 mb-4">
@@ -207,7 +208,7 @@ export default function Footer() {
 
         {/* Newsletter */}
         <div className="border-t border-white/10 pt-12 mb-12">
-          <div className="max-w-md">
+          <div className="w-full max-w-none">
             <h3 className="text-xl font-bold mb-2 text-white/60">Stay Updated</h3>
             <p className="text-white/60 text-sm mb-4">
               Get the latest flags, updates, and exclusive offers delivered to your inbox.
@@ -231,7 +232,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <p className="mb-6 max-w-3xl text-xs leading-relaxed text-white/50">
+        <p className="mb-6 max-w-none text-xs leading-relaxed text-white/50">
           Trust &amp; billing transparency: payments and subscriptions may be processed by {P.PAYMENT_PROCESSOR}. Legal
           pages are published as customizable templates — replace bracketed placeholders with your finalized
           information and have counsel review for each market you serve.
@@ -272,7 +273,7 @@ export default function Footer() {
             </div>
           </div>
         </div>
-      </div>
+      </PageShell>
     </footer>
   );
 }

@@ -201,7 +201,7 @@ export default function HomePageClient() {
       <div className="flex min-h-dvh flex-col">
         {/* Hero — simple gradient background + search rail */}
         <section
-          className="relative flex min-h-[min(34dvh,300px)] w-full shrink-0 flex-col justify-center overflow-hidden py-8 sm:min-h-[min(38dvh,340px)] sm:py-10 md:min-h-[min(40dvh,400px)] md:py-12"
+          className="relative flex min-h-[calc(100dvh-4rem)] w-full shrink-0 flex-col justify-center overflow-hidden py-10 sm:min-h-[calc(100svh-4rem)] sm:py-12 md:py-14"
           aria-labelledby="hero-heading"
         >
           <div
@@ -213,7 +213,7 @@ export default function HomePageClient() {
             aria-hidden
           />
 
-          <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-4 sm:px-6">
+          <div className="relative z-10 marketplace-shell flex flex-col items-center text-center pb-12 pt-8 sm:pb-16 sm:pt-10 md:pb-20 md:pt-12">
             <motion.div
               initial={false}
               animate={{ opacity: 1, y: 0 }}
@@ -225,12 +225,12 @@ export default function HomePageClient() {
               </p>
               <h1
                 id="hero-heading"
-                className="mx-auto mt-1.5 max-w-5xl text-balance font-black uppercase leading-[1.1] tracking-[0.04em] text-white sm:mt-2 sm:tracking-[0.05em]"
+                className="mx-auto mt-1.5 max-w-none text-balance font-black uppercase leading-[1.06] tracking-[0.04em] text-white sm:mt-2 sm:tracking-[0.045em]"
               >
-                <span className="block text-[clamp(1.15rem,3.5vw+0.3rem,2.1rem)]">
+                <span className="block text-[clamp(1.65rem,2.8vw+1.5rem,4.85rem)]">
                   Flag assets library
                 </span>
-                <span className="mt-0.5 block text-[clamp(1rem,2.5vw+0.25rem,1.35rem)] font-bold normal-case tracking-normal text-white/90">
+                <span className="mt-2 block text-[clamp(1.05rem,1.85vw+0.95rem,2.65rem)] font-bold normal-case tracking-normal text-white/90">
                   Vectors, raster &amp; video — one search
                 </span>
               </h1>
@@ -269,7 +269,7 @@ export default function HomePageClient() {
 
               <form
                 onSubmit={handleSearch}
-                className="mx-auto mt-3 w-full max-w-full sm:mt-4"
+                className="mt-5 w-full sm:mt-6 lg:mt-8"
                 role="search"
                 aria-label="Search flag assets"
               >
@@ -317,8 +317,8 @@ export default function HomePageClient() {
         </section>
 
         {/* Categories — full-width band (matches hero weight), larger tiles */}
-        <section className="shrink-0 border-t border-gray-100 bg-gradient-to-b from-gray-50/90 to-white pb-8 pt-5 sm:pb-10 sm:pt-7 md:pb-12">
-          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
+        <section className="shrink-0 border-t border-gray-100 bg-gradient-to-b from-gray-50/90 to-white pb-10 pt-8 sm:pb-12 sm:pt-10 md:pb-16 md:pt-12">
+          <div className="marketplace-shell">
             <SectionReveal
               hidden={{ opacity: 0, y: 10 }}
               visible={{ opacity: 1, y: 0 }}
@@ -328,13 +328,13 @@ export default function HomePageClient() {
               <h2 className="text-xl font-black tracking-tight text-black sm:text-2xl md:text-3xl">
                 Browse by region
               </h2>
-              <p className="mt-1 max-w-2xl text-sm text-black/55 sm:text-base">
+              <p className="mt-2 max-w-none text-sm text-black/55 sm:text-base">
                 Jump straight into a collection — two rows across the full catalog width
               </p>
             </SectionReveal>
 
             <div className="rounded-2xl border border-gray-200/80 bg-white/90 p-3 shadow-md backdrop-blur-sm sm:rounded-3xl sm:p-4 md:p-6">
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 md:gap-5">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 sm:gap-4 md:gap-5 lg:gap-6">
             {[
               { 
                 name: 'Europe', 
@@ -435,9 +435,9 @@ export default function HomePageClient() {
       <HomeGalleryPreview />
 
       {/* Stats Section */}
-      <section className="py-20 px-4 bg-gradient-to-b from-white to-[#006d7a]/5">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+      <section className="bg-gradient-to-b from-white to-[#006d7a]/5 py-24 md:py-28 lg:py-32">
+        <div className="marketplace-shell">
+          <div className="grid grid-cols-2 gap-10 md:grid-cols-4 md:gap-14 lg:gap-16">
             {[
               { number: '200+', label: 'Countries', icon: Globe2 },
               { number: '10K+', label: 'Flag Assets', icon: Flag },
@@ -454,7 +454,7 @@ export default function HomePageClient() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#009ab6]/10 to-[#006d7a]/10 mb-4">
                   <stat.icon size={28} className="text-[#009ab6]" />
                 </div>
-                <div className="text-4xl md:text-5xl font-black text-black mb-2">{stat.number}</div>
+                <div className="mb-4 text-5xl font-black text-black md:text-6xl xl:text-7xl">{stat.number}</div>
                 <div className="text-sm md:text-base text-black/60 font-medium">{stat.label}</div>
               </SectionReveal>
             ))}
@@ -463,7 +463,7 @@ export default function HomePageClient() {
       </section>
 
       {/* Premium Plans */}
-      <section className="py-24 px-4 bg-white relative overflow-hidden">
+      <section className="relative overflow-hidden bg-white py-28 lg:py-32">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{
@@ -471,25 +471,25 @@ export default function HomePageClient() {
           }} />
         </div>
 
-        <div className="max-w-6xl mx-auto relative z-10">
+        <div className="marketplace-shell relative z-10">
           <SectionReveal
             hidden={{ opacity: 0, y: 30 }}
             visible={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center mb-16"
+            className="mb-20 text-center"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#009ab6]/10 rounded-full mb-6">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#009ab6]/10 px-4 py-2">
               <Crown size={18} className="text-[#009ab6]" />
               <span className="text-sm font-semibold text-[#009ab6]">Premium Plans</span>
             </div>
-            <h2 className="text-5xl md:text-6xl font-black mb-6 text-black">Go Premium</h2>
-            <p className="text-xl md:text-2xl text-black/60 max-w-2xl mx-auto">
+            <h2 className="mb-6 text-5xl font-black text-black md:mb-8 md:text-6xl xl:text-7xl">Go Premium</h2>
+            <p className="mx-auto max-w-none text-xl text-black/60 md:text-2xl xl:text-[1.7rem]">
               Unlock unlimited flag downloads, commercial use, and exclusive flag assets. Paid plans
               checkout through Paddle (Merchant of Record).
             </p>
           </SectionReveal>
 
-          <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+          <div className="grid gap-10 md:grid-cols-2 lg:gap-14 xl:gap-16">
             {[
               {
                 name: 'Weekly',
@@ -512,7 +512,7 @@ export default function HomePageClient() {
             ))}
           </div>
 
-          <p className="mt-10 text-center text-sm text-black/50 max-w-xl mx-auto">
+          <p className="mx-auto mt-14 max-w-none text-center text-sm text-black/50">
             Homepage amounts are illustrative — live prices and Paddle checkout are on the{' '}
             <Link href="/pricing" className="font-semibold text-[#009ab6] hover:underline">
               pricing page
@@ -523,21 +523,21 @@ export default function HomePageClient() {
       </section>
 
       {/* How It Works */}
-      <section className="py-24 px-4 bg-gradient-to-b from-[#006d7a]/5 to-white">
-        <div className="max-w-7xl mx-auto">
+      <section className="bg-gradient-to-b from-[#006d7a]/5 to-white py-28 lg:py-32">
+        <div className="marketplace-shell">
           <SectionReveal
             hidden={{ opacity: 0, y: 20 }}
             visible={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-16"
+            className="mb-20 text-center"
           >
-            <h2 className="text-4xl md:text-5xl font-black mb-4 text-black">How It Works</h2>
-            <p className="text-lg md:text-xl text-black/60 max-w-2xl mx-auto">
+            <h2 className="mb-5 text-4xl font-black text-black md:mb-6 md:text-5xl xl:text-6xl">How It Works</h2>
+            <p className="mx-auto max-w-none text-lg text-black/60 md:text-xl">
               Get started in three simple steps
             </p>
           </SectionReveal>
 
-          <div className="grid md:grid-cols-3 gap-8 lg:gap-12 relative">
+          <div className="relative grid gap-10 md:grid-cols-3 lg:gap-14 xl:gap-16">
             {/* Connecting Line */}
             <div className="hidden md:block absolute top-20 left-0 right-0 h-0.5 bg-gradient-to-r from-[#009ab6]/20 via-[#009ab6]/40 to-[#009ab6]/20" />
 
@@ -571,7 +571,7 @@ export default function HomePageClient() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-24 px-4 bg-gradient-to-br from-[#009ab6] via-[#006d7a] to-[#004d5a] relative overflow-hidden">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#009ab6] via-[#006d7a] to-[#004d5a] py-28 lg:py-32">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 opacity-10">
           {motionBgMounted ? (
@@ -613,16 +613,17 @@ export default function HomePageClient() {
           )}
         </div>
 
-        <div className="relative z-10 mx-auto max-w-4xl text-center">
+        <div className="marketplace-shell relative z-10">
+          <div className="w-full text-center">
           <SectionReveal
             hidden={{ opacity: 0, y: 30 }}
             visible={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="mb-6 text-4xl font-black text-white md:text-5xl lg:text-6xl">
+            <h2 className="mb-6 text-4xl font-black leading-tight text-white md:text-5xl xl:text-[3.5rem] 2xl:text-6xl">
               Ready to Get Started?
             </h2>
-            <p className="mx-auto mb-10 max-w-2xl text-xl text-white/90 md:text-2xl">
+            <p className="mx-auto mb-12 max-w-none text-lg text-white/90 md:text-2xl md:leading-snug xl:text-[1.68rem]">
               Join thousands of designers and developers using {SITE_NAME} for their projects
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -641,6 +642,7 @@ export default function HomePageClient() {
               </Link>
             </div>
           </SectionReveal>
+          </div>
         </div>
       </section>
 

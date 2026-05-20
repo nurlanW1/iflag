@@ -35,9 +35,9 @@ type FileRow = {
 /**
  * Protected download for `country_flag_files`.
  *
- * - Legacy `vercel_blob`: gated redirect; URLs may still be shareable (migrate to private R2).
- * - `r2` + `file_key`: premium/freemium/admin/subscriber get **short-lived signed URLs** when AWS credentials exist.
- * - Free tier: public URL (or legacy blob proxy) after optional sign-in policy.
+ * - Legacy Blob `file_url`: rewritten to **`CLOUDFLARE_R2_PUBLIC_URL`** when the same `flags/…` key exists on R2.
+ * - Rows with **`file_key`**: use R2 public or short-lived signed GET when SDK credentials exist (even if `storage_provider` is stale).
+ * - Free tier: public URL (or legacy blob façade) after optional sign-in policy.
  */
 export async function GET(
   request: Request,
@@ -90,8 +90,6 @@ export async function GET(
   const user = await currentUser();
   const tier = normalizeTier(row.premium_tier);
   const isAdmin = serverClerkUserMatchesAdmin(user);
-  const provider = (row.storage_provider || '').toLowerCase();
-  const isR2 = provider === 'r2' && !!row.file_key?.trim();
 
   async function redirectForHref(href: string): Promise<Response> {
     return NextResponse.redirect(redirectLocation(request, href), 302);
@@ -99,14 +97,14 @@ export async function GET(
 
   /** Final browser URL for bytes (public or signed). */
   async function resolveHref(opts: { forceSigned: boolean }): Promise<string | null> {
-    const key = row.file_key?.trim();
-    if (isR2 && key) {
+    const fk = row.file_key?.trim();
+    if (fk && getPublicR2FileUrl(fk)) {
       if (opts.forceSigned) {
-        const signed = await getSignedR2GetUrl(key, 600);
+        const signed = await getSignedR2GetUrl(fk, 600);
         if (signed) return signed;
         console.warn('[download] signed URL unavailable; falling back to public URL if configured');
       }
-      const pub = getPublicR2FileUrl(key);
+      const pub = getPublicR2FileUrl(fk);
       if (pub) return pub;
     }
     if (fileUrl) return resolveGalleryAssetUrl(fileUrl);

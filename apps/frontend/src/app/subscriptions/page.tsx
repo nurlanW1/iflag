@@ -41,15 +41,16 @@ export default function SubscriptionsAccountPage() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-2xl px-4 py-16 text-center text-gray-600">
+      <main className="marketplace-shell min-h-screen py-16 text-center text-gray-600 sm:py-20">
         Loading…
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-12">
-      <h1 className="text-2xl font-black text-gray-900">Your subscription</h1>
+    <main className="marketplace-shell w-full py-12 sm:py-16 lg:py-24">
+      <div className="w-full min-w-0">
+      <h1 className="text-3xl font-black text-gray-900 lg:text-4xl xl:text-5xl">Your subscription</h1>
       <p className="mt-1 text-sm text-gray-600">
         Compare Paddle plans, upgrade, or start checkout from the{' '}
         <Link href="/pricing" className="font-semibold text-[#009ab6] hover:underline">
@@ -112,6 +113,7 @@ export default function SubscriptionsAccountPage() {
         To update payment details or cancel, open the Paddle customer portal from your receipt or the
         billing section after checkout—URLs are tied to your Paddle customer record.
       </p>
+      </div>
     </main>
   );
 }

@@ -1,6 +1,6 @@
 // Seed Admin User Script
 // Run this to create the first admin user
-// Usage: ts-node src/db/seed-admin.ts
+// Usage: tsx src/db/seed-admin.ts
 
 import pool from '../db.js';
 import { hashPassword } from '../auth/auth.service.js';

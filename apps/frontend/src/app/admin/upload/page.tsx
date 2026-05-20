@@ -88,7 +88,7 @@ function AdminUploadClerkGate() {
 
   if (!clientClerkUserMatchesAdmin(user)) {
     return (
-      <div className="mx-auto max-w-3xl py-12">
+      <div className="marketplace-shell py-12">
         <div
           role="alert"
           className="flex gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950"
@@ -223,7 +223,8 @@ function AdminUploadFormContent({
     'mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm outline-none transition focus:border-[#009ab6] focus:ring-2 focus:ring-[#009ab6]/25';
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="marketplace-shell">
+      <div className="mx-auto w-full min-w-0">
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <Link
           href="/admin"
@@ -539,6 +540,7 @@ function AdminUploadFormContent({
           )}
         </button>
       </form>
+      </div>
     </div>
   );
 }

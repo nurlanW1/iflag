@@ -136,7 +136,7 @@ function GalleryContent() {
 
   return (
     <main className="min-h-screen bg-stone-50">
-      <section className="relative overflow-hidden border-b border-stone-200/80 bg-gradient-to-br from-[#0a3b44] via-[#0d4c5b] to-[#0a3b44]">
+      <section className="relative min-h-[min(58dvh,520px)] overflow-hidden border-b border-stone-200/80 bg-gradient-to-br from-[#0a3b44] via-[#0d4c5b] to-[#0a3b44] sm:min-h-[min(50dvh,600px)] lg:min-h-[min(48dvh,640px)]">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-[0.18]"
@@ -145,15 +145,15 @@ function GalleryContent() {
               'radial-gradient(circle at 18% 30%, #00b8d4 0%, transparent 38%), radial-gradient(circle at 82% 70%, #009ab6 0%, transparent 42%)',
           }}
         />
-        <div className="relative mx-auto max-w-7xl px-4 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-16 lg:px-8">
+        <div className="relative marketplace-shell pb-16 pt-14 sm:pb-20 sm:pt-20 lg:pb-24 lg:pt-20">
           <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.22em] text-white/55">
             <Sparkles size={13} className="text-[#7adcef]" aria-hidden />
             Flag library
           </div>
-          <h1 className="mt-4 max-w-3xl text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-[3.25rem] md:leading-[1.05]">
+          <h1 className="mt-4 max-w-[min(100%-0.5rem,58rem)] text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl lg:max-w-[min(100%,90rem)] xl:text-6xl xl:leading-[1.06]">
             Browse high-quality flag collections by country
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/70 sm:text-lg">
+          <p className="mt-5 max-w-none text-base leading-relaxed text-white/75 sm:mt-6 sm:text-lg xl:text-xl">
             Curated raster &amp; vector previews — search, filter and open a folder to view every shape, format and resolution.
           </p>
 
@@ -176,8 +176,8 @@ function GalleryContent() {
         </div>
       </section>
 
-      <div className="sticky top-0 z-30 -mt-6 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+      <div className="sticky top-0 z-30 -mt-6 border-b border-stone-200/60 bg-stone-50/80 backdrop-blur-md">
+        <div className="marketplace-shell pt-6 pb-1">
           <div className="rounded-2xl border border-stone-200/80 bg-white/95 px-3 py-3 shadow-[0_12px_36px_-18px_rgba(15,23,42,0.18)] ring-1 ring-stone-100 backdrop-blur sm:px-4">
             <div className="flex flex-wrap items-center gap-3">
               <div className="relative flex-1 min-w-[14rem]">
@@ -294,7 +294,7 @@ function GalleryContent() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <div className="marketplace-shell py-8 sm:py-12 lg:py-14">
         <div className="mb-5 flex items-center justify-between">
           <p className="text-xs font-medium text-stone-500 sm:text-sm">
             {loading ? (
@@ -335,7 +335,7 @@ function GalleryContent() {
 
 function CardGrid({ countries }: { countries: Country[] }) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 lg:gap-6 xl:grid-cols-5">
+    <div className="grid grid-cols-2 gap-4 xs:gap-5 sm:grid-cols-3 md:grid-cols-4 md:gap-6 lg:grid-cols-5 lg:gap-7 xl:grid-cols-6 2xl:grid-cols-6 min-[1800px]:grid-cols-7 min-[1800px]:gap-8">
       {countries.map((country, idx) => (
         <motion.div
           key={`${country.code ?? 'x'}-${country.slug}`}
@@ -461,7 +461,7 @@ function SkeletonGrid({ view }: { view: ViewMode }) {
     );
   }
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 lg:gap-6 xl:grid-cols-5">
+    <div className="grid grid-cols-2 gap-4 xs:gap-5 sm:grid-cols-3 md:grid-cols-4 md:gap-6 lg:grid-cols-5 lg:gap-7 xl:grid-cols-6 2xl:grid-cols-6 min-[1800px]:grid-cols-7 min-[1800px]:gap-8">
       {Array.from({ length: 10 }).map((_, i) => (
         <div
           key={i}

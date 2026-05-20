@@ -15,7 +15,7 @@
  */
 
 import { createHash, randomBytes } from 'crypto';
-import * as otplib from 'otplib';
+import { OTP } from 'otplib';
 import QRCode from 'qrcode';
 import pool from '../db.js';
 import bcrypt from 'bcrypt';
@@ -35,19 +35,22 @@ const CHALLENGE_TTL_SECONDS = parseInt(
 );
 const MAX_CHALLENGE_ATTEMPTS = 5;
 
-const authenticator =
-  (otplib as any).authenticator ||
-  (otplib as any).default?.authenticator;
+const TOTP_PERIOD_SECONDS = 30;
+/** ±N time steps (RFC-style window); maps to symmetric epoch tolerance in seconds for otplib v13. */
+const TOTP_EPOCH_TOLERANCE_SECONDS = TOTP_WINDOW * TOTP_PERIOD_SECONDS;
 
-if (!authenticator) {
-  throw new Error('otplib authenticator unavailable');
+/** Google Authenticator–compatible TOTP (otplib v13 — no legacy `authenticator` export). */
+const totp = new OTP({ strategy: 'totp' });
+
+function verifyTotp(secret: string, token: string): boolean {
+  const result = totp.verifySync({
+    secret,
+    token: normalizeTotp(token),
+    period: TOTP_PERIOD_SECONDS,
+    epochTolerance: TOTP_EPOCH_TOLERANCE_SECONDS,
+  });
+  return result.valid === true;
 }
-
-// Configure otplib once at module load.
-authenticator.options = {
-  window: TOTP_WINDOW,
-  step: 30,
-};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -152,8 +155,8 @@ export async function setupMfa(
     throw err;
   }
 
-  const secret = authenticator.generateSecret();
-  const otpauthUrl = authenticator.keyuri(email, ISSUER, secret);
+  const secret = totp.generateSecret();
+  const otpauthUrl = totp.generateURI({ issuer: ISSUER, label: email, secret });
   const qrCodeDataUrl = await QRCode.toDataURL(otpauthUrl);
 
   const codes = generateBackupCodes(10);
@@ -208,10 +211,7 @@ export async function confirmEnrollment(
   }
 
   const secret = decryptSecret(pending.encrypted_secret);
-  const ok = authenticator.verify({
-    token: normalizeTotp(totpCode),
-    secret,
-  });
+  const ok = verifyTotp(secret, totpCode);
   if (!ok) {
     const err: any = new Error('Invalid TOTP code');
     err.status = 400;
@@ -377,10 +377,7 @@ async function verifyUserCodeInTransaction(
   const secret = decryptSecret(u.rows[0].mfa_secret);
 
   // Try TOTP first
-  const totpOk = authenticator.verify({
-    token: normalizeTotp(code),
-    secret,
-  });
+  const totpOk = verifyTotp(secret, code);
   if (totpOk) return true;
 
   // Then backup codes

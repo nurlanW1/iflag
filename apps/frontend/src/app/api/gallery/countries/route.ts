@@ -132,6 +132,12 @@ export async function GET(request: Request) {
       try {
         const pool = getDb();
         const fromDb = await fetchGalleryCountriesFromDb(pool, filters ?? null);
+
+        /** Local `flag_stock` JPEGs — opt-in merge so production home/gallery stays DB+R2-only. */
+        const mergeLegacyFlagStock =
+          process.env.FLAG_STOCK_MERGE_WITH_DB === 'true' ||
+          process.env.NEXT_PUBLIC_FLAG_STOCK_MERGE_WITH_DB === 'true';
+
         // Region / taxonomy filters: DB only (flag_stock rows have no region metadata).
         if (filters != null) {
           return NextResponse.json(
@@ -140,8 +146,10 @@ export async function GET(request: Request) {
           );
         }
         if (fromDb.length > 0) {
+          const merged =
+            mergeLegacyFlagStock ? mergeStockOnlyIntoDb(fromDb, stockCountries) : fromDb;
           return NextResponse.json(
-            { countries: applyGalleryDisplayNames(mergeStockOnlyIntoDb(fromDb, stockCountries)) },
+            { countries: applyGalleryDisplayNames(merged) },
             { headers: { 'Cache-Control': 'no-store' } },
           );
         }

@@ -30,7 +30,7 @@ export default function BlogPage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-4 py-16">
+      <div className="marketplace-shell py-14 sm:py-16">
         <div className="flex items-center gap-3 mb-12">
           <Flag size={32} className="text-[#009ab6]" />
           <h1 className="text-4xl font-black text-black">Blog</h1>

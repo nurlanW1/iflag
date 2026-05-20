@@ -303,7 +303,7 @@ function AdminChrome({
           </div>
         </header>
         <main className="min-h-screen flex-1" id="admin-main">
-          <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+          <div className="p-5 sm:p-7 lg:p-10 xl:p-12">{children}</div>
         </main>
       </div>
     </div>

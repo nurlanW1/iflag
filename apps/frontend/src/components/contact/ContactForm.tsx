@@ -4,6 +4,7 @@ import { Flag, Mail, MessageSquare, Send, X, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { PageShell } from '@/components/layout';
 import { getPublicContactEmail } from '@/lib/legal/legal-placeholders';
 import { SITE_NAME } from '@/lib/seo/site-config';
 
@@ -59,7 +60,7 @@ export default function ContactForm() {
         )}
       </AnimatePresence>
 
-      <div className="mx-auto max-w-4xl px-4 py-16">
+      <PageShell className="py-14 sm:py-16">
         <div className="mb-8 flex items-center gap-3">
           <Flag size={32} className="text-[#009ab6]" />
           <h1 className="text-4xl font-black text-black">Contact</h1>
@@ -185,7 +186,7 @@ export default function ContactForm() {
             </form>
           </div>
         </div>
-      </div>
+      </PageShell>
     </main>
   );
 }

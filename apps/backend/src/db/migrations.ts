@@ -8,7 +8,7 @@ const __dirname = dirname(__filename);
 
 /**
  * Resolve the directory containing SQL files.
- * In dev (ts-node-dev) `__dirname` already points at src/db.
+ * In dev (`tsx watch`) `__dirname` already points at src/db.
  * In prod (compiled), `__dirname` is dist/db — but the SQL files live in src/db.
  * We try the runtime dir first, then walk up to find a `src/db` sibling.
  */

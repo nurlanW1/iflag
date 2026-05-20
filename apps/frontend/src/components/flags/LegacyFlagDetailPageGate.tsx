@@ -7,8 +7,8 @@ const LegacyFlagDetailPage = dynamic(
   {
     ssr: false,
     loading: () => (
-      <main className="px-4 py-16">
-        <div className="container mx-auto text-center">
+      <main className="py-16">
+        <div className="marketplace-shell text-center">
           <div className="spinner mx-auto" />
           <p className="mt-4 text-sm text-gray-600">Loading flag…</p>
         </div>

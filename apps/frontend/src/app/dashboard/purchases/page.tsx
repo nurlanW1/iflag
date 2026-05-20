@@ -50,7 +50,7 @@ export default async function DashboardPurchasesPage() {
   const hasOrders = purchases.length > 0;
 
   return (
-    <div className="max-w-4xl">
+    <div className="w-full min-w-0">
       <h1 className="text-2xl font-black text-gray-900">Purchased files</h1>
       <p className="mt-1 text-sm text-gray-600">
         One-time purchases from Paddle (and demo/admin grants in development) linked to your account.

@@ -22,7 +22,7 @@ Railway injects **`PORT`**. The server listens on **`0.0.0.0`** by default (`LIS
 
 | Script | Purpose |
 |--------|--------|
-| `npm run dev` | Local development (`ts-node-dev` + ESM loader) |
+| `npm run dev` | Local development (`tsx watch` — ESM-native) |
 | `npm run build` | Builds workspace deps (`packages/storage`, `packages/watermarking`), runs `tsc`, copies SQL into `dist/` |
 | `npm run start` | Production: **`node dist/index.js`** |
 

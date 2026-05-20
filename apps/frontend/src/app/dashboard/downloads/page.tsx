@@ -9,7 +9,7 @@ export default async function DashboardDownloadsPage() {
   const downloads = await fetchAccountDownloads(dataUserId);
 
   return (
-    <div className="max-w-3xl">
+    <div className="w-full min-w-0">
       <h1 className="text-2xl font-black text-gray-900">Downloads</h1>
       <p className="mt-1 text-sm text-gray-600">
         A timeline of download activity. Per-file downloads are also available from{' '}

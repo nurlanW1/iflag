@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FLAGS_STORAGE_PATH_RE } from '@/lib/server/blob-site-proxy';
+import { isSafePublicFlagObjectPath } from '@/lib/server/blob-site-proxy';
 
 /** Public Vercel Blob base, e.g. `https://eh5zrrhsujfuhgmf.public.blob.vercel-storage.com` (no trailing slash). */
 function blobBase(): string | null {
@@ -7,22 +7,35 @@ function blobBase(): string | null {
   return b ? b.replace(/\/+$/, '') : null;
 }
 
-function isSafeBlobPath(path: string): boolean {
-  if (!FLAGS_STORAGE_PATH_RE.test(path)) return false;
-  return !path.includes('..');
+
+function r2PublicBase(): string | null {
+  const b =
+    process.env.CLOUDFLARE_R2_PUBLIC_URL?.trim() ||
+    process.env.R2_PUBLIC_URL?.trim();
+  return b ? b.replace(/\/+$/, '') : null;
 }
 
 /**
- * Same-origin façade for Blob files: keeps assets on Vercel Blob but exposes your domain to users.
- *
- * Requires `BLOB_PUBLIC_BASE_URL` (same hostname you see in Blob URLs — without path).
+ * Stable URL for `/api/asset?path=flags/…` — prefers Cloudflare R2 public hostname when configured,
+ * else redirects to legacy Vercel Blob `BLOB_PUBLIC_BASE_URL`.
  */
 export async function GET(request: NextRequest) {
   const raw = request.nextUrl.searchParams.get('path');
   const path =
     typeof raw === 'string' ? decodeURIComponent(raw.replace(/^\//, '').replace(/\/{2,}/g, '/')) : '';
-  if (!path || !isSafeBlobPath(path)) {
+  if (!path || !isSafePublicFlagObjectPath(path)) {
     return new NextResponse('Invalid path', { status: 400 });
+  }
+
+  const r2base = r2PublicBase();
+  if (r2base) {
+    const target = `${r2base}/${path.replace(/^\/+/, '')}`;
+    return NextResponse.redirect(target, {
+      status: 307,
+      headers: {
+        'Cache-Control': 'public, max-age=86400, s-maxage=86400',
+      },
+    });
   }
 
   const base = blobBase();

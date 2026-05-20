@@ -9,6 +9,7 @@ import { User, LogOut, Crown, Flag, Menu, X, Globe, Heart, ShoppingCart } from '
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SITE_NAME } from '@/lib/seo/site-config';
+import { PageShell } from '@/components/layout';
 
 function useAuthPageLinks() {
   const pathname = usePathname() ?? '/';
@@ -38,9 +39,9 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
   } as const;
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-[#006d7a]/10 bg-white/95 shadow-sm backdrop-blur-md supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]" aria-label="Primary">
-      <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6">
-        <div className="flex h-16 items-center justify-between">
+    <nav className="sticky top-0 z-50 w-full border-b border-[#006d7a]/10 bg-white/95 shadow-sm backdrop-blur-md supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]" aria-label="Primary">
+      <PageShell>
+        <div className="flex h-16 items-center justify-between gap-3">
           <Link
             href="/"
             className="flex items-center gap-2 text-xl font-black text-black transition hover:opacity-90"
@@ -324,7 +325,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             </motion.div>
           ) : null}
         </AnimatePresence>
-      </div>
+      </PageShell>
     </nav>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { PageShell } from '@/components/layout';
 import { X } from 'lucide-react';
 
 const STORAGE_KEY = 'flagswing_cookie_notice_v1';
@@ -41,7 +42,7 @@ export function CookieNotice() {
       aria-describedby="cookie-notice-desc"
       className="fixed bottom-0 left-0 right-0 z-[100] border-t border-gray-200 bg-white/95 p-4 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] backdrop-blur-md md:px-6"
     >
-      <div className="mx-auto flex max-w-5xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <PageShell className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0 flex-1 pr-8 md:pr-4">
           <p id="cookie-notice-title" className="font-semibold text-gray-900">
             Cookies &amp; privacy
@@ -83,7 +84,7 @@ export function CookieNotice() {
             <X className="h-5 w-5" />
           </button>
         </div>
-      </div>
+      </PageShell>
     </div>
   );
 }

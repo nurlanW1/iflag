@@ -6,6 +6,10 @@ import {
 } from '@/lib/flag-thumbnail-fallback';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
+import {
+  fallbackUrlsForGalleryListThumb,
+  resolvedFlagPublicHref,
+} from '@/lib/server/flag-asset-url';
 import { freeTierRequiresSignIn } from '@/lib/server/flagswing-download-policy';
 
 export type GalleryCountrySummary = {
@@ -113,45 +117,59 @@ export async function fetchGalleryCountriesFromDb(
     slug: string;
     iso_alpha_2: string | null;
     cnt: string | number;
-    thumbnail_url: string | null;
+    thumbnail_file_key: string | null;
+    thumbnail_file_url: string | null;
+    thumbnail_preview_url: string | null;
+    thumbnail_thumb_url: string | null;
+    tier_pick: string | null;
   }>(
     `SELECT
        c.name,
        c.slug,
        c.iso_alpha_2,
        COUNT(cff.id)::int AS cnt,
-       (
-         SELECT
-           CASE
-             WHEN NULLIF(trim(f.preview_url), '') IS NOT NULL THEN trim(f.preview_url)
-             WHEN NULLIF(trim(f.thumbnail_url), '') IS NOT NULL THEN trim(f.thumbnail_url)
-             WHEN lower(coalesce(f.premium_tier, 'free')) = 'free'
-                  AND NULLIF(trim(f.file_url), '') IS NOT NULL THEN trim(f.file_url)
-             ELSE NULL
-           END
-         FROM country_flag_files f
-         WHERE f.country_id = c.id
-           AND f.status = 'published'
-         ORDER BY
-           CASE
-             WHEN NULLIF(trim(f.preview_url), '') IS NOT NULL THEN 0
-             WHEN NULLIF(trim(f.thumbnail_url), '') IS NOT NULL THEN 1
-             WHEN lower(coalesce(f.premium_tier, 'free')) = 'free'
-                  AND NULLIF(trim(f.file_url), '') IS NOT NULL THEN 2
-             ELSE 3
-           END ASC,
-           f.created_at DESC
-         LIMIT 1
-       ) AS thumbnail_url
+       tn.thumbnail_file_key,
+       tn.thumbnail_file_url,
+       tn.thumbnail_preview_url,
+       tn.thumbnail_thumb_url,
+       tn.tier_pick
      FROM countries c
      INNER JOIN country_flag_files cff
        ON cff.country_id = c.id AND cff.status = 'published'
+     LEFT JOIN LATERAL (
+       SELECT
+         NULLIF(trim(f.file_key), '') AS thumbnail_file_key,
+         NULLIF(trim(f.file_url), '') AS thumbnail_file_url,
+         NULLIF(trim(f.preview_url), '') AS thumbnail_preview_url,
+         NULLIF(trim(f.thumbnail_url), '') AS thumbnail_thumb_url,
+         lower(coalesce(f.premium_tier, 'free')) AS tier_pick
+       FROM country_flag_files f
+       WHERE f.country_id = c.id
+         AND f.status = 'published'
+       ORDER BY
+         (NULLIF(trim(f.file_key), '') IS NOT NULL) DESC,
+         (lower(trim(coalesce(f.storage_provider, ''))) = 'r2') DESC,
+         CASE
+           WHEN NULLIF(trim(f.preview_url), '') IS NOT NULL THEN 0
+           WHEN NULLIF(trim(f.thumbnail_url), '') IS NOT NULL THEN 1
+           WHEN lower(coalesce(f.premium_tier, 'free')) = 'free'
+                AND NULLIF(trim(f.file_url), '') IS NOT NULL THEN 2
+           ELSE 3
+         END ASC,
+         f.created_at DESC
+       LIMIT 1
+     ) tn ON TRUE
      WHERE ($1::text IS NULL OR lower(trim(coalesce(c.region::text, ''))) = lower(trim($1)))
        AND (
          $2::text IS NULL
          OR lower(trim(coalesce(c.category::text, 'country'))) = lower(trim($2))
        )
-     GROUP BY c.id, c.name, c.slug, c.iso_alpha_2
+     GROUP BY c.id, c.name, c.slug, c.iso_alpha_2,
+       tn.thumbnail_file_key,
+       tn.thumbnail_file_url,
+       tn.thumbnail_preview_url,
+       tn.thumbnail_thumb_url,
+       tn.tier_pick
      ORDER BY c.name ASC`,
     [regionParam, catParam],
   );
@@ -162,7 +180,15 @@ export async function fetchGalleryCountriesFromDb(
       typeof row.cnt === 'string' ? Number.parseInt(row.cnt, 10) : Number(row.cnt);
     const code =
       row.iso_alpha_2?.trim()?.toUpperCase() || getCountryCode(row.name)?.toUpperCase() || null;
-    let thumb = row.thumbnail_url?.trim() ?? '';
+    let thumb = resolvedFlagPublicHref({
+      fileKey: row.thumbnail_file_key,
+      fallbackRawUrls: fallbackUrlsForGalleryListThumb({
+        premiumTierRaw: row.tier_pick,
+        fileUrl: row.thumbnail_file_url,
+        previewUrl: row.thumbnail_preview_url,
+        thumbnailUrl: row.thumbnail_thumb_url,
+      }),
+    });
     if (!thumb || isPackFallbackFlagThumbnail(thumb)) {
       thumb = FLAG_THUMB_PLACEHOLDER_DATA_URL;
     }
@@ -294,25 +320,33 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
     const thumbStored = r.thumbnail_url?.trim() || '';
     const previewStored = r.preview_url?.trim() || '';
     const fileUrl = r.file_url?.trim() || '';
-    let previewUrlRaw = '';
+    const cascade: string[] = [];
     if (previewStored) {
-      previewUrlRaw = previewStored;
+      cascade.push(previewStored);
     } else if (isImgPreviewableFormat(r.format) && fileUrl) {
-      previewUrlRaw = fileUrl;
+      cascade.push(fileUrl);
     } else if (thumbStored) {
-      previewUrlRaw = thumbStored;
+      cascade.push(thumbStored);
     } else if (fileUrl) {
-      previewUrlRaw = fileUrl;
+      cascade.push(fileUrl);
     }
-    if (!previewUrlRaw) {
-      previewUrlRaw = flagThumbPlaceholderForFileId(String(r.id));
+
+    let previewUrl = resolvedFlagPublicHref({
+      fileKey: r.file_key,
+      fallbackRawUrls: cascade,
+    });
+    if (!previewUrl) {
+      previewUrl = flagThumbPlaceholderForFileId(String(r.id));
     }
-    const previewUrl = resolveGalleryAssetUrl(previewUrlRaw);
 
     const signInForFree = freeTierRequiresSignIn();
     const downloadProtected = tier !== 'free' || signInForFree;
+    const canonicalFileHref = resolvedFlagPublicHref({
+      fileKey: r.file_key,
+      fallbackRawUrls: fileUrl ? [fileUrl] : [],
+    });
     const directDownloadUrl =
-      tier === 'free' && !signInForFree && fileUrl ? resolveGalleryAssetUrl(fileUrl) : undefined;
+      tier === 'free' && !signInForFree && canonicalFileHref ? canonicalFileHref : undefined;
 
     const formatRow: FormatRow = {
       id: String(r.id),
