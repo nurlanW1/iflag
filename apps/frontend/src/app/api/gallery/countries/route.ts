@@ -7,6 +7,7 @@ import {
   applyGalleryDisplayNames,
   fetchGalleryCountriesFromDb,
   isPackFallbackFlagThumbnail,
+  logGalleryCountriesDebug,
   type GalleryCountrySummary,
   type GalleryCountryListFilters,
 } from '@/lib/server/gallery-from-db';
@@ -103,15 +104,20 @@ function loadFromFlagStock(): GalleryCountrySummary[] {
       const existing = countryMap.get(countryName);
       if (existing) {
         existing.count += 1;
+        existing.flag_count += 1;
         existing.thumbnail = thumbnail;
+        existing.thumbnail_url = thumbnail;
         return;
       }
 
       countryMap.set(countryName, {
+        id: `flag-stock:${countrySlug}`,
         name: countryName,
         slug: countrySlug,
         code: countryCode,
+        flag_count: 1,
         count: 1,
+        thumbnail_url: thumbnail,
         thumbnail,
       });
     });
@@ -131,6 +137,12 @@ export async function GET(request: Request) {
     if (process.env.DATABASE_URL?.trim()) {
       try {
         const pool = getDb();
+
+        /** Temporary diagnostics (no secrets): export DEBUG_GALLERY_COUNTRIES=1 */
+        if (process.env.DEBUG_GALLERY_COUNTRIES === '1') {
+          await logGalleryCountriesDebug(pool, process.env.DATABASE_URL);
+        }
+
         const fromDb = await fetchGalleryCountriesFromDb(pool, filters ?? null);
 
         /** Local `flag_stock` JPEGs — opt-in merge so production home/gallery stays DB+R2-only. */
