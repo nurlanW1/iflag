@@ -1,0 +1,44 @@
+import { NextResponse } from 'next/server';
+import { requireClerkAdminBearerJson } from '@/lib/server/require-clerk-admin-bearer';
+import {
+  BACKEND_UNREACHABLE_MESSAGE,
+  resolveBackendApiBase,
+} from '@/lib/auth/backend-url';
+
+export const runtime = 'nodejs';
+export const maxDuration = 300;
+
+/**
+ * Proxies to Railway/Express `POST /api/admin/flag-files/import-r2` after Clerk admin gate.
+ * Query: maxObjects (default 25000), prefix (optional R2 list prefix).
+ */
+export async function POST(request: Request): Promise<Response> {
+  const gate = await requireClerkAdminBearerJson(request);
+  if (!gate.ok) return gate.response;
+
+  const api = resolveBackendApiBase();
+  if (!api.ok) {
+    return NextResponse.json({ error: api.error, code: api.code }, { status: 503 });
+  }
+
+  const url = new URL(request.url);
+  const qs = url.searchParams.toString();
+  const target = `${api.baseUrl}/admin/flag-files/import-r2${qs ? `?${qs}` : ''}`;
+  const auth = request.headers.get('authorization');
+
+  try {
+    const backendRes = await fetch(target, {
+      method: 'POST',
+      headers: auth ? { Authorization: auth } : {},
+      cache: 'no-store',
+    });
+    const data = await backendRes.json().catch(() => ({}));
+    return NextResponse.json(data, { status: backendRes.status });
+  } catch (err) {
+    console.error('[admin/flag-files/import-r2] proxy failed:', err);
+    return NextResponse.json(
+      { error: BACKEND_UNREACHABLE_MESSAGE, code: 'API_UNREACHABLE' },
+      { status: 503 }
+    );
+  }
+}

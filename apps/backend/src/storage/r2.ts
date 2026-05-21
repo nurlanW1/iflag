@@ -18,7 +18,13 @@
 
 import { createHash } from 'crypto';
 import { basename, extname } from 'path';
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  ListObjectsV2Command,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 export type R2Config = {
@@ -179,6 +185,53 @@ export async function getSignedDownloadUrl(
     Key: objectKey,
   });
   return getSignedUrl(client, cmd, { expiresIn: expiresInSeconds });
+}
+
+export type R2ObjectSummary = { key: string; size: number; lastModified?: Date };
+
+/**
+ * List object keys (paginated). Stops after `maxObjects` entries when set.
+ * Skips empty keys and trailing-slash “folder” placeholders.
+ */
+export async function listR2ObjectSummaries(
+  cfg: R2Config,
+  options?: { prefix?: string; maxObjects?: number }
+): Promise<R2ObjectSummary[]> {
+  const client = getS3Client(cfg);
+  const out: R2ObjectSummary[] = [];
+  const max = options?.maxObjects;
+  const prefix = options?.prefix?.replace(/^\//, '').trim() || '';
+  let token: string | undefined;
+
+  do {
+    const remaining =
+      max !== undefined && Number.isFinite(max) ? Math.max(0, max - out.length) : 1000;
+    const pageSize = max !== undefined && Number.isFinite(max) ? Math.min(1000, Math.max(1, remaining)) : 1000;
+
+    const resp = await client.send(
+      new ListObjectsV2Command({
+        Bucket: cfg.bucketName,
+        Prefix: prefix || undefined,
+        ContinuationToken: token,
+        MaxKeys: pageSize,
+      })
+    );
+
+    for (const o of resp.Contents ?? []) {
+      const key = o.Key?.trim();
+      if (!key || key.endsWith('/')) continue;
+      out.push({
+        key,
+        size: Number(o.Size ?? 0),
+        lastModified: o.LastModified,
+      });
+      if (max !== undefined && out.length >= max) return out;
+    }
+
+    token = resp.IsTruncated ? resp.NextContinuationToken : undefined;
+  } while (token && (max === undefined || out.length < max));
+
+  return out;
 }
 
 export async function deleteFileFromR2(key: string, cfg: R2Config = requireR2Config()): Promise<void> {

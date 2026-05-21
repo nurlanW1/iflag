@@ -15,6 +15,7 @@ import {
   sha256Hex,
   uploadFileToR2,
 } from '../storage/r2.js';
+import { runR2Import } from '../scripts/import-r2-files.js';
 
 const FORMATS = ['svg', 'png', 'jpg', 'jpeg', 'webp', 'pdf', 'eps'] as const;
 const PREMIUM = ['free', 'freemium', 'paid'] as const;
@@ -29,6 +30,55 @@ const upload = multer({
 });
 
 const router = express.Router();
+
+router.post('/import-r2', async (req: express.Request, res: Response) => {
+  const gate = await verifyClerkAdminBearer(req.headers.authorization);
+  if (!gate.ok) {
+    return res.status(gate.status).json({ error: gate.error, code: gate.code });
+  }
+
+  try {
+    requireR2Config();
+  } catch {
+    return res.status(503).json({
+      error: 'R2 storage is not configured on the API server.',
+      code: 'r2_config',
+    });
+  }
+
+  const rawMax = req.query.maxObjects ?? req.query.max;
+  let maxObjects = 25_000;
+  if (rawMax !== undefined) {
+    const raw = Array.isArray(rawMax) ? rawMax[0] : rawMax;
+    const n = Number(raw);
+    if (Number.isFinite(n)) {
+      maxObjects = Math.min(100_000, Math.max(1, Math.floor(n)));
+    }
+  }
+
+  const rawPrefix = req.query.prefix;
+  const prefix =
+    typeof rawPrefix === 'string'
+      ? rawPrefix.trim()
+      : Array.isArray(rawPrefix) && typeof rawPrefix[0] === 'string'
+        ? rawPrefix[0].trim()
+        : '';
+
+  try {
+    const stats = await runR2Import({
+      maxObjects,
+      prefix: prefix || undefined,
+      pool,
+    });
+    return res.json({ ok: true, ...stats });
+  } catch (err: unknown) {
+    console.error('[flag-files-import-r2]', err);
+    return res.status(500).json({
+      error: err instanceof Error ? err.message : 'Import failed',
+      code: 'import_failed',
+    });
+  }
+});
 
 async function resolveCountryId(
   name: string,

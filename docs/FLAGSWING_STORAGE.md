@@ -6,9 +6,24 @@
 - Metadata is stored in Neon table **`country_flag_files`** with `file_key`, `file_url`, optional `preview_url`, and `storage_provider = 'r2'`.
 - **Legacy** rows may still point at **Vercel Blob** (`storage_provider = 'vercel_blob'` or URLs containing `blob.vercel-storage.com`). Do not delete those objects automatically.
 
-Apply migration:
+Apply migrations (in order):
 
-`apps/backend/src/db/migrations/neon_003_country_flag_files_r2_columns.sql`
+- `apps/backend/src/db/migrations/neon_003_country_flag_files_r2_columns.sql`
+- `apps/backend/src/db/migrations/neon_004_country_flag_files_slug_title.sql`
+
+## Bulk import (existing R2 objects → Neon)
+
+After deploying the backend with R2 + `DATABASE_URL` configured:
+
+```bash
+cd apps/backend
+npm run build
+npm run import:r2
+```
+
+Optional env: `IMPORT_R2_MAX` (cap listed objects), `IMPORT_R2_PREFIX` (e.g. `flags/`).
+
+Or use **Admin → Upload → “Import R2 files”** (proxies to `POST /api/admin/flag-files/import-r2` on the backend; same Clerk admin allow-list as upload).
 
 ## Required backend (Railway / API server)
 
@@ -32,7 +47,7 @@ Optional aliases: `R2_*`, `CLOUDFLARE_ACCOUNT_ID`, `AWS_*` (see `storage/r2.ts` 
 
 | Variable | Purpose |
 |----------|---------|
-| `API_URL` or `NEXT_PUBLIC_API_URL` | Backend base ending in `/api` — **required** to proxy admin upload to R2 |
+| `API_URL` or `NEXT_PUBLIC_API_URL` | Backend base ending in `/api` — **required** to proxy admin upload + R2 import to Railway |
 | `CLERK_SECRET_KEY` | Clerk admin gate on Next |
 | `ADMIN_EMAIL` | Allow-list |
 | `DATABASE_URL` | Gallery + download metadata |

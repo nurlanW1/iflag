@@ -32,11 +32,21 @@ export function listPublishedProducts(filters: ProductListFilters = {}): Product
   return list.sort((a, b) => a.title.localeCompare(b.title));
 }
 
+function productHasFreePreviewDownload(p: Product): boolean {
+  if (p.freeDownloadUrl != null && p.freeDownloadUrl.trim() !== '') return true;
+  return p.files.some(
+    (f) => f.tier === 'preview_free' && f.publicUrl != null && String(f.publicUrl).trim() !== ''
+  );
+}
+
 /**
- * Filter, sort, and paginate the in-memory catalog (swap for DB queries later).
+ * Filter, sort, and paginate any merged catalog list (memory + Neon, etc.).
  */
-export function queryCatalog(q: CatalogQuery): { products: Product[]; total: number } {
-  let list = listPublishedProducts({});
+export function filterSortPaginateCatalog(
+  sourceList: Product[],
+  q: CatalogQuery
+): { products: Product[]; total: number } {
+  let list = [...sourceList];
 
   if (q.categoryId) {
     list = list.filter((p) => p.categoryId === q.categoryId);
@@ -45,7 +55,7 @@ export function queryCatalog(q: CatalogQuery): { products: Product[]; total: num
     list = list.filter((p) => p.isFeatured);
   }
   if (q.hasFreeDownload) {
-    list = list.filter((p) => p.freeDownloadUrl != null && p.freeDownloadUrl.trim() !== '');
+    list = list.filter(productHasFreePreviewDownload);
   }
 
   const search = q.search?.trim().toLowerCase();
@@ -55,7 +65,8 @@ export function queryCatalog(q: CatalogQuery): { products: Product[]; total: num
         p.title.toLowerCase().includes(search) ||
         p.slug.toLowerCase().includes(search) ||
         p.tags.some((t) => t.toLowerCase().includes(search)) ||
-        (p.countryCode?.toLowerCase().includes(search) ?? false)
+        (p.countryCode?.toLowerCase().includes(search) ?? false) ||
+        (p.detailPath?.toLowerCase().includes(search) ?? false)
       );
     });
   }
@@ -94,6 +105,13 @@ export function queryCatalog(q: CatalogQuery): { products: Product[]; total: num
   const start = (page - 1) * limit;
   const products = sorted.slice(start, start + limit);
   return { products, total };
+}
+
+/**
+ * Filter, sort, and paginate the in-memory catalog (swap for DB queries later).
+ */
+export function queryCatalog(q: CatalogQuery): { products: Product[]; total: number } {
+  return filterSortPaginateCatalog(listPublishedProducts({}), q);
 }
 
 export function getProductBySlug(slug: string): Product | null {

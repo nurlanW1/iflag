@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { toPublicProduct } from '@/lib/marketplace/product-mapper';
 import {
+  filterSortPaginateCatalog,
+  listPublishedProducts,
   getCategoryBySlug,
-  queryCatalog,
   type CatalogSort,
 } from '@/services/marketplace';
+import { fetchNeonCatalogProducts } from '@/lib/server/neon-catalog';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +47,15 @@ export async function GET(request: Request) {
     Math.max(1, parseInt(searchParams.get('limit') || '24', 10) || 24)
   );
 
-  const { products, total } = queryCatalog({
+  let combined = listPublishedProducts({});
+  try {
+    const neon = await fetchNeonCatalogProducts();
+    combined = [...neon, ...combined];
+  } catch (err) {
+    console.warn('[marketplace/products] Neon catalog merge skipped:', err);
+  }
+
+  const { products, total } = filterSortPaginateCatalog(combined, {
     categoryId,
     featured,
     hasFreeDownload,

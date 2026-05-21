@@ -1,6 +1,7 @@
 export { getCategoryById, getCategoryBySlug, listCategories } from './category-service';
 export type { CatalogQuery, CatalogSort, ProductListFilters } from './product-service';
 export {
+  filterSortPaginateCatalog,
   getProductById,
   getProductBySlug,
   listPublishedProducts,

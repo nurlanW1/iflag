@@ -20,6 +20,8 @@ export interface PublicProduct {
   id: string;
   title: string;
   slug: string;
+  /** When set, catalog cards link here instead of `/flags/{slug}`. */
+  detailHref?: string | null;
   description: string | null;
   countryCode: string | null;
   region: string | null;
@@ -67,6 +69,7 @@ export function toPublicProduct(p: Product): PublicProduct {
     id: p.id,
     title: p.title,
     slug: p.slug,
+    detailHref: p.detailPath?.trim() || null,
     description: p.description,
     countryCode: p.countryCode,
     region: p.region,

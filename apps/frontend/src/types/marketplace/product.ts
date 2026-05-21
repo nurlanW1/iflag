@@ -24,6 +24,11 @@ export interface Product {
   id: string;
   title: string;
   slug: string;
+  /**
+   * When set, public catalog cards link here instead of `/flags/{slug}`.
+   * Used for Neon `country_flag_files` rows (e.g. `/gallery/{countrySlug}`).
+   */
+  detailPath?: string | null;
   description: string | null;
   /** ISO 3166-1 alpha-2/alpha-3 as stored; validation layer can normalize later */
   countryCode: string | null;

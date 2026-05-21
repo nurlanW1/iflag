@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { toPublicProduct } from '@/lib/marketplace/product-mapper';
 import { getProductBySlug } from '@/services/marketplace';
+import { getNeonCatalogProductBySlug } from '@/lib/server/neon-catalog';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,7 @@ export async function GET(
     return NextResponse.json({ error: 'Invalid slug' }, { status: 400 });
   }
 
-  const product = getProductBySlug(slug);
+  const product = getProductBySlug(slug) ?? (await getNeonCatalogProductBySlug(slug));
   if (!product) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }

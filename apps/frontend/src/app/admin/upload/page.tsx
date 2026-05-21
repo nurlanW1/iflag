@@ -19,6 +19,7 @@ import {
   FileUp,
   ExternalLink,
   ShieldOff,
+  Database,
 } from 'lucide-react';
 import { Spinner } from '@/components/ui/Spinner';
 import { getClerkPublishableKey } from '@/lib/auth/clerk-env';
@@ -148,6 +149,17 @@ function AdminUploadFormContent({
   const [tags, setTags] = useState('');
   const [status, setStatus] = useState<'draft' | 'published'>('published');
 
+  const [r2Importing, setR2Importing] = useState(false);
+  const [r2Error, setR2Error] = useState<string | null>(null);
+  const [r2Stats, setR2Stats] = useState<{
+    scanned?: number;
+    inserted?: number;
+    updated?: number;
+    skipped?: number;
+    errors?: string[];
+  } | null>(null);
+  const [r2MaxObjects, setR2MaxObjects] = useState(5000);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -216,6 +228,46 @@ function AdminUploadFormContent({
       setError(msg);
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleImportR2() {
+    setR2Error(null);
+    setR2Stats(null);
+    if (!getToken) {
+      setR2Error('Sign in is required to import.');
+      return;
+    }
+    const token = await getToken();
+    if (!token?.trim()) {
+      setR2Error('Not signed in.');
+      return;
+    }
+    const max = Math.min(100_000, Math.max(1, Math.floor(Number(r2MaxObjects) || 5000)));
+    setR2Importing(true);
+    try {
+      const res = await fetch(`/api/admin/flag-files/import-r2?maxObjects=${max}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+        scanned?: number;
+        inserted?: number;
+        updated?: number;
+        skipped?: number;
+        errors?: string[];
+      };
+      if (!res.ok) {
+        throw new Error(data.error || `Import failed (${res.status})`);
+      }
+      setR2Stats(data);
+    } catch (e: unknown) {
+      setR2Error(e instanceof Error ? e.message : 'Import failed');
+    } finally {
+      setR2Importing(false);
     }
   }
 
@@ -324,6 +376,81 @@ function AdminUploadFormContent({
           </div>
         </div>
       ) : null}
+
+      <div className="mb-8 space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:p-8">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+            <Database size={20} aria-hidden />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-lg font-bold text-gray-900">Import R2 files</h2>
+            <p className="mt-1 text-sm text-gray-600">
+              Lists your Cloudflare R2 bucket and upserts rows into Neon <code className="rounded bg-black/5 px-1">country_flag_files</code>{' '}
+              (no duplicate <code className="rounded bg-black/5 px-1">file_key</code>). Requires the same R2 +{' '}
+              <code className="rounded bg-black/5 px-1">DATABASE_URL</code> env on the <strong>backend</strong> API. Allowed: admin email only.
+            </p>
+            <p className="mt-2 text-xs text-gray-500">
+              CLI (Railway or local after <code className="rounded bg-black/[0.06] px-1">npm run build</code>):{' '}
+              <code className="rounded bg-black/[0.06] px-1">cd apps/backend && npm run import:r2</code>
+            </p>
+          </div>
+        </div>
+        {getToken ? (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div>
+              <label htmlFor="r2_max" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+                Max objects
+              </label>
+              <input
+                id="r2_max"
+                type="number"
+                min={1}
+                max={100000}
+                value={r2MaxObjects}
+                onChange={(e) => setR2MaxObjects(Number(e.target.value) || 5000)}
+                className={fieldClass}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => void handleImportR2()}
+              disabled={r2Importing}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-700 disabled:opacity-60"
+            >
+              {r2Importing ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Database size={18} aria-hidden />}
+              {r2Importing ? 'Importing…' : 'Run import via API'}
+            </button>
+          </div>
+        ) : (
+          <p className="text-sm text-amber-800">Sign in with Clerk to use the API import button.</p>
+        )}
+        {r2Error ? (
+          <p role="alert" className="text-sm font-medium text-red-700">
+            {r2Error}
+          </p>
+        ) : null}
+        {r2Stats && (r2Stats.inserted !== undefined || r2Stats.updated !== undefined) ? (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-950">
+            <p className="font-semibold">Import finished</p>
+            <ul className="mt-2 list-inside list-disc text-xs">
+              <li>Scanned: {r2Stats.scanned ?? '—'}</li>
+              <li>Inserted: {r2Stats.inserted ?? '—'}</li>
+              <li>Updated: {r2Stats.updated ?? '—'}</li>
+              <li>Skipped: {r2Stats.skipped ?? '—'}</li>
+            </ul>
+            {r2Stats.errors && r2Stats.errors.length > 0 ? (
+              <details className="mt-3">
+                <summary className="cursor-pointer text-xs font-medium">Error messages ({r2Stats.errors.length})</summary>
+                <ul className="mt-2 max-h-40 list-inside list-disc overflow-y-auto text-xs opacity-90">
+                  {r2Stats.errors.slice(0, 40).map((e, i) => (
+                    <li key={i}>{e}</li>
+                  ))}
+                </ul>
+              </details>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
 
       <form
         onSubmit={(e) => void handleSubmit(e)}

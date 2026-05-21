@@ -36,6 +36,9 @@ export default {
           'sans-serif',
         ],
       },
+      maxWidth: {
+        shell: '1540px',
+      },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.5s ease-out',
