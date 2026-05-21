@@ -14,14 +14,12 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
-import HomeGalleryPreview from '@/components/HomeGalleryPreview';
 import { EditorialHero } from '@/components/landing/EditorialHero';
 import { LandingCategoryStrip } from '@/components/landing/LandingCategoryStrip';
-import { LandingProductRails } from '@/components/landing/LandingProductRails';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import { useRevealInView } from '@/hooks/useRevealInView';
 import { SITE_NAME } from '@/lib/seo/site-config';
-import { buildHeroDestination, type HeroCategoryTab } from '@/lib/landing/hero-categories';
+import { buildHeroDestination } from '@/lib/landing/hero-categories';
 
 type PricingPlan = {
   name: string;
@@ -153,11 +151,10 @@ function HowItWorksStepCard({ step, idx }: { step: StepItem; idx: number }) {
 
 export default function HomePageClient() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [heroCategoryTab, setHeroCategoryTab] = useState<HeroCategoryTab>('all');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = buildHeroDestination(heroCategoryTab, searchQuery);
+    window.location.href = buildHeroDestination('all', searchQuery);
   };
 
   return (
@@ -166,12 +163,8 @@ export default function HomePageClient() {
       <EditorialHero
         searchQuery={searchQuery}
         onSearchQueryChange={setSearchQuery}
-        heroCategoryTab={heroCategoryTab}
-        onHeroCategoryTabChange={setHeroCategoryTab}
         onSubmitSearch={handleSearch}
       />
-
-      <LandingProductRails gallerySlot={<HomeGalleryPreview surface="mist" />} />
 
       {/* Browse by region */}
       <section className="shrink-0 border-t border-neutral-200/80 bg-white py-16 md:py-24 lg:py-28">
