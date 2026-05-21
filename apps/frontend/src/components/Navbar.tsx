@@ -17,7 +17,7 @@ import {
   ShoppingCart,
   LayoutGrid,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SITE_NAME } from '@/lib/seo/site-config';
 import { PageShell } from '@/components/layout';
@@ -39,18 +39,30 @@ type NavbarProps = {
 };
 
 const navLinkClass =
-  'text-base font-semibold tracking-tight text-white/85 transition-colors hover:text-white';
+  'text-base font-medium tracking-tight text-neutral-700 transition-colors duration-200 hover:text-[#2a2a2a]';
 
 export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { signInHref, signUpHref } = useAuthPageLinks();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const clerkAppearance = {
     elements: {
-      avatarBox: 'h-11 w-11 lg:h-12 lg:w-12 ring-2 ring-white/35',
+      avatarBox: 'h-11 w-11 lg:h-12 lg:w-12 ring-2 ring-neutral-200',
     },
   } as const;
+
+  const shellClass = scrolled
+    ? 'border-neutral-200/90 bg-[#fafaf9]/82 shadow-[0_10px_40px_-28px_rgba(42,52,65,0.14)] backdrop-blur-xl backdrop-saturate-150'
+    : 'border-transparent bg-[#fafaf9]/70 backdrop-blur-md backdrop-saturate-150';
 
   function DesktopAuthCluster() {
     return (
@@ -61,35 +73,35 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
           <>
             <Link
               href="/gallery"
-              className="rounded-xl p-2.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-              aria-label="Collections & gallery"
-              title="Gallery"
+              className="rounded-lg p-2.5 text-neutral-500 transition-colors hover:bg-neutral-200/60 hover:text-[#2a2a2a]"
+              aria-label="Collections"
+              title="Collections"
             >
-              <Heart size={26} aria-hidden />
+              <Heart size={24} aria-hidden />
             </Link>
             <Link
               href="/dashboard/downloads"
-              className="rounded-xl p-2.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+              className="rounded-lg p-2.5 text-neutral-500 transition-colors hover:bg-neutral-200/60 hover:text-[#2a2a2a]"
               aria-label="Downloads"
               title="Downloads"
             >
-              <ShoppingCart size={26} aria-hidden />
+              <ShoppingCart size={24} aria-hidden />
             </Link>
-            <div className="flex items-center gap-4 border-l border-white/15 pl-8">
+            <div className="flex items-center gap-4 border-l border-neutral-200 pl-6">
               <Link
                 href="/dashboard"
-                className="flex max-w-[14rem] items-center gap-2.5 text-base font-semibold text-white/90 transition hover:text-white"
+                className="flex max-w-[14rem] items-center gap-2.5 text-base font-medium text-[#2a2a2a] transition hover:text-neutral-700"
               >
-                <User size={24} aria-hidden />
+                <User size={22} aria-hidden />
                 <span className="hidden min-[900px]:inline truncate">{user.full_name || user.email}</span>
               </Link>
               <button
                 type="button"
                 onClick={() => logout()}
-                className="rounded-xl p-2.5 text-white/55 transition hover:bg-white/10 hover:text-white"
+                className="rounded-lg p-2.5 text-neutral-400 transition hover:bg-neutral-200/70 hover:text-neutral-700"
                 aria-label="Sign out"
               >
-                <LogOut size={24} aria-hidden />
+                <LogOut size={22} aria-hidden />
               </button>
             </div>
           </>
@@ -97,20 +109,20 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
           <>
             <ClerkLoading>
               <div className="flex items-center gap-4" aria-hidden>
-                <div className="h-12 w-[4.5rem] animate-pulse rounded-lg bg-white/10" />
-                <div className="h-12 w-28 animate-pulse rounded-xl bg-white/10" />
-                <div className="h-12 w-12 animate-pulse rounded-full bg-white/10" />
+                <div className="h-11 w-[4.5rem] animate-pulse rounded-lg bg-neutral-200/80" />
+                <div className="h-11 w-28 animate-pulse rounded-lg bg-neutral-200/80" />
+                <div className="h-11 w-11 animate-pulse rounded-full bg-neutral-200/80" />
               </div>
             </ClerkLoading>
             <ClerkLoaded>
               <Show when="signed-out">
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-4">
                   <Link href={signInHref} className={`${navLinkClass} whitespace-nowrap`}>
                     Log in
                   </Link>
                   <Link
                     href={signUpHref}
-                    className="inline-flex h-12 min-h-[48px] min-w-[8rem] items-center justify-center rounded-xl bg-[#009ab6] px-8 text-base font-bold text-white shadow-lg shadow-black/25 transition hover:bg-[#00b4d4]"
+                    className="inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg bg-[#3d4f61] px-7 text-base font-semibold text-[#fafaf9] shadow-sm transition-colors hover:bg-[#354558]"
                   >
                     Sign up
                   </Link>
@@ -120,23 +132,23 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                 <>
                   <Link
                     href="/gallery"
-                    className="rounded-xl p-2.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-                    aria-label="Collections & gallery"
+                    className="rounded-lg p-2.5 text-neutral-500 transition-colors hover:bg-neutral-200/60 hover:text-[#2a2a2a]"
+                    aria-label="Collections"
                   >
-                    <Heart size={26} aria-hidden />
+                    <Heart size={24} aria-hidden />
                   </Link>
                   <Link
                     href="/dashboard/downloads"
-                    className="rounded-xl p-2.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                    className="rounded-lg p-2.5 text-neutral-500 transition-colors hover:bg-neutral-200/60 hover:text-[#2a2a2a]"
                     aria-label="Downloads"
                   >
-                    <ShoppingCart size={26} aria-hidden />
+                    <ShoppingCart size={24} aria-hidden />
                   </Link>
                   <Link
                     href="/dashboard"
-                    className="flex items-center gap-2.5 text-base font-semibold text-white/90 transition hover:text-white"
+                    className="flex items-center gap-2 text-base font-medium text-[#2a2a2a] transition hover:text-neutral-700"
                   >
-                    <User size={24} aria-hidden />
+                    <User size={22} aria-hidden />
                     <span className="hidden min-[1100px]:inline">Dashboard</span>
                   </Link>
                   <UserButton appearance={clerkAppearance} />
@@ -145,13 +157,13 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             </ClerkLoaded>
           </>
         ) : (
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
             <Link href={signInHref} className={navLinkClass}>
               Log in
             </Link>
             <Link
               href={signUpHref}
-              className="inline-flex h-12 min-h-[48px] items-center justify-center rounded-xl bg-[#009ab6] px-8 text-base font-bold text-white shadow-lg transition hover:bg-[#00b4d4]"
+              className="inline-flex h-11 min-h-[44px] items-center justify-center rounded-lg bg-[#3d4f61] px-7 text-base font-semibold text-[#fafaf9] shadow-sm transition-colors hover:bg-[#354558]"
             >
               Sign up
             </Link>
@@ -163,54 +175,51 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
 
   return (
     <nav
-      className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-[#080f18]/98 shadow-[0_12px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]"
+      className={`sticky top-0 z-50 w-full border-b transition-[background-color,border-color,box-shadow] duration-300 supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)] ${shellClass}`}
       aria-label="Primary"
     >
       <PageShell className="!py-0">
         {/* Mobile / tablet */}
         <div className="flex flex-col gap-4 py-4 lg:hidden">
           <div className="flex items-center justify-between gap-3">
-            <Link href="/" className="flex min-h-[52px] min-w-0 items-center gap-3 text-white transition hover:text-white">
-              <Flag size={40} className="shrink-0 text-[#5ce1f7]" aria-hidden />
-              <span className="truncate text-2xl font-black tracking-tight">{SITE_NAME}</span>
+            <Link href="/" className="flex min-h-[52px] min-w-0 items-center gap-3 text-[#2a2a2a] transition hover:text-neutral-800">
+              <Flag size={36} className="shrink-0 text-[#3d4f61]" aria-hidden strokeWidth={1.75} />
+              <span className="truncate text-2xl font-semibold tracking-tight">{SITE_NAME}</span>
             </Link>
             <button
               type="button"
               onClick={() => setMobileMenuOpen((o) => !o)}
-              className="inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-xl text-white transition hover:bg-white/10"
+              className="inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-lg text-neutral-700 transition hover:bg-neutral-200/70"
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-nav-menu"
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             >
-              {mobileMenuOpen ? <X size={30} aria-hidden /> : <Menu size={30} aria-hidden />}
+              {mobileMenuOpen ? <X size={28} aria-hidden /> : <Menu size={28} aria-hidden />}
             </button>
           </div>
           <NavbarSearch compact />
         </div>
 
-        {/* Desktop marketplace header */}
-        <div className="hidden min-h-[88px] flex-row items-center gap-10 py-5 lg:flex">
-          <Link
-            href="/"
-            className="flex shrink-0 items-center gap-3 text-white transition hover:text-white"
-          >
-            <Flag size={44} className="shrink-0 text-[#5ce1f7]" aria-hidden />
-            <span className="text-3xl font-black tracking-tight">{SITE_NAME}</span>
+        {/* Desktop */}
+        <div className="hidden min-h-[88px] flex-row items-center gap-8 py-5 xl:gap-10 lg:flex">
+          <Link href="/" className="flex shrink-0 items-center gap-3 text-[#2a2a2a] transition hover:text-neutral-800">
+            <Flag size={40} className="shrink-0 text-[#3d4f61]" aria-hidden strokeWidth={1.75} />
+            <span className="text-[1.65rem] font-semibold tracking-tight">{SITE_NAME}</span>
           </Link>
 
-          <nav className="hidden shrink-0 items-center gap-10 lg:flex" aria-label="Main navigation">
+          <nav className="hidden shrink-0 items-center gap-8 xl:gap-9 lg:flex" aria-label="Main navigation">
             <Link href="/browse" className={navLinkClass}>
               Browse
             </Link>
             <Link href="/#catalog-categories" className={navLinkClass}>
               Categories
             </Link>
-            <Link href="/gallery" className={navLinkClass}>
-              Gallery
-            </Link>
             <Link href="/pricing" className={`flex items-center gap-2 ${navLinkClass}`} title="Plans — Paddle checkout">
-              <Crown size={22} className="text-[#5ce1f7]" aria-hidden />
+              <Crown size={19} className="text-[#9a7d45]" aria-hidden strokeWidth={1.75} />
               Pricing
+            </Link>
+            <Link href="/gallery" className={navLinkClass}>
+              Collections
             </Link>
           </nav>
 
@@ -218,7 +227,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             <NavbarSearch />
           </div>
 
-          <div className="flex shrink-0 items-center gap-5 lg:gap-6">
+          <div className="flex shrink-0 items-center gap-4 lg:gap-5">
             <DesktopAuthCluster />
           </div>
         </div>
@@ -230,38 +239,38 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden border-t border-white/10 bg-[#0c1624] lg:hidden"
+              className="overflow-hidden border-t border-neutral-200/90 bg-[#fafaf9] lg:hidden"
             >
-              <div className="space-y-1 py-5">
+              <div className="space-y-1 py-4">
                 <Link
                   href="/browse"
-                  className="flex items-center gap-3 px-5 py-3.5 text-lg font-semibold text-white/90 hover:bg-white/[0.06]"
+                  className="flex items-center gap-3 px-4 py-3.5 text-base font-medium text-[#2a2a2a] hover:bg-neutral-200/50"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <LayoutGrid size={22} aria-hidden />
+                  <LayoutGrid size={20} aria-hidden />
                   Browse
                 </Link>
                 <Link
                   href="/#catalog-categories"
-                  className="block px-5 py-3.5 text-lg font-semibold text-white/90 hover:bg-white/[0.06]"
+                  className="block px-4 py-3.5 text-base font-medium text-[#2a2a2a] hover:bg-neutral-200/50"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Categories
                 </Link>
                 <Link
-                  href="/gallery"
-                  className="block px-5 py-3.5 text-lg font-semibold text-white/90 hover:bg-white/[0.06]"
+                  href="/pricing"
+                  className="flex items-center gap-3 px-4 py-3.5 text-base font-medium text-[#2a2a2a] hover:bg-neutral-200/50"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Gallery
+                  <Crown size={20} className="text-[#9a7d45]" aria-hidden />
+                  Pricing
                 </Link>
                 <Link
-                  href="/pricing"
-                  className="flex items-center gap-3 px-5 py-3.5 text-lg font-semibold text-white/90 hover:bg-white/[0.06]"
+                  href="/gallery"
+                  className="block px-4 py-3.5 text-base font-medium text-[#2a2a2a] hover:bg-neutral-200/50"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Crown size={22} className="text-[#5ce1f7]" aria-hidden />
-                  Pricing
+                  Collections
                 </Link>
 
                 <NavbarAdminNav clerkUiEnabled={clerkUiEnabled} legacyUser={user} onNavigate={() => setMobileMenuOpen(false)} />
@@ -270,21 +279,21 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                   <>
                     <Link
                       href="/gallery"
-                      className="block px-5 py-3.5 text-lg font-semibold text-white/90 hover:bg-white/[0.06]"
+                      className="block px-4 py-3.5 text-base font-medium text-[#2a2a2a] hover:bg-neutral-200/50"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Collections
+                      Saved collections
                     </Link>
                     <Link
                       href="/dashboard/downloads"
-                      className="block px-5 py-3.5 text-lg font-semibold text-white/90 hover:bg-white/[0.06]"
+                      className="block px-4 py-3.5 text-base font-medium text-[#2a2a2a] hover:bg-neutral-200/50"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Downloads
                     </Link>
                     <Link
                       href="/dashboard"
-                      className="block px-5 py-3.5 text-lg font-semibold text-white/90 hover:bg-white/[0.06]"
+                      className="block px-4 py-3.5 text-base font-medium text-[#2a2a2a] hover:bg-neutral-200/50"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Dashboard
@@ -295,7 +304,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                         setMobileMenuOpen(false);
                         void logout();
                       }}
-                      className="block w-full px-5 py-3.5 text-left text-lg font-semibold text-white/90 hover:bg-white/[0.06]"
+                      className="block w-full px-4 py-3.5 text-left text-base font-medium text-[#2a2a2a] hover:bg-neutral-200/50"
                     >
                       Sign out
                     </button>
@@ -303,24 +312,24 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                 ) : clerkUiEnabled ? (
                   <>
                     <ClerkLoading>
-                      <div className="space-y-2 px-5" aria-hidden>
-                        <div className="h-12 w-full animate-pulse rounded-xl bg-white/10" />
-                        <div className="h-12 w-full animate-pulse rounded-xl bg-white/10" />
+                      <div className="space-y-2 px-4" aria-hidden>
+                        <div className="h-11 w-full animate-pulse rounded-lg bg-neutral-200/80" />
+                        <div className="h-11 w-full animate-pulse rounded-lg bg-neutral-200/80" />
                       </div>
                     </ClerkLoading>
                     <ClerkLoaded>
                       <Show when="signed-out">
-                        <div className="mt-4 flex flex-col gap-3 px-5">
+                        <div className="mt-2 flex flex-col gap-2 px-4 pb-4">
                           <Link
                             href={signInHref}
-                            className="block py-2 text-lg font-semibold text-white/88 hover:text-white"
+                            className="py-2 text-base font-medium text-[#2a2a2a]"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             Log in
                           </Link>
                           <Link
                             href={signUpHref}
-                            className="flex min-h-[3.25rem] w-full items-center justify-center rounded-xl bg-[#009ab6] py-3.5 text-center text-lg font-bold text-white hover:bg-[#00b4d4]"
+                            className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#3d4f61] py-3 text-center text-base font-semibold text-[#fafaf9]"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             Sign up
@@ -328,23 +337,23 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                         </div>
                       </Show>
                       <Show when="signed-in">
-                        <div className="mt-4 space-y-2 px-5 pb-4">
+                        <div className="mt-2 space-y-1 px-4 pb-4">
                           <Link
                             href="/dashboard/downloads"
-                            className="block py-2 text-lg font-semibold text-white/88 hover:text-white"
+                            className="block py-2 text-base font-medium text-[#2a2a2a]"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             Downloads
                           </Link>
                           <Link
                             href="/dashboard"
-                            className="block py-2 text-lg font-semibold text-white/88 hover:text-white"
+                            className="block py-2 text-base font-medium text-[#2a2a2a]"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             Dashboard
                           </Link>
-                          <div className="flex items-center justify-between pt-2">
-                            <span className="text-lg font-semibold text-white/80">Account</span>
+                          <div className="flex items-center justify-between pt-3">
+                            <span className="text-base font-medium text-neutral-600">Account</span>
                             <UserButton appearance={clerkAppearance} />
                           </div>
                         </div>
@@ -352,17 +361,17 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                     </ClerkLoaded>
                   </>
                 ) : (
-                  <div className="mt-4 flex flex-col gap-3 px-5 pb-6">
+                  <div className="mt-2 flex flex-col gap-2 px-4 pb-6">
                     <Link
                       href={signInHref}
-                      className="block py-2 text-lg font-semibold text-white/88"
+                      className="py-2 text-base font-medium text-[#2a2a2a]"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Log in
                     </Link>
                     <Link
                       href={signUpHref}
-                      className="flex min-h-[3.25rem] items-center justify-center rounded-xl bg-[#009ab6] py-3.5 text-center text-lg font-bold text-white hover:bg-[#00b4d4]"
+                      className="flex min-h-11 items-center justify-center rounded-lg bg-[#3d4f61] py-3 text-center text-base font-semibold text-[#fafaf9]"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Sign up
@@ -420,23 +429,23 @@ function AdminNavLink({
     return (
       <Link
         href="/admin"
-        className="flex items-center gap-3 px-5 py-3 text-lg font-semibold text-[#82f0ff] hover:bg-white/[0.06] hover:text-white"
+        className="flex items-center gap-3 px-4 py-3 text-base font-medium text-[#3d4f61] hover:bg-neutral-200/50"
         title="Admin panel"
         onClick={onNavigate}
       >
-        <Globe size={22} aria-hidden />
-        Admin Panel
+        <Globe size={20} aria-hidden />
+        Admin panel
       </Link>
     );
   }
   return (
     <Link
       href="/admin"
-      className="inline-flex items-center gap-2 rounded-xl border border-[#5ce1f7]/45 bg-[#009ab6]/15 px-5 py-2.5 text-base font-semibold text-[#c9fbff] transition hover:border-[#5ce1f7] hover:bg-[#009ab6]/30"
+      className="inline-flex items-center gap-2 rounded-lg border border-neutral-300/95 bg-white px-4 py-2 text-base font-medium text-[#2a2a2a] shadow-sm transition hover:border-neutral-400 hover:bg-neutral-50"
       title="Admin panel"
       onClick={onNavigate}
     >
-      <Globe size={22} aria-hidden />
+      <Globe size={20} aria-hidden />
       <span className="hidden sm:inline">Admin</span>
     </Link>
   );

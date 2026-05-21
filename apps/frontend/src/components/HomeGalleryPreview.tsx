@@ -14,7 +14,12 @@ interface Country {
 
 const PREVIEW_COUNT = 24;
 
-export default function HomeGalleryPreview() {
+type HomeGalleryPreviewProps = {
+  /** Matches alternating editorial rails */
+  surface?: 'white' | 'mist';
+};
+
+export default function HomeGalleryPreview({ surface = 'white' }: HomeGalleryPreviewProps) {
   const [allCountries, setAllCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
@@ -58,12 +63,14 @@ export default function HomeGalleryPreview() {
     setExpanded(true);
   };
 
+  const bgClass = surface === 'mist' ? 'bg-[#fafaf9]' : 'bg-white';
+
   if (loading) {
     return (
-      <section className="border-t border-neutral-200/90 bg-white py-16 md:py-20 lg:py-24">
+      <section className={`${bgClass} py-16 md:py-24 lg:py-28`}>
         <div className="marketplace-shell">
-          <div className="flex justify-center items-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#009ab6]"></div>
+          <div className="flex justify-center items-center py-20">
+            <div className="h-11 w-11 animate-spin rounded-full border-2 border-neutral-200 border-t-[#3d4f61]" />
           </div>
         </div>
       </section>
@@ -71,20 +78,20 @@ export default function HomeGalleryPreview() {
   }
 
   return (
-    <section className="relative border-t border-neutral-200/90 bg-white py-16 md:py-20 lg:py-24">
+    <section className={`relative border-t border-neutral-200/80 ${bgClass} py-16 md:py-24 lg:py-28`}>
       <div className="marketplace-shell">
         {/* Section Header */}
         <SectionReveal
-          hidden={{ opacity: 0, y: 20 }}
+          hidden={{ opacity: 0, y: 12 }}
           visible={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-12 text-center md:mb-14"
+          transition={{ duration: 0.45 }}
+          className="mb-12 md:mb-14 lg:mb-16"
         >
-          <h2 className="mx-auto mb-4 max-w-4xl text-3xl font-bold tracking-tight text-neutral-950 sm:text-[2rem] lg:text-[2.25rem]">
-            Popular countries
+          <h2 className="max-w-3xl text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]">
+            Trending countries
           </h2>
-          <p className="mx-auto max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
-            Editorial hubs powered by Neon — tap a tile to preview formats and downloads inside the gallery.
+          <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
+            Editorial hubs updated from the gallery — tap through to territory-specific collections.
           </p>
         </SectionReveal>
 
@@ -92,16 +99,18 @@ export default function HomeGalleryPreview() {
         <div className="relative">
           {!expanded && allCountries.length > PREVIEW_COUNT && (
             <div
-              className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none z-10"
+              className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-40"
               style={{
                 background:
-                  'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 40%, rgba(255, 255, 255, 0.9) 70%, rgba(255, 255, 255, 1) 100%)',
+                  surface === 'mist'
+                    ? 'linear-gradient(to bottom, rgba(250,250,249,0) 0%, rgba(250,250,249,0.72) 45%, rgba(250,250,249,0.94) 72%, rgb(250,250,249) 100%)'
+                    : 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 42%, rgba(255,255,255,0.92) 72%, rgb(255,255,255) 100%)',
               }}
             />
           )}
 
           <div className={expanded || allCountries.length <= PREVIEW_COUNT ? '' : 'overflow-hidden'}>
-            <div className="rounded-2xl border border-neutral-200/95 bg-neutral-50/90 p-4 shadow-[0_18px_48px_-20px_rgba(15,23,42,0.14)] sm:p-5 md:rounded-[1.65rem] md:p-6">
+            <div className="rounded-2xl border border-neutral-200/90 bg-white p-3 shadow-[0_14px_48px_-32px_rgba(42,52,65,0.14)] sm:p-4 md:p-5 lg:rounded-[1.35rem]">
               <GalleryGrid
                 countries={displayCountries}
                 disableScrollReveal
@@ -122,15 +131,15 @@ export default function HomeGalleryPreview() {
             <button
               type="button"
               onClick={handleShowMore}
-              className="min-h-14 rounded-xl border-2 border-[#009ab6] px-12 py-4 text-base font-semibold text-[#009ab6] transition-all duration-300 hover:bg-[#009ab6] hover:text-white hover:shadow-lg md:text-lg"
+              className="rounded-lg border border-neutral-300 bg-white px-8 py-3 text-base font-medium text-[#2a2a2a] shadow-sm transition-colors duration-200 hover:border-neutral-400 hover:bg-neutral-50 md:px-10 md:py-3.5"
             >
-              Show more
+              Show more countries
             </button>
           ) : expanded && allCountries.length > PREVIEW_COUNT ? (
             <button
               type="button"
               onClick={() => setExpanded(false)}
-              className="min-h-14 rounded-xl border border-neutral-300 px-12 py-4 text-base font-semibold text-neutral-700 transition hover:border-[#009ab6]/40 hover:text-neutral-950 md:text-lg"
+              className="rounded-lg border border-transparent px-8 py-3 text-base font-medium text-neutral-600 underline-offset-4 transition-colors hover:text-[#2a2a2a] hover:underline md:px-10 md:py-3.5"
             >
               Show less
             </button>

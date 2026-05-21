@@ -42,7 +42,7 @@ export function LandingCategoryStrip() {
         >
           <h2
             id="categories-strip-heading"
-            className="text-3xl font-bold tracking-tight text-neutral-950 sm:text-[2rem] lg:text-[2.125rem]"
+            className="text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]"
           >
             Categories
           </h2>
@@ -54,19 +54,19 @@ export function LandingCategoryStrip() {
         <div className="-mx-1 flex flex-wrap justify-center gap-3 pb-1 sm:gap-4">
           <Link
             href="/browse"
-            className="inline-flex min-h-14 items-center rounded-xl bg-neutral-950 px-10 py-3 text-base font-semibold text-white shadow-md transition hover:bg-[#009ab6]"
+            className="inline-flex min-h-14 items-center rounded-xl bg-[#3d4f61] px-10 py-3 text-base font-semibold text-[#fafaf9] shadow-sm transition-colors hover:bg-[#354558]"
           >
             Browse all
           </Link>
           <Link
             href="/gallery"
-            className="inline-flex min-h-14 items-center rounded-xl border border-neutral-300 bg-white px-10 py-3 text-base font-semibold text-neutral-900 shadow-sm transition hover:border-[#009ab6]"
+            className="inline-flex min-h-14 items-center rounded-xl border border-neutral-300 bg-white px-10 py-3 text-base font-semibold text-[#2a2a2a] shadow-sm transition-colors hover:border-neutral-400 hover:bg-neutral-50"
           >
             Country gallery
           </Link>
           <Link
             href="/pricing"
-            className="inline-flex min-h-14 items-center rounded-xl border border-neutral-300 bg-white px-10 py-3 text-base font-semibold text-neutral-900 shadow-sm transition hover:border-[#009ab6]"
+            className="inline-flex min-h-14 items-center rounded-xl border border-neutral-300 bg-white px-10 py-3 text-base font-semibold text-[#2a2a2a] shadow-sm transition-colors hover:border-neutral-400 hover:bg-neutral-50"
             title="Paddle checkout"
           >
             Licenses &amp; pricing
@@ -75,7 +75,7 @@ export function LandingCategoryStrip() {
             <Link
               key={c.id}
               href={`/browse?category=${encodeURIComponent(c.slug)}`}
-              className="inline-flex min-h-14 items-center rounded-xl border border-neutral-200 bg-white px-8 py-3 text-base font-medium text-neutral-800 shadow-sm transition hover:border-[#009ab6] hover:text-[#009ab6]"
+              className="inline-flex min-h-14 items-center rounded-xl border border-neutral-200 bg-white px-8 py-3 text-base font-medium text-neutral-800 shadow-sm transition-colors hover:border-neutral-400 hover:text-[#2a2a2a]"
             >
               {c.name}
             </Link>
