@@ -12,6 +12,7 @@ import adminRouter from './admin/admin.routes.js';
 import uploadRouter from './upload/upload.routes.js';
 import billingRouter, { paddleWebhookHandler } from './billing/billing.routes.js';
 import flagFilesUploadRouter from './admin/flag-files-upload.routes.js';
+import importR2AliasRouter from './admin/import-r2-alias.routes.js';
 import pool from './db.js';
 
 /** Unwrap default interop; type `any` avoids TS merging with `typeof import(...)` (non-callable under NodeNext). */
@@ -77,6 +78,7 @@ app.use(cors(corsOptions));
 
 // Clerk-admin multipart uploads → R2 (avoid generic /api rate limit on large bodies)
 app.use('/api/admin/flag-files', flagFilesUploadRouter);
+app.use('/api/admin/import-r2', importR2AliasRouter);
 
 // Billing webhooks — MUST be mounted with raw body and BEFORE `express.json()`
 // so HMAC signatures verify against the exact bytes the provider sent. Mounted
@@ -131,6 +133,7 @@ app.get('/', (req, res) => {
       billing_webhook_paddle: '/api/billing/webhook/paddle',
       admin: '/api/admin',
       admin_upload: '/api/admin/upload',
+      admin_import_r2: '/api/admin/import-r2',
       flags: '/api/flags', // Legacy endpoint
     },
   });

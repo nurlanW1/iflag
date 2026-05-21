@@ -7,10 +7,49 @@ import { MarketplaceProductCard } from '@/components/marketplace/MarketplaceProd
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
 import type { Category } from '@/types/marketplace';
+import {
+  railwayPublishedFlagToPublicProduct,
+  type RailwayPublishedFlagAsset,
+} from '@/lib/marketplace/railway-assets-mapper';
 
 type ProductsApi = {
   data: PublicProduct[];
 };
+
+const NEXT_PUBLIC_BACKEND =
+  typeof process.env.NEXT_PUBLIC_API_URL === 'string' ? process.env.NEXT_PUBLIC_API_URL.trim() : '';
+
+function railwayApiBase(raw: string): string | null {
+  const t = raw.trim().replace(/\/$/, '');
+  return t.length > 0 ? t : null;
+}
+
+async function mapMarketplacePick(r: Response): Promise<PublicProduct[]> {
+  if (!r.ok) return [];
+  const j = (await r.json()) as ProductsApi;
+  return j.data ?? [];
+}
+
+async function fetchRailPublishedFlags(fullUrl: string): Promise<PublicProduct[]> {
+  const res = await fetch(fullUrl, { cache: 'no-store' });
+  if (!res.ok) return [];
+  const j = (await res.json()) as { data?: RailwayPublishedFlagAsset[] };
+  return (j.data ?? []).map(railwayPublishedFlagToPublicProduct);
+}
+
+async function catalogStripFromRailThenMarket(
+  railwayUrl: string | null,
+  marketplaceUrl: string
+): Promise<PublicProduct[]> {
+  if (!railwayUrl) {
+    const r = await fetch(marketplaceUrl, { cache: 'no-store' });
+    return mapMarketplacePick(r);
+  }
+  const mapped = await fetchRailPublishedFlags(railwayUrl);
+  if (mapped.length > 0) return mapped;
+  const r = await fetch(marketplaceUrl, { cache: 'no-store' });
+  return mapMarketplacePick(r);
+}
 
 function ProductRailSection({
   id,
@@ -88,37 +127,45 @@ export function LandingProductRails() {
   const [popular, setPopular] = useState<PublicProduct[]>([]);
   const [premium, setPremium] = useState<PublicProduct[]>([]);
   const [loadingRails, setLoadingRails] = useState(true);
+  const missingPublicApiBanner = NEXT_PUBLIC_BACKEND.length === 0;
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
-        const [cRes, nRes, pRes, premRes] = await Promise.all([
-          fetch('/api/marketplace/categories'),
-          fetch('/api/marketplace/products?page=1&limit=8&sort=newest'),
-          fetch('/api/marketplace/products?page=1&limit=8&sort=popular'),
-          fetch('/api/marketplace/products?page=1&limit=8&sort=newest&tier=pro'),
-        ]);
+        const base = railwayApiBase(NEXT_PUBLIC_BACKEND);
 
+        const cRes = await fetch('/api/marketplace/categories', { cache: 'no-store' });
         let categories: Category[] = [];
         if (cRes.ok) {
           const j = await cRes.json();
           categories = j.data ?? [];
         }
-        const pick = async (r: Response) => {
-          if (!r.ok) return [];
-          const j = (await r.json()) as ProductsApi;
-          return j.data ?? [];
-        };
-        const n = await pick(nRes);
-        const po = await pick(pRes);
-        const pr = await pick(premRes);
+
+        const newestUrl = base ? `${base}/assets?page=1&limit=8&sort=newest` : null;
+        const trendingUrl = base ? `${base}/assets?page=2&limit=8&sort=newest` : null;
+        const premiumPaidUrl = base ? `${base}/assets?page=1&limit=8&premium_tier=paid` : null;
+
+        const [n, po, premiumOut] = await Promise.all([
+          catalogStripFromRailThenMarket(
+            newestUrl,
+            '/api/marketplace/products?page=1&limit=8&sort=newest',
+          ),
+          catalogStripFromRailThenMarket(
+            trendingUrl,
+            '/api/marketplace/products?page=1&limit=8&sort=popular',
+          ),
+          catalogStripFromRailThenMarket(
+            premiumPaidUrl,
+            '/api/marketplace/products?page=1&limit=8&sort=newest&tier=pro',
+          ),
+        ]);
 
         if (!cancelled) {
           setCats(categories);
           setNewest(n);
           setPopular(po);
-          setPremium(pr);
+          setPremium(premiumOut);
         }
       } catch {
         if (!cancelled) {
@@ -143,6 +190,23 @@ export function LandingProductRails() {
 
   return (
     <>
+      {missingPublicApiBanner ? (
+        <div role="alert" className="border-b border-amber-200 bg-amber-50 text-amber-950">
+          <div className="marketplace-shell py-4 text-sm leading-relaxed">
+            <p className="font-semibold">Backend API URL is not configured in the browser</p>
+            <p className="mt-1 text-amber-900/95">
+              Set <code className="rounded bg-amber-100/80 px-1">NEXT_PUBLIC_API_URL</code> to your Railway
+              API origin including <code className="rounded bg-amber-100/80 px-1">/api</code>{' '}
+              (example:{' '}
+              <code className="rounded bg-amber-100/80 px-1">https://api.yoursite.com/api</code>). Without
+              it, rails fall back to the merged Next.js marketplace feed; direct{' '}
+              <code className="rounded bg-amber-100/80 px-1">GET /assets</code> parity from the deployed API
+              is skipped.
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       <ProductRailSection
         id="rail-trending"
         title="Trending flags"

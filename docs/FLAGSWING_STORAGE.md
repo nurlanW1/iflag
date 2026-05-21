@@ -10,6 +10,13 @@ Apply migrations (in order):
 
 - `apps/backend/src/db/migrations/neon_003_country_flag_files_r2_columns.sql`
 - `apps/backend/src/db/migrations/neon_004_country_flag_files_slug_title.sql`
+- `apps/backend/src/db/migrations/neon_005_country_flag_files_list_perf.sql`
+
+## Published catalog HTTP API (Railway)
+
+- **`GET /api/assets`** — paginated Neon `country_flag_files` rows with `status = published` (R2 `file_url` / previews).
+- **`GET /api/assets/search`** — same filters as **`GET /api/assets`** (alias path).
+- **`GET /api/assets/:uuid`** — single published row; non-UUID or missing rows fall back to the legacy **`assets`** CMS table.
 
 ## Bulk import (existing R2 objects → Neon)
 
@@ -23,7 +30,7 @@ npm run import:r2
 
 Optional env: `IMPORT_R2_MAX` (cap listed objects), `IMPORT_R2_PREFIX` (e.g. `flags/`).
 
-Or use **Admin → Upload → “Import R2 files”** (proxies to `POST /api/admin/flag-files/import-r2` on the backend; same Clerk admin allow-list as upload).
+Or use **Admin → Upload → “Import R2 files”** (proxies to `POST /api/admin/import-r2` → Railway `POST /api/admin/import-r2`; same Clerk admin gate as **`/api/admin/flag-files/import-r2`**).
 
 ## Required backend (Railway / API server)
 
@@ -47,7 +54,7 @@ Optional aliases: `R2_*`, `CLOUDFLARE_ACCOUNT_ID`, `AWS_*` (see `storage/r2.ts` 
 
 | Variable | Purpose |
 |----------|---------|
-| `API_URL` or `NEXT_PUBLIC_API_URL` | Backend base ending in `/api` — **required** to proxy admin upload + R2 import to Railway |
+| `API_URL` or `NEXT_PUBLIC_API_URL` | Backend base ending in `/api`. Prefer **`API_URL`** on Vercel for server proxies; set **`NEXT_PUBLIC_API_URL`** when the homepage should call **`GET …/assets`** from the browser (Rails + Railway CORS). |
 | `CLERK_SECRET_KEY` | Clerk admin gate on Next |
 | `ADMIN_EMAIL` | Allow-list |
 | `DATABASE_URL` | Gallery + download metadata |

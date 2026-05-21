@@ -246,7 +246,7 @@ function AdminUploadFormContent({
     const max = Math.min(100_000, Math.max(1, Math.floor(Number(r2MaxObjects) || 5000)));
     setR2Importing(true);
     try {
-      const res = await fetch(`/api/admin/flag-files/import-r2?maxObjects=${max}`, {
+      const res = await fetch(`/api/admin/import-r2?maxObjects=${max}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include',
@@ -256,6 +256,7 @@ function AdminUploadFormContent({
         error?: string;
         scanned?: number;
         inserted?: number;
+        imported?: number;
         updated?: number;
         skipped?: number;
         errors?: string[];
@@ -263,7 +264,8 @@ function AdminUploadFormContent({
       if (!res.ok) {
         throw new Error(data.error || `Import failed (${res.status})`);
       }
-      setR2Stats(data);
+      const insertedCount = typeof data.imported === 'number' ? data.imported : data.inserted;
+      setR2Stats({ ...data, inserted: insertedCount });
     } catch (e: unknown) {
       setR2Error(e instanceof Error ? e.message : 'Import failed');
     } finally {

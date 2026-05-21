@@ -269,9 +269,11 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
     ai: 0,
     svg: 1,
     eps: 2,
+    pdf: 2,
     jpg: 3,
     jpeg: 3,
     png: 4,
+    webp: 4,
   };
 
   /** Higher score = better candidate for the variant cover thumbnail (image you can render in `<img>`). */

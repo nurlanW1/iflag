@@ -78,10 +78,17 @@ function parseObjectKey(key: string): ParsedKey | null {
   let variantFolder = '';
   let fileSegment = basename(key);
 
-  if (parts[0] === 'flags' && parts.length >= 4) {
-    countrySlug = parts[1]!.toLowerCase();
-    variantFolder = parts[2]!;
-    fileSegment = parts[parts.length - 1]!;
+  if (parts[0] === 'flags') {
+    if (parts.length >= 4) {
+      countrySlug = parts[1]!.toLowerCase();
+      variantFolder = parts[2]!;
+      fileSegment = parts[parts.length - 1]!;
+    } else if (parts.length === 3) {
+      /** `flags/{countrySlug}/{file.ext}` — no variant folder segment */
+      countrySlug = parts[1]!.toLowerCase();
+      variantFolder = '';
+      fileSegment = parts[2]!;
+    }
   }
 
   const ext = extname(fileSegment).replace(/^\./, '').toLowerCase();

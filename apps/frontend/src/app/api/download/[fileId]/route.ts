@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { isClerkConfigured } from '@/lib/auth/clerk-env';
 import { serverClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
+import { sanitizeCallbackUrl } from '@/lib/auth/callback-url';
 import { getDb } from '@/lib/server/db';
 import { hasActiveClerkSubscription } from '@/lib/server/clerk-active-plan';
 import { freeTierRequiresSignIn } from '@/lib/server/flagswing-download-policy';
@@ -9,6 +10,12 @@ import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 import { getPublicR2FileUrl, getSignedR2GetUrl } from '@/lib/server/cloudflare-r2';
 
 export const runtime = 'nodejs';
+
+function isBrowserDocumentNavigation(request: Request): boolean {
+  if (request.headers.get('sec-fetch-mode') === 'navigate') return true;
+  const accept = request.headers.get('accept') ?? '';
+  return accept.includes('text/html');
+}
 
 function redirectLocation(req: Request, href: string): string {
   const h = href.trim();
@@ -121,6 +128,15 @@ export async function GET(
 
   if (tier === 'free') {
     if (freeTierRequiresSignIn() && !user?.id) {
+      const returnPath = sanitizeCallbackUrl(
+        new URL(request.url).pathname + new URL(request.url).search,
+        '/browse'
+      );
+      if (isBrowserDocumentNavigation(request)) {
+        const login = new URL('/sign-in', request.url);
+        login.searchParams.set('redirect_url', returnPath);
+        return NextResponse.redirect(login, 302);
+      }
       return NextResponse.json({ error: 'Not signed in', code: 'NOT_AUTHENTICATED' }, { status: 401 });
     }
     const href = await resolveHref({ forceSigned: false });
@@ -131,6 +147,15 @@ export async function GET(
   }
 
   if (!user?.id) {
+    const returnPath = sanitizeCallbackUrl(
+      new URL(request.url).pathname + new URL(request.url).search,
+      '/browse'
+    );
+    if (isBrowserDocumentNavigation(request)) {
+      const login = new URL('/sign-in', request.url);
+      login.searchParams.set('redirect_url', returnPath);
+      return NextResponse.redirect(login, 302);
+    }
     return NextResponse.json({ error: 'Not signed in', code: 'NOT_AUTHENTICATED' }, { status: 401 });
   }
 
@@ -142,6 +167,15 @@ export async function GET(
     active = false;
   }
   if (!active) {
+    const returnPath = sanitizeCallbackUrl(
+      new URL(request.url).pathname + new URL(request.url).search,
+      '/browse'
+    );
+    if (isBrowserDocumentNavigation(request)) {
+      const pricing = new URL('/pricing', request.url);
+      pricing.searchParams.set('callbackUrl', returnPath);
+      return NextResponse.redirect(pricing, 302);
+    }
     return NextResponse.json(
       { error: 'Subscription required', code: 'SUBSCRIPTION_REQUIRED' },
       { status: 403 }

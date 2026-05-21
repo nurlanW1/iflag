@@ -132,10 +132,16 @@ function previewSrcUi(f: Format): string {
 
 function bigPreviewSrc(variant: Variant | null, format: Format | null): string {
   if (!variant) return FLAG_THUMB_PLACEHOLDER_DATA_URL;
-  if (format && (format.category === 'raster' || format.formatCode === 'svg')) {
+  const fc = format?.formatCode?.toLowerCase() ?? '';
+  if (format && (format.category === 'raster' || fc === 'svg')) {
     return previewSrcUi(format);
   }
   return variant.thumbnail || FLAG_THUMB_PLACEHOLDER_DATA_URL;
+}
+
+function showsDocumentPlaceholder(format: Format | null): boolean {
+  const fc = format?.formatCode?.toLowerCase() ?? '';
+  return fc === 'pdf' || fc === 'eps';
 }
 
 function imgErrorFallbackChain(
@@ -501,22 +507,41 @@ export default function CountryDetailPage() {
                       <Lock size={10} aria-hidden /> {tierBadge(selectedFormat)}
                     </span>
                   ) : null}
-                  {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
-                  <img
-                    key={`${selectedVariant.id}-${selectedFormat?.id ?? 'cover'}`}
-                    src={bigPreviewSrc(selectedVariant, selectedFormat)}
-                    alt={`${pageTitle} — ${selectedVariant.name}`}
-                    className="max-h-[min(62vh,40rem)] w-auto max-w-full object-contain drop-shadow-[0_18px_28px_rgba(0,0,0,0.18)]"
-                    referrerPolicy="no-referrer"
-                    decoding="async"
-                    onError={(e) =>
-                      imgErrorFallbackChain(
-                        e,
-                        [selectedVariant.thumbnail],
-                        flagThumbPlaceholderForFileId(selectedVariant.id),
-                      )
-                    }
-                  />
+                  {selectedFormat && showsDocumentPlaceholder(selectedFormat) ? (
+                    <div className="flex max-w-md flex-col items-center gap-6 rounded-[1.35rem] border border-stone-200/90 bg-white/90 px-10 py-12 text-center shadow-[0_20px_50px_-24px_rgba(0,0,0,0.35)] ring-1 ring-stone-200/70">
+                      <div className="flex h-[4.75rem] w-[4.75rem] items-center justify-center rounded-[1rem] bg-gradient-to-br from-stone-100 to-white text-xl font-black tracking-tighter text-[#009ab6] ring-2 ring-[#009ab6]/35">
+                        {selectedFormat.formatCode.toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-lg font-semibold text-stone-900">
+                          {selectedFormat.format} preview
+                        </p>
+                        <p className="mt-2 max-w-[24rem] text-sm leading-relaxed text-stone-600">
+                          This format does not render in the browser. Download the approved file after sign-in
+                          (subscription may apply).
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
+                      <img
+                        key={`${selectedVariant.id}-${selectedFormat?.id ?? 'cover'}`}
+                        src={bigPreviewSrc(selectedVariant, selectedFormat)}
+                        alt={`${pageTitle} — ${selectedVariant.name}`}
+                        className="max-h-[min(62vh,40rem)] w-auto max-w-full object-contain drop-shadow-[0_18px_28px_rgba(0,0,0,0.18)]"
+                        referrerPolicy="no-referrer"
+                        decoding="async"
+                        onError={(e) =>
+                          imgErrorFallbackChain(
+                            e,
+                            [selectedVariant.thumbnail],
+                            flagThumbPlaceholderForFileId(selectedVariant.id),
+                          )
+                        }
+                      />
+                    </>
+                  )}
                 </div>
                 <div className="flex flex-col gap-1 border-t border-stone-100 px-5 py-3 text-center sm:px-6">
                   <p className="truncate text-sm font-medium text-stone-700" title={selectedVariant.name}>

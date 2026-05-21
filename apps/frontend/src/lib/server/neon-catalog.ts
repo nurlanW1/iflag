@@ -23,7 +23,8 @@ const defaultSeo: ProductSeo = {
   ogImageUrl: null,
 };
 
-type NeonRow = {
+/** Neon `country_flag_files` row joined with countries (nullable when country_id orphaned). */
+export type CountryFlagCatalogRow = {
   id: string;
   file_name: string;
   variant_name: string | null;
@@ -39,16 +40,24 @@ type NeonRow = {
   thumbnail_url: string | null;
   mime_type: string | null;
   file_size_bytes: string | number | null;
-  country_slug: string;
-  country_name: string;
+  country_slug: string | null;
+  country_name: string | null;
   iso_alpha_2: string | null;
   region: string | null;
+  tags?: string[] | null;
 };
+
+type NeonRow = CountryFlagCatalogRow;
 
 function toIso(d: unknown): string {
   if (d instanceof Date) return d.toISOString();
   if (typeof d === 'string') return d;
   return new Date().toISOString();
+}
+
+/** Map a published flag row → marketplace `Product` (browse/detail/search). Exported for Railway `/assets` JSON. */
+export function countryFlagCatalogRowToProduct(row: CountryFlagCatalogRow): Product {
+  return neonRowToProduct(row);
 }
 
 function thumbForRow(row: NeonRow): string | null {
@@ -64,7 +73,21 @@ function thumbForRow(row: NeonRow): string | null {
   return href?.trim() ? href : null;
 }
 
-function rowToProduct(row: NeonRow): Product {
+function tagsFromRow(row: NeonRow): string[] {
+  const t = row.tags;
+  if (!Array.isArray(t)) return [];
+  return t.map((x) => String(x).trim()).filter(Boolean);
+}
+
+function neonRowToProduct(row: NeonRow): Product {
+  const countrySlugRaw =
+    row.country_slug?.trim() ||
+    row.country_name?.trim()?.toLowerCase().replace(/\s+/g, '-') ||
+    null;
+  const countrySlug =
+    countrySlugRaw && countrySlugRaw.length > 0 ? countrySlugRaw : 'unknown';
+  const countryNameDisplay = row.country_name?.trim() || humanizeSlugForTitle(countrySlug);
+
   const tierRaw = (row.premium_tier ?? 'free').toLowerCase();
   const isFree = tierRaw === 'free';
   const thumb = thumbForRow(row);
@@ -95,20 +118,20 @@ function rowToProduct(row: NeonRow): Product {
   };
 
   const label = (row.title?.trim() || row.variant_name?.trim() || row.file_name).trim();
-  const productTitle = [row.country_name, label].filter(Boolean).join(' — ').slice(0, 200);
+  const productTitle = [countryNameDisplay, label].filter(Boolean).join(' — ').slice(0, 200);
 
   const fk = row.file_key?.trim();
 
   return {
     id: row.id,
-    title: productTitle || label || row.country_name,
+    title: productTitle || label || countryNameDisplay,
     slug: `nf-${row.id.toLowerCase()}`,
-    detailPath: `/gallery/${row.country_slug}`,
+    detailPath: `/gallery/${countrySlug}`,
     description: null,
     countryCode: row.iso_alpha_2?.trim()?.toUpperCase() ?? null,
     region: row.region,
     categoryId: SEED_IDS.catCountry,
-    tags: [],
+    tags: tagsFromRow(row),
     thumbnailUrl: thumb,
     previewUrl: thumb,
     freeDownloadUrl: isFree ? publicUrlForPreview : null,
@@ -126,6 +149,14 @@ function rowToProduct(row: NeonRow): Product {
     createdAt: toIso(row.created_at),
     updatedAt: toIso(row.updated_at),
   };
+}
+
+function humanizeSlugForTitle(slug: string): string {
+  return slug
+    .split(/[-_]+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
 }
 
 /** Published flag files from Neon — safe to call only from server (Route Handler / RSC). */
@@ -148,16 +179,17 @@ export async function fetchNeonCatalogProducts(): Promise<Product[]> {
        cff.thumbnail_url,
        cff.mime_type,
        cff.file_size_bytes,
-       c.slug AS country_slug,
-       c.name AS country_name,
+       cff.tags,
+       COALESCE(NULLIF(trim(c.slug), ''), NULLIF(trim(cff.country_slug), '')) AS country_slug,
+       COALESCE(NULLIF(trim(c.name), ''), NULLIF(trim(cff.country_slug), '')) AS country_name,
        c.iso_alpha_2,
        c.region::text AS region
      FROM country_flag_files cff
-     INNER JOIN countries c ON c.id = cff.country_id
+     LEFT JOIN countries c ON c.id = cff.country_id
      WHERE cff.status = 'published'
-     ORDER BY c.name ASC, cff.created_at ASC`
+     ORDER BY COALESCE(c.name, cff.country_slug, '') ASC, cff.created_at ASC`
   );
-  return res.rows.map(rowToProduct);
+  return res.rows.map(neonRowToProduct);
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -185,18 +217,19 @@ export async function getNeonCatalogProductBySlug(slug: string): Promise<Product
        cff.thumbnail_url,
        cff.mime_type,
        cff.file_size_bytes,
-       c.slug AS country_slug,
-       c.name AS country_name,
+       cff.tags,
+       COALESCE(NULLIF(trim(c.slug), ''), NULLIF(trim(cff.country_slug), '')) AS country_slug,
+       COALESCE(NULLIF(trim(c.name), ''), NULLIF(trim(cff.country_slug), '')) AS country_name,
        c.iso_alpha_2,
        c.region::text AS region
      FROM country_flag_files cff
-     INNER JOIN countries c ON c.id = cff.country_id
+     LEFT JOIN countries c ON c.id = cff.country_id
      WHERE cff.id = $1::uuid AND cff.status = 'published'
      LIMIT 1`,
     [id]
   );
   const row = res.rows[0];
-  return row ? rowToProduct(row) : null;
+  return row ? neonRowToProduct(row) : null;
 }
 
 /** Resolve `nf-{uuid}` slug for metadata when the product is not in the in-memory catalog. */
@@ -210,26 +243,32 @@ export async function getNeonGalleryRedirectForProductSlug(
   }
   const pool = getDb();
   const res = await pool.query<{
-    gallery_slug: string;
+    gallery_slug: string | null;
+    slug_fallback: string | null;
     file_title: string | null;
     variant_name: string | null;
     file_name: string;
-    country_name: string;
+    country_name: string | null;
   }>(
-    `SELECT c.slug AS gallery_slug,
-            cff.title AS file_title,
-            cff.variant_name,
-            cff.file_name,
-            c.name AS country_name
+    `SELECT
+       NULLIF(trim(c.slug), '') AS gallery_slug,
+       NULLIF(trim(cff.country_slug), '') AS slug_fallback,
+       cff.title AS file_title,
+       cff.variant_name,
+       cff.file_name,
+       COALESCE(NULLIF(trim(c.name), ''), NULLIF(trim(cff.country_slug), '')) AS country_name
      FROM country_flag_files cff
-     INNER JOIN countries c ON c.id = cff.country_id
+     LEFT JOIN countries c ON c.id = cff.country_id
      WHERE cff.id = $1::uuid AND cff.status = 'published'
      LIMIT 1`,
     [id]
   );
   const row = res.rows[0];
   if (!row) return null;
+  const resolvedGallerySlug = row.gallery_slug || row.slug_fallback;
+  if (!resolvedGallerySlug) return null;
+  const cn = row.country_name?.trim() || humanizeSlugForTitle(resolvedGallerySlug);
   const label = (row.file_title?.trim() || row.variant_name?.trim() || row.file_name).trim();
-  const title = [row.country_name, label].filter(Boolean).join(' — ');
-  return { gallerySlug: row.gallery_slug, title: title || row.country_name };
+  const title = [cn, label].filter(Boolean).join(' — ');
+  return { gallerySlug: resolvedGallerySlug, title: title || cn };
 }
