@@ -54,7 +54,7 @@ export function LandingCategoryStrip() {
         <div className="-mx-1 flex flex-wrap justify-center gap-3 pb-1 sm:gap-4">
           <Link
             href="/browse"
-            className="inline-flex min-h-14 items-center rounded-xl bg-[#3d4f61] px-10 py-3 text-base font-semibold text-[#fafaf9] shadow-sm transition-colors hover:bg-[#354558]"
+            className="inline-flex min-h-14 items-center rounded-xl bg-[var(--brand-blue)] px-10 py-3 text-base font-semibold text-[#fafaf9] shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)]"
           >
             Browse all
           </Link>

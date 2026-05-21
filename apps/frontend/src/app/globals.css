@@ -65,7 +65,12 @@
   /** Warm canvas + graphite ink */
   --canvas-warm: #fafaf9;
   --ink-graphite: #2a2a2a;
-  --accent-navy: #3d4f61;
+  /** Dominant brand — qora koʻk (header, tugmalar, aksentlar) */
+  --brand-blue: #0c2748;
+  --brand-blue-hover: #154a73;
+  --brand-blue-soft: #e8eef6;
+  --brand-blue-muted: #3d5678;
+  --accent-navy: var(--brand-blue);
   /** Max content width: premium widescreen (~1800); never edge-to-edge on ultrawide. */
   --marketplace-shell-max-width: 1800px;
   /** Comfortable reading measure for legal / long-form inside the shell */
@@ -194,7 +199,7 @@ a {
 }
 
 a:hover {
-  color: var(--accent-navy);
+  color: var(--brand-blue-hover);
 }
 
 

@@ -39,7 +39,7 @@ export function MarketplaceProductCard({
         <div className="pointer-events-none absolute left-3 top-3 flex flex-wrap gap-2">
           <span
             className={`rounded-lg px-3 py-1.5 text-sm font-medium tracking-wide ${
-              paid ? 'bg-[#3d4f61]/92 text-[#fafaf9]' : 'border border-neutral-200/95 bg-white/92 text-neutral-800 backdrop-blur-[2px]'
+              paid ? 'bg-[var(--brand-blue)]/92 text-[#fafaf9]' : 'border border-neutral-200/95 bg-white/92 text-neutral-800 backdrop-blur-[2px]'
             }`}
           >
             {paid ? (
@@ -56,7 +56,7 @@ export function MarketplaceProductCard({
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">{categoryName}</p>
         <h3 className="mt-2 line-clamp-2 text-lg font-semibold leading-snug tracking-tight text-[#2a2a2a] sm:text-xl">
-          <Link href={href} className="rounded hover:text-[#3d4f61] focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/60">
+          <Link href={href} className="rounded hover:text-[var(--brand-blue)] focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/60">
             {product.title}
           </Link>
         </h3>

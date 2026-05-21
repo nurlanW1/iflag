@@ -28,7 +28,7 @@ function HeroVisualCollage() {
         style={{ transform: 'rotate(-4deg)' }}
       />
       <div className="absolute left-1/2 top-[42%] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-xl border border-neutral-200/90 bg-white shadow-sm lg:h-[4.25rem] lg:w-[4.25rem]">
-        <Flag className="h-8 w-8 text-[#3d4f61] lg:h-9 lg:w-9" strokeWidth={1.25} />
+        <Flag className="h-8 w-8 text-[var(--brand-blue)] lg:h-9 lg:w-9" strokeWidth={1.25} />
       </div>
     </div>
   );
@@ -51,7 +51,7 @@ export function EditorialHero({
             </p>
             <h1
               id={headingId}
-              className="mt-3 max-w-xl text-balance text-4xl font-semibold leading-[1.1] tracking-tight text-[#2a2a2a] sm:text-[2.5rem] lg:text-[2.65rem]"
+              className="mt-3 max-w-xl text-balance text-4xl font-semibold leading-[1.1] tracking-tight text-[var(--brand-blue)] sm:text-[2.5rem] lg:text-[2.65rem]"
             >
               A calm marketplace for flags &amp; symbols
             </h1>
@@ -78,7 +78,7 @@ export function EditorialHero({
                 </div>
                 <button
                   type="submit"
-                  className="min-h-12 shrink-0 bg-[#3d4f61] px-7 text-base font-medium text-[#fafaf9] transition-colors duration-200 hover:bg-[#354558] sm:min-h-[3.25rem] sm:rounded-none sm:rounded-r-xl sm:px-9"
+                  className="min-h-12 shrink-0 bg-[var(--brand-blue)] px-7 text-base font-medium text-[#fafaf9] transition-colors duration-200 hover:bg-[var(--brand-blue-hover)] sm:min-h-[3.25rem] sm:rounded-none sm:rounded-r-xl sm:px-9"
                 >
                   Search
                 </button>

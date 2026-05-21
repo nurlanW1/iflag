@@ -70,7 +70,7 @@ export default function HomeGalleryPreview({ surface = 'white' }: HomeGalleryPre
       <section className={`${bgClass} py-16 md:py-24 lg:py-28`}>
         <div className="marketplace-shell">
           <div className="flex justify-center items-center py-20">
-            <div className="h-11 w-11 animate-spin rounded-full border-2 border-neutral-200 border-t-[#3d4f61]" />
+            <div className="h-11 w-11 animate-spin rounded-full border-2 border-neutral-200 border-t-[var(--brand-blue)]" />
           </div>
         </div>
       </section>

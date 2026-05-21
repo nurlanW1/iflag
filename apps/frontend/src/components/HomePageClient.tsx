@@ -47,7 +47,7 @@ function PlanFeatureRow({
       transition={{ delay: planIdx * 0.08 + fIdx * 0.05, duration: 0.35 }}
       className="flex items-start gap-3 text-neutral-700"
     >
-      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#3d4f61]">
+      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--brand-blue)]">
         <motion.svg
           width="14"
           height="14"
@@ -90,7 +90,7 @@ function PricingPlanCard({ plan, idx }: { plan: PricingPlan; idx: number }) {
             ) : null}
           </div>
           <div className="text-left sm:text-right">
-            <div className="text-4xl font-semibold tabular-nums leading-none text-[#3d4f61] md:text-5xl">{plan.price}</div>
+            <div className="text-4xl font-semibold tabular-nums leading-none text-[var(--brand-blue)] md:text-5xl">{plan.price}</div>
             <div className="mt-2 text-base text-neutral-600">{plan.period}</div>
           </div>
         </div>
@@ -106,7 +106,7 @@ function PricingPlanCard({ plan, idx }: { plan: PricingPlan; idx: number }) {
           title="Paddle checkout"
           className={`block min-h-[3.25rem] w-full rounded-xl px-8 py-3.5 text-center text-base font-semibold transition-colors duration-200 ${
             plan.popular
-              ? 'bg-[#3d4f61] text-[#fafaf9] hover:bg-[#354558]'
+              ? 'bg-[var(--brand-blue)] text-[#fafaf9] hover:bg-[var(--brand-blue-hover)]'
               : 'border border-neutral-300 bg-white text-[#2a2a2a] hover:border-neutral-400 hover:bg-neutral-50'
           }`}
         >
@@ -134,12 +134,12 @@ function HowItWorksStepCard({ step, idx }: { step: StepItem; idx: number }) {
       transition={{ duration: 0.45, delay: idx * 0.08 }}
       className="relative pt-8 text-center"
     >
-      <div className="absolute left-1/2 top-0 z-10 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white text-sm font-semibold text-[#3d4f61] shadow-sm">
+      <div className="absolute left-1/2 top-0 z-10 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white text-sm font-semibold text-[var(--brand-blue)] shadow-sm">
         {step.step}
       </div>
 
       <div className="rounded-2xl border border-neutral-200/95 bg-white p-8 pt-14 shadow-sm transition-shadow duration-300 hover:shadow-md md:p-10 md:pt-16">
-        <div className="mx-auto mb-6 flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-2xl bg-neutral-100 text-[#3d4f61] ring-1 ring-neutral-200/90">
+        <div className="mx-auto mb-6 flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-2xl bg-neutral-100 text-[var(--brand-blue)] ring-1 ring-neutral-200/90">
           <step.icon size={36} strokeWidth={1.5} aria-hidden />
         </div>
         <h3 className="mb-3 text-xl font-semibold tracking-tight text-[#2a2a2a] md:text-2xl">{step.title}</h3>
@@ -216,7 +216,7 @@ export default function HomePageClient() {
                       href={galleryHref}
                       className="group flex min-h-[4rem] w-full items-center gap-3 rounded-xl border border-neutral-200/95 bg-white px-3 py-3 shadow-sm transition-[border-color,box-shadow,background-color] duration-200 hover:border-neutral-400 hover:bg-neutral-50 hover:shadow-md sm:min-h-[4.25rem] sm:gap-4 sm:rounded-xl sm:px-4 sm:py-4 md:min-h-[4.75rem]"
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-[#3d4f61] ring-1 ring-neutral-200/80 sm:h-11 sm:w-11 md:h-12 md:w-12">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-[var(--brand-blue)] ring-1 ring-neutral-200/80 sm:h-11 sm:w-11 md:h-12 md:w-12">
                         <CatIcon size={21} strokeWidth={1.75} aria-hidden />
                       </div>
                       <span className="min-w-0 flex-1 text-left text-base font-medium leading-snug text-[#2a2a2a] transition-colors group-hover:text-neutral-800 sm:text-[1.0625rem]">
@@ -254,7 +254,7 @@ export default function HomePageClient() {
                 transition={{ duration: 0.45, delay: idx * 0.06 }}
                 className="text-center"
               >
-                <div className="mx-auto mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#3d4f61] shadow-sm ring-1 ring-neutral-200/90">
+                <div className="mx-auto mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[var(--brand-blue)] shadow-sm ring-1 ring-neutral-200/90">
                   <stat.icon size={26} strokeWidth={1.75} aria-hidden />
                 </div>
                 <div className="mb-2 text-4xl font-semibold tabular-nums tracking-tight text-[#2a2a2a] md:text-5xl">{stat.number}</div>
@@ -310,7 +310,7 @@ export default function HomePageClient() {
 
           <p className="mx-auto mt-12 max-w-2xl text-center text-pretty text-base text-neutral-600">
             Homepage amounts are illustrative — live prices and Paddle checkout are on the{' '}
-            <Link href="/pricing" className="font-semibold text-[#3d4f61] underline-offset-4 hover:underline">
+            <Link href="/pricing" className="font-semibold text-[var(--brand-blue)] underline-offset-4 hover:underline">
               pricing page
             </Link>
             .
@@ -365,7 +365,7 @@ export default function HomePageClient() {
       </section>
 
       {/* Final CTA */}
-      <section className="relative overflow-hidden border-t border-neutral-800/30 bg-[#343d4a] py-16 text-[#fafaf9] md:py-24 lg:py-28">
+      <section className="relative overflow-hidden border-t border-neutral-800/30 bg-[var(--brand-blue)] py-16 text-[#fafaf9] md:py-24 lg:py-28">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.07]"
           aria-hidden
@@ -387,7 +387,7 @@ export default function HomePageClient() {
               <div className="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <Link
                   href="/browse"
-                  className="inline-flex min-h-[3rem] items-center justify-center rounded-xl bg-[#fafaf9] px-10 py-3 text-base font-semibold text-[#343d4a] shadow-sm transition-colors hover:bg-white"
+                  className="inline-flex min-h-[3rem] items-center justify-center rounded-xl bg-[#fafaf9] px-10 py-3 text-base font-semibold text-[var(--brand-blue)] shadow-sm transition-colors hover:bg-white"
                 >
                   Open browse
                 </Link>

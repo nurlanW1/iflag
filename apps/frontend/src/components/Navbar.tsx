@@ -37,17 +37,11 @@ type NavbarProps = {
   clerkUiEnabled?: boolean;
 };
 
-/** Rangli nav havolalar — fon bilan ajralib turishi uchun */
-const navBrowse =
-  'text-base font-semibold tracking-tight text-[#1565c0] transition-colors duration-200 hover:text-[#0d47a1]';
-const navCategories =
-  'text-base font-semibold tracking-tight text-[#0f766e] transition-colors duration-200 hover:text-[#115e59]';
-const navPricing =
-  'text-base font-semibold tracking-tight text-[#b45309] transition-colors duration-200 hover:text-[#92400e]';
-const navCollections =
-  'text-base font-semibold tracking-tight text-[#6d28d9] transition-colors duration-200 hover:text-[#5b21b6]';
+/** Barcha header matnlari — sayt dominant qora koʻk */
+const navText =
+  'text-base font-semibold tracking-tight text-[var(--brand-blue)] transition-colors duration-200 hover:text-[var(--brand-blue-hover)]';
 const navLogin =
-  'text-base font-semibold tracking-tight text-[#1565c0] transition-colors duration-200 hover:text-[#0d47a1] hover:underline underline-offset-4';
+  'text-base font-semibold tracking-tight text-[var(--brand-blue)] underline-offset-4 transition-colors duration-200 hover:text-[var(--brand-blue-hover)] hover:underline';
 
 export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
   const { user, logout } = useAuth();
@@ -64,7 +58,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
 
   const clerkAppearance = {
     elements: {
-      avatarBox: 'h-11 w-11 lg:h-12 lg:w-12 ring-2 ring-[#1565c0]/35',
+      avatarBox: 'h-11 w-11 lg:h-12 lg:w-12 ring-2 ring-[rgba(12,39,72,0.35)]',
     },
   } as const;
 
@@ -82,7 +76,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
           <>
             <Link
               href="/gallery"
-              className="rounded-lg p-2.5 text-[#c026d3] transition-colors hover:bg-fuchsia-50 hover:text-[#86198f]"
+              className="rounded-lg p-2.5 text-[var(--brand-blue)] transition-colors hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue-hover)]"
               aria-label="Collections"
               title="Collections"
             >
@@ -90,7 +84,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             </Link>
             <Link
               href="/dashboard/downloads"
-              className="rounded-lg p-2.5 text-[#1565c0] transition-colors hover:bg-blue-50 hover:text-[#0d47a1]"
+              className="rounded-lg p-2.5 text-[var(--brand-blue)] transition-colors hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue-hover)]"
               aria-label="Downloads"
               title="Downloads"
             >
@@ -99,7 +93,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             <div className="flex items-center gap-4 border-l border-neutral-200 pl-6">
               <Link
                 href="/dashboard"
-                className="flex max-w-[14rem] items-center gap-2.5 text-base font-semibold text-[#1e293b] transition hover:text-[#1565c0]"
+                className="flex max-w-[14rem] items-center gap-2.5 text-base font-semibold text-[var(--brand-blue)] transition hover:text-[var(--brand-blue-hover)]"
               >
                 <User size={22} aria-hidden />
                 <span className="hidden min-[900px]:inline truncate">{user.full_name || user.email}</span>
@@ -107,7 +101,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
               <button
                 type="button"
                 onClick={() => logout()}
-                className="rounded-lg p-2.5 text-[#64748b] transition hover:bg-slate-100 hover:text-[#1e293b]"
+                className="rounded-lg p-2.5 text-[var(--brand-blue-muted)] transition hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue)]"
                 aria-label="Sign out"
               >
                 <LogOut size={22} aria-hidden />
@@ -131,7 +125,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                   </Link>
                   <Link
                     href={signUpHref}
-                    className="inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg bg-[#1565c0] px-7 text-base font-semibold text-white shadow-md transition-colors hover:bg-[#0d47a1]"
+                    className="inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg bg-[var(--brand-blue)] px-7 text-base font-semibold text-white shadow-md transition-colors hover:bg-[var(--brand-blue-hover)]"
                   >
                     Sign up
                   </Link>
@@ -141,21 +135,21 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                 <>
                   <Link
                     href="/gallery"
-                    className="rounded-lg p-2.5 text-[#c026d3] transition-colors hover:bg-fuchsia-50 hover:text-[#86198f]"
+                    className="rounded-lg p-2.5 text-[var(--brand-blue)] transition-colors hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue-hover)]"
                     aria-label="Collections"
                   >
                     <Heart size={24} aria-hidden />
                   </Link>
                   <Link
                     href="/dashboard/downloads"
-                    className="rounded-lg p-2.5 text-[#1565c0] transition-colors hover:bg-blue-50 hover:text-[#0d47a1]"
+                    className="rounded-lg p-2.5 text-[var(--brand-blue)] transition-colors hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue-hover)]"
                     aria-label="Downloads"
                   >
                     <ShoppingCart size={24} aria-hidden />
                   </Link>
                   <Link
                     href="/dashboard"
-                    className="flex items-center gap-2 text-base font-semibold text-[#1e293b] transition hover:text-[#1565c0]"
+                    className="flex items-center gap-2 text-base font-semibold text-[var(--brand-blue)] transition hover:text-[var(--brand-blue-hover)]"
                   >
                     <User size={22} aria-hidden />
                     <span className="hidden min-[1100px]:inline">Dashboard</span>
@@ -172,7 +166,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             </Link>
             <Link
               href={signUpHref}
-              className="inline-flex h-11 min-h-[44px] items-center justify-center rounded-lg bg-[#1565c0] px-7 text-base font-semibold text-white shadow-md transition-colors hover:bg-[#0d47a1]"
+              className="inline-flex h-11 min-h-[44px] items-center justify-center rounded-lg bg-[var(--brand-blue)] px-7 text-base font-semibold text-white shadow-md transition-colors hover:bg-[var(--brand-blue-hover)]"
             >
               Sign up
             </Link>
@@ -192,15 +186,13 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
         <div className="flex flex-col py-3 lg:hidden">
           <div className="flex items-center justify-between gap-3">
             <Link href="/" className="flex min-h-[52px] min-w-0 items-center gap-3 transition hover:opacity-90">
-              <Flag size={36} className="shrink-0 text-[#c62828]" aria-hidden strokeWidth={1.75} />
-              <span className="truncate bg-gradient-to-r from-[#1565c0] via-[#0f766e] to-[#6d28d9] bg-clip-text text-2xl font-bold tracking-tight text-transparent">
-                {SITE_NAME}
-              </span>
+              <Flag size={36} className="shrink-0 text-[var(--brand-blue)]" aria-hidden strokeWidth={1.75} />
+              <span className="truncate text-2xl font-bold tracking-tight text-[var(--brand-blue)]">{SITE_NAME}</span>
             </Link>
             <button
               type="button"
               onClick={() => setMobileMenuOpen((o) => !o)}
-              className="inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-lg text-[#1e293b] transition hover:bg-slate-100"
+              className="inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-lg text-[var(--brand-blue)] transition hover:bg-[var(--brand-blue-soft)]"
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-nav-menu"
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
@@ -213,24 +205,22 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
         {/* Desktop */}
         <div className="hidden min-h-[72px] flex-row items-center gap-6 py-4 xl:gap-8 lg:flex">
           <Link href="/" className="flex shrink-0 items-center gap-3 transition hover:opacity-90">
-            <Flag size={40} className="shrink-0 text-[#c62828]" aria-hidden strokeWidth={1.75} />
-            <span className="bg-gradient-to-r from-[#1565c0] via-[#0f766e] to-[#6d28d9] bg-clip-text text-[1.65rem] font-bold tracking-tight text-transparent">
-              {SITE_NAME}
-            </span>
+            <Flag size={40} className="shrink-0 text-[var(--brand-blue)]" aria-hidden strokeWidth={1.75} />
+            <span className="text-[1.65rem] font-bold tracking-tight text-[var(--brand-blue)]">{SITE_NAME}</span>
           </Link>
 
           <nav className="hidden shrink-0 items-center gap-8 xl:gap-9 lg:flex" aria-label="Main navigation">
-            <Link href="/browse" className={navBrowse}>
+            <Link href="/browse" className={navText}>
               Browse
             </Link>
-            <Link href="/#catalog-categories" className={navCategories}>
+            <Link href="/#catalog-categories" className={navText}>
               Categories
             </Link>
-            <Link href="/pricing" className={`flex items-center gap-2 ${navPricing}`} title="Plans — Paddle checkout">
-              <Crown size={19} className="text-[#ca8a04]" aria-hidden strokeWidth={1.75} />
+            <Link href="/pricing" className={`flex items-center gap-2 ${navText}`} title="Plans — Paddle checkout">
+              <Crown size={19} className="text-[var(--brand-blue)]" aria-hidden strokeWidth={1.75} />
               Pricing
             </Link>
-            <Link href="/gallery" className={navCollections}>
+            <Link href="/gallery" className={navText}>
               Collections
             </Link>
           </nav>
@@ -252,7 +242,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
               <div className="space-y-1 py-4">
                 <Link
                   href="/browse"
-                  className="flex items-center gap-3 px-4 py-3.5 text-base font-semibold text-[#1565c0] hover:bg-blue-50"
+                  className="flex items-center gap-3 px-4 py-3.5 text-base font-semibold text-[var(--brand-blue)] hover:bg-[var(--brand-blue-soft)]"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <LayoutGrid size={20} aria-hidden />
@@ -260,22 +250,22 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                 </Link>
                 <Link
                   href="/#catalog-categories"
-                  className="block px-4 py-3.5 text-base font-semibold text-[#0f766e] hover:bg-teal-50"
+                  className="block px-4 py-3.5 text-base font-semibold text-[var(--brand-blue)] hover:bg-[var(--brand-blue-soft)]"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Categories
                 </Link>
                 <Link
                   href="/pricing"
-                  className="flex items-center gap-3 px-4 py-3.5 text-base font-semibold text-[#b45309] hover:bg-amber-50"
+                  className="flex items-center gap-3 px-4 py-3.5 text-base font-semibold text-[var(--brand-blue)] hover:bg-[var(--brand-blue-soft)]"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Crown size={20} className="text-[#ca8a04]" aria-hidden />
+                  <Crown size={20} className="text-[var(--brand-blue)]" aria-hidden />
                   Pricing
                 </Link>
                 <Link
                   href="/gallery"
-                  className="block px-4 py-3.5 text-base font-semibold text-[#6d28d9] hover:bg-violet-50"
+                  className="block px-4 py-3.5 text-base font-semibold text-[var(--brand-blue)] hover:bg-[var(--brand-blue-soft)]"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Collections
@@ -287,21 +277,21 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                   <>
                     <Link
                       href="/gallery"
-                      className="block px-4 py-3.5 text-base font-semibold text-[#6d28d9] hover:bg-violet-50"
+                      className="block px-4 py-3.5 text-base font-semibold text-[var(--brand-blue)] hover:bg-[var(--brand-blue-soft)]"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Saved collections
                     </Link>
                     <Link
                       href="/dashboard/downloads"
-                      className="block px-4 py-3.5 text-base font-semibold text-[#1565c0] hover:bg-blue-50"
+                      className="block px-4 py-3.5 text-base font-semibold text-[var(--brand-blue)] hover:bg-[var(--brand-blue-soft)]"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Downloads
                     </Link>
                     <Link
                       href="/dashboard"
-                      className="block px-4 py-3.5 text-base font-semibold text-[#1e293b] hover:bg-slate-50"
+                      className="block px-4 py-3.5 text-base font-semibold text-[var(--brand-blue)] hover:bg-[var(--brand-blue-soft)]"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Dashboard
@@ -312,7 +302,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                         setMobileMenuOpen(false);
                         void logout();
                       }}
-                      className="block w-full px-4 py-3.5 text-left text-base font-semibold text-[#64748b] hover:bg-slate-100"
+                      className="block w-full px-4 py-3.5 text-left text-base font-semibold text-[var(--brand-blue-muted)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue)]"
                     >
                       Sign out
                     </button>
@@ -330,14 +320,14 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                         <div className="mt-2 flex flex-col gap-2 px-4 pb-4">
                           <Link
                             href={signInHref}
-                            className="py-2 text-base font-semibold text-[#1565c0]"
+                            className="py-2 text-base font-semibold text-[var(--brand-blue)]"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             Log in
                           </Link>
                           <Link
                             href={signUpHref}
-                            className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1565c0] py-3 text-center text-base font-semibold text-white shadow-md"
+                            className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[var(--brand-blue)] py-3 text-center text-base font-semibold text-white shadow-md hover:bg-[var(--brand-blue-hover)]"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             Sign up
@@ -348,20 +338,20 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                         <div className="mt-2 space-y-1 px-4 pb-4">
                           <Link
                             href="/dashboard/downloads"
-                            className="block py-2 text-base font-semibold text-[#1565c0]"
+                            className="block py-2 text-base font-semibold text-[var(--brand-blue)]"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             Downloads
                           </Link>
                           <Link
                             href="/dashboard"
-                            className="block py-2 text-base font-semibold text-[#1e293b]"
+                            className="block py-2 text-base font-semibold text-[var(--brand-blue)]"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             Dashboard
                           </Link>
                           <div className="flex items-center justify-between pt-3">
-                            <span className="text-base font-medium text-neutral-600">Account</span>
+                            <span className="text-base font-medium text-[var(--brand-blue-muted)]">Account</span>
                             <UserButton appearance={clerkAppearance} />
                           </div>
                         </div>
@@ -372,14 +362,14 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                   <div className="mt-2 flex flex-col gap-2 px-4 pb-6">
                     <Link
                       href={signInHref}
-                      className="py-2 text-base font-semibold text-[#1565c0]"
+                      className="py-2 text-base font-semibold text-[var(--brand-blue)]"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Log in
                     </Link>
                     <Link
                       href={signUpHref}
-                      className="flex min-h-11 items-center justify-center rounded-lg bg-[#1565c0] py-3 text-center text-base font-semibold text-white shadow-md"
+                      className="flex min-h-11 items-center justify-center rounded-lg bg-[var(--brand-blue)] py-3 text-center text-base font-semibold text-white shadow-md hover:bg-[var(--brand-blue-hover)]"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Sign up
@@ -437,7 +427,7 @@ function AdminNavLink({
     return (
       <Link
         href="/admin"
-        className="flex items-center gap-3 px-4 py-3 text-base font-semibold text-[#059669] hover:bg-emerald-50"
+        className="flex items-center gap-3 px-4 py-3 text-base font-semibold text-[var(--brand-blue)] hover:bg-[var(--brand-blue-soft)]"
         title="Admin panel"
         onClick={onNavigate}
       >
@@ -449,7 +439,7 @@ function AdminNavLink({
   return (
     <Link
       href="/admin"
-      className="inline-flex items-center gap-2 rounded-lg border-2 border-[#059669]/40 bg-emerald-50/80 px-4 py-2 text-base font-semibold text-[#047857] shadow-sm transition hover:border-[#059669] hover:bg-emerald-50"
+      className="inline-flex items-center gap-2 rounded-lg border-2 border-[rgba(12,39,72,0.28)] bg-[var(--brand-blue-soft)] px-4 py-2 text-base font-semibold text-[var(--brand-blue)] shadow-sm transition hover:border-[var(--brand-blue)]"
       title="Admin panel"
       onClick={onNavigate}
     >

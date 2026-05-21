@@ -22,7 +22,8 @@ export default function Footer() {
     }
   };
 
-  const linkMuted = 'text-base text-neutral-600 transition-colors hover:text-[#2a2a2a]';
+  const linkMuted =
+    'text-base text-neutral-600 transition-colors hover:text-[var(--brand-blue)]';
 
   return (
     <footer className="border-t border-neutral-200/90 bg-[#f4f4f2] text-[#2a2a2a]">
@@ -59,7 +60,7 @@ export default function Footer() {
         <div className="mb-14 grid grid-cols-1 gap-14 md:grid-cols-2 md:gap-16 lg:grid-cols-5 lg:gap-14 xl:gap-16">
           <div className="lg:col-span-1">
             <div className="mb-6 flex flex-wrap items-center gap-3">
-              <Flag size={44} className="text-[#3d4f61]" aria-hidden strokeWidth={1.75} />
+              <Flag size={44} className="text-[var(--brand-blue)]" aria-hidden strokeWidth={1.75} />
               <span className="text-[1.65rem] font-semibold tracking-tight">{SITE_NAME}</span>
             </div>
             <p className="mb-8 max-w-md text-base leading-relaxed text-neutral-600">
@@ -246,7 +247,7 @@ export default function Footer() {
               />
               <button
                 type="submit"
-                className="min-h-12 shrink-0 touch-manipulation rounded-xl bg-[#3d4f61] px-10 py-3 text-base font-semibold text-[#fafaf9] transition-colors hover:bg-[#354558] xs:w-auto"
+                className="min-h-12 shrink-0 touch-manipulation rounded-xl bg-[var(--brand-blue)] px-10 py-3 text-base font-semibold text-[#fafaf9] transition-colors hover:bg-[var(--brand-blue-hover)] xs:w-auto"
               >
                 Subscribe
               </button>
