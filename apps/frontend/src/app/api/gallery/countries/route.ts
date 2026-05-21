@@ -7,7 +7,7 @@ import {
   applyGalleryDisplayNames,
   fetchGalleryCountriesFromDb,
   isPackFallbackFlagThumbnail,
-  logGalleryCountriesDebug,
+  logGalleryCountriesStats,
   type GalleryCountrySummary,
   type GalleryCountryListFilters,
 } from '@/lib/server/gallery-from-db';
@@ -138,10 +138,7 @@ export async function GET(request: Request) {
       try {
         const pool = getDb();
 
-        /** Temporary diagnostics (no secrets): export DEBUG_GALLERY_COUNTRIES=1 */
-        if (process.env.DEBUG_GALLERY_COUNTRIES === '1') {
-          await logGalleryCountriesDebug(pool, process.env.DATABASE_URL);
-        }
+        await logGalleryCountriesStats(pool);
 
         const fromDb = await fetchGalleryCountriesFromDb(pool, filters ?? null);
 

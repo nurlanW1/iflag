@@ -5,7 +5,8 @@ import {
   flagThumbPlaceholderForFileId,
 } from '@/lib/flag-thumbnail-fallback';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
-import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
+import { isSafePublicFlagObjectPath, resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
+import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
 import {
   fallbackUrlsForGalleryListThumb,
   resolvedFlagPublicHref,
@@ -113,58 +114,39 @@ export function galleryDbTargetForLogs(databaseUrl?: string | null): string {
   }
 }
 
-/**
- * Temporary diagnostics for `/api/gallery/countries` — enable via `DEBUG_GALLERY_COUNTRIES=1`.
- * Never logs credentials; emits target host/db and row counts only.
- */
-export async function logGalleryCountriesDebug(pool: Pool, databaseUrl?: string | null): Promise<void> {
-  const prefix = '[gallery/countries/debug]';
+/** Quick row counts for `/api/gallery/countries` (no secrets). */
+export async function logGalleryCountriesStats(pool: Pool): Promise<void> {
+  const read = async (sql: string): Promise<number> => {
+    const r = await pool.query<{ n: string | number }>(sql);
+    const v = r.rows[0]?.n;
+    if (v === undefined || v === null) return 0;
+    return typeof v === 'string' ? Number.parseInt(String(v), 10) : Number(v);
+  };
 
-  console.info(`${prefix} database`, galleryDbTargetForLogs(databaseUrl));
-
-  const queries: Array<[string, string]> = [
-    ['countries_total', 'SELECT COUNT(*)::int AS n FROM countries'],
-    ['country_flag_files_total', 'SELECT COUNT(*)::int AS n FROM country_flag_files'],
-    [
-      'countries_published_status',
-      `SELECT COUNT(*)::int AS n FROM countries WHERE lower(trim(coalesce(status::text, ''))) = 'published'`,
-    ],
-    [
-      'flag_files_published_status',
-      `SELECT COUNT(*)::int AS n FROM country_flag_files WHERE lower(trim(coalesce(status::text, ''))) = 'published'`,
-    ],
-    [
-      'flag_files_published_nonempty_file_url',
+  try {
+    const totalCountries = await read(`SELECT COUNT(*)::int AS n FROM countries`);
+    const totalFlagFiles = await read(`SELECT COUNT(*)::int AS n FROM country_flag_files`);
+    const totalPublishedFiles = await read(
       `SELECT COUNT(*)::int AS n FROM country_flag_files
        WHERE lower(trim(coalesce(status::text, ''))) = 'published'
-         AND NULLIF(trim(file_url), '') IS NOT NULL`,
-    ],
-    [
-      'countries_distinct_with_published_nonempty_file_url',
+         AND NULLIF(trim(file_url::text), '') IS NOT NULL`,
+    );
+    const joinedCount = await read(
       `SELECT COUNT(DISTINCT c.id)::int AS n
        FROM countries c
        INNER JOIN country_flag_files f ON f.country_id = c.id
        WHERE lower(trim(coalesce(f.status::text, ''))) = 'published'
-         AND NULLIF(trim(f.file_url), '') IS NOT NULL`,
-    ],
-    [
-      'joined_row_pairs_published_nonempty_file_url',
-      `SELECT COUNT(*)::int AS n
-       FROM countries c
-       INNER JOIN country_flag_files f ON f.country_id = c.id
-       WHERE lower(trim(coalesce(f.status::text, ''))) = 'published'
-         AND NULLIF(trim(f.file_url), '') IS NOT NULL`,
-    ],
-  ];
-
-  for (const [label, sql] of queries) {
-    try {
-      const r = await pool.query<{ n: number }>(sql);
-      const n = r.rows[0]?.n;
-      console.info(`${prefix} ${label}`, typeof n === 'number' ? n : String(n));
-    } catch (e) {
-      console.warn(`${prefix} ${label} failed`, e instanceof Error ? e.message : e);
-    }
+         AND NULLIF(trim(f.file_url::text), '') IS NOT NULL`,
+    );
+    console.log('[gallery/countries] total countries', totalCountries);
+    console.log('[gallery/countries] total country_flag_files', totalFlagFiles);
+    console.log('[gallery/countries] total published files', totalPublishedFiles);
+    console.log('[gallery/countries] joined count', joinedCount);
+  } catch (e) {
+    console.warn(
+      '[gallery/countries] stats query failed',
+      e instanceof Error ? e.message : e,
+    );
   }
 }
 
@@ -193,9 +175,8 @@ export async function fetchGalleryCountriesFromDb(
   const catParam = filters?.dbCategory?.trim().toLowerCase() || null;
 
   /**
-   * Avoid optional Neon columns (`file_key`, `preview_url`, `storage_provider`) in SQL so older DBs
-   * don't 42703. Join only rows usable in the gallery: published + non-null `file_url`.
-   * Per-row thumbnails: thumbnail_url fallback → file_url; preview chain uses the same fallback.
+   * Simple join: only `f.status = 'published'` and `f.file_url IS NOT NULL`.
+   * Thumbnail text may be empty — UI uses `file_url` as thumbnail when missing.
    */
   const result = await pool.query<{
     cid: string;
@@ -205,7 +186,7 @@ export async function fetchGalleryCountriesFromDb(
     flag_count: number | string;
     raw_thumbnail_url: string | null;
     raw_file_url: string | null;
-    tier_pick: string | null;
+    raw_file_key: string | null;
   }>(
     `SELECT DISTINCT ON (c.id)
        c.id::text AS cid,
@@ -213,20 +194,20 @@ export async function fetchGalleryCountriesFromDb(
        c.slug,
        c.iso_alpha_2,
        agg.cnt AS flag_count,
-       NULLIF(trim(f.thumbnail_url), '') AS raw_thumbnail_url,
-       NULLIF(trim(f.file_url), '') AS raw_file_url,
-       lower(trim(coalesce(f.premium_tier, 'free'))) AS tier_pick
+       NULLIF(trim(f.thumbnail_url::text), '') AS raw_thumbnail_url,
+       NULLIF(trim(f.file_url::text), '') AS raw_file_url,
+       NULLIF(trim(f.file_key::text), '') AS raw_file_key
      FROM countries c
      INNER JOIN (
        SELECT country_id, COUNT(*)::int AS cnt
        FROM country_flag_files
        WHERE lower(trim(coalesce(status::text, ''))) = 'published'
-         AND NULLIF(trim(file_url), '') IS NOT NULL
+         AND NULLIF(trim(file_url::text), '') IS NOT NULL
        GROUP BY country_id
      ) agg ON agg.country_id = c.id
      INNER JOIN country_flag_files f ON f.country_id = c.id
        AND lower(trim(coalesce(f.status::text, ''))) = 'published'
-       AND NULLIF(trim(f.file_url), '') IS NOT NULL
+       AND NULLIF(trim(f.file_url::text), '') IS NOT NULL
      WHERE ($1::text IS NULL OR lower(trim(coalesce(c.region::text, ''))) = lower(trim($1)))
        AND (
          $2::text IS NULL
@@ -245,21 +226,29 @@ export async function fetchGalleryCountriesFromDb(
     const fileUrlForRow = row.raw_file_url?.trim() || '';
     const thumbStored = row.raw_thumbnail_url?.trim() || '';
 
-    /** Task 5–6: thumbnail/preview URLs fall back to `file_url` when missing in DB (no preview_url column assumed). */
+    /** If `thumbnail_url` is null/empty, use `file_url` for list display. */
     const effectiveThumbnailUrl = thumbStored || fileUrlForRow || null;
     const effectivePreviewUrl = fileUrlForRow || null;
 
     const code =
       row.iso_alpha_2?.trim()?.toUpperCase() || getCountryCode(row.name)?.toUpperCase() || null;
     let thumb = resolvedFlagPublicHref({
-      fileKey: null,
+      fileKey: row.raw_file_key,
       fallbackRawUrls: fallbackUrlsForGalleryListThumb({
-        premiumTierRaw: row.tier_pick,
+        premiumTierRaw: 'free',
         fileUrl: fileUrlForRow || null,
         previewUrl: effectivePreviewUrl,
         thumbnailUrl: effectiveThumbnailUrl,
       }),
     });
+    /** DB sometimes stores only object key in `file_url` (no scheme) — build public R2 URL when possible. */
+    if (!thumb && fileUrlForRow && !/^https?:\/\//i.test(fileUrlForRow)) {
+      const normalizedKey = fileUrlForRow.replace(/^\/+/, '');
+      if (isSafePublicFlagObjectPath(normalizedKey)) {
+        const built = getPublicR2FileUrl(normalizedKey);
+        if (built) thumb = built;
+      }
+    }
     if (!thumb || isPackFallbackFlagThumbnail(thumb)) {
       thumb = FLAG_THUMB_PLACEHOLDER_DATA_URL;
     }

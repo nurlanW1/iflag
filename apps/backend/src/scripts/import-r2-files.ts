@@ -1,6 +1,8 @@
 /**
  * List Cloudflare R2 objects and upsert rows into Neon `country_flag_files`.
  *
+ * Supports arbitrary key layouts — not only `flags/{slug}/...`.
+ *
  * Env: DATABASE_URL, CLOUDFLARE_R2_* (see ../storage/r2.ts)
  * Optional: IMPORT_R2_MAX, IMPORT_R2_PREFIX
  *
@@ -8,11 +10,16 @@
  *   npm run import:r2
  */
 
-import 'dotenv/config';
-import { basename, extname } from 'node:path';
+import dotenv from 'dotenv';
+import { basename, dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
-import { getPublicR2Url, listR2ObjectSummaries, requireR2Config } from '../storage/r2.js';
+import type { R2Config } from '../storage/r2.js';
+import { listR2ObjectSummaries, requireR2Config, slugifySegment } from '../storage/r2.js';
+
+/** Always load apps/backend/.env (not cwd). Never log env contents. */
+const __scriptDir = dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: join(__scriptDir, '../../.env') });
 
 const ALLOWED_FORMATS = new Set(['png', 'svg', 'jpg', 'jpeg', 'webp', 'eps', 'pdf']);
 
@@ -25,6 +32,48 @@ const MIME_BY_EXT: Record<string, string> = {
   pdf: 'application/pdf',
   eps: 'application/postscript',
 };
+
+/** Normalized slug tokens stripped when inferring country from folder/filename text. */
+const STOP_WORDS = new Set([
+  'flag',
+  'flags',
+  'vector',
+  'sphere',
+  'wave',
+  'circle',
+  'heart',
+  'national',
+  'of',
+  'the',
+  'a',
+  'an',
+  'and',
+  'or',
+  'for',
+  'graphic',
+  'graphics',
+]);
+
+/** Folder names that should not overwrite a basename-derived country slug. */
+const GENERIC_FOLDER_SLUGS = new Set([
+  'misc',
+  'miscellaneous',
+  'uploads',
+  'upload',
+  'assets',
+  'images',
+  'img',
+  'tmp',
+  'temp',
+  'exports',
+  'export',
+  'public',
+  'downloads',
+  'bucket',
+  'stock',
+  'catalog',
+  'flags',
+]);
 
 export type R2ImportStats = {
   scanned: number;
@@ -62,8 +111,46 @@ function mimeForFormat(format: string): string {
   return MIME_BY_EXT[format] ?? 'application/octet-stream';
 }
 
+/**
+ * Turn free-text (folder or filename stem) into a URL slug token (lowercase, hyphens).
+ * Drops decorative words ("flag", "vector", ...) then slugifies remainder.
+ */
+function deriveCountrySlugFromText(raw: string): string | null {
+  let s = raw.trim();
+  if (!s) return null;
+
+  /** Underscores / runs of punctuation → breaks so "National_flag_of_Pakistan" tokenizes cleanly. */
+  s = s.replace(/[_]+/g, ' ');
+  s = s.replace(/[^\p{L}\p{N}\s\-]+/gu, ' ');
+  const tokens = s
+    .toLowerCase()
+    .split(/\s+/)
+    .map((t) => t.replace(/^\-+|\-+$/g, ''))
+    .filter(Boolean);
+
+  const kept = tokens.filter((t) => !STOP_WORDS.has(t));
+  if (kept.length === 0) return null;
+
+  const joined = kept.join(' ');
+  const slug = slugifySegment(joined, 96);
+  if (!slug || slug === 'file') return null;
+  return slug;
+}
+
+/** Encode each `/` segment for a valid public HTTPS URL while preserving slashes. */
+function publicUrlFromR2Key(cfg: R2Config, key: string): string {
+  const base = cfg.publicUrlBase.replace(/\/+$/, '');
+  const k = key.replace(/^\/+/, '');
+  const path = k
+    .split('/')
+    .filter(Boolean)
+    .map((seg) => encodeURIComponent(seg))
+    .join('/');
+  return `${base}/${path}`;
+}
+
 type ParsedKey = {
-  countrySlug: string | null;
+  countrySlug: string;
   variantFolder: string;
   fileSegment: string;
   format: string;
@@ -72,45 +159,102 @@ type ParsedKey = {
   variantName: string;
 };
 
-function parseObjectKey(key: string): ParsedKey | null {
-  const parts = key.split('/').filter(Boolean);
+/**
+ * Parses R2 keys:
+ * - `flags/{slug}/.../{file}`
+ * - `Pakistan/File.png`
+ * - ` uzbekistan_flag.svg` (bucket root)
+ * - `Turkey Flag Sphere Vector.jpg`
+ */
+function parseObjectKey(objectKey: string): ParsedKey | null {
+  const parts = objectKey.split('/').filter(Boolean);
+  if (!parts.length) return null;
+
+  const fileSegment = parts[parts.length - 1]!;
+  const dirParts = parts.slice(0, -1);
+
+  const extRaw = extname(fileSegment).replace(/^\./, '').toLowerCase();
+  const format = normalizeFormat(extRaw);
+  if (!format) return null;
+
+  const baseNoExt = basename(fileSegment, extname(fileSegment)).trim();
+
+  /** Legacy structured layout kept for compatibility */
   let countrySlug: string | null = null;
   let variantFolder = '';
-  let fileSegment = basename(key);
 
-  if (parts[0] === 'flags') {
-    if (parts.length >= 4) {
-      countrySlug = parts[1]!.toLowerCase();
-      variantFolder = parts[2]!;
-      fileSegment = parts[parts.length - 1]!;
-    } else if (parts.length === 3) {
-      /** `flags/{countrySlug}/{file.ext}` — no variant folder segment */
-      countrySlug = parts[1]!.toLowerCase();
-      variantFolder = '';
-      fileSegment = parts[2]!;
+  if (dirParts[0]?.toLowerCase() === 'flags' && dirParts.length >= 2) {
+    const seg = dirParts[1]!.trim();
+    let cs = deriveCountrySlugFromText(seg) ?? slugifySegment(seg, 96);
+    if (!cs || cs === 'file') {
+      cs = slugifySegment(seg.replace(/[^\p{L}\p{N}-]+/gu, '-'), 96);
+    }
+    if (!cs || cs === 'file') {
+      cs = seg.toLowerCase();
+    }
+    countrySlug = cs;
+
+    variantFolder = dirParts.length > 2 ? dirParts.slice(2).join('/') : '';
+    if (!variantFolder.trim()) variantFolder = '';
+  }
+
+  /** Heuristic slug from folders (deepest first), skipping generic directory names */
+  let inferredFromPath: string | null = countrySlug;
+
+  if (!inferredFromPath) {
+    for (let i = dirParts.length - 1; i >= 0; i--) {
+      const segment = dirParts[i]!;
+      const candidate =
+        deriveCountrySlugFromText(segment) ?? slugifySegment(segment.replace(/[^\p{L}\p{N}\-_ ]+/gu, ''), 96);
+      if (!candidate) continue;
+
+      const cLow = candidate.toLowerCase().replace(/^\-+|\-+$/g, '');
+      if (GENERIC_FOLDER_SLUGS.has(cLow)) continue;
+
+      if (candidate.length >= 2) {
+        inferredFromPath = candidate;
+        const parentVariant = [...dirParts.slice(0, i), ...dirParts.slice(i + 1)].join('/');
+        variantFolder = parentVariant.trim();
+        break;
+      }
     }
   }
 
-  const ext = extname(fileSegment).replace(/^\./, '').toLowerCase();
-  const format = normalizeFormat(ext);
-  if (!format) return null;
+  const fromFileName = deriveCountrySlugFromText(baseNoExt);
 
-  const baseNoExt = basename(fileSegment, extname(fileSegment));
+  let finalSlug: string | null = inferredFromPath;
+
+  /** Root files or generic parent folders rely on filename; prefer filename slug when folders are unreliable */
+  if (dirParts.length === 0) {
+    finalSlug = fromFileName ?? null;
+  } else if (fromFileName) {
+    if (!finalSlug || (GENERIC_FOLDER_SLUGS.has(finalSlug.toLowerCase()) && fromFileName)) {
+      finalSlug = fromFileName;
+    } else if (fromFileName && finalSlug !== fromFileName) {
+      /** If filename confidently names a longer country slug, prefer it when folder was short/noise */
+      if (fromFileName.length > finalSlug.length + 3) finalSlug = fromFileName;
+    }
+  }
+
+  if (!finalSlug && fromFileName) finalSlug = fromFileName;
+  if (!finalSlug) return null;
+
+  const slugNorm =
+    deriveCountrySlugFromText(finalSlug) ?? slugifySegment(finalSlug.replace(/_/g, ' '), 96) ?? finalSlug.toLowerCase();
+  const countrySlugOut = slugNorm.trim().replace(/^\-+|\-+$/g, '') || slugNorm.toLowerCase();
+  if (!countrySlugOut) return null;
+
   const titleFromFile =
-    baseNoExt
-      .replace(/^\d{10,}-/, '')
-      .replace(/^\d+-/, '')
-      .replace(/-/g, ' ')
-      .trim() || baseNoExt;
-  const titleFromVariant = variantFolder.replace(/-/g, ' ').trim();
-
+    baseNoExt.replace(/^\d{10,}-/, '').replace(/^\d+-/, '').replace(/[_-]+/g, ' ').trim() ||
+    humanizeSlug(countrySlugOut);
+  const titleFromVariant = variantFolder.replace(/[-_/]+/g, ' ').trim();
   const titleParts = [titleFromVariant, titleFromFile].filter(Boolean);
   const title = (titleParts.length ? titleParts.join(' — ') : fileSegment).slice(0, 200);
   const variantName = title.slice(0, 100);
   const fileName = fileSegment.slice(0, 255);
 
   return {
-    countrySlug,
+    countrySlug: countrySlugOut.toLowerCase(),
     variantFolder,
     fileSegment,
     format,
@@ -120,24 +264,37 @@ function parseObjectKey(key: string): ParsedKey | null {
   };
 }
 
-async function resolveCountryId(pool: pg.Pool, slug: string): Promise<string | null> {
+async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | null> {
+  const sl = slug.toLowerCase().trim();
+  if (!sl) return null;
+
   const found = await pool.query<{ id: string }>(
-    'SELECT id FROM countries WHERE lower(slug) = lower($1) LIMIT 1',
-    [slug]
+    'SELECT id FROM countries WHERE lower(trim(slug)) = lower(trim($1)) LIMIT 1',
+    [sl]
   );
   if (found.rows[0]?.id) return found.rows[0].id;
 
-  const name = humanizeSlug(slug);
-  const ins = await pool.query<{ id: string }>(
-    `INSERT INTO countries (name, slug, category, status)
-     VALUES ($1, $2, 'country', 'draft')
-     RETURNING id`,
-    [name, slug.toLowerCase()]
+  const displayName =
+    humanizeSlug(sl.replace(/[^\p{L}\p{N}\s\-]/gu, ' ')).replace(/\s+/g, ' ').trim().slice(0, 250) ||
+    humanizeSlug(sl).slice(0, 250);
+
+  await pool.query(
+    `INSERT INTO countries (name, slug, category, status, published_at)
+     VALUES ($1, $2, 'country', 'published', CURRENT_TIMESTAMP)
+     ON CONFLICT (slug) DO NOTHING`,
+    [displayName, sl]
   );
-  return ins.rows[0]?.id ?? null;
+
+  const sel = await pool.query<{ id: string }>(
+    'SELECT id FROM countries WHERE lower(trim(slug)) = lower(trim($1)) LIMIT 1',
+    [sl]
+  );
+  return sel.rows[0]?.id ?? null;
 }
 
 const METADATA_JSON = JSON.stringify({ imported_via: 'import-r2-files' });
+
+const MAX_ERROR_LINES = 100;
 
 export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2ImportStats> {
   const stats: R2ImportStats = {
@@ -168,37 +325,39 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
       const parsed = parseObjectKey(obj.key);
       if (!parsed) {
         stats.skipped++;
+        stats.errors.push(`Unsupported extension or unreadable key: ${obj.key}`);
+        if (stats.errors.length > MAX_ERROR_LINES) stats.errors.splice(0, stats.errors.length - MAX_ERROR_LINES);
         continue;
       }
 
       const { countrySlug, format, fileName, title, variantName } = parsed;
-      if (!countrySlug) {
-        stats.skipped++;
-        stats.errors.push(`No country slug in key (expected flags/{{slug}}/...): ${obj.key}`);
-        continue;
-      }
 
       let countryId: string | null;
       try {
-        countryId = await resolveCountryId(pool, countrySlug);
+        countryId = await ensureCountryId(pool, countrySlug);
       } catch (e) {
         stats.skipped++;
-        stats.errors.push(`Country resolve failed for ${countrySlug}: ${String(e)}`);
+        const msg = e instanceof Error ? e.message : String(e);
+        stats.errors.push(`Country create failed (${countrySlug}): ${msg}`);
+        if (stats.errors.length > MAX_ERROR_LINES) stats.errors.splice(0, stats.errors.length - MAX_ERROR_LINES);
         continue;
       }
+
       if (!countryId) {
         stats.skipped++;
-        stats.errors.push(`Could not resolve country: ${countrySlug}`);
+        stats.errors.push(`Could not resolve country slug: ${countrySlug}`);
+        if (stats.errors.length > MAX_ERROR_LINES) stats.errors.splice(0, stats.errors.length - MAX_ERROR_LINES);
         continue;
       }
 
       const fileKey = obj.key.replace(/^\/+/, '');
-      const fileUrl = getPublicR2Url(cfg, fileKey);
+      const fileUrl = publicUrlFromR2Key(cfg, fileKey);
+      /** Same public URL as primary asset; thumbnails/previews fallback to full file URL when not separate */
+      const thumbnailUrl = fileUrl;
+      const previewUrl = fileUrl;
+
       const sizeBytes = Math.max(Number(obj.size) || 0, 1);
       const mime = mimeForFormat(format);
-      const imgLike = ['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(format);
-      const previewUrl = imgLike ? fileUrl : null;
-      const thumbUrl = previewUrl;
 
       const existing = await pool.query<{ id: string }>(
         'SELECT id FROM country_flag_files WHERE file_key = $1 LIMIT 1',
@@ -218,8 +377,8 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
               format = $7,
               variant_name = $8,
               storage_provider = 'r2',
-              preview_url = COALESCE($9::text, preview_url),
-              thumbnail_url = COALESCE($10::text, thumbnail_url),
+              thumbnail_url = $9,
+              preview_url = $10,
               country_slug = $11,
               title = $12,
               updated_at = CURRENT_TIMESTAMP
@@ -233,8 +392,8 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
               mime,
               format,
               variantName,
+              thumbnailUrl,
               previewUrl,
-              thumbUrl,
               countrySlug,
               title,
               fileKey,
@@ -265,7 +424,7 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
               format,
               variantName,
               METADATA_JSON,
-              thumbUrl,
+              thumbnailUrl,
               previewUrl,
               countrySlug,
               title,
@@ -278,6 +437,7 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
         const msg = e instanceof Error ? e.message : String(e);
         stats.skipped++;
         stats.errors.push(`DB error for ${fileKey} (${code}): ${msg}`);
+        if (stats.errors.length > MAX_ERROR_LINES) stats.errors.splice(0, stats.errors.length - MAX_ERROR_LINES);
       }
     }
   } finally {
@@ -287,13 +447,26 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
   return stats;
 }
 
+function printSummary(stats: R2ImportStats) {
+  console.log('[import:r2] scanned', stats.scanned);
+  console.log('[import:r2] inserted', stats.inserted);
+  console.log('[import:r2] updated', stats.updated);
+  console.log('[import:r2] skipped', stats.skipped);
+  const errCount = stats.errors.length;
+  console.log('[import:r2] errors (count)', errCount);
+  if (errCount) {
+    console.log('[import:r2] errors (samples):');
+    for (const line of stats.errors.slice(-30)) console.log(`  • ${line}`);
+  }
+}
+
 async function cliMain() {
   const maxObjects = process.env.IMPORT_R2_MAX
     ? Math.max(1, Number(process.env.IMPORT_R2_MAX) || 0)
     : undefined;
   const prefix = process.env.IMPORT_R2_PREFIX?.trim() || undefined;
   const stats = await runR2Import({ maxObjects, prefix });
-  console.log(JSON.stringify(stats, null, 2));
+  printSummary(stats);
 }
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);

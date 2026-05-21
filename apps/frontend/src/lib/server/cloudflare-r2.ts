@@ -96,9 +96,22 @@ export async function getSignedR2GetUrl(key: string, expiresInSeconds = 300): Pr
   }
 }
 
+/**
+ * Public CDN base for `flags/…` keys — only env, no signing credentials.
+ * Deployment often sets `CLOUDFLARE_R2_PUBLIC_URL` without R2 API keys; thumbnails must still resolve.
+ */
+export function getPublicR2PublicBaseUrl(): string | null {
+  const pub =
+    process.env.CLOUDFLARE_R2_PUBLIC_URL?.trim() ||
+    process.env.R2_PUBLIC_URL?.trim() ||
+    '';
+  return pub ? pub.replace(/\/+$/, '') : null;
+}
+
+/** `publicBase + '/' + normalizedKey` — works when only public R2 URL is configured. */
 export function getPublicR2FileUrl(fileKey: string): string | null {
-  const cfg = loadR2ConfigFromEnv();
-  if (!cfg) return null;
+  const base = getPublicR2PublicBaseUrl();
+  if (!base) return null;
   const k = fileKey.replace(/^\/+/, '');
-  return `${cfg.publicUrlBase}/${k}`;
+  return `${base}/${k}`;
 }
