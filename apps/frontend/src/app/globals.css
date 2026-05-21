@@ -60,8 +60,8 @@
   --transition-slow: 300ms ease-in-out;
   
   /* Layout — centered marketplace rail (see `.marketplace-shell`) */
-  /** Sticky navbar with py-4 + larger logo/type (~80px typical) */
-  --header-height: 80px;
+  /** Dark premium navbar (~py-5 + xl logo) */
+  --header-height: 96px;
   /** Max content width: premium widescreen (~1800); never edge-to-edge on ultrawide. */
   --marketplace-shell-max-width: 1800px;
   /** Comfortable reading measure for legal / long-form inside the shell */
@@ -127,7 +127,7 @@ h4 {
 
 /**
  * Primary layout rail: centered, max `--marketplace-shell-max-width` (1800px).
- * Horizontal padding: 16px mobile → 24px tablet → 32px desktop → 40–56px ultrawide.
+ * Horizontal padding aligns with Tailwind rails: px-4 → px-6 (sm) → px-8 (lg) → px-10 (xl) → px-12 (2xl).
  */
 .marketplace-shell {
   box-sizing: border-box;
@@ -135,12 +135,11 @@ h4 {
   max-width: var(--marketplace-shell-max-width);
   margin-left: auto;
   margin-right: auto;
-  /* 16px */
   padding-left: 1rem;
   padding-right: 1rem;
 }
 
-/* 24px — sm / tablet */
+/* sm:px-6 */
 @media (min-width: 640px) {
   .marketplace-shell {
     padding-left: 1.5rem;
@@ -148,7 +147,7 @@ h4 {
   }
 }
 
-/* 32px — desktop */
+/* lg:px-8 */
 @media (min-width: 1024px) {
   .marketplace-shell {
     padding-left: 2rem;
@@ -156,7 +155,7 @@ h4 {
   }
 }
 
-/* 40px */
+/* xl:px-10 */
 @media (min-width: 1280px) {
   .marketplace-shell {
     padding-left: 2.5rem;
@@ -164,19 +163,11 @@ h4 {
   }
 }
 
-/* 48px — large desktop */
+/* 2xl:px-12 */
 @media (min-width: 1536px) {
   .marketplace-shell {
     padding-left: 3rem;
     padding-right: 3rem;
-  }
-}
-
-/* 56px — ultrawide breathing room */
-@media (min-width: 1920px) {
-  .marketplace-shell {
-    padding-left: 3.5rem;
-    padding-right: 3.5rem;
   }
 }
 

@@ -188,7 +188,7 @@ export function ProductBrowseSection({
           </div>
           <button
             type="submit"
-            className="h-12 min-h-12 shrink-0 rounded-2xl bg-[#009ab6] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[#007a8a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#009ab6] sm:h-auto sm:self-stretch sm:px-10"
+            className="inline-flex min-h-[3rem] shrink-0 items-center justify-center rounded-2xl bg-[#009ab6] px-8 py-3 text-lg font-bold text-white shadow-sm transition hover:bg-[#007a8a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#009ab6] sm:px-10"
           >
             Search
           </button>

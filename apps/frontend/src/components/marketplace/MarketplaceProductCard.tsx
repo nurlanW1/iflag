@@ -20,7 +20,7 @@ export function MarketplaceProductCard({
   const href = product.detailHref?.trim() || `/flags/${product.slug}`;
 
   return (
-    <article className="group flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-sm transition hover:border-[#009ab6]/35 hover:shadow-md">
+    <article className="group flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-md transition-[box-shadow,border-color,transform] hover:-translate-y-0.5 hover:border-[#009ab6]/40 hover:shadow-xl">
       <Link href={href} className="relative block aspect-[4/3] overflow-hidden bg-gray-100">
         {product.thumbnailUrl ? (
           <Image
@@ -38,8 +38,8 @@ export function MarketplaceProductCard({
         )}
         <div className="absolute left-2 top-2 flex flex-wrap gap-1.5">
           <span
-            className={`rounded-lg px-2.5 py-1 text-[0.6875rem] font-bold uppercase tracking-wide sm:text-xs ${
-              paid ? 'bg-[#009ab6] text-white' : 'bg-emerald-600 text-white'
+            className={`rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-sm sm:text-sm ${
+              paid ? 'bg-[#009ab6]' : 'bg-emerald-600'
             }`}
           >
             {paid ? (
@@ -54,16 +54,16 @@ export function MarketplaceProductCard({
         </div>
       </Link>
       <div className="flex flex-1 flex-col p-4 sm:p-[1.125rem]">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#009ab6]/90 sm:text-[0.8125rem]">
+        <p className="text-sm font-bold uppercase tracking-wide text-[#009ab6]/90">
           {categoryName}
         </p>
-        <h3 className="mt-1.5 line-clamp-2 text-lg font-bold leading-snug text-gray-900">
+        <h3 className="mt-2 line-clamp-2 text-xl font-bold leading-snug text-gray-950">
           <Link href={href} className="hover:text-[#009ab6] focus:outline-none focus:ring-2 focus:ring-[#009ab6]/30 rounded">
             {product.title}
           </Link>
         </h3>
         {formats.length > 0 ? (
-          <p className="mt-2 text-sm leading-relaxed text-gray-500">
+          <p className="mt-2 text-base leading-relaxed text-gray-600">
             {formats.slice(0, 4).join(' · ')}
             {formats.length > 4 ? '…' : ''}
           </p>
@@ -74,7 +74,7 @@ export function MarketplaceProductCard({
           </span>
           <Link
             href={href}
-            className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#009ab6]"
+            className="inline-flex min-h-[3rem] items-center justify-center rounded-xl bg-gray-950 px-6 py-3 text-base font-bold text-white transition hover:bg-[#009ab6]"
           >
             Details
           </Link>

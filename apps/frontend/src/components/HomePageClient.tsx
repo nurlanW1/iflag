@@ -9,20 +9,56 @@ import {
   Star,
   ShieldCheck,
   Flag,
-  Video,
-  Image as ImageIcon,
-  LayoutGrid,
   Globe2,
   ChevronRight,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import HomeGalleryPreview from '@/components/HomeGalleryPreview';
+import { LandingCategoryStrip } from '@/components/landing/LandingCategoryStrip';
+import { LandingProductRails } from '@/components/landing/LandingProductRails';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import { useHasMounted, useRevealInView } from '@/hooks/useRevealInView';
 import { SITE_NAME } from '@/lib/seo/site-config';
 
-const TRENDING = ['usa', 'france', 'japan', 'germany', 'uk'] as const;
+const TRENDING = ['USA', 'France', 'Japan', 'Germany', 'UK', 'Brazil', 'Canada'] as const;
+
+export type HeroCategoryTab =
+  | 'all'
+  | 'countries'
+  | 'circular'
+  | 'historical'
+  | 'organizations'
+  | 'sports';
+
+const HERO_TABS: { id: HeroCategoryTab; label: string }[] = [
+  { id: 'all', label: 'All Flags' },
+  { id: 'countries', label: 'Countries' },
+  { id: 'circular', label: 'Circular Flags' },
+  { id: 'historical', label: 'Historical' },
+  { id: 'organizations', label: 'Organizations' },
+  { id: 'sports', label: 'Sports' },
+];
+
+function buildHeroDestination(tab: HeroCategoryTab, qRaw: string): string {
+  const q = qRaw.trim();
+  switch (tab) {
+    case 'all':
+      return q ? `/browse?q=${encodeURIComponent(q)}` : '/browse';
+    case 'countries':
+      return q ? `/browse?q=${encodeURIComponent(q)}` : '/gallery';
+    case 'circular':
+      return q ? `/browse?q=${encodeURIComponent(`circular ${q}`)}` : '/browse?q=circular';
+    case 'historical':
+      return q ? `/browse?q=${encodeURIComponent(q)}` : '/gallery?kind=historical';
+    case 'organizations':
+      return q ? `/browse?q=${encodeURIComponent(q)}` : '/gallery?kind=organizations';
+    case 'sports':
+      return q ? `/browse?q=${encodeURIComponent(q)}` : '/browse?q=sports';
+    default:
+      return '/browse';
+  }
+}
 
 type PricingPlan = {
   name: string;
@@ -100,7 +136,7 @@ function PricingPlanCard({ plan, idx }: { plan: PricingPlan; idx: number }) {
           <h3 className="text-3xl font-black text-black md:text-4xl">{plan.name}</h3>
           <div className="text-right">
             <div className="text-5xl font-black leading-none text-[#009ab6] md:text-6xl">{plan.price}</div>
-            <div className="mt-1 text-sm text-black/60">{plan.period}</div>
+            <div className="mt-1 text-base font-medium text-black/65">{plan.period}</div>
           </div>
         </div>
 
@@ -112,7 +148,7 @@ function PricingPlanCard({ plan, idx }: { plan: PricingPlan; idx: number }) {
 
         <Link
           href="/pricing"
-          className={`block w-full rounded-xl px-6 py-4 text-center text-base font-bold transition-all duration-300 sm:text-lg ${
+          className={`block w-full min-h-[3.75rem] rounded-xl px-8 py-4 text-center text-lg font-bold transition-all duration-300 ${
             plan.popular
               ? 'bg-gradient-to-r from-[#009ab6] to-[#006d7a] text-white shadow-lg hover:from-[#007a8a] hover:to-[#005a66] hover:shadow-xl'
               : 'border-2 border-[#009ab6] bg-white text-[#009ab6] hover:bg-[#009ab6] hover:text-white'
@@ -156,8 +192,8 @@ function HowItWorksStepCard({ step, idx }: { step: StepItem; idx: number }) {
         >
           <step.icon size={40} className="text-white" />
         </motion.div>
-        <h3 className="mb-4 text-2xl font-bold text-black">{step.title}</h3>
-        <p className="leading-relaxed text-black/60">{step.desc}</p>
+        <h3 className="mb-4 text-3xl font-bold text-black">{step.title}</h3>
+        <p className="text-base leading-relaxed text-black/65 md:text-lg">{step.desc}</p>
       </div>
     </motion.div>
   );
@@ -165,176 +201,161 @@ function HowItWorksStepCard({ step, idx }: { step: StepItem; idx: number }) {
 
 export default function HomePageClient() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [catalogScope, setCatalogScope] = useState<'all' | 'vector' | 'raster' | 'video'>('all');
+  const [heroCategoryTab, setHeroCategoryTab] = useState<HeroCategoryTab>('all');
   const motionBgMounted = useHasMounted();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const q = searchQuery.trim();
-    const params = new URLSearchParams();
-    if (q) params.set('q', q);
-    /** Asset library pages use `asset_type` only; text search is handled on `/browse`. */
-    if (catalogScope === 'vector') {
-      window.location.href = q
-        ? `/browse?${params.toString()}`
-        : '/assets?asset_type=vector';
-      return;
-    }
-    if (catalogScope === 'raster') {
-      window.location.href = q
-        ? `/browse?${params.toString()}`
-        : '/assets?asset_type=raster';
-      return;
-    }
-    if (catalogScope === 'video') {
-      window.location.href = q
-        ? `/browse?${params.toString()}`
-        : '/assets?asset_type=video';
-      return;
-    }
-    window.location.href = q ? `/browse?${params.toString()}` : '/browse';
+    window.location.href = buildHeroDestination(heroCategoryTab, searchQuery);
   };
 
   return (
     <main className="min-h-screen bg-white">
-      {/* Above-the-fold: hero + compact category rail (no stretched tiles) */}
-      <div className="flex flex-col">
-        {/* Hero — compact premium band (does not consume full viewport) */}
-        <section
-          className="relative w-full shrink-0 overflow-hidden py-8 sm:py-10 md:py-12 lg:py-14 xl:py-16"
-          aria-labelledby="hero-heading"
-        >
-          <div
-            className="absolute inset-0 bg-gradient-to-br from-[#063a42] via-[#0a5c6a] to-[#009ab6]"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-white/5"
-            aria-hidden
-          />
 
-          <div className="relative z-10 marketplace-shell flex flex-col items-center py-0 text-center">
-            <motion.div
-              initial={false}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-              className="mx-auto w-full max-w-[min(56rem,calc(100%-0.5rem))] text-center sm:max-w-[min(62rem,calc(100%-1rem))]"
+      {/* Hero — stock marketplace spotlight */}
+      <section
+        className="relative flex min-h-[520px] w-full shrink-0 flex-col justify-center overflow-hidden border-b border-black/15 bg-[#052028] py-14 sm:min-h-[580px] sm:py-16 md:min-h-[620px] md:py-[4.5rem] lg:min-h-[640px] lg:py-[4.75rem] xl:min-h-[700px]"
+        aria-labelledby="hero-heading"
+      >
+        <div
+          className="absolute inset-0 bg-gradient-to-br from-[#021014] via-[#063948] to-[#009ab6]"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.18]"
+          style={{
+            backgroundImage: `
+              repeating-linear-gradient(-38deg, rgba(255,255,255,0.12) 0 12px, transparent 12px 36px),
+              repeating-linear-gradient(38deg, rgba(0,201,229,0.14) 0 18px, transparent 18px 44px),
+              radial-gradient(circle at 15% 20%, rgba(255,96,124,0.16) 0%, transparent 45%),
+              radial-gradient(circle at 92% 12%, rgba(255,214,124,0.12) 0%, transparent 40%)
+            `,
+          }}
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/15"
+          aria-hidden
+        />
+
+        <div className="relative z-10 marketplace-shell flex w-full flex-col items-center pb-4 pt-2 text-center lg:pb-10 lg:pt-6">
+          <motion.div
+            initial={false}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            className="flex w-full max-w-[min(1152px,calc(100%-0rem))] flex-col items-center text-center xl:max-w-[min(1200px,calc(100%-0rem))]"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[#76e4ef]/95 sm:text-sm">
+              Premium flag stock marketplace · {SITE_NAME}
+            </p>
+            <h1
+              id="hero-heading"
+              className="mt-6 max-w-5xl text-balance font-black leading-[1.05] tracking-tight text-white md:mt-7"
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/70 sm:text-sm">
-                {SITE_NAME}
-              </p>
-              <h1
-                id="hero-heading"
-                className="mx-auto mt-2 max-w-[min(44rem,calc(100%-0.5rem))] text-balance font-black uppercase leading-[1.1] tracking-[0.035em] text-white sm:mt-2.5 sm:tracking-[0.04em]"
-              >
-                <span className="block text-[clamp(1.75rem,4vw,2.85rem)] sm:text-[clamp(1.875rem,3.5vw,3.25rem)]">
-                  Flag assets library
-                </span>
-                <span className="mx-auto mt-2 block max-w-[min(42rem,calc(100%-0.75rem))] text-[clamp(1rem,2.25vw,1.5rem)] font-bold normal-case tracking-normal text-white/90">
-                  Vectors, raster & video — one search
-                </span>
-              </h1>
+              <span className="block text-[clamp(2.15rem,2.2vw+1.85rem,3.95rem)] sm:text-[clamp(2.25rem,1.65vw+2.2rem,4.85rem)]">
+                Download High-Quality Flag Assets
+              </span>
+            </h1>
+            <p className="mx-auto mt-5 max-w-3xl text-pretty text-lg font-medium leading-relaxed text-white/88 sm:text-xl md:mt-6 md:text-2xl">
+              Vectors, icons, country flags, historical flags, organizations, and more.
+            </p>
 
-              <nav
-                className="mt-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-2 sm:mt-5"
-                aria-label="Asset type"
-              >
-              {(
-                [
-                  { id: 'all' as const, label: 'All flags', Icon: Flag },
-                  { id: 'vector' as const, label: 'Vector', Icon: ImageIcon },
-                  { id: 'raster' as const, label: 'Raster', Icon: LayoutGrid },
-                  { id: 'video' as const, label: 'Video', Icon: Video },
-                ] as const
-              ).map(({ id, label, Icon }) => {
-                const active = catalogScope === id;
+            <nav
+              className="mt-9 flex max-w-[calc(100vw-1.75rem)] snap-x gap-3 overflow-x-auto px-2 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center [&::-webkit-scrollbar]:hidden md:mt-11"
+              aria-label="Explore categories"
+            >
+              {HERO_TABS.map(({ id, label }) => {
+                const active = heroCategoryTab === id;
                 return (
                   <button
                     key={id}
                     type="button"
-                    onClick={() => setCatalogScope(id)}
+                    onClick={() => setHeroCategoryTab(id)}
                     aria-current={active ? 'true' : undefined}
-                    className={`group inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-semibold transition-colors sm:text-base ${
+                    className={`min-h-[3rem] shrink-0 snap-start rounded-xl border px-5 py-2.5 text-base font-semibold transition sm:min-h-[3.125rem] sm:px-6 sm:text-[1.05rem] md:text-lg ${
                       active
-                        ? 'border-white text-white'
-                        : 'border-transparent text-white/65 hover:text-white'
+                        ? 'border-transparent bg-white text-gray-950 shadow-xl shadow-black/25'
+                        : 'border-white/25 bg-white/5 text-white/88 hover:bg-white/12 hover:text-white'
                     }`}
                   >
-                    <Icon className="h-4 w-4 opacity-85 group-hover:opacity-100 sm:h-[1.125rem] sm:w-[1.125rem]" aria-hidden />
                     {label}
                   </button>
                 );
               })}
-              </nav>
+            </nav>
 
-              <form
-                onSubmit={handleSearch}
-                className="mx-auto mt-6 w-full max-w-4xl sm:mt-7 lg:mt-8"
-                role="search"
-                aria-label="Search flag assets"
-              >
-                <div className="flex w-full items-stretch overflow-hidden rounded-2xl border-2 border-white/25 bg-white/[0.04] shadow-[0_14px_40px_rgba(0,0,0,0.28)] backdrop-blur-[2px] transition-shadow focus-within:border-white/40 focus-within:shadow-[0_18px_48px_rgba(0,0,0,0.35)] focus-within:ring-2 focus-within:ring-white/35">
-                  <div className="flex h-14 min-h-[3.5rem] min-w-0 flex-1 items-center rounded-l-2xl bg-white pl-4 sm:h-[3.625rem] sm:min-h-[3.625rem] sm:pl-5 md:pl-6">
-                    <Search className="h-5 w-5 shrink-0 text-black/40 sm:h-6 sm:w-6" aria-hidden />
-                    <label htmlFor="hero-search" className="sr-only">
-                      Search query
-                    </label>
-                    <input
-                      id="hero-search"
-                      type="search"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Country, tag, format, or keyword…"
-                      className="min-w-0 flex-1 border-0 bg-transparent py-3 pl-3 pr-3 text-base text-black placeholder:text-black/42 focus:outline-none focus:ring-0 sm:pl-4 sm:text-lg"
-                      autoComplete="off"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="shrink-0 bg-[#009ab6] px-7 text-base font-semibold uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#007a8a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white sm:px-10 sm:text-[0.95rem]"
-                  >
-                    Search
-                  </button>
-                </div>
-
-                <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:mt-5">
-                  <span className="w-full text-center text-xs font-semibold uppercase tracking-[0.2em] text-white/55 sm:w-auto sm:pr-1 sm:text-sm">
-                    Trending
-                  </span>
-                  {TRENDING.map((term) => (
-                    <Link
-                      key={term}
-                      href={`/browse?q=${encodeURIComponent(term)}`}
-                      className="rounded-full border border-white/25 bg-white/12 px-3 py-1.5 text-sm font-medium text-white/95 backdrop-blur-sm transition-colors hover:border-white/40 hover:bg-white/22"
-                    >
-                      {term}
-                    </Link>
-                  ))}
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Categories — full-width band (matches hero weight), larger tiles */}
-        <section className="shrink-0 border-t border-gray-100 bg-gradient-to-b from-gray-50/90 to-white pb-10 pt-8 sm:pb-12 sm:pt-10 md:pb-16 md:pt-12">
-          <div className="marketplace-shell">
-            <SectionReveal
-              hidden={{ opacity: 0, y: 10 }}
-              visible={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="mb-4 flex flex-col items-center text-center sm:mb-6"
+            <form
+              onSubmit={handleSearch}
+              className="mt-10 w-full max-w-6xl sm:mt-12"
+              role="search"
+              aria-label="Search flag assets"
             >
-              <h2 className="text-2xl font-black tracking-tight text-black sm:text-3xl md:text-[2rem]">
-                Browse by region
-              </h2>
-              <p className="mx-auto mt-2 max-w-2xl text-pretty text-base text-black/60 sm:text-lg">
-                Jump straight into a collection — balanced tiles inside the centered catalog frame
-              </p>
-            </SectionReveal>
+              <div className="flex w-full flex-col overflow-hidden rounded-2xl border-2 border-white/18 bg-black/35 shadow-[0_26px_64px_-12px_rgba(0,0,0,0.72)] backdrop-blur-md transition-[box-shadow,border-color] focus-within:border-white/42 focus-within:shadow-[0_32px_72px_-8px_rgba(0,0,0,0.78)] focus-within:ring-2 focus-within:ring-white/25 md:flex-row md:rounded-2xl">
+                <div className="flex min-h-[3.625rem] w-full flex-1 items-center rounded-t-2xl bg-white px-4 sm:min-h-16 md:rounded-none md:rounded-l-2xl md:px-6 lg:h-16 lg:min-h-[4rem]">
+                  <Search className="h-7 w-7 shrink-0 text-gray-400 sm:h-[1.75rem] sm:w-[1.75rem]" aria-hidden />
+                  <label htmlFor="hero-search" className="sr-only">
+                    Search query
+                  </label>
+                  <input
+                    id="hero-search"
+                    type="search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search millions of royalty-ready flag visuals…"
+                    className="min-w-0 flex-1 border-0 bg-transparent py-4 pl-3 pr-2 text-[1.0625rem] leading-snug text-gray-950 placeholder:text-gray-500 focus:outline-none focus:ring-0 sm:pl-4 sm:text-lg md:text-xl"
+                    autoComplete="off"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="inline-flex min-h-[3.625rem] w-full shrink-0 items-center justify-center rounded-b-2xl bg-[#009ab6] px-10 py-4 text-lg font-bold tracking-wide text-white transition hover:bg-[#00788c] hover:shadow-inner focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-white md:w-auto md:rounded-none md:rounded-r-2xl lg:min-h-[4rem] lg:px-14 lg:text-xl"
+                >
+                  Search
+                </button>
+              </div>
 
-            <div className="rounded-2xl border border-gray-200/80 bg-white/90 p-3 shadow-md backdrop-blur-sm sm:rounded-3xl sm:p-4 md:p-6">
-            <div className="mx-auto grid w-full max-w-5xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 md:gap-5">
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-2 md:gap-3">
+                <span className="w-full shrink-0 text-center text-sm font-semibold uppercase tracking-[0.18em] text-white/58 sm:w-auto md:text-base">
+                  Trending
+                </span>
+                {TRENDING.map((term) => (
+                  <Link
+                    key={term}
+                    href={`/browse?q=${encodeURIComponent(term.toLowerCase())}`}
+                    className="inline-flex min-h-[2.75rem] items-center rounded-full border border-white/35 bg-black/35 px-5 py-2 text-base font-medium text-white backdrop-blur-sm transition hover:border-white/60 hover:bg-white/15 hover:text-white"
+                  >
+                    {term}
+                  </Link>
+                ))}
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      </section>
+
+      <HomeGalleryPreview />
+
+      <LandingProductRails />
+
+      {/* Browse by region */}
+      <section className="shrink-0 border-t border-gray-100 bg-gradient-to-b from-gray-50/95 to-white py-14 sm:py-16 md:py-20">
+        <div className="marketplace-shell">
+          <SectionReveal
+            hidden={{ opacity: 0, y: 10 }}
+            visible={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-8 flex flex-col items-center text-center sm:mb-10"
+          >
+            <h2 className="max-w-3xl text-center text-3xl font-black tracking-tight text-gray-950 sm:text-4xl md:text-[2.25rem]">
+              Browse by region
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-pretty text-base text-gray-600 sm:text-lg">
+              Navigate our gallery hubs by geography — curated inside the centered catalog rail.
+            </p>
+          </SectionReveal>
+
+          <div className="rounded-2xl border border-gray-200/90 bg-white/95 p-4 shadow-[0_20px_50px_-18px_rgba(6,109,122,0.2)] backdrop-blur-sm sm:p-6 md:rounded-[1.75rem]">
+            <div className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5 lg:gap-6">
             {[
               { 
                 name: 'Europe', 
@@ -404,7 +425,7 @@ export default function HomePageClient() {
                 >
                   <Link
                     href={galleryHref}
-                    className={`group flex min-h-[3.25rem] w-full items-center gap-3 rounded-xl border border-gray-200/90 bg-white px-3 py-2.5 transition-all duration-200 hover:border-[#009ab6] hover:bg-[#009ab6]/[0.05] hover:shadow-lg hover:shadow-[#009ab6]/12 sm:min-h-[3.75rem] sm:gap-4 sm:rounded-2xl sm:px-4 sm:py-3 md:min-h-[4.25rem] md:px-5 md:py-3.5`}
+                    className={`group flex min-h-[4rem] w-full items-center gap-4 rounded-xl border border-gray-200/90 bg-white px-4 py-3 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#009ab6] hover:bg-[#009ab6]/[0.04] hover:shadow-xl hover:shadow-[#009ab6]/15 sm:min-h-[4.25rem] sm:gap-5 sm:rounded-2xl sm:px-5 sm:py-4 md:min-h-[5rem]`}
                   >
                     <div
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${cat.gradient} ring-1 ring-black/[0.06] sm:h-12 sm:w-12 md:h-14 md:w-14 md:rounded-2xl`}
@@ -414,7 +435,7 @@ export default function HomePageClient() {
                         className={`${cat.iconColor} sm:h-6 sm:w-6 md:h-7 md:w-7`}
                       />
                     </div>
-                    <span className="min-w-0 flex-1 text-left text-sm font-semibold leading-snug text-gray-900 group-hover:text-[#009ab6] sm:text-base md:text-lg">
+                    <span className="min-w-0 flex-1 text-left text-base font-bold leading-snug text-gray-950 group-hover:text-[#009ab6] sm:text-lg lg:text-xl">
                       <span className="line-clamp-2 sm:line-clamp-none sm:truncate">{cat.name}</span>
                     </span>
                     <ChevronRight
@@ -429,10 +450,8 @@ export default function HomePageClient() {
             </div>
           </div>
         </section>
-      </div>
 
-      {/* Gallery Preview Section */}
-      <HomeGalleryPreview />
+      <LandingCategoryStrip />
 
       {/* Stats Section */}
       <section className="bg-gradient-to-b from-white to-[#006d7a]/5 py-24 md:py-28 lg:py-32">
@@ -478,12 +497,12 @@ export default function HomePageClient() {
             transition={{ duration: 0.8 }}
             className="mb-20 text-center"
           >
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#009ab6]/10 px-4 py-2">
-              <Crown size={18} className="text-[#009ab6]" />
-              <span className="text-sm font-semibold text-[#009ab6] sm:text-base">Premium Plans</span>
+            <div className="mb-6 inline-flex items-center gap-3 rounded-full bg-[#009ab6]/14 px-5 py-2.5">
+              <Crown size={22} className="text-[#009ab6]" />
+              <span className="text-lg font-semibold tracking-tight text-[#009ab6]">Premium Plans</span>
             </div>
-            <h2 className="mb-6 text-5xl font-black text-black md:mb-8 md:text-6xl xl:text-7xl">Go Premium</h2>
-            <p className="mx-auto max-w-3xl text-pretty text-xl text-black/60 md:text-2xl xl:text-[1.7rem]">
+            <h2 className="mb-8 text-center text-3xl font-black text-gray-950 sm:mb-10 sm:text-4xl xl:text-[2.75rem]">Go Premium</h2>
+            <p className="mx-auto max-w-3xl text-pretty text-xl font-medium leading-relaxed text-black/62 md:text-2xl">
               Unlock unlimited flag downloads, commercial use, and exclusive flag assets. Paid plans
               checkout through Paddle (Merchant of Record).
             </p>
@@ -512,7 +531,7 @@ export default function HomePageClient() {
             ))}
           </div>
 
-          <p className="mx-auto mt-14 max-w-2xl text-center text-pretty text-sm text-black/50">
+          <p className="mx-auto mt-14 max-w-2xl text-center text-pretty text-base text-black/55">
             Homepage amounts are illustrative — live prices and Paddle checkout are on the{' '}
             <Link href="/pricing" className="font-semibold text-[#009ab6] hover:underline">
               pricing page
@@ -531,7 +550,7 @@ export default function HomePageClient() {
             transition={{ duration: 0.6 }}
             className="mb-20 text-center"
           >
-            <h2 className="mb-5 text-4xl font-black text-black md:mb-6 md:text-5xl xl:text-6xl">How It Works</h2>
+            <h2 className="mb-6 text-center text-3xl font-black text-black sm:text-4xl md:mb-8 md:text-5xl xl:text-[2.75rem]">How It Works</h2>
             <p className="mx-auto max-w-3xl text-pretty text-lg text-black/60 md:text-xl">
               Get started in three simple steps
             </p>
@@ -626,16 +645,16 @@ export default function HomePageClient() {
             <p className="mx-auto mb-12 max-w-3xl text-pretty text-lg text-white/90 md:text-2xl md:leading-snug xl:text-[1.68rem]">
               Join thousands of designers and developers using {SITE_NAME} for their projects
             </p>
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
               <Link
                 href="/gallery"
-                className="rounded-xl bg-white px-8 py-4 text-lg font-bold text-[#009ab6] shadow-xl transition-all duration-300 hover:scale-105 hover:bg-gray-100 hover:shadow-2xl"
+                className="inline-flex min-h-[3.5rem] min-w-[12rem] items-center justify-center rounded-xl bg-white px-10 py-4 text-lg font-bold text-[#009ab6] shadow-xl transition hover:scale-[1.02] hover:bg-gray-50"
               >
                 Browse Flags
               </Link>
               <Link
                 href="/pricing"
-                className="rounded-xl border-2 border-white bg-transparent px-8 py-4 text-lg font-bold text-white transition-all duration-300 hover:bg-white/10"
+                className="inline-flex min-h-[3.5rem] min-w-[12rem] items-center justify-center rounded-xl border-2 border-white bg-white/5 px-10 py-4 text-lg font-bold text-white backdrop-blur-sm transition hover:bg-white/15"
                 title="Compare plans — Paddle checkout"
               >
                 Paddle pricing &amp; plans

@@ -81,11 +81,11 @@ export default function HomeGalleryPreview() {
           transition={{ duration: 0.6 }}
           className="mb-12 text-center md:mb-16 lg:mb-20"
         >
-          <h2 className="mb-4 text-3xl font-bold text-black sm:text-4xl md:mb-5 md:text-5xl xl:text-6xl">
-            Explore Our Flag Collection
+          <h2 className="mx-auto mb-4 max-w-4xl text-3xl font-black tracking-tight text-gray-950 sm:mb-5 sm:text-4xl md:text-5xl lg:text-[2.75rem]">
+            Popular countries
           </h2>
-          <p className="mx-auto max-w-2xl text-pretty text-base text-black/60 sm:text-lg md:text-xl xl:text-[1.35rem]">
-            Browse through hundreds of high-quality country flags in various formats
+          <p className="mx-auto max-w-2xl text-pretty text-base font-medium leading-relaxed text-black/62 sm:text-lg md:text-xl">
+            Dive into curated country hubs — previews update from the gallery API.
           </p>
         </SectionReveal>
 
@@ -123,7 +123,7 @@ export default function HomeGalleryPreview() {
             <button
               type="button"
               onClick={handleShowMore}
-              className="group relative px-8 py-3 md:px-12 md:py-4 border-2 border-[#009ab6] rounded-full text-[#009ab6] font-semibold text-base md:text-lg transition-all duration-300 hover:bg-[#009ab6] hover:text-white hover:shadow-lg hover:scale-105 active:scale-100"
+              className="group relative px-10 py-4 md:px-12 md:py-5 border-2 border-[#009ab6] rounded-full text-[#009ab6] font-bold text-base md:text-lg transition-all duration-300 hover:bg-[#009ab6] hover:text-white hover:shadow-lg hover:scale-105 active:scale-100"
             >
               <span className="relative z-10">Show More</span>
               <motion.div
@@ -135,7 +135,7 @@ export default function HomeGalleryPreview() {
             <button
               type="button"
               onClick={() => setExpanded(false)}
-              className="px-8 py-3 md:px-12 md:py-4 border-2 border-[#006d7a]/20 rounded-full text-black/70 font-semibold text-base md:text-lg transition-all duration-300 hover:border-[#009ab6]/40 hover:text-black"
+              className="px-10 py-4 md:px-12 md:py-5 border-2 border-[#006d7a]/20 rounded-full text-black/75 font-bold text-base md:text-lg transition-all duration-300 hover:border-[#009ab6]/40 hover:text-black"
             >
               Show less
             </button>

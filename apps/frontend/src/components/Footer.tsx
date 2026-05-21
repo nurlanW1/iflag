@@ -57,35 +57,35 @@ export default function Footer() {
         <div className="mb-16 grid grid-cols-1 gap-14 md:grid-cols-2 md:gap-16 lg:grid-cols-5 lg:gap-14 xl:gap-20">
           {/* Brand Column */}
           <div>
-            <div className="mb-5 flex items-center gap-2.5">
-              <Flag size={36} className="text-[#009ab6]" />
-              <span className="text-2xl font-black tracking-tight sm:text-3xl">{SITE_NAME}</span>
+            <div className="mb-5 flex flex-wrap items-center gap-3">
+              <Flag size={44} className="text-[#009ab6]" />
+              <span className="text-3xl font-black tracking-tight sm:text-[2.125rem]">{SITE_NAME}</span>
             </div>
             <p className="mb-7 text-base text-white/65">
               High-quality flag, symbol, and related digital assets for creative and professional projects.
             </p>
             <div className="flex gap-4">
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">
-                <Twitter size={20} />
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/60 transition-colors hover:text-white">
+                <Twitter size={22} />
               </a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">
-                <Facebook size={20} />
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white/60 transition-colors hover:text-white">
+                <Facebook size={22} />
               </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">
-                <Instagram size={20} />
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white/60 transition-colors hover:text-white">
+                <Instagram size={22} />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">
-                <Linkedin size={20} />
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-white/60 transition-colors hover:text-white">
+                <Linkedin size={22} />
               </a>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">
-                <Github size={20} />
+              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-white/60 transition-colors hover:text-white">
+                <Github size={22} />
               </a>
             </div>
           </div>
 
           {/* Products Column */}
           <div>
-            <h3 className="mb-5 text-xl font-bold text-[#009ab6]">Products</h3>
+            <h3 className="mb-6 text-xl font-bold text-[#009ab6] sm:text-[1.35rem]">Products</h3>
             <ul className="space-y-4">
               <li>
                 <Link href="/assets" className="text-base text-white/65 transition-colors hover:text-white">
@@ -121,7 +121,7 @@ export default function Footer() {
 
           {/* Company Column */}
           <div>
-            <h3 className="mb-5 text-xl font-bold text-[#009ab6]">Company</h3>
+            <h3 className="mb-6 text-xl font-bold text-[#009ab6] sm:text-[1.35rem]">Company</h3>
             <ul className="space-y-4">
               <li>
                 <Link href="/about" className="text-base text-white/65 transition-colors hover:text-white">
@@ -153,7 +153,7 @@ export default function Footer() {
 
           {/* Legal Column */}
           <div>
-            <h3 className="mb-5 text-xl font-bold text-[#009ab6]">Legal</h3>
+            <h3 className="mb-6 text-xl font-bold text-[#009ab6] sm:text-[1.35rem]">Legal</h3>
             <ul className="space-y-4">
               <li>
                 <Link href="/privacy-policy" className="text-base text-white/65 transition-colors hover:text-white">
@@ -190,7 +190,7 @@ export default function Footer() {
 
           {/* Support Column */}
           <div>
-            <h3 className="mb-5 text-xl font-bold text-[#009ab6]">Support</h3>
+            <h3 className="mb-6 text-xl font-bold text-[#009ab6] sm:text-[1.35rem]">Support</h3>
             <ul className="space-y-4">
               <li>
                 <Link href="/help" className="text-base text-white/65 transition-colors hover:text-white">
