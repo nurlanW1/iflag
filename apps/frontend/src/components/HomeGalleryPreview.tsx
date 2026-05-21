@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import GalleryGrid from './GalleryGrid';
 
@@ -61,9 +60,9 @@ export default function HomeGalleryPreview() {
 
   if (loading) {
     return (
-      <section className="bg-white py-20 md:py-28 lg:py-32">
+      <section className="border-t border-neutral-200/90 bg-white py-16 md:py-20 lg:py-24">
         <div className="marketplace-shell">
-          <div className="flex justify-center items-center py-20">
+          <div className="flex justify-center items-center py-16">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#009ab6]"></div>
           </div>
         </div>
@@ -72,20 +71,20 @@ export default function HomeGalleryPreview() {
   }
 
   return (
-    <section className="relative bg-white py-20 md:py-28 lg:py-32">
+    <section className="relative border-t border-neutral-200/90 bg-white py-16 md:py-20 lg:py-24">
       <div className="marketplace-shell">
         {/* Section Header */}
         <SectionReveal
           hidden={{ opacity: 0, y: 20 }}
           visible={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-12 text-center md:mb-16 lg:mb-20"
+          className="mb-12 text-center md:mb-14"
         >
-          <h2 className="mx-auto mb-4 max-w-4xl text-3xl font-black tracking-tight text-gray-950 sm:mb-5 sm:text-4xl md:text-5xl lg:text-[2.75rem]">
+          <h2 className="mx-auto mb-4 max-w-4xl text-3xl font-bold tracking-tight text-neutral-950 sm:text-[2rem] lg:text-[2.25rem]">
             Popular countries
           </h2>
-          <p className="mx-auto max-w-2xl text-pretty text-base font-medium leading-relaxed text-black/62 sm:text-lg md:text-xl">
-            Dive into curated country hubs — previews update from the gallery API.
+          <p className="mx-auto max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
+            Editorial hubs powered by Neon — tap a tile to preview formats and downloads inside the gallery.
           </p>
         </SectionReveal>
 
@@ -102,7 +101,7 @@ export default function HomeGalleryPreview() {
           )}
 
           <div className={expanded || allCountries.length <= PREVIEW_COUNT ? '' : 'overflow-hidden'}>
-            <div className="rounded-[1.75rem] border-2 border-[#006d7a]/12 bg-[#f5fafb] p-3 shadow-[0_12px_40px_-12px_rgba(0,109,122,0.18)] sm:p-4 md:p-5">
+            <div className="rounded-2xl border border-neutral-200/95 bg-neutral-50/90 p-4 shadow-[0_18px_48px_-20px_rgba(15,23,42,0.14)] sm:p-5 md:rounded-[1.65rem] md:p-6">
               <GalleryGrid
                 countries={displayCountries}
                 disableScrollReveal
@@ -123,19 +122,15 @@ export default function HomeGalleryPreview() {
             <button
               type="button"
               onClick={handleShowMore}
-              className="group relative px-10 py-4 md:px-12 md:py-5 border-2 border-[#009ab6] rounded-full text-[#009ab6] font-bold text-base md:text-lg transition-all duration-300 hover:bg-[#009ab6] hover:text-white hover:shadow-lg hover:scale-105 active:scale-100"
+              className="min-h-14 rounded-xl border-2 border-[#009ab6] px-12 py-4 text-base font-semibold text-[#009ab6] transition-all duration-300 hover:bg-[#009ab6] hover:text-white hover:shadow-lg md:text-lg"
             >
-              <span className="relative z-10">Show More</span>
-              <motion.div
-                className="absolute inset-0 rounded-full bg-[#009ab6] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                initial={false}
-              />
+              Show more
             </button>
           ) : expanded && allCountries.length > PREVIEW_COUNT ? (
             <button
               type="button"
               onClick={() => setExpanded(false)}
-              className="px-10 py-4 md:px-12 md:py-5 border-2 border-[#006d7a]/20 rounded-full text-black/75 font-bold text-base md:text-lg transition-all duration-300 hover:border-[#009ab6]/40 hover:text-black"
+              className="min-h-14 rounded-xl border border-neutral-300 px-12 py-4 text-base font-semibold text-neutral-700 transition hover:border-[#009ab6]/40 hover:text-neutral-950 md:text-lg"
             >
               Show less
             </button>

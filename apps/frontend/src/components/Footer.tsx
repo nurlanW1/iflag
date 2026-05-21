@@ -23,7 +23,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-black text-white">
+    <footer className="border-t border-white/[0.06] bg-[#060b11] text-white">
       {/* Newsletter Notification */}
       <AnimatePresence>
         {showNotification && (
@@ -37,7 +37,7 @@ export default function Footer() {
               <CheckCircle className="text-green-500 flex-shrink-0 mt-0.5" size={20} />
               <div className="flex-1">
                 <p className="text-black font-semibold mb-1">Subscribed!</p>
-                <p className="text-gray-600 text-sm">
+                <p className="text-gray-700 text-base leading-snug">
                   Thank you for subscribing to our newsletter.
                 </p>
               </div>
@@ -53,39 +53,39 @@ export default function Footer() {
         )}
       </AnimatePresence>
 
-      <PageShell className="py-14 sm:py-16 md:py-20 supports-[padding:max(0px)]:pb-[max(3rem,env(safe-area-inset-bottom))]">
+      <PageShell className="py-16 sm:py-20 md:py-24 supports-[padding:max(0px)]:pb-[max(3rem,env(safe-area-inset-bottom))]">
         <div className="mb-16 grid grid-cols-1 gap-14 md:grid-cols-2 md:gap-16 lg:grid-cols-5 lg:gap-14 xl:gap-20">
           {/* Brand Column */}
           <div>
-            <div className="mb-5 flex flex-wrap items-center gap-3">
-              <Flag size={44} className="text-[#009ab6]" />
+            <div className="mb-6 flex flex-wrap items-center gap-3">
+              <Flag size={52} className="text-[#5ce1f7]" aria-hidden />
               <span className="text-3xl font-black tracking-tight sm:text-[2.125rem]">{SITE_NAME}</span>
             </div>
-            <p className="mb-7 text-base text-white/65">
+            <p className="mb-8 max-w-md text-base leading-relaxed text-white/65">
               High-quality flag, symbol, and related digital assets for creative and professional projects.
             </p>
-            <div className="flex gap-4">
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/60 transition-colors hover:text-white">
-                <Twitter size={22} />
+            <div className="flex flex-wrap gap-5">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white" aria-label="Twitter">
+                <Twitter size={26} />
               </a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white/60 transition-colors hover:text-white">
-                <Facebook size={22} />
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white" aria-label="Facebook">
+                <Facebook size={26} />
               </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white/60 transition-colors hover:text-white">
-                <Instagram size={22} />
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white" aria-label="Instagram">
+                <Instagram size={26} />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-white/60 transition-colors hover:text-white">
-                <Linkedin size={22} />
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white" aria-label="LinkedIn">
+                <Linkedin size={26} />
               </a>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-white/60 transition-colors hover:text-white">
-                <Github size={22} />
+              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white" aria-label="GitHub">
+                <Github size={26} />
               </a>
             </div>
           </div>
 
           {/* Products Column */}
           <div>
-            <h3 className="mb-6 text-xl font-bold text-[#009ab6] sm:text-[1.35rem]">Products</h3>
+            <h3 className="mb-5 text-lg font-semibold tracking-tight text-white">Products</h3>
             <ul className="space-y-4">
               <li>
                 <Link href="/assets" className="text-base text-white/65 transition-colors hover:text-white">
@@ -121,7 +121,7 @@ export default function Footer() {
 
           {/* Company Column */}
           <div>
-            <h3 className="mb-6 text-xl font-bold text-[#009ab6] sm:text-[1.35rem]">Company</h3>
+            <h3 className="mb-5 text-lg font-semibold tracking-tight text-white">Company</h3>
             <ul className="space-y-4">
               <li>
                 <Link href="/about" className="text-base text-white/65 transition-colors hover:text-white">
@@ -153,7 +153,7 @@ export default function Footer() {
 
           {/* Legal Column */}
           <div>
-            <h3 className="mb-6 text-xl font-bold text-[#009ab6] sm:text-[1.35rem]">Legal</h3>
+            <h3 className="mb-5 text-lg font-semibold tracking-tight text-white">Legal</h3>
             <ul className="space-y-4">
               <li>
                 <Link href="/privacy-policy" className="text-base text-white/65 transition-colors hover:text-white">
@@ -190,7 +190,7 @@ export default function Footer() {
 
           {/* Support Column */}
           <div>
-            <h3 className="mb-6 text-xl font-bold text-[#009ab6] sm:text-[1.35rem]">Support</h3>
+            <h3 className="mb-5 text-lg font-semibold tracking-tight text-white">Support</h3>
             <ul className="space-y-4">
               <li>
                 <Link href="/help" className="text-base text-white/65 transition-colors hover:text-white">
@@ -207,10 +207,10 @@ export default function Footer() {
         </div>
 
         {/* Newsletter */}
-        <div className="border-t border-white/10 pt-12 mb-12">
+        <div className="border-t border-white/[0.08] pt-14 pb-12">
           <div className="w-full max-w-none">
-            <h3 className="mb-3 text-2xl font-bold text-white/90">Stay Updated</h3>
-            <p className="mb-5 text-base text-white/65">
+            <h3 className="mb-4 text-2xl font-bold tracking-tight text-white">Stay updated</h3>
+            <p className="mb-6 max-w-xl text-base leading-relaxed text-white/65">
               Get the latest flags, updates, and exclusive offers delivered to your inbox.
             </p>
             <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-3 xs:flex-row xs:items-stretch">
@@ -219,12 +219,12 @@ export default function Footer() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="min-h-[48px] flex-1 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-base text-white placeholder:text-white/45 transition-colors focus:border-[#009ab6] focus:outline-none focus:ring-2 focus:ring-[#009ab6]/30"
+                className="min-h-14 flex-1 rounded-xl border border-white/18 bg-white/[0.06] px-5 py-3 text-base text-white placeholder:text-white/40 transition-colors focus:border-[#009ab6] focus:outline-none focus:ring-2 focus:ring-[#009ab6]/35"
                 required
               />
               <button
                 type="submit"
-                className="min-h-[48px] shrink-0 touch-manipulation rounded-xl bg-[#009ab6] px-7 py-3 text-base font-semibold text-white transition-colors hover:bg-[#007a8a] xs:w-auto"
+                className="min-h-14 shrink-0 touch-manipulation rounded-xl bg-[#009ab6] px-10 py-3 text-base font-semibold text-white transition-colors hover:bg-[#008aa3] xs:w-auto"
               >
                 Subscribe
               </button>

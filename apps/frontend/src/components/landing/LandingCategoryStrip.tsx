@@ -28,38 +28,45 @@ export function LandingCategoryStrip() {
   const approvedCats = useMemo(() => cats.filter((c) => c.isApproved).slice(0, 18), [cats]);
 
   return (
-    <section className="border-t border-gray-100 bg-gray-50/90 py-16 md:py-20 lg:py-24" aria-labelledby="categories-strip-heading">
+    <section
+      id="catalog-categories"
+      className="scroll-mt-[calc(var(--header-height)+16px)] border-t border-neutral-200/90 bg-neutral-50/95 py-16 md:py-20 lg:py-24"
+      aria-labelledby="categories-strip-heading"
+    >
       <div className="marketplace-shell">
         <SectionReveal
           hidden={{ opacity: 0, y: 12 }}
           visible={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45 }}
-          className="mb-10 text-center"
+          className="mb-12 text-center"
         >
-          <h2 id="categories-strip-heading" className="text-3xl font-black text-gray-950 sm:text-4xl lg:text-[2.125rem]">
+          <h2
+            id="categories-strip-heading"
+            className="text-3xl font-bold tracking-tight text-neutral-950 sm:text-[2rem] lg:text-[2.125rem]"
+          >
             Categories
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-pretty text-base text-gray-600 sm:text-lg">
-            Jump into a collection or open the full catalog with one tap.
+          <p className="mx-auto mt-4 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
+            Jump into a curated rail or open the full catalog — vector-first workflows supported across regions.
           </p>
         </SectionReveal>
 
-        <div className="-mx-1 flex flex-wrap justify-center gap-3 pb-1 sm:gap-3.5">
+        <div className="-mx-1 flex flex-wrap justify-center gap-3 pb-1 sm:gap-4">
           <Link
             href="/browse"
-            className="inline-flex min-h-[3rem] items-center rounded-xl bg-gray-950 px-8 py-2.5 text-base font-semibold text-white shadow-md transition hover:bg-[#009ab6]"
+            className="inline-flex min-h-14 items-center rounded-xl bg-neutral-950 px-10 py-3 text-base font-semibold text-white shadow-md transition hover:bg-[#009ab6]"
           >
             Browse all
           </Link>
           <Link
             href="/gallery"
-            className="inline-flex min-h-[3rem] items-center rounded-xl border-2 border-gray-200 bg-white px-8 py-2.5 text-base font-semibold text-gray-900 transition hover:border-[#009ab6]"
+            className="inline-flex min-h-14 items-center rounded-xl border border-neutral-300 bg-white px-10 py-3 text-base font-semibold text-neutral-900 shadow-sm transition hover:border-[#009ab6]"
           >
             Country gallery
           </Link>
           <Link
             href="/pricing"
-            className="inline-flex min-h-[3rem] items-center rounded-xl border-2 border-gray-200 bg-white px-8 py-2.5 text-base font-semibold text-gray-900 transition hover:border-[#009ab6]"
+            className="inline-flex min-h-14 items-center rounded-xl border border-neutral-300 bg-white px-10 py-3 text-base font-semibold text-neutral-900 shadow-sm transition hover:border-[#009ab6]"
             title="Paddle checkout"
           >
             Licenses &amp; pricing
@@ -68,7 +75,7 @@ export function LandingCategoryStrip() {
             <Link
               key={c.id}
               href={`/browse?category=${encodeURIComponent(c.slug)}`}
-              className="inline-flex min-h-[3rem] items-center rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-base font-medium text-gray-800 shadow-sm transition hover:border-[#009ab6] hover:text-[#009ab6]"
+              className="inline-flex min-h-14 items-center rounded-xl border border-neutral-200 bg-white px-8 py-3 text-base font-medium text-neutral-800 shadow-sm transition hover:border-[#009ab6] hover:text-[#009ab6]"
             >
               {c.name}
             </Link>

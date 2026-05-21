@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import HomeGalleryPreview from '@/components/HomeGalleryPreview';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import { MarketplaceProductCard } from '@/components/marketplace/MarketplaceProductCard';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
@@ -71,23 +72,31 @@ function ProductRailSection({
   categoryNames: Record<string, string>;
 }) {
   return (
-    <section className="border-t border-gray-100 bg-white py-16 md:py-20 lg:py-24" aria-labelledby={id}>
+    <section
+      className="border-t border-neutral-200/90 bg-white py-14 md:py-20 lg:py-24"
+      aria-labelledby={id}
+    >
       <div className="marketplace-shell">
         <SectionReveal
           hidden={{ opacity: 0, y: 14 }}
           visible={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45 }}
-          className="mb-10 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-end sm:justify-between"
+          className="mb-10 flex flex-col gap-5 sm:mb-12 sm:flex-row sm:items-end sm:justify-between"
         >
           <div className="max-w-3xl text-left">
-            <h2 id={id} className="text-3xl font-black tracking-tight text-gray-950 sm:text-4xl lg:text-[2.125rem]">
+            <h2
+              id={id}
+              className="text-3xl font-bold tracking-tight text-neutral-950 sm:text-[2rem] lg:text-[2.125rem]"
+            >
               {title}
             </h2>
-            <p className="mt-2 max-w-2xl text-pretty text-base leading-relaxed text-gray-600 sm:text-lg">{subtitle}</p>
+            <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
+              {subtitle}
+            </p>
           </div>
           <Link
             href={viewAllHref}
-            className="inline-flex min-h-[3rem] shrink-0 items-center justify-center rounded-xl border-2 border-gray-200 px-8 py-3 text-base font-semibold text-gray-900 shadow-sm transition hover:border-[#009ab6] hover:text-[#009ab6]"
+            className="inline-flex min-h-14 shrink-0 items-center justify-center rounded-xl border border-neutral-300 bg-white px-8 py-3.5 text-base font-semibold text-neutral-900 shadow-sm transition hover:border-[#009ab6] hover:text-[#009ab6]"
           >
             {viewAllLabel}
           </Link>
@@ -102,7 +111,7 @@ function ProductRailSection({
             ))}
           </ul>
         ) : products.length === 0 ? (
-          <p className="text-center text-base text-gray-500">No catalog items loaded yet.</p>
+          <p className="text-center text-base text-neutral-500">No catalog items loaded yet.</p>
         ) : (
           <ul className={marketplaceProductCardGridClasses}>
             {products.map((p) => (
@@ -126,6 +135,8 @@ export function LandingProductRails() {
   const [newest, setNewest] = useState<PublicProduct[]>([]);
   const [popular, setPopular] = useState<PublicProduct[]>([]);
   const [premium, setPremium] = useState<PublicProduct[]>([]);
+  const [historical, setHistorical] = useState<PublicProduct[]>([]);
+  const [sports, setSports] = useState<PublicProduct[]>([]);
   const [loadingRails, setLoadingRails] = useState(true);
   const missingPublicApiBanner = NEXT_PUBLIC_BACKEND.length === 0;
 
@@ -146,7 +157,7 @@ export function LandingProductRails() {
         const trendingUrl = base ? `${base}/assets?page=2&limit=8&sort=newest` : null;
         const premiumPaidUrl = base ? `${base}/assets?page=1&limit=8&premium_tier=paid` : null;
 
-        const [n, po, premiumOut] = await Promise.all([
+        const [n, po, premiumOut, hist, sport] = await Promise.all([
           catalogStripFromRailThenMarket(
             newestUrl,
             '/api/marketplace/products?page=1&limit=8&sort=newest',
@@ -159,6 +170,12 @@ export function LandingProductRails() {
             premiumPaidUrl,
             '/api/marketplace/products?page=1&limit=8&sort=newest&tier=pro',
           ),
+          mapMarketplacePick(
+            await fetch('/api/marketplace/products?page=1&limit=8&q=historical', { cache: 'no-store' }),
+          ),
+          mapMarketplacePick(
+            await fetch('/api/marketplace/products?page=1&limit=8&q=sports', { cache: 'no-store' }),
+          ),
         ]);
 
         if (!cancelled) {
@@ -166,12 +183,16 @@ export function LandingProductRails() {
           setNewest(n);
           setPopular(po);
           setPremium(premiumOut);
+          setHistorical(hist);
+          setSports(sport);
         }
       } catch {
         if (!cancelled) {
           setNewest([]);
           setPopular([]);
           setPremium([]);
+          setHistorical([]);
+          setSports([]);
         }
       } finally {
         if (!cancelled) setLoadingRails(false);
@@ -192,9 +213,9 @@ export function LandingProductRails() {
     <>
       {missingPublicApiBanner ? (
         <div role="alert" className="border-b border-amber-200 bg-amber-50 text-amber-950">
-          <div className="marketplace-shell py-4 text-sm leading-relaxed">
+          <div className="marketplace-shell py-4 text-base leading-relaxed">
             <p className="font-semibold">Backend API URL is not configured in the browser</p>
-            <p className="mt-1 text-amber-900/95">
+            <p className="mt-2 text-amber-900/95">
               Set <code className="rounded bg-amber-100/80 px-1">NEXT_PUBLIC_API_URL</code> to your Railway
               API origin including <code className="rounded bg-amber-100/80 px-1">/api</code>{' '}
               (example:{' '}
@@ -210,13 +231,16 @@ export function LandingProductRails() {
       <ProductRailSection
         id="rail-trending"
         title="Trending flags"
-        subtitle="What creators are discovering right now in the marketplace."
+        subtitle="High‑intent downloads and editorial picks updated from live marketplace activity."
         products={popular}
         loading={loadingRails}
         viewAllHref="/browse?sort=popular"
         viewAllLabel="View all trending"
         categoryNames={categoryMap}
       />
+
+      <HomeGalleryPreview />
+
       <ProductRailSection
         id="rail-new"
         title="New uploads"
@@ -230,11 +254,33 @@ export function LandingProductRails() {
       <ProductRailSection
         id="rail-premium"
         title="Premium assets"
-        subtitle="Commercial-ready downloads with Paddle checkout on the pricing page."
+        subtitle="Commercial-ready masters with predictable licensing — checkout handled securely via Paddle."
         products={premium}
         loading={loadingRails}
         viewAllHref="/browse?tier=pro"
         viewAllLabel="Explore premium"
+        categoryNames={categoryMap}
+      />
+
+      <ProductRailSection
+        id="rail-historical"
+        title="Historical collections"
+        subtitle="Heritage marks, alternate histories, and archival-inspired treatments."
+        products={historical}
+        loading={loadingRails}
+        viewAllHref="/gallery?kind=historical"
+        viewAllLabel="Browse historical gallery"
+        categoryNames={categoryMap}
+      />
+
+      <ProductRailSection
+        id="rail-sports"
+        title="Sports organizations"
+        subtitle="Leagues, federations, and athletic marks curated for broadcast-ready pipelines."
+        products={sports}
+        loading={loadingRails}
+        viewAllHref="/browse?q=sports"
+        viewAllLabel="See sports assets"
         categoryNames={categoryMap}
       />
     </>

@@ -60,8 +60,8 @@
   --transition-slow: 300ms ease-in-out;
   
   /* Layout — centered marketplace rail (see `.marketplace-shell`) */
-  /** Dark premium navbar (~py-5 + xl logo) */
-  --header-height: 96px;
+  /** Dark premium navbar (~84–88px content band) */
+  --header-height: 88px;
   /** Max content width: premium widescreen (~1800); never edge-to-edge on ultrawide. */
   --marketplace-shell-max-width: 1800px;
   /** Comfortable reading measure for legal / long-form inside the shell */
@@ -83,8 +83,8 @@ html {
 
 body {
   font-family: 'Inter', var(--font-sans);
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 17px;
+  line-height: 1.62;
     color: #111111; /* Text (Dark) */
     background-color: #ffffff; /* Background (White) */
   margin: 0;

@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
-import HomeGalleryPreview from '@/components/HomeGalleryPreview';
 import { LandingCategoryStrip } from '@/components/landing/LandingCategoryStrip';
 import { LandingProductRails } from '@/components/landing/LandingProductRails';
 import { SectionReveal } from '@/components/motion/SectionReveal';
@@ -26,18 +25,20 @@ const TRENDING = ['USA', 'France', 'Japan', 'Germany', 'UK', 'Brazil', 'Canada']
 export type HeroCategoryTab =
   | 'all'
   | 'countries'
-  | 'circular'
   | 'historical'
   | 'organizations'
-  | 'sports';
+  | 'sports'
+  | 'circular'
+  | 'coat-of-arms';
 
 const HERO_TABS: { id: HeroCategoryTab; label: string }[] = [
   { id: 'all', label: 'All Flags' },
   { id: 'countries', label: 'Countries' },
-  { id: 'circular', label: 'Circular Flags' },
   { id: 'historical', label: 'Historical' },
   { id: 'organizations', label: 'Organizations' },
   { id: 'sports', label: 'Sports' },
+  { id: 'circular', label: 'Circular Flags' },
+  { id: 'coat-of-arms', label: 'Coat of Arms' },
 ];
 
 function buildHeroDestination(tab: HeroCategoryTab, qRaw: string): string {
@@ -55,6 +56,10 @@ function buildHeroDestination(tab: HeroCategoryTab, qRaw: string): string {
       return q ? `/browse?q=${encodeURIComponent(q)}` : '/gallery?kind=organizations';
     case 'sports':
       return q ? `/browse?q=${encodeURIComponent(q)}` : '/browse?q=sports';
+    case 'coat-of-arms':
+      return q
+        ? `/browse?q=${encodeURIComponent(`${q} coat of arms`)}`
+        : `/browse?q=${encodeURIComponent('coat of arms')}`;
     default:
       return '/browse';
   }
@@ -212,9 +217,9 @@ export default function HomePageClient() {
   return (
     <main className="min-h-screen bg-white">
 
-      {/* Hero — stock marketplace spotlight */}
+      {/* Hero — premium marketplace focal */}
       <section
-        className="relative flex min-h-[520px] w-full shrink-0 flex-col justify-center overflow-hidden border-b border-black/15 bg-[#052028] py-14 sm:min-h-[580px] sm:py-16 md:min-h-[620px] md:py-[4.5rem] lg:min-h-[640px] lg:py-[4.75rem] xl:min-h-[700px]"
+        className="relative flex min-h-[560px] w-full shrink-0 flex-col justify-center overflow-hidden border-b border-black/10 bg-[#070f14] py-12 sm:min-h-[600px] sm:py-14 lg:min-h-[640px] lg:py-16 xl:min-h-[680px]"
         aria-labelledby="hero-heading"
       >
         <div
@@ -238,30 +243,61 @@ export default function HomePageClient() {
           aria-hidden
         />
 
-        <div className="relative z-10 marketplace-shell flex w-full flex-col items-center pb-4 pt-2 text-center lg:pb-10 lg:pt-6">
+        <div className="relative z-10 marketplace-shell flex w-full flex-col items-center pb-10 pt-8 text-center lg:pb-14 lg:pt-10">
           <motion.div
             initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            className="flex w-full max-w-[min(1152px,calc(100%-0rem))] flex-col items-center text-center xl:max-w-[min(1200px,calc(100%-0rem))]"
+            className="flex w-full max-w-5xl flex-col items-center text-center xl:max-w-[56rem]"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[#76e4ef]/95 sm:text-sm">
-              Premium flag stock marketplace · {SITE_NAME}
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#9cf3ff]/90">
+              Premium marketplace · {SITE_NAME}
             </p>
             <h1
               id="hero-heading"
-              className="mt-6 max-w-5xl text-balance font-black leading-[1.05] tracking-tight text-white md:mt-7"
+              className="mt-6 max-w-5xl text-balance font-bold leading-[1.08] tracking-tight text-white md:mt-8"
             >
-              <span className="block text-[clamp(2.15rem,2.2vw+1.85rem,3.95rem)] sm:text-[clamp(2.25rem,1.65vw+2.2rem,4.85rem)]">
-                Download High-Quality Flag Assets
+              <span className="block text-5xl sm:text-[3.25rem] lg:text-6xl xl:text-[3.75rem]">
+                Download Premium Flag Assets
               </span>
             </h1>
-            <p className="mx-auto mt-5 max-w-3xl text-pretty text-lg font-medium leading-relaxed text-white/88 sm:text-xl md:mt-6 md:text-2xl">
-              Vectors, icons, country flags, historical flags, organizations, and more.
+            <p className="mx-auto mt-6 max-w-3xl text-pretty text-lg font-normal leading-relaxed text-white/85 sm:text-xl lg:text-[1.35rem]">
+              Country flags, circular flags, historical flags, sports organizations, vector packs, and more.
             </p>
 
+            <form
+              onSubmit={handleSearch}
+              className="mt-10 w-full max-w-5xl sm:mt-12"
+              role="search"
+              aria-label="Search flag assets"
+            >
+              <div className="flex w-full flex-col overflow-hidden rounded-2xl border border-white/15 bg-black/40 shadow-[0_24px_56px_-16px_rgba(0,0,0,0.65)] backdrop-blur-lg transition-[box-shadow,border-color] focus-within:border-[#5ce1f7]/35 focus-within:shadow-[0_28px_64px_-12px_rgba(0,0,0,0.72)] focus-within:ring-2 focus-within:ring-[#5ce1f7]/20 md:flex-row md:rounded-2xl">
+                <div className="flex min-h-14 w-full flex-1 items-center rounded-t-2xl bg-white px-5 md:rounded-none md:rounded-l-2xl lg:min-h-[4rem] lg:px-6">
+                  <Search className="h-8 w-8 shrink-0 text-neutral-400" aria-hidden />
+                  <label htmlFor="hero-search" className="sr-only">
+                    Search query
+                  </label>
+                  <input
+                    id="hero-search"
+                    type="search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search vectors, ISO codes, regions, organizations…"
+                    className="min-w-0 flex-1 border-0 bg-transparent py-4 pl-4 pr-2 text-lg leading-snug text-neutral-950 placeholder:text-neutral-500 focus:outline-none focus:ring-0 lg:text-xl"
+                    autoComplete="off"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="inline-flex min-h-14 w-full shrink-0 items-center justify-center rounded-b-2xl bg-[#009ab6] px-12 py-4 text-lg font-semibold tracking-wide text-white shadow-inner transition hover:bg-[#008aa3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-white md:w-auto md:min-h-[4rem] md:rounded-none md:rounded-r-2xl lg:px-14 lg:text-xl"
+                >
+                  Search
+                </button>
+              </div>
+            </form>
+
             <nav
-              className="mt-9 flex max-w-[calc(100vw-1.75rem)] snap-x gap-3 overflow-x-auto px-2 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center [&::-webkit-scrollbar]:hidden md:mt-11"
+              className="mt-10 flex max-w-[calc(100vw-2rem)] snap-x gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center [&::-webkit-scrollbar]:hidden lg:mt-12"
               aria-label="Explore categories"
             >
               {HERO_TABS.map(({ id, label }) => {
@@ -272,10 +308,10 @@ export default function HomePageClient() {
                     type="button"
                     onClick={() => setHeroCategoryTab(id)}
                     aria-current={active ? 'true' : undefined}
-                    className={`min-h-[3rem] shrink-0 snap-start rounded-xl border px-5 py-2.5 text-base font-semibold transition sm:min-h-[3.125rem] sm:px-6 sm:text-[1.05rem] md:text-lg ${
+                    className={`min-h-12 shrink-0 snap-start rounded-xl border px-6 py-3 text-base font-semibold transition sm:min-h-[3.25rem] lg:text-[1.0625rem] ${
                       active
-                        ? 'border-transparent bg-white text-gray-950 shadow-xl shadow-black/25'
-                        : 'border-white/25 bg-white/5 text-white/88 hover:bg-white/12 hover:text-white'
+                        ? 'border-transparent bg-white text-neutral-950 shadow-lg shadow-black/20'
+                        : 'border-white/20 bg-white/[0.06] text-white/90 hover:bg-white/12 hover:text-white'
                     }`}
                   >
                     {label}
@@ -284,72 +320,39 @@ export default function HomePageClient() {
               })}
             </nav>
 
-            <form
-              onSubmit={handleSearch}
-              className="mt-10 w-full max-w-6xl sm:mt-12"
-              role="search"
-              aria-label="Search flag assets"
-            >
-              <div className="flex w-full flex-col overflow-hidden rounded-2xl border-2 border-white/18 bg-black/35 shadow-[0_26px_64px_-12px_rgba(0,0,0,0.72)] backdrop-blur-md transition-[box-shadow,border-color] focus-within:border-white/42 focus-within:shadow-[0_32px_72px_-8px_rgba(0,0,0,0.78)] focus-within:ring-2 focus-within:ring-white/25 md:flex-row md:rounded-2xl">
-                <div className="flex min-h-[3.625rem] w-full flex-1 items-center rounded-t-2xl bg-white px-4 sm:min-h-16 md:rounded-none md:rounded-l-2xl md:px-6 lg:h-16 lg:min-h-[4rem]">
-                  <Search className="h-7 w-7 shrink-0 text-gray-400 sm:h-[1.75rem] sm:w-[1.75rem]" aria-hidden />
-                  <label htmlFor="hero-search" className="sr-only">
-                    Search query
-                  </label>
-                  <input
-                    id="hero-search"
-                    type="search"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search millions of royalty-ready flag visuals…"
-                    className="min-w-0 flex-1 border-0 bg-transparent py-4 pl-3 pr-2 text-[1.0625rem] leading-snug text-gray-950 placeholder:text-gray-500 focus:outline-none focus:ring-0 sm:pl-4 sm:text-lg md:text-xl"
-                    autoComplete="off"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="inline-flex min-h-[3.625rem] w-full shrink-0 items-center justify-center rounded-b-2xl bg-[#009ab6] px-10 py-4 text-lg font-bold tracking-wide text-white transition hover:bg-[#00788c] hover:shadow-inner focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-white md:w-auto md:rounded-none md:rounded-r-2xl lg:min-h-[4rem] lg:px-14 lg:text-xl"
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3 lg:mt-10">
+              <span className="w-full shrink-0 text-center text-base font-semibold uppercase tracking-[0.14em] text-white/55 sm:w-auto">
+                Trending searches
+              </span>
+              {TRENDING.map((term) => (
+                <Link
+                  key={term}
+                  href={`/browse?q=${encodeURIComponent(term.toLowerCase())}`}
+                  className="inline-flex min-h-11 items-center rounded-full border border-white/25 bg-black/30 px-6 py-2.5 text-base font-medium text-white/95 backdrop-blur-sm transition hover:border-white/45 hover:bg-white/10"
                 >
-                  Search
-                </button>
-              </div>
-
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-2 md:gap-3">
-                <span className="w-full shrink-0 text-center text-sm font-semibold uppercase tracking-[0.18em] text-white/58 sm:w-auto md:text-base">
-                  Trending
-                </span>
-                {TRENDING.map((term) => (
-                  <Link
-                    key={term}
-                    href={`/browse?q=${encodeURIComponent(term.toLowerCase())}`}
-                    className="inline-flex min-h-[2.75rem] items-center rounded-full border border-white/35 bg-black/35 px-5 py-2 text-base font-medium text-white backdrop-blur-sm transition hover:border-white/60 hover:bg-white/15 hover:text-white"
-                  >
-                    {term}
-                  </Link>
-                ))}
-              </div>
-            </form>
+                  {term}
+                </Link>
+              ))}
+            </div>
           </motion.div>
         </div>
       </section>
 
-      <HomeGalleryPreview />
-
       <LandingProductRails />
 
       {/* Browse by region */}
-      <section className="shrink-0 border-t border-gray-100 bg-gradient-to-b from-gray-50/95 to-white py-14 sm:py-16 md:py-20">
+      <section className="shrink-0 border-t border-neutral-200/90 bg-gradient-to-b from-neutral-50 to-white py-14 sm:py-16 md:py-20 lg:py-24">
         <div className="marketplace-shell">
           <SectionReveal
             hidden={{ opacity: 0, y: 10 }}
             visible={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="mb-8 flex flex-col items-center text-center sm:mb-10"
+            className="mb-10 flex flex-col items-center text-center sm:mb-12"
           >
-            <h2 className="max-w-3xl text-center text-3xl font-black tracking-tight text-gray-950 sm:text-4xl md:text-[2.25rem]">
+            <h2 className="max-w-3xl text-center text-3xl font-bold tracking-tight text-neutral-950 sm:text-[2rem] lg:text-[2.125rem]">
               Browse by region
             </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-pretty text-base text-gray-600 sm:text-lg">
+            <p className="mx-auto mt-4 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
               Navigate our gallery hubs by geography — curated inside the centered catalog rail.
             </p>
           </SectionReveal>
@@ -454,7 +457,7 @@ export default function HomePageClient() {
       <LandingCategoryStrip />
 
       {/* Stats Section */}
-      <section className="bg-gradient-to-b from-white to-[#006d7a]/5 py-24 md:py-28 lg:py-32">
+      <section className="border-t border-neutral-100 bg-gradient-to-b from-white to-[#006d7a]/[0.04] py-20 md:py-24 lg:py-28">
         <div className="marketplace-shell">
           <div className="grid grid-cols-2 gap-10 md:grid-cols-4 md:gap-14 lg:gap-16">
             {[
@@ -482,7 +485,7 @@ export default function HomePageClient() {
       </section>
 
       {/* Premium Plans */}
-      <section className="relative overflow-hidden bg-white py-28 lg:py-32">
+      <section className="relative overflow-hidden bg-white py-20 lg:py-28">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{
@@ -542,7 +545,7 @@ export default function HomePageClient() {
       </section>
 
       {/* How It Works */}
-      <section className="bg-gradient-to-b from-[#006d7a]/5 to-white py-28 lg:py-32">
+      <section className="border-t border-neutral-100 bg-gradient-to-b from-[#006d7a]/[0.04] to-white py-20 lg:py-28">
         <div className="marketplace-shell">
           <SectionReveal
             hidden={{ opacity: 0, y: 20 }}
@@ -590,7 +593,7 @@ export default function HomePageClient() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#009ab6] via-[#006d7a] to-[#004d5a] py-28 lg:py-32">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#009ab6] via-[#006d7a] to-[#053038] py-20 lg:py-28">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 opacity-10">
           {motionBgMounted ? (
