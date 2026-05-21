@@ -20,6 +20,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
+import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 
 interface Country {
   name: string;
@@ -335,7 +336,7 @@ function GalleryContent() {
 
 function CardGrid({ countries }: { countries: Country[] }) {
   return (
-    <div className="grid grid-cols-2 gap-4 xs:gap-5 sm:grid-cols-3 md:grid-cols-4 md:gap-6 lg:grid-cols-5 lg:gap-7 xl:grid-cols-6 2xl:grid-cols-6 min-[1800px]:grid-cols-7 min-[1800px]:gap-8">
+    <div className={marketplaceProductCardGridClasses}>
       {countries.map((country, idx) => (
         <motion.div
           key={`${country.code ?? 'x'}-${country.slug}`}
@@ -461,7 +462,7 @@ function SkeletonGrid({ view }: { view: ViewMode }) {
     );
   }
   return (
-    <div className="grid grid-cols-2 gap-4 xs:gap-5 sm:grid-cols-3 md:grid-cols-4 md:gap-6 lg:grid-cols-5 lg:gap-7 xl:grid-cols-6 2xl:grid-cols-6 min-[1800px]:grid-cols-7 min-[1800px]:gap-8">
+    <div className={marketplaceProductCardGridClasses}>
       {Array.from({ length: 10 }).map((_, i) => (
         <div
           key={i}

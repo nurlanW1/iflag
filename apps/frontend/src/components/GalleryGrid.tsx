@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useRevealInView } from '@/hooks/useRevealInView';
 import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
+import { galleryCompactTileGridClasses, galleryHomeLargeTileGridClasses } from '@/lib/ui/marketplace-layout';
 
 interface Country {
   name: string;
@@ -107,9 +108,7 @@ export default function GalleryGrid({
   largeTiles = false,
   linkToCountryGallery = false,
 }: GalleryGridProps) {
-  const gridClassName = largeTiles
-    ? 'grid min-w-0 grid-cols-2 gap-4 xs:gap-5 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 md:gap-7 lg:grid-cols-4 lg:gap-8 xl:grid-cols-5 xl:gap-9 2xl:grid-cols-6 2xl:gap-10 min-[1800px]:grid-cols-7 min-[1800px]:gap-11'
-    : 'grid min-w-0 grid-cols-2 gap-3 xs:gap-4 xs:grid-cols-3 sm:grid-cols-3 sm:gap-[0.875rem] md:grid-cols-4 md:gap-5 lg:grid-cols-5 lg:gap-6 xl:grid-cols-6 2xl:grid-cols-6 min-[1800px]:grid-cols-7 min-[1800px]:gap-7';
+  const gridClassName = largeTiles ? galleryHomeLargeTileGridClasses : galleryCompactTileGridClasses;
 
   return (
     <div className={gridClassName}>

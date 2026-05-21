@@ -84,7 +84,7 @@ export default function HomeGalleryPreview() {
           <h2 className="mb-4 text-4xl font-bold text-black md:mb-5 md:text-5xl xl:text-6xl">
             Explore Our Flag Collection
           </h2>
-          <p className="mx-auto max-w-none text-lg text-black/60 md:text-xl xl:text-[1.35rem]">
+          <p className="mx-auto max-w-2xl text-pretty text-lg text-black/60 md:text-xl xl:text-[1.35rem]">
             Browse through hundreds of high-quality country flags in various formats
           </p>
         </SectionReveal>

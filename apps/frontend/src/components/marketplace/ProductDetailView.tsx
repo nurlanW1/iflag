@@ -13,6 +13,7 @@ import {
   isPaidCatalogProduct,
 } from '@/lib/marketplace/catalog-utils';
 import { getCategoryById, listPublishedProducts } from '@/services/marketplace';
+import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
 import { Crown, Download } from 'lucide-react';
 import type { Product } from '@/types/marketplace';
@@ -252,9 +253,9 @@ export function ProductDetailView({ slug, product }: Props) {
             <h2 id="related-heading" className="text-xl font-black text-gray-900">
               Related in {categoryName}
             </h2>
-            <ul className="mt-10 grid min-w-0 grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6 md:gap-7 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 2xl:gap-8">
+            <ul className={`mt-10 ${marketplaceProductCardGridClasses}`}>
               {relatedPublic.map(({ product: rp, categoryName: cn }) => (
-                <li key={rp.id}>
+                <li key={rp.id} className="min-h-0">
                   <MarketplaceProductCard product={rp} categoryName={cn} />
                 </li>
               ))}

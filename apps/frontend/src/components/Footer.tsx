@@ -54,7 +54,7 @@ export default function Footer() {
       </AnimatePresence>
 
       <PageShell className="py-14 sm:py-16 md:py-20 supports-[padding:max(0px)]:pb-[max(3rem,env(safe-area-inset-bottom))]">
-        <div className="mb-16 grid grid-cols-1 gap-14 md:grid-cols-2 md:gap-16 lg:grid-cols-5 lg:gap-20 xl:gap-24">
+        <div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-2 md:gap-14 lg:grid-cols-5 lg:gap-12 xl:gap-16">
           {/* Brand Column */}
           <div>
             <div className="flex items-center gap-2 mb-4">

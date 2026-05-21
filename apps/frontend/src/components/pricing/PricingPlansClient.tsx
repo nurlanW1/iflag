@@ -50,7 +50,7 @@ export function PricingPlansClient() {
           <h1 className="mt-2 text-4xl font-black tracking-tight text-gray-900 sm:text-5xl lg:text-6xl xl:text-7xl">
             Simple plans for creators and teams
           </h1>
-          <p className="mx-auto mt-4 max-w-none text-base text-gray-600 sm:text-lg">
+          <p className="mx-auto mt-4 max-w-3xl text-pretty text-base text-gray-600 sm:text-lg">
             Start free with previews. Subscribe for catalog-wide Pro downloads while your plan is
             active, or buy individual flags to keep forever—whichever fits your workflow. Paid
             checkout is hosted by Paddle (Merchant of Record).
@@ -94,7 +94,7 @@ export function PricingPlansClient() {
         </div>
 
         {/* Plan cards */}
-        <ul className="mt-14 grid gap-8 xl:gap-10 lg:grid-cols-3">
+        <ul className="mx-auto mt-14 grid max-w-6xl gap-8 lg:grid-cols-3 lg:gap-10 xl:gap-12">
           {PLAN_CARD_COPY.map((plan) => {
             const isPro = plan.id === 'pro';
             const isFree = plan.id === 'free';

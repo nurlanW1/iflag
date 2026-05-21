@@ -3,9 +3,9 @@ import type { ComponentPropsWithoutRef } from 'react';
 type DivProps = ComponentPropsWithoutRef<'div'>;
 
 /**
- * Primary page rail: horizontally centered with max width 1540px and responsive gutters
- * (see `globals.css` `.marketplace-shell` and `--marketplace-shell-max-width`).
+ * Flagswing primary wrapper: `w-full` + `.marketplace-shell` (centered max 1800px, responsive px).
+ * Navbar, footer, and page mains should use this (or `marketplace-shell` directly).
  */
 export function PageShell({ className = '', ...props }: DivProps) {
-  return <div className={`marketplace-shell min-w-0 ${className}`.trim()} {...props} />;
+  return <div className={`marketplace-shell min-w-0 w-full ${className}`.trim()} {...props} />;
 }

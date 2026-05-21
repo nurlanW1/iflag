@@ -7,6 +7,7 @@ import { Search } from 'lucide-react';
 import { Spinner } from '@/components/ui/Spinner';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
 import type { Category } from '@/types/marketplace';
+import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 import { MarketplaceProductCard } from './MarketplaceProductCard';
 
 type TierFilter = 'all' | 'free' | 'pro';
@@ -280,9 +281,9 @@ export function ProductBrowseSection({
           <Spinner size="lg" label="Loading catalog" />
         </div>
       ) : (
-        <ul className="grid min-w-0 grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 md:gap-6 lg:grid-cols-5 lg:gap-7 xl:grid-cols-6 2xl:grid-cols-6 min-[1700px]:grid-cols-7 min-[1700px]:gap-8">
+        <ul className={marketplaceProductCardGridClasses}>
           {items.map((p) => (
-            <li key={p.id}>
+            <li key={p.id} className="min-h-0">
               <MarketplaceProductCard
                 product={p}
                 categoryName={categoryMap[p.categoryId] ?? 'Flags'}

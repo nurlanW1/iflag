@@ -5,6 +5,7 @@ import { api } from '@/lib/api';
 import { Search, Filter, Crown, X, SlidersHorizontal, Grid3x3, List } from 'lucide-react';
 import AssetCard from '@/components/AssetCard';
 import { motion } from 'framer-motion';
+import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 
 export default function AssetsPage() {
   const [assets, setAssets] = useState<any[]>([]);
@@ -253,9 +254,11 @@ export default function AssetsPage() {
         ) : (
           <>
             {viewMode === 'grid' ? (
-              <div className="grid min-w-0 grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 md:gap-6 lg:grid-cols-5 lg:gap-7 xl:grid-cols-6 2xl:grid-cols-6 min-[1800px]:grid-cols-7 min-[1800px]:gap-8 mb-8">
+              <div className={`${marketplaceProductCardGridClasses} mb-8`}>
                 {assets.map((asset, idx) => (
-                  <AssetCard key={asset.id} asset={asset} index={idx} />
+                  <div key={asset.id} className="min-h-0">
+                    <AssetCard asset={asset} index={idx} />
+                  </div>
                 ))}
               </div>
             ) : (

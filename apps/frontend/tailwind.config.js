@@ -37,7 +37,7 @@ export default {
         ],
       },
       maxWidth: {
-        shell: '1540px',
+        shell: '1800px',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',

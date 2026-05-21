@@ -213,25 +213,25 @@ export default function HomePageClient() {
             aria-hidden
           />
 
-          <div className="relative z-10 marketplace-shell flex flex-col items-center text-center pb-12 pt-8 sm:pb-16 sm:pt-10 md:pb-20 md:pt-12">
+          <div className="relative z-10 marketplace-shell flex flex-col items-center pb-12 pt-8 text-center sm:pb-16 sm:pt-10 md:pb-20 md:pt-12">
             <motion.div
               initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full text-center"
+              className="w-full max-w-[min(56rem,calc(100%-0.5rem))] mx-auto text-center sm:max-w-[min(64rem,calc(100%-1rem))]"
             >
               <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/65 sm:text-[11px]">
                 {SITE_NAME}
               </p>
               <h1
                 id="hero-heading"
-                className="mx-auto mt-1.5 max-w-none text-balance font-black uppercase leading-[1.06] tracking-[0.04em] text-white sm:mt-2 sm:tracking-[0.045em]"
+                className="mx-auto mt-1.5 max-w-[min(48rem,calc(100%-0.5rem))] text-balance font-black uppercase leading-[1.06] tracking-[0.04em] text-white sm:mt-2 sm:tracking-[0.045em]"
               >
                 <span className="block text-[clamp(1.65rem,2.8vw+1.5rem,4.85rem)]">
                   Flag assets library
                 </span>
-                <span className="mt-2 block text-[clamp(1.05rem,1.85vw+0.95rem,2.65rem)] font-bold normal-case tracking-normal text-white/90">
-                  Vectors, raster &amp; video — one search
+                <span className="mt-2 block max-w-[min(52rem,calc(100%-0.75rem))] mx-auto text-[clamp(1.05rem,1.85vw+0.95rem,2.65rem)] font-bold normal-case tracking-normal text-white/90">
+                  Vectors, raster & video — one search
                 </span>
               </h1>
 
@@ -269,7 +269,7 @@ export default function HomePageClient() {
 
               <form
                 onSubmit={handleSearch}
-                className="mt-5 w-full sm:mt-6 lg:mt-8"
+                className="mx-auto mt-5 w-full max-w-3xl sm:mt-6 lg:mt-8"
                 role="search"
                 aria-label="Search flag assets"
               >
@@ -328,13 +328,13 @@ export default function HomePageClient() {
               <h2 className="text-xl font-black tracking-tight text-black sm:text-2xl md:text-3xl">
                 Browse by region
               </h2>
-              <p className="mt-2 max-w-none text-sm text-black/55 sm:text-base">
-                Jump straight into a collection — two rows across the full catalog width
+              <p className="mx-auto mt-2 max-w-2xl text-pretty text-sm text-black/55 sm:text-base">
+                Jump straight into a collection — balanced tiles inside the centered catalog frame
               </p>
             </SectionReveal>
 
             <div className="rounded-2xl border border-gray-200/80 bg-white/90 p-3 shadow-md backdrop-blur-sm sm:rounded-3xl sm:p-4 md:p-6">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 sm:gap-4 md:gap-5 lg:gap-6">
+            <div className="mx-auto grid w-full max-w-5xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 md:gap-5">
             {[
               { 
                 name: 'Europe', 
@@ -483,7 +483,7 @@ export default function HomePageClient() {
               <span className="text-sm font-semibold text-[#009ab6]">Premium Plans</span>
             </div>
             <h2 className="mb-6 text-5xl font-black text-black md:mb-8 md:text-6xl xl:text-7xl">Go Premium</h2>
-            <p className="mx-auto max-w-none text-xl text-black/60 md:text-2xl xl:text-[1.7rem]">
+            <p className="mx-auto max-w-3xl text-pretty text-xl text-black/60 md:text-2xl xl:text-[1.7rem]">
               Unlock unlimited flag downloads, commercial use, and exclusive flag assets. Paid plans
               checkout through Paddle (Merchant of Record).
             </p>
@@ -512,7 +512,7 @@ export default function HomePageClient() {
             ))}
           </div>
 
-          <p className="mx-auto mt-14 max-w-none text-center text-sm text-black/50">
+          <p className="mx-auto mt-14 max-w-2xl text-center text-pretty text-sm text-black/50">
             Homepage amounts are illustrative — live prices and Paddle checkout are on the{' '}
             <Link href="/pricing" className="font-semibold text-[#009ab6] hover:underline">
               pricing page
@@ -532,7 +532,7 @@ export default function HomePageClient() {
             className="mb-20 text-center"
           >
             <h2 className="mb-5 text-4xl font-black text-black md:mb-6 md:text-5xl xl:text-6xl">How It Works</h2>
-            <p className="mx-auto max-w-none text-lg text-black/60 md:text-xl">
+            <p className="mx-auto max-w-3xl text-pretty text-lg text-black/60 md:text-xl">
               Get started in three simple steps
             </p>
           </SectionReveal>
@@ -623,7 +623,7 @@ export default function HomePageClient() {
             <h2 className="mb-6 text-4xl font-black leading-tight text-white md:text-5xl xl:text-[3.5rem] 2xl:text-6xl">
               Ready to Get Started?
             </h2>
-            <p className="mx-auto mb-12 max-w-none text-lg text-white/90 md:text-2xl md:leading-snug xl:text-[1.68rem]">
+            <p className="mx-auto mb-12 max-w-3xl text-pretty text-lg text-white/90 md:text-2xl md:leading-snug xl:text-[1.68rem]">
               Join thousands of designers and developers using {SITE_NAME} for their projects
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">

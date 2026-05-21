@@ -59,10 +59,12 @@
   --transition-base: 200ms ease-in-out;
   --transition-slow: 300ms ease-in-out;
   
-  /* Layout — marketplace horizontal shell (see `.marketplace-shell`) */
+  /* Layout — centered marketplace rail (see `.marketplace-shell`) */
   --header-height: 64px;
-  /** Max content rail width (~1540 design frame); Navbar/Footer/PageShell inherit via `.marketplace-shell`. */
-  --marketplace-shell-max-width: 1540px;
+  /** Max content width: premium widescreen (~1800); never edge-to-edge on ultrawide. */
+  --marketplace-shell-max-width: 1800px;
+  /** Comfortable reading measure for legal / long-form inside the shell */
+  --marketplace-prose-max-width: 48rem;
 }
 
 * {
@@ -102,11 +104,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: clamp(1.75rem, 1rem + 2.8vw, 3.25rem);
+  font-size: clamp(1.75rem, 1rem + 2.2vw, 3rem);
 }
 
 h2 {
-  font-size: clamp(1.5rem, 0.95rem + 2vw, 2.35rem);
+  font-size: clamp(1.5rem, 0.95rem + 1.6vw, 2.25rem);
 }
 
 h3 {
@@ -123,8 +125,8 @@ h4 {
 }
 
 /**
- * Primary layout rail: centered, capped at `--marketplace-shell-max-width` (1540px),
- * with responsive gutters so mobile/tablet stays comfortable on narrow viewports.
+ * Primary layout rail: centered, max `--marketplace-shell-max-width` (1800px).
+ * Horizontal padding: 16px mobile → 24px tablet → 32px desktop → 40–56px ultrawide.
  */
 .marketplace-shell {
   box-sizing: border-box;
@@ -132,24 +134,28 @@ h4 {
   max-width: var(--marketplace-shell-max-width);
   margin-left: auto;
   margin-right: auto;
-  padding-left: clamp(1rem, 3vw, 1.5rem);
-  padding-right: clamp(1rem, 3vw, 1.5rem);
+  /* 16px */
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
-@media (min-width: 768px) {
+/* 24px — sm / tablet */
+@media (min-width: 640px) {
   .marketplace-shell {
-    padding-left: clamp(1.25rem, 4vw, 2rem);
-    padding-right: clamp(1.25rem, 4vw, 2rem);
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
 }
 
+/* 32px — desktop */
 @media (min-width: 1024px) {
   .marketplace-shell {
-    padding-left: clamp(1.5rem, 5vw, 2.5rem);
-    padding-right: clamp(1.5rem, 5vw, 2.5rem);
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 }
 
+/* 40px */
 @media (min-width: 1280px) {
   .marketplace-shell {
     padding-left: 2.5rem;
@@ -157,16 +163,25 @@ h4 {
   }
 }
 
+/* 48px — large desktop */
 @media (min-width: 1536px) {
   .marketplace-shell {
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: 3rem;
+    padding-right: 3rem;
   }
 }
 
-/** Readable article width inside a full-width shell (legal, FAQ body). */
+/* 56px — ultrawide breathing room */
+@media (min-width: 1920px) {
+  .marketplace-shell {
+    padding-left: 3.5rem;
+    padding-right: 3.5rem;
+  }
+}
+
+/** Readable article width inside the shell (legal, FAQ, long copy). */
 .marketplace-prose {
-  max-width: 54rem;
+  max-width: var(--marketplace-prose-max-width);
   margin-left: auto;
   margin-right: auto;
 }

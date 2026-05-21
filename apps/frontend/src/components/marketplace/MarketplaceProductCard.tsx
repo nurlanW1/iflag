@@ -20,7 +20,7 @@ export function MarketplaceProductCard({
   const href = product.detailHref?.trim() || `/flags/${product.slug}`;
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-sm transition hover:border-[#009ab6]/35 hover:shadow-md">
+    <article className="group flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-sm transition hover:border-[#009ab6]/35 hover:shadow-md">
       <Link href={href} className="relative block aspect-[4/3] overflow-hidden bg-gray-100">
         {product.thumbnailUrl ? (
           <Image
@@ -28,7 +28,7 @@ export function MarketplaceProductCard({
             alt={product.title}
             fill
             className="object-cover transition duration-300 group-hover:scale-[1.02]"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, (max-width: 1800px) 25vw, 360px"
             loading="lazy"
           />
         ) : (
