@@ -34,47 +34,47 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
 
   const clerkAppearance = {
     elements: {
-      avatarBox: 'h-9 w-9',
+      avatarBox: 'h-10 w-10',
     },
   } as const;
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-[#006d7a]/10 bg-white/95 shadow-sm backdrop-blur-md supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]" aria-label="Primary">
       <PageShell>
-        <div className="flex h-16 w-full min-w-0 items-center justify-between gap-3 md:gap-6">
+        <div className="flex w-full min-w-0 items-center justify-between gap-3 py-4 md:gap-8">
           <Link
             href="/"
-            className="flex items-center gap-2 text-xl font-black text-black transition hover:opacity-90"
+            className="flex min-h-[44px] items-center gap-2.5 text-xl font-black text-black transition hover:opacity-90 sm:text-2xl"
           >
-            <Flag size={28} className="text-[#009ab6]" aria-hidden />
+            <Flag size={32} className="text-[#009ab6]" aria-hidden />
             <span>{SITE_NAME}</span>
           </Link>
 
-          <div className="hidden items-center gap-6 md:flex md:gap-8">
-            <div className="flex items-center gap-6">
+          <div className="hidden items-center md:flex md:gap-10 lg:gap-12">
+            <div className="flex items-center gap-8 lg:gap-10">
               <Link
                 href="/browse"
-                className="text-sm font-medium text-black/70 transition-colors hover:text-black"
+                className="text-[0.9375rem] font-medium text-black/75 transition-colors hover:text-black lg:text-base"
               >
                 Browse
               </Link>
               <Link
                 href="/gallery"
-                className="text-sm font-medium text-black/70 transition-colors hover:text-black"
+                className="text-[0.9375rem] font-medium text-black/75 transition-colors hover:text-black lg:text-base"
               >
                 Gallery
               </Link>
               <Link
                 href="/pricing"
                 title="Compare plans — Paddle checkout"
-                className="flex items-center gap-1 text-sm font-medium text-black/70 transition-colors hover:text-black"
+                className="flex items-center gap-1.5 text-[0.9375rem] font-medium text-black/75 transition-colors hover:text-black lg:text-base"
               >
-                <Crown size={16} className="text-[#009ab6]" aria-hidden />
+                <Crown size={18} className="text-[#009ab6]" aria-hidden />
                 Pricing
               </Link>
             </div>
 
-            <div className="flex items-center gap-4 border-l border-[#006d7a]/10 pl-6">
+            <div className="flex items-center gap-5 border-l border-[#006d7a]/10 pl-10">
               {/* --- Admin link: Clerk path = email must match ADMIN_EMAIL; legacy = JWT role admin --- */}
               <NavbarAdminNav clerkUiEnabled={clerkUiEnabled} legacyUser={user} />
 
@@ -86,7 +86,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                     aria-label="Favorites (coming soon)"
                     disabled
                   >
-                    <Heart size={20} aria-hidden />
+                    <Heart size={22} aria-hidden />
                   </button>
                   <button
                     type="button"
@@ -94,12 +94,12 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                     aria-label="Cart (coming soon)"
                     disabled
                   >
-                    <ShoppingCart size={20} aria-hidden />
+                    <ShoppingCart size={22} aria-hidden />
                   </button>
                   <div className="flex items-center gap-3">
                     <Link
                       href="/dashboard"
-                      className="flex items-center gap-2 text-sm text-black/70 transition-colors hover:text-black"
+                      className="flex items-center gap-2 text-sm font-medium text-black/75 transition-colors hover:text-black lg:text-[0.9375rem]"
                     >
                       <User size={18} aria-hidden />
                       <span className="hidden min-[900px]:inline">{user.full_name || user.email}</span>
@@ -118,23 +118,23 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                 <>
                   <ClerkLoading>
                     <div className="flex items-center gap-3" aria-hidden>
-                      <div className="h-9 w-16 animate-pulse rounded-md bg-gray-100" />
-                      <div className="h-9 w-20 animate-pulse rounded-lg bg-gray-100" />
-                      <div className="h-9 w-9 animate-pulse rounded-full bg-gray-100" />
+                      <div className="h-10 w-[4.25rem] animate-pulse rounded-md bg-gray-100" />
+                      <div className="h-10 w-24 animate-pulse rounded-xl bg-gray-100" />
+                      <div className="h-10 w-10 animate-pulse rounded-full bg-gray-100" />
                     </div>
                   </ClerkLoading>
                   <ClerkLoaded>
                     <Show when="signed-out">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <Link
                           href={signInHref}
-                          className="text-sm font-medium text-black/70 transition-colors hover:text-black"
+                          className="text-[0.9375rem] font-medium text-black/75 transition-colors hover:text-black lg:text-base"
                         >
                           Log in
                         </Link>
                         <Link
                           href={signUpHref}
-                          className="rounded-lg bg-[#009ab6] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#007a8a]"
+                          className="rounded-xl bg-[#009ab6] px-5 py-2.5 text-[0.9375rem] font-semibold text-white transition-colors hover:bg-[#007a8a] lg:text-base"
                         >
                           Sign up
                         </Link>
@@ -148,7 +148,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                           aria-label="Favorites (coming soon)"
                           disabled
                         >
-                          <Heart size={20} aria-hidden />
+                          <Heart size={22} aria-hidden />
                         </button>
                         <button
                           type="button"
@@ -156,11 +156,11 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                           aria-label="Cart (coming soon)"
                           disabled
                         >
-                          <ShoppingCart size={20} aria-hidden />
+                          <ShoppingCart size={22} aria-hidden />
                         </button>
                         <Link
                           href="/dashboard"
-                          className="flex items-center gap-2 text-sm font-medium text-black/70 transition-colors hover:text-black"
+                          className="flex items-center gap-2 text-sm font-medium text-black/75 transition-colors hover:text-black lg:text-[0.9375rem]"
                         >
                           <User size={18} aria-hidden />
                           <span className="hidden min-[900px]:inline">Dashboard</span>
@@ -171,16 +171,16 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                   </ClerkLoaded>
                 </>
               ) : (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <Link
                     href={signInHref}
-                    className="text-sm font-medium text-black/70 transition-colors hover:text-black"
+                    className="text-[0.9375rem] font-medium text-black/75 transition-colors hover:text-black lg:text-base"
                   >
                     Log in
                   </Link>
                   <Link
                     href={signUpHref}
-                    className="rounded-lg bg-[#009ab6] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#007a8a]"
+                    className="rounded-xl bg-[#009ab6] px-5 py-2.5 text-[0.9375rem] font-semibold text-white transition-colors hover:bg-[#007a8a] lg:text-base"
                   >
                     Sign up
                   </Link>
@@ -213,14 +213,14 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
               <div className="space-y-4 py-4">
                 <Link
                   href="/browse"
-                  className="block px-4 text-black/70 hover:text-black"
+                  className="block px-4 py-1.5 text-base font-medium text-black/75 hover:text-black"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Browse
                 </Link>
                 <Link
                   href="/gallery"
-                  className="block px-4 text-black/70 hover:text-black"
+                  className="block px-4 py-1.5 text-base font-medium text-black/75 hover:text-black"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Gallery
@@ -228,13 +228,13 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                 <Link
                   href="/pricing"
                   title="Compare plans — Paddle checkout"
-                  className="flex items-center gap-2 px-4 text-black/70 hover:text-black"
+                  className="flex items-center gap-2 px-4 py-1.5 text-base font-medium text-black/75 hover:text-black"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Crown size={18} className="text-[#009ab6]" aria-hidden />
                   Pricing
                 </Link>
-                <NavbarAdminNav
+                  <NavbarAdminNav
                   clerkUiEnabled={clerkUiEnabled}
                   legacyUser={user}
                   onNavigate={() => setMobileMenuOpen(false)}
@@ -243,7 +243,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                   <>
                     <Link
                       href="/dashboard"
-                      className="block px-4 text-black/70 hover:text-black"
+                      className="block px-4 py-1.5 text-base font-medium text-black/75 hover:text-black"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Dashboard
@@ -254,7 +254,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                         setMobileMenuOpen(false);
                         void logout();
                       }}
-                      className="block w-full px-4 text-left text-black/70 hover:text-black"
+                      className="block w-full px-4 py-1.5 text-left text-base font-medium text-black/75 hover:text-black"
                     >
                       Sign out
                     </button>
@@ -272,14 +272,14 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                         <div className="flex flex-col gap-2 px-4">
                           <Link
                             href={signInHref}
-                            className="block text-black/70 hover:text-black"
+                            className="block text-base font-medium text-black/75 hover:text-black"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             Log in
                           </Link>
                           <Link
                             href={signUpHref}
-                            className="block w-full rounded-lg bg-[#009ab6] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#007a8a]"
+                            className="block w-full rounded-xl bg-[#009ab6] px-4 py-3 text-center text-base font-semibold text-white hover:bg-[#007a8a]"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             Sign up
@@ -290,13 +290,13 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                         <div className="space-y-3 px-4">
                           <Link
                             href="/dashboard"
-                            className="block text-black/70 hover:text-black"
+                            className="block text-base font-medium text-black/75 hover:text-black"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             Dashboard
                           </Link>
                           <div className="flex items-center justify-between">
-                            <span className="text-sm text-black/70">Account</span>
+                            <span className="text-base font-medium text-black/75">Account</span>
                             <UserButton appearance={clerkAppearance} />
                           </div>
                         </div>
@@ -307,14 +307,14 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                   <div className="flex flex-col gap-2 px-4">
                     <Link
                       href={signInHref}
-                      className="block text-black/70 hover:text-black"
+                      className="block text-base font-medium text-black/75 hover:text-black"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Log in
                     </Link>
                     <Link
                       href={signUpHref}
-                      className="block w-full rounded-lg bg-[#009ab6] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#007a8a]"
+                      className="block w-full rounded-xl bg-[#009ab6] px-4 py-3 text-center text-base font-semibold text-white hover:bg-[#007a8a]"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Sign up
@@ -373,7 +373,7 @@ function AdminNavLink({
     return (
       <Link
         href="/admin"
-        className="flex items-center gap-2 px-4 text-black/70 hover:text-black"
+        className="flex items-center gap-2 px-4 py-1.5 text-base font-medium text-black/75 hover:text-black"
         title="Admin panel"
         onClick={onNavigate}
       >
@@ -385,7 +385,7 @@ function AdminNavLink({
   return (
     <Link
       href="/admin"
-      className="flex items-center gap-2 rounded-lg border border-[#009ab6]/20 px-3 py-1.5 text-sm font-medium text-[#009ab6] transition-colors hover:bg-[#009ab6]/10 hover:text-[#007a8a]"
+      className="flex items-center gap-2 rounded-xl border border-[#009ab6]/25 px-4 py-2 text-sm font-semibold text-[#009ab6] transition-colors hover:bg-[#009ab6]/10 hover:text-[#007a8a] lg:text-[0.9375rem]"
       title="Admin panel"
       onClick={onNavigate}
     >

@@ -60,7 +60,8 @@
   --transition-slow: 300ms ease-in-out;
   
   /* Layout — centered marketplace rail (see `.marketplace-shell`) */
-  --header-height: 64px;
+  /** Sticky navbar with py-4 + larger logo/type (~80px typical) */
+  --header-height: 80px;
   /** Max content width: premium widescreen (~1800); never edge-to-edge on ultrawide. */
   --marketplace-shell-max-width: 1800px;
   /** Comfortable reading measure for legal / long-form inside the shell */

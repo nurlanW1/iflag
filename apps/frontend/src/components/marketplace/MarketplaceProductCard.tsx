@@ -32,20 +32,19 @@ export function MarketplaceProductCard({
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+          <div className="flex h-full w-full items-center justify-center text-sm font-medium text-gray-400">
             No image
           </div>
         )}
         <div className="absolute left-2 top-2 flex flex-wrap gap-1.5">
           <span
-            className={`rounded-md px-2 py-0.5 text-xs font-bold ${
-              paid                ? 'bg-[#009ab6] text-white'
-                : 'bg-emerald-600 text-white'
+            className={`rounded-lg px-2.5 py-1 text-[0.6875rem] font-bold uppercase tracking-wide sm:text-xs ${
+              paid ? 'bg-[#009ab6] text-white' : 'bg-emerald-600 text-white'
             }`}
           >
             {paid ? (
               <span className="inline-flex items-center gap-1">
-                <Crown size={12} className="shrink-0" aria-hidden />
+                <Crown size={13} className="shrink-0" aria-hidden />
                 Pro
               </span>
             ) : (
@@ -54,28 +53,28 @@ export function MarketplaceProductCard({
           </span>
         </div>
       </Link>
-      <div className="flex flex-1 flex-col p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-[#009ab6]/90">
+      <div className="flex flex-1 flex-col p-4 sm:p-[1.125rem]">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[#009ab6]/90 sm:text-[0.8125rem]">
           {categoryName}
         </p>
-        <h3 className="mt-1 line-clamp-2 text-base font-bold text-gray-900">
+        <h3 className="mt-1.5 line-clamp-2 text-lg font-bold leading-snug text-gray-900">
           <Link href={href} className="hover:text-[#009ab6] focus:outline-none focus:ring-2 focus:ring-[#009ab6]/30 rounded">
             {product.title}
           </Link>
         </h3>
         {formats.length > 0 ? (
-          <p className="mt-2 text-xs text-gray-500">
+          <p className="mt-2 text-sm leading-relaxed text-gray-500">
             {formats.slice(0, 4).join(' · ')}
             {formats.length > 4 ? '…' : ''}
           </p>
         ) : null}
-        <div className="mt-auto flex items-center justify-between pt-4">
-          <span className="text-lg font-black text-gray-900">
+        <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+          <span className="text-lg font-black text-gray-900 sm:text-xl">
             {formatPrice(product.priceCents, product.currency)}
           </span>
           <Link
             href={href}
-            className="rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#009ab6]"
+            className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#009ab6]"
           >
             Details
           </Link>

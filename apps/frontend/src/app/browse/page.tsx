@@ -19,11 +19,11 @@ export default function BrowsePage() {
     <main className="marketplace-shell min-h-screen w-full py-12 sm:py-14 lg:py-20">
       <header className="mb-10 lg:mb-12">
         <h1 className="text-3xl font-black text-gray-900 md:text-4xl xl:text-5xl">Browse catalog</h1>
-        <p className="mt-3 w-full max-w-3xl text-pretty text-sm text-gray-600 md:text-base xl:text-lg">
+        <p className="mt-3 w-full max-w-3xl text-pretty text-base text-gray-600 md:text-lg lg:text-xl">
           Search by name, country, or tag. Filter by category, free vs pro, and free preview availability.
         </p>
       </header>
-      <Suspense fallback={<p className="text-sm text-gray-500">Loading catalog…</p>}>
+      <Suspense fallback={<p className="text-base text-gray-500">Loading catalog…</p>}>
         <ProductBrowseSection />
       </Suspense>
     </main>

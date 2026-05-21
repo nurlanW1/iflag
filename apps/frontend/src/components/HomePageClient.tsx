@@ -112,7 +112,7 @@ function PricingPlanCard({ plan, idx }: { plan: PricingPlan; idx: number }) {
 
         <Link
           href="/pricing"
-          className={`block w-full rounded-xl px-6 py-4 text-center font-bold transition-all duration-300 ${
+          className={`block w-full rounded-xl px-6 py-4 text-center text-base font-bold transition-all duration-300 sm:text-lg ${
             plan.popular
               ? 'bg-gradient-to-r from-[#009ab6] to-[#006d7a] text-white shadow-lg hover:from-[#007a8a] hover:to-[#005a66] hover:shadow-xl'
               : 'border-2 border-[#009ab6] bg-white text-[#009ab6] hover:bg-[#009ab6] hover:text-white'
@@ -198,10 +198,10 @@ export default function HomePageClient() {
   return (
     <main className="min-h-screen bg-white">
       {/* Above-the-fold: hero + compact category rail (no stretched tiles) */}
-      <div className="flex min-h-dvh flex-col">
-        {/* Hero — simple gradient background + search rail */}
+      <div className="flex flex-col">
+        {/* Hero — compact premium band (does not consume full viewport) */}
         <section
-          className="relative flex min-h-[calc(100dvh-4rem)] w-full shrink-0 flex-col justify-center overflow-hidden py-10 sm:min-h-[calc(100svh-4rem)] sm:py-12 md:py-14"
+          className="relative w-full shrink-0 overflow-hidden py-8 sm:py-10 md:py-12 lg:py-14 xl:py-16"
           aria-labelledby="hero-heading"
         >
           <div
@@ -213,30 +213,30 @@ export default function HomePageClient() {
             aria-hidden
           />
 
-          <div className="relative z-10 marketplace-shell flex flex-col items-center pb-12 pt-8 text-center sm:pb-16 sm:pt-10 md:pb-20 md:pt-12">
+          <div className="relative z-10 marketplace-shell flex flex-col items-center py-0 text-center">
             <motion.div
               initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full max-w-[min(56rem,calc(100%-0.5rem))] mx-auto text-center sm:max-w-[min(64rem,calc(100%-1rem))]"
+              className="mx-auto w-full max-w-[min(56rem,calc(100%-0.5rem))] text-center sm:max-w-[min(62rem,calc(100%-1rem))]"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/65 sm:text-[11px]">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/70 sm:text-sm">
                 {SITE_NAME}
               </p>
               <h1
                 id="hero-heading"
-                className="mx-auto mt-1.5 max-w-[min(48rem,calc(100%-0.5rem))] text-balance font-black uppercase leading-[1.06] tracking-[0.04em] text-white sm:mt-2 sm:tracking-[0.045em]"
+                className="mx-auto mt-2 max-w-[min(44rem,calc(100%-0.5rem))] text-balance font-black uppercase leading-[1.1] tracking-[0.035em] text-white sm:mt-2.5 sm:tracking-[0.04em]"
               >
-                <span className="block text-[clamp(1.65rem,2.8vw+1.5rem,4.85rem)]">
+                <span className="block text-[clamp(1.75rem,4vw,2.85rem)] sm:text-[clamp(1.875rem,3.5vw,3.25rem)]">
                   Flag assets library
                 </span>
-                <span className="mt-2 block max-w-[min(52rem,calc(100%-0.75rem))] mx-auto text-[clamp(1.05rem,1.85vw+0.95rem,2.65rem)] font-bold normal-case tracking-normal text-white/90">
+                <span className="mx-auto mt-2 block max-w-[min(42rem,calc(100%-0.75rem))] text-[clamp(1rem,2.25vw,1.5rem)] font-bold normal-case tracking-normal text-white/90">
                   Vectors, raster & video — one search
                 </span>
               </h1>
 
               <nav
-                className="mt-3 flex flex-wrap items-center justify-center gap-x-1 gap-y-1 sm:mt-4 sm:gap-x-2"
+                className="mt-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-2 sm:mt-5"
                 aria-label="Asset type"
               >
               {(
@@ -254,13 +254,13 @@ export default function HomePageClient() {
                     type="button"
                     onClick={() => setCatalogScope(id)}
                     aria-current={active ? 'true' : undefined}
-                    className={`group inline-flex items-center gap-1.5 border-b-2 px-2 py-1.5 text-xs font-semibold transition-colors sm:gap-2 sm:px-3 sm:text-sm ${
+                    className={`group inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-semibold transition-colors sm:text-base ${
                       active
                         ? 'border-white text-white'
                         : 'border-transparent text-white/65 hover:text-white'
                     }`}
                   >
-                    <Icon className="h-3.5 w-3.5 opacity-80 group-hover:opacity-100 sm:h-4 sm:w-4" aria-hidden />
+                    <Icon className="h-4 w-4 opacity-85 group-hover:opacity-100 sm:h-[1.125rem] sm:w-[1.125rem]" aria-hidden />
                     {label}
                   </button>
                 );
@@ -269,13 +269,13 @@ export default function HomePageClient() {
 
               <form
                 onSubmit={handleSearch}
-                className="mx-auto mt-5 w-full max-w-3xl sm:mt-6 lg:mt-8"
+                className="mx-auto mt-6 w-full max-w-4xl sm:mt-7 lg:mt-8"
                 role="search"
                 aria-label="Search flag assets"
               >
-                <div className="flex w-full items-stretch overflow-hidden rounded-full border border-white/20 shadow-[0_12px_36px_rgba(0,0,0,0.3)]">
-                  <div className="flex min-w-0 flex-1 items-center rounded-l-full bg-white pl-3 sm:pl-6 md:pl-8">
-                    <Search className="h-4 w-4 shrink-0 text-black/45 sm:h-5 sm:w-5 md:h-6 md:w-6" aria-hidden />
+                <div className="flex w-full items-stretch overflow-hidden rounded-2xl border-2 border-white/25 bg-white/[0.04] shadow-[0_14px_40px_rgba(0,0,0,0.28)] backdrop-blur-[2px] transition-shadow focus-within:border-white/40 focus-within:shadow-[0_18px_48px_rgba(0,0,0,0.35)] focus-within:ring-2 focus-within:ring-white/35">
+                  <div className="flex h-14 min-h-[3.5rem] min-w-0 flex-1 items-center rounded-l-2xl bg-white pl-4 sm:h-[3.625rem] sm:min-h-[3.625rem] sm:pl-5 md:pl-6">
+                    <Search className="h-5 w-5 shrink-0 text-black/40 sm:h-6 sm:w-6" aria-hidden />
                     <label htmlFor="hero-search" className="sr-only">
                       Search query
                     </label>
@@ -284,28 +284,28 @@ export default function HomePageClient() {
                       type="search"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Country, tag, or name…"
-                      className="min-w-0 flex-1 border-0 bg-transparent py-2.5 pl-2.5 pr-2 text-sm text-black placeholder:text-black/45 focus:outline-none focus:ring-0 sm:py-3.5 sm:pl-4 sm:pr-3 sm:text-base md:py-4 md:text-lg"
+                      placeholder="Country, tag, format, or keyword…"
+                      className="min-w-0 flex-1 border-0 bg-transparent py-3 pl-3 pr-3 text-base text-black placeholder:text-black/42 focus:outline-none focus:ring-0 sm:pl-4 sm:text-lg"
                       autoComplete="off"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="shrink-0 bg-[#009ab6] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-white transition-colors hover:bg-[#007a8a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:px-10 sm:py-3.5 sm:text-sm sm:tracking-[0.12em] md:px-12 md:text-base"
+                    className="shrink-0 bg-[#009ab6] px-7 text-base font-semibold uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#007a8a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white sm:px-10 sm:text-[0.95rem]"
                   >
                     Search
                   </button>
                 </div>
 
-                <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5 sm:mt-4 sm:gap-2">
-                  <span className="w-full text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45 sm:w-auto sm:pr-1">
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:mt-5">
+                  <span className="w-full text-center text-xs font-semibold uppercase tracking-[0.2em] text-white/55 sm:w-auto sm:pr-1 sm:text-sm">
                     Trending
                   </span>
                   {TRENDING.map((term) => (
                     <Link
                       key={term}
                       href={`/browse?q=${encodeURIComponent(term)}`}
-                      className="rounded-full border border-white/20 bg-white/10 px-2.5 py-0.5 text-xs font-medium text-white/90 backdrop-blur-sm transition-colors hover:border-white/35 hover:bg-white/20 sm:px-3 sm:py-1 sm:text-sm"
+                      className="rounded-full border border-white/25 bg-white/12 px-3 py-1.5 text-sm font-medium text-white/95 backdrop-blur-sm transition-colors hover:border-white/40 hover:bg-white/22"
                     >
                       {term}
                     </Link>
@@ -325,10 +325,10 @@ export default function HomePageClient() {
               transition={{ duration: 0.4 }}
               className="mb-4 flex flex-col items-center text-center sm:mb-6"
             >
-              <h2 className="text-xl font-black tracking-tight text-black sm:text-2xl md:text-3xl">
+              <h2 className="text-2xl font-black tracking-tight text-black sm:text-3xl md:text-[2rem]">
                 Browse by region
               </h2>
-              <p className="mx-auto mt-2 max-w-2xl text-pretty text-sm text-black/55 sm:text-base">
+              <p className="mx-auto mt-2 max-w-2xl text-pretty text-base text-black/60 sm:text-lg">
                 Jump straight into a collection — balanced tiles inside the centered catalog frame
               </p>
             </SectionReveal>
@@ -455,7 +455,7 @@ export default function HomePageClient() {
                   <stat.icon size={28} className="text-[#009ab6]" />
                 </div>
                 <div className="mb-4 text-5xl font-black text-black md:text-6xl xl:text-7xl">{stat.number}</div>
-                <div className="text-sm md:text-base text-black/60 font-medium">{stat.label}</div>
+                <div className="text-base font-semibold leading-snug text-black/65 md:text-lg">{stat.label}</div>
               </SectionReveal>
             ))}
           </div>
@@ -480,7 +480,7 @@ export default function HomePageClient() {
           >
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#009ab6]/10 px-4 py-2">
               <Crown size={18} className="text-[#009ab6]" />
-              <span className="text-sm font-semibold text-[#009ab6]">Premium Plans</span>
+              <span className="text-sm font-semibold text-[#009ab6] sm:text-base">Premium Plans</span>
             </div>
             <h2 className="mb-6 text-5xl font-black text-black md:mb-8 md:text-6xl xl:text-7xl">Go Premium</h2>
             <p className="mx-auto max-w-3xl text-pretty text-xl text-black/60 md:text-2xl xl:text-[1.7rem]">

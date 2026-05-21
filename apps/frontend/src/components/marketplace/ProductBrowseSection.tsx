@@ -170,35 +170,38 @@ export function ProductBrowseSection({
 
   return (
     <div className={['min-w-0', className].filter(Boolean).join(' ') || 'min-w-0'}>
-      <div className="mb-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
-        <form onSubmit={onSubmitSearch} className="flex min-w-0 w-full flex-1 gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+      <div className="mb-10 flex flex-col gap-8 lg:flex-row lg:items-stretch lg:justify-between lg:gap-12">
+        <form
+          onSubmit={onSubmitSearch}
+          className="flex min-w-0 w-full flex-1 flex-col gap-3 sm:max-w-4xl lg:flex-row lg:items-stretch lg:gap-3"
+        >
+          <div className="relative min-h-12 flex-1 sm:min-h-14">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 sm:left-5 sm:h-6 sm:w-6" />
             <input
               type="search"
               value={draftQ}
               onChange={(e) => setDraftQ(e.target.value)}
               placeholder="Search flags, tags, country…"
-              className="w-full rounded-xl border border-gray-200 py-2.5 pl-10 pr-3 text-sm text-gray-900 outline-none focus:border-[#009ab6] focus:ring-2 focus:ring-[#009ab6]/20"
+              className="h-12 w-full min-h-12 rounded-2xl border border-gray-200 py-3 pl-12 pr-4 text-base text-gray-900 shadow-sm outline-none transition-shadow placeholder:text-gray-400 focus:border-[#009ab6] focus:ring-2 focus:ring-[#009ab6]/25 sm:h-14 sm:min-h-[3.5rem] sm:py-3.5 sm:pl-14 sm:pr-5 sm:text-[1.05rem]"
               aria-label="Search catalog"
             />
           </div>
           <button
             type="submit"
-            className="rounded-xl bg-[#009ab6] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#007a8a]"
+            className="h-12 min-h-12 shrink-0 rounded-2xl bg-[#009ab6] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[#007a8a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#009ab6] sm:h-auto sm:self-stretch sm:px-10"
           >
             Search
           </button>
         </form>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-x-4 gap-y-4 lg:justify-end">
           {!fixedCategorySlug ? (
-            <label className="flex flex-col text-xs font-medium text-gray-600">
+            <label className="flex min-w-[10.5rem] flex-col gap-2 text-sm font-semibold tracking-tight text-gray-700">
               Category
               <select
                 value={categorySlug}
                 onChange={(e) => setCategorySlug(e.target.value)}
-                className="mt-1 min-w-[10rem] rounded-lg border border-gray-200 bg-white py-2 pl-2 pr-8 text-sm text-gray-900"
+                className="rounded-xl border border-gray-200 bg-white py-3 pl-3 pr-9 text-base text-gray-900 shadow-sm focus:border-[#009ab6] focus:outline-none focus:ring-2 focus:ring-[#009ab6]/20"
               >
                 <option value="">All categories</option>
                 {categories
@@ -211,24 +214,24 @@ export function ProductBrowseSection({
               </select>
             </label>
           ) : null}
-          <label className="flex flex-col text-xs font-medium text-gray-600">
+          <label className="flex min-w-[7.75rem] flex-col gap-2 text-sm font-semibold tracking-tight text-gray-700">
             Type
             <select
               value={tier}
               onChange={(e) => setTier(e.target.value as TierFilter)}
-              className="mt-1 rounded-lg border border-gray-200 bg-white py-2 pl-2 pr-8 text-sm text-gray-900"
+              className="rounded-xl border border-gray-200 bg-white py-3 pl-3 pr-9 text-base text-gray-900 shadow-sm focus:border-[#009ab6] focus:outline-none focus:ring-2 focus:ring-[#009ab6]/20"
             >
               <option value="all">All</option>
               <option value="free">Free</option>
               <option value="pro">Pro / paid</option>
             </select>
           </label>
-          <label className="flex flex-col text-xs font-medium text-gray-600">
+          <label className="flex min-w-[8.75rem] flex-col gap-2 text-sm font-semibold tracking-tight text-gray-700">
             Sort
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
-              className="mt-1 rounded-lg border border-gray-200 bg-white py-2 pl-2 pr-8 text-sm text-gray-900"
+              className="rounded-xl border border-gray-200 bg-white py-3 pl-3 pr-9 text-base text-gray-900 shadow-sm focus:border-[#009ab6] focus:outline-none focus:ring-2 focus:ring-[#009ab6]/20"
             >
               <option value="newest">Newest</option>
               <option value="oldest">Oldest</option>
@@ -236,19 +239,19 @@ export function ProductBrowseSection({
               <option value="popular">Popular</option>
             </select>
           </label>
-          <label className="flex items-center gap-2 self-end pb-1 text-sm text-gray-700">
+          <label className="flex min-h-[3.25rem] items-center gap-2.5 self-end text-sm font-medium text-gray-800">
             <input
               type="checkbox"
               checked={freePreviewOnly}
               onChange={(e) => setFreePreviewOnly(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-[#009ab6] focus:ring-[#009ab6]"
+              className="h-[1.125rem] w-[1.125rem] rounded border-gray-300 text-[#009ab6] focus:ring-[#009ab6]"
             />
             Free preview only
           </label>
         </div>
       </div>
 
-      <p className="mb-4 text-sm text-gray-600">
+      <p className="mb-4 text-base text-gray-600">
         {loading && items.length === 0 ? 'Loading…' : `${total} result${total === 1 ? '' : 's'}`}
         {fixedCategorySlug ? (
           <>
@@ -263,13 +266,13 @@ export function ProductBrowseSection({
       {error ? (
         <div
           role="alert"
-          className="flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 sm:flex-row sm:items-center sm:justify-between"
+          className="flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-base text-red-800 sm:flex-row sm:items-center sm:justify-between"
         >
           <p>{error}</p>
           <button
             type="button"
             onClick={() => setRetryKey((k) => k + 1)}
-            className="shrink-0 rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-red-800 ring-1 ring-red-200 hover:bg-red-50"
+            className="shrink-0 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-red-800 ring-1 ring-red-200 hover:bg-red-50"
           >
             Retry
           </button>
@@ -299,7 +302,7 @@ export function ProductBrowseSection({
             type="button"
             onClick={onLoadMore}
             disabled={loadingMore}
-            className="rounded-xl border-2 border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-800 transition hover:border-[#009ab6] hover:text-[#009ab6] disabled:opacity-50"
+            className="rounded-xl border-2 border-gray-200 bg-white px-10 py-3.5 text-base font-semibold text-gray-900 transition hover:border-[#009ab6] hover:text-[#009ab6] disabled:opacity-50"
           >
             {loadingMore ? 'Loading…' : 'Load more'}
           </button>

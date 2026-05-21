@@ -81,10 +81,10 @@ export default function HomeGalleryPreview() {
           transition={{ duration: 0.6 }}
           className="mb-12 text-center md:mb-16 lg:mb-20"
         >
-          <h2 className="mb-4 text-4xl font-bold text-black md:mb-5 md:text-5xl xl:text-6xl">
+          <h2 className="mb-4 text-3xl font-bold text-black sm:text-4xl md:mb-5 md:text-5xl xl:text-6xl">
             Explore Our Flag Collection
           </h2>
-          <p className="mx-auto max-w-2xl text-pretty text-lg text-black/60 md:text-xl xl:text-[1.35rem]">
+          <p className="mx-auto max-w-2xl text-pretty text-base text-black/60 sm:text-lg md:text-xl xl:text-[1.35rem]">
             Browse through hundreds of high-quality country flags in various formats
           </p>
         </SectionReveal>

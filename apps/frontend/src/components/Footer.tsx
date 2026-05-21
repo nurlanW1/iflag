@@ -54,14 +54,14 @@ export default function Footer() {
       </AnimatePresence>
 
       <PageShell className="py-14 sm:py-16 md:py-20 supports-[padding:max(0px)]:pb-[max(3rem,env(safe-area-inset-bottom))]">
-        <div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-2 md:gap-14 lg:grid-cols-5 lg:gap-12 xl:gap-16">
+        <div className="mb-16 grid grid-cols-1 gap-14 md:grid-cols-2 md:gap-16 lg:grid-cols-5 lg:gap-14 xl:gap-20">
           {/* Brand Column */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Flag size={32} className="text-[#009ab6]" />
-              <span className="text-2xl font-black">{SITE_NAME}</span>
+            <div className="mb-5 flex items-center gap-2.5">
+              <Flag size={36} className="text-[#009ab6]" />
+              <span className="text-2xl font-black tracking-tight sm:text-3xl">{SITE_NAME}</span>
             </div>
-            <p className="text-white/60 text-sm mb-6">
+            <p className="mb-7 text-base text-white/65">
               High-quality flag, symbol, and related digital assets for creative and professional projects.
             </p>
             <div className="flex gap-4">
@@ -85,25 +85,25 @@ export default function Footer() {
 
           {/* Products Column */}
           <div>
-            <h3 className="text-lg font-bold mb-4 text-[#009ab6]">Products</h3>
-            <ul className="space-y-3">
+            <h3 className="mb-5 text-xl font-bold text-[#009ab6]">Products</h3>
+            <ul className="space-y-4">
               <li>
-                <Link href="/assets" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/assets" className="text-base text-white/65 transition-colors hover:text-white">
                   Browse Flags
                 </Link>
               </li>
               <li>
-                <Link href="/assets?asset_type=vector" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/assets?asset_type=vector" className="text-base text-white/65 transition-colors hover:text-white">
                   Vector Assets
                 </Link>
               </li>
               <li>
-                <Link href="/assets?asset_type=raster" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/assets?asset_type=raster" className="text-base text-white/65 transition-colors hover:text-white">
                   Raster Images
                 </Link>
               </li>
               <li>
-                <Link href="/assets?asset_type=video" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/assets?asset_type=video" className="text-base text-white/65 transition-colors hover:text-white">
                   Video Assets
                 </Link>
               </li>
@@ -111,7 +111,7 @@ export default function Footer() {
                 <Link
                   href="/pricing"
                   title="Plans and Paddle checkout"
-                  className="text-white/60 hover:text-white transition-colors text-sm"
+                  className="text-base text-white/65 transition-colors hover:text-white"
                 >
                   Pricing (Paddle)
                 </Link>
@@ -121,30 +121,30 @@ export default function Footer() {
 
           {/* Company Column */}
           <div>
-            <h3 className="text-lg font-bold mb-4 text-[#009ab6]">Company</h3>
-            <ul className="space-y-3">
+            <h3 className="mb-5 text-xl font-bold text-[#009ab6]">Company</h3>
+            <ul className="space-y-4">
               <li>
-                <Link href="/about" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/about" className="text-base text-white/65 transition-colors hover:text-white">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/blog" className="text-base text-white/65 transition-colors hover:text-white">
                   Blog
                 </Link>
               </li>
               <li>
-                <Link href="/careers" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/careers" className="text-base text-white/65 transition-colors hover:text-white">
                   Careers
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/contact" className="text-base text-white/65 transition-colors hover:text-white">
                   Contact
                 </Link>
               </li>
               <li>
-                <Link href="/press" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/press" className="text-base text-white/65 transition-colors hover:text-white">
                   Press Kit
                 </Link>
               </li>
@@ -153,35 +153,35 @@ export default function Footer() {
 
           {/* Legal Column */}
           <div>
-            <h3 className="text-lg font-bold mb-4 text-[#009ab6]">Legal</h3>
-            <ul className="space-y-3">
+            <h3 className="mb-5 text-xl font-bold text-[#009ab6]">Legal</h3>
+            <ul className="space-y-4">
               <li>
-                <Link href="/privacy-policy" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/privacy-policy" className="text-base text-white/65 transition-colors hover:text-white">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms-of-service" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/terms-of-service" className="text-base text-white/65 transition-colors hover:text-white">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/refunds" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/refunds" className="text-base text-white/65 transition-colors hover:text-white">
                   Refund Policy
                 </Link>
               </li>
               <li>
-                <Link href="/licenses" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/licenses" className="text-base text-white/65 transition-colors hover:text-white">
                   Licensing &amp; usage
                 </Link>
               </li>
               <li>
-                <Link href="/cookies" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/cookies" className="text-base text-white/65 transition-colors hover:text-white">
                   Cookie Policy
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/contact" className="text-base text-white/65 transition-colors hover:text-white">
                   Legal &amp; privacy contact
                 </Link>
               </li>
@@ -190,15 +190,15 @@ export default function Footer() {
 
           {/* Support Column */}
           <div>
-            <h3 className="text-lg font-bold mb-4 text-[#009ab6]">Support</h3>
-            <ul className="space-y-3">
+            <h3 className="mb-5 text-xl font-bold text-[#009ab6]">Support</h3>
+            <ul className="space-y-4">
               <li>
-                <Link href="/help" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/help" className="text-base text-white/65 transition-colors hover:text-white">
                   Help Center
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="text-white/60 hover:text-white transition-colors text-sm">
+                <Link href="/faq" className="text-base text-white/65 transition-colors hover:text-white">
                   FAQ
                 </Link>
               </li>
@@ -209,22 +209,22 @@ export default function Footer() {
         {/* Newsletter */}
         <div className="border-t border-white/10 pt-12 mb-12">
           <div className="w-full max-w-none">
-            <h3 className="text-xl font-bold mb-2 text-white/60">Stay Updated</h3>
-            <p className="text-white/60 text-sm mb-4">
+            <h3 className="mb-3 text-2xl font-bold text-white/90">Stay Updated</h3>
+            <p className="mb-5 text-base text-white/65">
               Get the latest flags, updates, and exclusive offers delivered to your inbox.
             </p>
-            <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-2 xs:flex-row xs:items-stretch">
+            <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-3 xs:flex-row xs:items-stretch">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="min-h-[48px] flex-1 rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/40 transition-colors focus:border-[#009ab6] focus:outline-none"
+                className="min-h-[48px] flex-1 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-base text-white placeholder:text-white/45 transition-colors focus:border-[#009ab6] focus:outline-none focus:ring-2 focus:ring-[#009ab6]/30"
                 required
               />
               <button
                 type="submit"
-                className="min-h-[48px] shrink-0 touch-manipulation rounded-lg bg-[#009ab6] px-6 py-3 font-semibold text-white transition-colors hover:bg-[#007a8a] xs:w-auto"
+                className="min-h-[48px] shrink-0 touch-manipulation rounded-xl bg-[#009ab6] px-7 py-3 text-base font-semibold text-white transition-colors hover:bg-[#007a8a] xs:w-auto"
               >
                 Subscribe
               </button>
@@ -232,7 +232,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <p className="mb-6 max-w-none text-xs leading-relaxed text-white/50">
+        <p className="mb-6 max-w-none text-sm leading-relaxed text-white/55 sm:text-base">
           Trust &amp; billing transparency: payments and subscriptions may be processed by {P.PAYMENT_PROCESSOR}. Legal
           pages are published as customizable templates — replace bracketed placeholders with your finalized
           information and have counsel review for each market you serve.
@@ -240,29 +240,29 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-white/60 text-sm">
+          <p className="text-base text-white/65">
             © {currentYear} {SITE_NAME}. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            <Link href="/terms-of-service" className="text-white/60 hover:text-white text-sm transition-colors">
+            <Link href="/terms-of-service" className="text-base text-white/65 transition-colors hover:text-white">
               Terms
             </Link>
-            <Link href="/privacy-policy" className="text-white/60 hover:text-white text-sm transition-colors">
+            <Link href="/privacy-policy" className="text-base text-white/65 transition-colors hover:text-white">
               Privacy
             </Link>
-            <Link href="/refunds" className="text-white/60 hover:text-white text-sm transition-colors">
+            <Link href="/refunds" className="text-base text-white/65 transition-colors hover:text-white">
               Refunds
             </Link>
-            <Link href="/licenses" className="text-white/60 hover:text-white text-sm transition-colors">
+            <Link href="/licenses" className="text-base text-white/65 transition-colors hover:text-white">
               Licenses
             </Link>
-            <Link href="/cookies" className="text-white/60 hover:text-white text-sm transition-colors">
+            <Link href="/cookies" className="text-base text-white/65 transition-colors hover:text-white">
               Cookies
             </Link>
-            <Link href="/contact" className="text-white/60 hover:text-white text-sm transition-colors">
+            <Link href="/contact" className="text-base text-white/65 transition-colors hover:text-white">
               Contact
             </Link>
-            <div className="flex items-center gap-2 text-white text-sm">
+            <div className="flex items-center gap-2 text-base text-white/90">
               <Mail size={16} />
               <a
                 href={`mailto:${contactEmail}`}
