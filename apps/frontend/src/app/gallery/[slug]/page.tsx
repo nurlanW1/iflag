@@ -17,6 +17,7 @@ import {
   flagThumbPlaceholderForFileId,
 } from '@/lib/flag-thumbnail-fallback';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
+import { startHiddenIframeDownload, triggerApiFileDownload } from '@/lib/client/trigger-api-download';
 
 type PremiumTier = 'free' | 'freemium' | 'paid';
 
@@ -272,13 +273,11 @@ export default function CountryDetailPage() {
       } catch (error) {
         console.error('Download failed:', error);
         try {
-          const link = document.createElement('a');
-          link.href = src;
-          link.download = `${data?.country.name || 'flag'}-${format.formatCode}.${format.formatCode}`;
-          link.target = '_blank';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          let href = src;
+          if (!/^https?:\/\//i.test(href)) {
+            href = new URL(src, window.location.origin).href;
+          }
+          startHiddenIframeDownload(href);
         } catch {
           alert('Download failed. Please try again.');
         }
@@ -293,31 +292,18 @@ export default function CountryDetailPage() {
     async (format: Format) => {
       setDownloading(format.id);
       try {
-        const res = await fetch(`/api/download/${format.id}`, {
-          credentials: 'include',
-          redirect: 'manual',
+        await triggerApiFileDownload(`/api/download/${format.id}`, {
+          onUnauthorized: () => router.push(`/sign-in?redirect_url=${redirectBack}`),
+          onForbidden: () =>
+            router.push(`/pricing?callbackUrl=${encodeURIComponent(pathname || '/gallery')}`),
+          onNotFound: () => alert('File not found.'),
+          onError: () => alert('Download failed. Please try again.'),
         });
-        if (res.status === 401) {
-          router.push(`/sign-in?redirect_url=${redirectBack}`);
-          return;
-        }
-        if (res.status === 403) {
-          router.push('/pricing');
-          return;
-        }
-        if (res.status >= 300 && res.status < 400) {
-          const loc = res.headers.get('Location');
-          if (loc) {
-            window.location.href = loc;
-            return;
-          }
-        }
-        window.location.href = `/api/download/${format.id}`;
       } finally {
         setDownloading(null);
       }
     },
-    [router, redirectBack],
+    [router, redirectBack, pathname],
   );
 
   const downloadLabel = useCallback(

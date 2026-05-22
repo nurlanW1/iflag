@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { Download } from 'lucide-react';
+import { triggerApiFileDownload } from '@/lib/client/trigger-api-download';
 
 export type NeonDlFileRow = {
   id: string;
@@ -13,6 +15,10 @@ export type NeonDlFileRow = {
  * Sidebar for Neon-backed marketplace products: select `country_flag_files.id` → `/api/download/[fileId]`.
  */
 export function NeonAssetDownloads({ files }: { files: NeonDlFileRow[] }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const back = pathname || '/browse';
+
   const sorted = useMemo(
     () =>
       [...files].sort((a, b) => {
@@ -32,6 +38,21 @@ export function NeonAssetDownloads({ files }: { files: NeonDlFileRow[] }) {
   }, [sorted, sel]);
 
   const active = sorted.find((f) => f.id === sel);
+  const [busy, setBusy] = useState(false);
+
+  const onPrimaryDownload = () => {
+    if (!active?.id) return;
+    const path = `/api/download/${active.id}`;
+    setBusy(true);
+    void triggerApiFileDownload(path, {
+      onUnauthorized: () =>
+        router.push(`/sign-in?redirect_url=${encodeURIComponent(back)}`),
+      onForbidden: () =>
+        router.push(`/pricing?callbackUrl=${encodeURIComponent(back)}`),
+      onNotFound: () => alert('File not found.'),
+      onError: () => alert('Download failed. Please try again.'),
+    }).finally(() => setBusy(false));
+  };
 
   return (
     <div className="space-y-4">
@@ -72,13 +93,15 @@ export function NeonAssetDownloads({ files }: { files: NeonDlFileRow[] }) {
         </dl>
       ) : null}
 
-      <a
-        href={`/api/download/${active?.id ?? ''}`}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#009ab6] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#007a8a]"
+      <button
+        type="button"
+        disabled={!active || busy}
+        onClick={onPrimaryDownload}
+        className="flex w-full min-h-11 items-center justify-center gap-2 rounded-xl bg-[#009ab6] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#007a8a] disabled:opacity-60"
       >
         <Download size={18} aria-hidden />
-        Download ({active?.format.toUpperCase() ?? '…'})
-      </a>
+        {busy ? 'Downloading…' : `Download (${active?.format.toUpperCase() ?? '…'})`}
+      </button>
     </div>
   );
 }

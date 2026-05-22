@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useEffect, useId, useState } from 'react';
 import { Search, Flag } from 'lucide-react';
 import type { GalleryPreviewItem } from '@/components/landing/LandingFlagGalleryPreview';
+import { loadLandingFlagTeasers } from '@/lib/client/load-landing-flag-teasers';
+import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
 type EditorialHeroProps = {
   searchQuery: string;
@@ -45,10 +47,8 @@ function HeroRealtimeFlags() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/gallery/preview?limit=8&random=true', { cache: 'no-store' });
-        if (!res.ok) throw new Error('preview');
-        const j = (await res.json()) as { data?: GalleryPreviewItem[] };
-        if (!cancelled) setItems(j.data ?? []);
+        const data = await loadLandingFlagTeasers({ limit: 8 });
+        if (!cancelled) setItems(data);
       } catch {
         if (!cancelled) setItems([]);
       }
@@ -84,26 +84,32 @@ function HeroRealtimeFlags() {
         Real catalog previews
       </p>
       <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5" role="list">
-        {slice.map((item, index) => (
-          <li key={item.id}>
-            <Link
-              href={`/assets/${encodeURIComponent(item.slug)}`}
-              className="group block overflow-hidden rounded-xl border border-neutral-200/90 bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-neutral-300 hover:shadow-md"
-            >
-              <div className="relative aspect-[4/3] bg-neutral-100">
-                <Image
-                  src={item.image_url}
-                  alt={item.title}
-                  fill
-                  className="object-contain p-1.5 transition-transform duration-200 group-hover:scale-[1.03]"
-                  sizes="(max-width: 640px) 42vw, 160px"
-                  loading={index < 4 ? 'eager' : 'lazy'}
-                  priority={index < 4}
-                />
-              </div>
-            </Link>
-          </li>
-        ))}
+        {slice.map((item, index) => {
+          const svg = shouldUnoptimizeFlagImageHref(item.image_url, item.available_formats);
+          const href =
+            item.detailHref?.trim() || `/assets/${encodeURIComponent(item.slug)}`;
+          return (
+            <li key={item.id}>
+              <Link
+                href={href}
+                className="group block overflow-hidden rounded-xl border border-neutral-200/90 bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-neutral-300 hover:shadow-md"
+              >
+                <div className="relative aspect-[4/3] bg-neutral-100">
+                  <Image
+                    src={item.image_url}
+                    alt={item.title}
+                    fill
+                    unoptimized={svg}
+                    className="object-contain p-1.5 transition-transform duration-200 group-hover:scale-[1.03]"
+                    sizes="(max-width: 640px) 42vw, 160px"
+                    loading={index < 4 ? 'eager' : 'lazy'}
+                    priority={index < 4}
+                  />
+                </div>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

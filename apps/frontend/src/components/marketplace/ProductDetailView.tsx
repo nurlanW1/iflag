@@ -16,8 +16,10 @@ import { getCategoryById, listPublishedProducts } from '@/services/marketplace';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
 import { NeonAssetDownloads } from '@/components/marketplace/NeonAssetDownloads';
-import { Crown, Download } from 'lucide-react';
+import { MarketplacePreviewDownloadButton } from '@/components/marketplace/MarketplacePreviewDownloadButton';
+import { Crown } from 'lucide-react';
 import type { Product } from '@/types/marketplace';
+import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
 type Props = {
   slug: string;
@@ -61,6 +63,7 @@ export function ProductDetailView({ slug, product }: Props) {
     (u): u is string => typeof u === 'string' && u.length > 0
   );
   const uniquePreview = [...new Set(previewImages)];
+  const formatHints = publicProduct.files.map((f) => f.format);
 
   return (
     <>
@@ -123,21 +126,25 @@ export function ProductDetailView({ slug, product }: Props) {
 
             {uniquePreview.length > 0 ? (
               <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-                {uniquePreview.map((src, i) => (
-                  <li
-                    key={src}
-                    className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-gray-200 bg-gray-100"
-                  >
-                    <Image
-                      src={src}
-                      alt={i === 0 ? `${product.title} flag` : `${product.title} flag preview ${i + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                      priority={i === 0}
-                    />
-                  </li>
-                ))}
+                {uniquePreview.map((src, i) => {
+                  const svg = shouldUnoptimizeFlagImageHref(src, formatHints);
+                  return (
+                    <li
+                      key={src}
+                      className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-gray-200 bg-gray-100"
+                    >
+                      <Image
+                        src={src}
+                        alt={i === 0 ? `${product.title} flag` : `${product.title} flag preview ${i + 1}`}
+                        fill
+                        unoptimized={svg}
+                        className={svg ? 'object-contain p-3' : 'object-cover'}
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        priority={i === 0}
+                      />
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center text-sm text-gray-500">
@@ -212,13 +219,9 @@ export function ProductDetailView({ slug, product }: Props) {
                 </div>
 
                 {previewFile ? (
-                  <a
-                    href={`/api/marketplace/files/${product.id}/${previewFile.id}/download`}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                  >
-                    <Download size={18} aria-hidden />
-                    Preview download
-                  </a>
+                  <MarketplacePreviewDownloadButton
+                    apiPath={`/api/marketplace/files/${product.id}/${previewFile.id}/download`}
+                  />
                 ) : (
                   <p className="text-xs text-gray-500">
                     No public preview file is linked for this product. Pro files are available to subscribers

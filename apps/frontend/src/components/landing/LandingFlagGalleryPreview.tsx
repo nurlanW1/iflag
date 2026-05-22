@@ -3,7 +3,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { SectionReveal } from '@/components/motion/SectionReveal';
+import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
+import { loadLandingFlagTeasers } from '@/lib/client/load-landing-flag-teasers';
 
 export type GalleryPreviewItem = {
   id: string;
@@ -16,7 +19,11 @@ export type GalleryPreviewItem = {
   available_formats: string[];
   asset_group_key: string | null;
   slug: string;
+  /** Default link is `/assets/${slug}`; set for country-hub fallbacks (`/gallery/...`). */
+  detailHref?: string | null;
 };
+
+const LANDING_GALLERY_COUNT = 6;
 
 export function LandingFlagGalleryPreview() {
   const [items, setItems] = useState<GalleryPreviewItem[] | null>(null);
@@ -26,10 +33,11 @@ export function LandingFlagGalleryPreview() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/gallery/preview?limit=12&random=true', { cache: 'no-store' });
-        if (!res.ok) throw new Error('preview');
-        const j = (await res.json()) as { data?: GalleryPreviewItem[] };
-        if (!cancelled) setItems(j.data ?? []);
+        const data = await loadLandingFlagTeasers({ limit: LANDING_GALLERY_COUNT });
+        if (!cancelled) {
+          setFailed(data.length === 0);
+          setItems(data);
+        }
       } catch {
         if (!cancelled) {
           setFailed(true);
@@ -55,21 +63,21 @@ export function LandingFlagGalleryPreview() {
           className="mb-10 flex max-w-3xl flex-col sm:mb-12"
         >
           <h2 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]">
-            Explore Flag Assets
+            From the gallery
           </h2>
           <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
-            Browse real flag designs available in multiple formats including JPG, PNG, SVG, and EPS.
+            A quick look at published designs — open the full gallery for every country hub, format, and folder.
           </p>
         </SectionReveal>
 
         {loading ? (
-          <ul className="grid grid-cols-1 gap-4 min-[440px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" aria-busy="true">
-            {Array.from({ length: 12 }).map((_, i) => (
+          <ul className="mx-auto grid max-w-5xl grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-3" aria-busy="true">
+            {Array.from({ length: LANDING_GALLERY_COUNT }).map((_, i) => (
               <li
                 key={i}
                 className="overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-sm"
               >
-                <div className="aspect-[4/3] animate-pulse bg-neutral-200/90" />
+                <div className="aspect-[5/4] animate-pulse bg-neutral-200/90 sm:aspect-[4/3]" />
                 <div className="space-y-2 p-4">
                   <div className="h-4 w-3/4 animate-pulse rounded bg-neutral-200" />
                   <div className="h-3 w-1/2 animate-pulse rounded bg-neutral-100" />
@@ -85,24 +93,30 @@ export function LandingFlagGalleryPreview() {
             </p>
             <Link
               href="/gallery"
-              className="mt-8 inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-8 text-sm font-semibold text-white transition hover:bg-[var(--brand-blue-hover)]"
+              className="mt-8 inline-flex min-h-11 items-center justify-center gap-1 rounded-xl bg-[var(--brand-blue)] px-8 text-sm font-semibold text-white transition hover:bg-[var(--brand-blue-hover)]"
             >
-              Browse gallery
+              Show more
+              <ChevronRight size={18} aria-hidden />
             </Link>
           </div>
         ) : (
-          <ul className="grid grid-cols-1 gap-4 min-[440px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {items!.map((item) => (
+          <ul className="mx-auto grid max-w-5xl grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-3">
+            {items!.map((item) => {
+              const svg = shouldUnoptimizeFlagImageHref(item.image_url, item.available_formats);
+              const href =
+                item.detailHref?.trim() || `/assets/${encodeURIComponent(item.slug)}`;
+              return (
               <li key={item.id}>
                 <Link
-                  href={`/assets/${encodeURIComponent(item.slug)}`}
+                  href={href}
                   className="group flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-sm transition-[box-shadow,border-color] duration-300 hover:border-neutral-300 hover:shadow-md"
                 >
-                  <div className="relative aspect-[4/3] bg-neutral-100">
+                  <div className="relative aspect-[5/4] bg-neutral-100 sm:aspect-[4/3]">
                     <Image
                       src={item.image_url}
                       alt={item.title}
                       fill
+                      unoptimized={svg}
                       className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
                       sizes="(max-width: 439px) 100vw, (max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
                       loading="lazy"
@@ -137,17 +151,19 @@ export function LandingFlagGalleryPreview() {
                   </div>
                 </Link>
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
 
         {!loading && !empty ? (
-          <div className="mt-12 flex justify-center">
+          <div className="mt-10 flex justify-center sm:mt-12">
             <Link
               href="/gallery"
-              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-neutral-300 bg-white px-10 text-base font-semibold text-[#2a2a2a] shadow-sm transition hover:border-neutral-400 hover:bg-neutral-50"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-white px-10 text-base font-semibold text-[#2a2a2a] shadow-sm transition hover:border-neutral-400 hover:bg-neutral-50"
             >
-              Browse gallery
+              Show more
+              <ChevronRight size={20} aria-hidden />
             </Link>
           </div>
         ) : null}

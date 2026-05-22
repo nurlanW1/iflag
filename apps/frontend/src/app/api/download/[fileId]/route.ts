@@ -7,7 +7,11 @@ import { getDb } from '@/lib/server/db';
 import { hasActiveClerkSubscription } from '@/lib/server/clerk-active-plan';
 import { freeTierRequiresSignIn } from '@/lib/server/flagswing-download-policy';
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
-import { getPublicR2FileUrl, getSignedR2GetUrl } from '@/lib/server/cloudflare-r2';
+import {
+  getPublicR2FileUrl,
+  getSignedR2GetUrl,
+  loadR2ConfigFromEnv,
+} from '@/lib/server/cloudflare-r2';
 
 export const runtime = 'nodejs';
 
@@ -37,7 +41,29 @@ type FileRow = {
   storage_provider: string | null;
   premium_tier: string | null;
   status: string | null;
+  format: string | null;
+  file_name: string | null;
+  country_slug: string | null;
+  variant_name: string | null;
 };
+
+/** Safe single-segment-ish filename inside Content-Disposition. */
+function suggestDownloadBasename(row: FileRow): string {
+  const explicit = row.file_name?.trim();
+  const fmtRaw = row.format?.trim().toLowerCase().replace(/[^a-z0-9]/g, '') || '';
+  const fmt = fmtRaw || 'bin';
+  const baseFromDb =
+    explicit &&
+    explicit.replace(/["\\]/g, '_').replace(/[^\w\-._()+ ]+/g, '_').replace(/^\.+/, '').trim();
+  if (baseFromDb) return baseFromDb.slice(0, 160);
+
+  const slug = row.country_slug?.trim().replace(/[^\w-]+/g, '-').replace(/^-|-$/g, '') || 'flag';
+  const variant =
+    row.variant_name?.trim().replace(/[^\w-]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || '';
+
+  const core = variant ? `${slug}-${variant}.${fmt}` : `${slug}.${fmt}`;
+  return core.replace(/["\\]/g, '_').slice(0, 160);
+}
 
 /**
  * Protected download for `country_flag_files`.
@@ -77,7 +103,8 @@ export async function GET(
   }
 
   const fileRes = await pool.query<FileRow>(
-    `SELECT file_url, file_key, storage_provider, premium_tier, status
+    `SELECT file_url, file_key, storage_provider, premium_tier, status,
+            format, file_name, country_slug, variant_name
      FROM country_flag_files
      WHERE id = $1::uuid
      LIMIT 1`,
@@ -102,24 +129,28 @@ export async function GET(
     return NextResponse.redirect(redirectLocation(request, href), 302);
   }
 
-  /** Final browser URL for bytes (public or signed). */
-  async function resolveHref(opts: { forceSigned: boolean }): Promise<string | null> {
+  /** Prefer attachment-presigned GET when signer is configured so browsers save instead of leaving the SPA. */
+  async function resolveDownloadHref(): Promise<string | null> {
     const fk = row.file_key?.trim();
-    if (fk && getPublicR2FileUrl(fk)) {
-      if (opts.forceSigned) {
-        const signed = await getSignedR2GetUrl(fk, 600);
-        if (signed) return signed;
-        console.warn('[download] signed URL unavailable; falling back to public URL if configured');
-      }
+    const attachmentName = suggestDownloadBasename(row);
+
+    if (fk && loadR2ConfigFromEnv()) {
+      const signed = await getSignedR2GetUrl(fk, 600, { downloadFilename: attachmentName });
+      if (signed) return signed;
+      console.warn('[download] attachment-signed URL unavailable — falling back to public/blob URL');
+    }
+
+    if (fk) {
       const pub = getPublicR2FileUrl(fk);
       if (pub) return pub;
     }
-    if (fileUrl) return resolveGalleryAssetUrl(fileUrl);
-    return null;
+
+    const legacy = fileUrl ? resolveGalleryAssetUrl(fileUrl) : null;
+    return legacy ?? null;
   }
 
   if (isAdmin) {
-    const href = await resolveHref({ forceSigned: true });
+    const href = await resolveDownloadHref();
     if (!href) {
       return NextResponse.json({ error: 'File location unavailable', code: 'MISSING_URL' }, { status: 503 });
     }
@@ -139,7 +170,7 @@ export async function GET(
       }
       return NextResponse.json({ error: 'Not signed in', code: 'NOT_AUTHENTICATED' }, { status: 401 });
     }
-    const href = await resolveHref({ forceSigned: false });
+    const href = await resolveDownloadHref();
     if (!href) {
       return NextResponse.json({ error: 'File location unavailable', code: 'MISSING_URL' }, { status: 503 });
     }
@@ -182,7 +213,7 @@ export async function GET(
     );
   }
 
-  const href = await resolveHref({ forceSigned: true });
+  const href = await resolveDownloadHref();
   if (!href) {
     return NextResponse.json({ error: 'File location unavailable', code: 'MISSING_URL' }, { status: 503 });
   }

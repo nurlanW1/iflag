@@ -68,8 +68,12 @@ export async function fetchRandomGalleryPreviewItems(opts: {
      FROM country_flag_files cff
      LEFT JOIN countries c ON c.id = cff.country_id
      WHERE cff.status = 'published'
-       AND cff.file_url IS NOT NULL
-       AND trim(cff.file_url) <> ''
+       AND (
+         (cff.file_url IS NOT NULL AND trim(cff.file_url) <> '')
+         OR (cff.file_key IS NOT NULL AND trim(cff.file_key) <> '')
+         OR (cff.preview_url IS NOT NULL AND trim(cff.preview_url) <> '')
+         OR (cff.thumbnail_url IS NOT NULL AND trim(cff.thumbnail_url) <> '')
+       )
      ORDER BY random()
      LIMIT $1`,
     [sample]

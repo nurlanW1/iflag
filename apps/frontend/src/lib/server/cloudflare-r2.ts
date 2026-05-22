@@ -78,15 +78,36 @@ function getClient(cfg: FrontendR2Config): S3Client {
   return client;
 }
 
+function sanitizeContentDispositionBasename(raw: string): string {
+  const trimmed = raw.trim().slice(0, 180);
+  if (!trimmed) return 'download.bin';
+  return trimmed.replace(/["\\]/g, '_').replace(/[^\w\-._()+ ]+/g, '_').replace(/^\.+/, '') || 'download.bin';
+}
+
+export type SignedR2GetUrlOptions = {
+  /** Prefer `attachment; filename="..."` so browsers save the file instead of navigating away. */
+  downloadFilename?: string;
+};
+
 /** Time-limited GET — call only after entitlement checks. */
-export async function getSignedR2GetUrl(key: string, expiresInSeconds = 300): Promise<string | null> {
+export async function getSignedR2GetUrl(
+  key: string,
+  expiresInSeconds = 300,
+  opts?: SignedR2GetUrlOptions | null,
+): Promise<string | null> {
   const cfg = loadR2ConfigFromEnv();
   if (!cfg) return null;
   const objectKey = key.replace(/^\/+/, '');
   const client = getClient(cfg);
+  const disposition =
+    opts?.downloadFilename?.trim() && opts.downloadFilename.trim().length > 0
+      ? `attachment; filename="${sanitizeContentDispositionBasename(opts.downloadFilename)}"`
+      : undefined;
+
   const cmd = new GetObjectCommand({
     Bucket: cfg.bucketName,
     Key: objectKey,
+    ...(disposition ? { ResponseContentDisposition: disposition } : {}),
   });
   try {
     return await getSignedUrl(client, cmd, { expiresIn: expiresInSeconds });
