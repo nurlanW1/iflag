@@ -21,14 +21,63 @@ export type GalleryPreviewItem = {
   available_formats: string[];
   asset_group_key: string | null;
   slug: string;
-  /** Used only by editorial hero fallback (country hubs). Catalog tiles omit this. */
+  /** Gallery hub fallback (`/gallery/…`). */
   detailHref?: string | null;
 };
 
 const EXPLORE_GRID_LIMIT = 12;
+const COUNTRY_SAMPLE_N = 6;
+
+type CountryRow = {
+  slug: string;
+  name: string;
+  thumbnail?: string | null;
+  thumbnail_url?: string | null;
+};
+
+function shufflePick<T>(items: T[], n: number): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j]!, copy[i]!];
+  }
+  return copy.slice(0, Math.min(n, copy.length));
+}
+
+async function fetchCountryHubSamples(limit: number): Promise<GalleryPreviewItem[]> {
+  const res = await fetch('/api/gallery/countries', { cache: 'no-store' });
+  if (!res.ok) return [];
+  const j = (await res.json()) as { countries?: CountryRow[] };
+  const list = j.countries ?? [];
+  const withThumb = list.filter((c) => String(c.thumbnail || c.thumbnail_url || '').trim());
+  const picked = shufflePick(withThumb, limit);
+  return picked.map((co) => {
+    const imageUrl = (co.thumbnail || co.thumbnail_url)!.trim();
+    return {
+      id: `country-hub:${co.slug}`,
+      title: co.name,
+      country_slug: co.slug,
+      preview_url: null,
+      thumbnail_url: null,
+      file_url: null,
+      image_url: imageUrl,
+      format: null,
+      available_formats: [],
+      asset_group_key: null,
+      slug: co.slug,
+      detailHref: `/gallery/${encodeURIComponent(co.slug)}`,
+    };
+  });
+}
+
+type ExplorePhase =
+  | 'loading'
+  | { kind: 'catalog'; items: GalleryPreviewItem[] }
+  | { kind: 'country-random'; items: GalleryPreviewItem[] }
+  | 'empty';
 
 export function LandingFlagGalleryPreview() {
-  const [items, setItems] = useState<GalleryPreviewItem[] | null>(null);
+  const [phase, setPhase] = useState<ExplorePhase>('loading');
 
   useEffect(() => {
     let cancelled = false;
@@ -42,7 +91,6 @@ export function LandingFlagGalleryPreview() {
           const j = (await res.json()) as { data?: GalleryPreviewItem[] };
           rows = (j.data ?? []).slice(0, EXPLORE_GRID_LIMIT);
         }
-        /** If insufficient grouped rows after DB filter (e.g. sample variance), refill with latest. */
         if (rows.length < EXPLORE_GRID_LIMIT) {
           const res2 = await fetch(
             `/api/gallery/preview?limit=${EXPLORE_GRID_LIMIT}&random=false`,
@@ -61,9 +109,23 @@ export function LandingFlagGalleryPreview() {
             }
           }
         }
-        if (!cancelled) setItems(rows);
+
+        if (cancelled) return;
+
+        if (rows.length > 0) {
+          setPhase({ kind: 'catalog', items: rows });
+          return;
+        }
+
+        const countrySamples = await fetchCountryHubSamples(COUNTRY_SAMPLE_N);
+        if (cancelled) return;
+        if (countrySamples.length > 0) {
+          setPhase({ kind: 'country-random', items: countrySamples });
+        } else {
+          setPhase('empty');
+        }
       } catch {
-        if (!cancelled) setItems([]);
+        if (!cancelled) setPhase('empty');
       }
     })();
     return () => {
@@ -71,8 +133,82 @@ export function LandingFlagGalleryPreview() {
     };
   }, []);
 
-  const loading = items === null;
-  const empty = !loading && items!.length === 0;
+  const loading = phase === 'loading';
+  const empty = phase === 'empty';
+  const catalogItems = phase !== 'loading' && phase !== 'empty' && phase.kind === 'catalog' ? phase.items : [];
+  const countryItems =
+    phase !== 'loading' && phase !== 'empty' && phase.kind === 'country-random' ? phase.items : [];
+  const showFooter = !loading && !empty;
+
+  function renderCard(item: GalleryPreviewItem) {
+    const svg = shouldUnoptimizeFlagImageHref(item.image_url, [
+      ...(item.available_formats ?? []),
+      ...(item.format ? [item.format] : []),
+    ]);
+    const href = item.detailHref?.trim() || `/assets/${encodeURIComponent(item.slug)}`;
+
+    const fmtSet = new Set(
+      [...(item.available_formats ?? []).map((f) => f.toLowerCase())].filter(Boolean),
+    );
+    if (item.format?.trim()) fmtSet.delete(item.format.trim().toLowerCase());
+    const otherFormats = [...fmtSet];
+    const maxBadges = 3;
+
+    return (
+      <li key={item.id}>
+        <Link
+          href={href}
+          className="group flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] duration-300 hover:border-neutral-300 hover:shadow-md"
+        >
+          <div className="relative aspect-[5/4] bg-neutral-100 sm:aspect-[4/3]">
+            <Image
+              src={item.image_url}
+              alt={item.title || 'Flag asset'}
+              fill
+              loading="lazy"
+              unoptimized={svg}
+              className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
+              sizes="(max-width: 379px) 100vw, (max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw"
+            />
+          </div>
+          <div className="flex flex-1 flex-col gap-2 p-4">
+            <div className="min-h-0">
+              <p className="line-clamp-2 text-[0.95rem] font-semibold leading-snug text-[#2a2a2a] md:text-base">
+                {item.title}
+              </p>
+              {item.country_slug ? (
+                <p className="mt-0.5 truncate text-[0.7rem] font-medium uppercase tracking-wide text-neutral-500">
+                  {item.country_slug.replace(/-/g, ' ')}
+                </p>
+              ) : null}
+            </div>
+            {(item.format?.trim() || otherFormats.length > 0) && (
+              <ul className="mt-auto flex flex-wrap gap-1 pt-0.5" aria-label="Formats">
+                {item.format?.trim() ? (
+                  <li className="rounded border border-neutral-200/95 bg-neutral-50 px-1.5 py-[1px] text-[0.6rem] font-bold uppercase tracking-wide text-neutral-600">
+                    {item.format.trim().toUpperCase()}
+                  </li>
+                ) : null}
+                {otherFormats.slice(0, maxBadges).map((fmt) => (
+                  <li
+                    key={fmt}
+                    className="rounded border border-neutral-200/95 bg-neutral-50 px-1.5 py-[1px] text-[0.6rem] font-bold uppercase tracking-wide text-neutral-600"
+                  >
+                    {fmt.toUpperCase()}
+                  </li>
+                ))}
+                {otherFormats.length > maxBadges ? (
+                  <li className="px-0.5 text-[0.6rem] font-medium text-neutral-500">
+                    +{otherFormats.length - maxBadges}
+                  </li>
+                ) : null}
+              </ul>
+            )}
+          </div>
+        </Link>
+      </li>
+    );
+  }
 
   return (
     <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-14 md:py-20 lg:py-24">
@@ -95,116 +231,60 @@ export function LandingFlagGalleryPreview() {
             </SectionReveal>
           </div>
 
-        {loading ? (
-          <ul
-            className="grid grid-cols-1 min-[380px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4"
-            aria-busy="true"
-            aria-label="Loading catalog previews"
-          >
-            {Array.from({ length: EXPLORE_GRID_LIMIT }).map((_, i) => (
-              <li
-                key={i}
-                className="flex flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
-              >
-                <div className="aspect-[5/4] animate-pulse bg-neutral-200/90 sm:aspect-[4/3]" />
-                <div className="space-y-2 p-4">
-                  <div className="h-4 w-[88%] max-w-[12rem] animate-pulse rounded bg-neutral-200/90" />
-                  <div className="h-3 w-[62%] max-w-[9rem] animate-pulse rounded bg-neutral-100" />
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : empty ? (
-          <div className="rounded-2xl border border-dashed border-neutral-200 bg-white px-6 py-14 text-center text-neutral-600 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-            <p className="text-base font-medium text-neutral-800">No flag assets available yet.</p>
-          </div>
-        ) : (
-          <ul
-            className="grid grid-cols-1 min-[380px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4"
-            role="list"
-          >
-            {items!.map((item) => {
-              const svg = shouldUnoptimizeFlagImageHref(item.image_url, [
-                ...(item.available_formats ?? []),
-                ...(item.format ? [item.format] : []),
-              ]);
-              const href = `/assets/${encodeURIComponent(item.slug)}`;
-
-              const fmtSet = new Set(
-                [...(item.available_formats ?? []).map((f) => f.toLowerCase())].filter(Boolean),
-              );
-              if (item.format?.trim()) fmtSet.delete(item.format.trim().toLowerCase());
-              const otherFormats = [...fmtSet];
-              const maxBadges = 3;
-
-              return (
-                <li key={item.id}>
-                  <Link
-                    href={href}
-                    className="group flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] duration-300 hover:border-neutral-300 hover:shadow-md"
-                  >
-                    <div className="relative aspect-[5/4] bg-neutral-100 sm:aspect-[4/3]">
-                      <Image
-                        src={item.image_url}
-                        alt={item.title || 'Flag asset'}
-                        fill
-                        loading="lazy"
-                        unoptimized={svg}
-                        className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
-                        sizes="(max-width: 379px) 100vw, (max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw"
-                      />
-                    </div>
-                    <div className="flex flex-1 flex-col gap-2 p-4">
-                      <div className="min-h-0">
-                        <p className="line-clamp-2 text-[0.95rem] font-semibold leading-snug text-[#2a2a2a] md:text-base">
-                          {item.title}
-                        </p>
-                        {item.country_slug ? (
-                          <p className="mt-0.5 truncate text-[0.7rem] font-medium uppercase tracking-wide text-neutral-500">
-                            {item.country_slug.replace(/-/g, ' ')}
-                          </p>
-                        ) : null}
-                      </div>
-                      {(item.format?.trim() || otherFormats.length > 0) && (
-                        <ul className="mt-auto flex flex-wrap gap-1 pt-0.5" aria-label="Formats">
-                          {item.format?.trim() ? (
-                            <li className="rounded border border-neutral-200/95 bg-neutral-50 px-1.5 py-[1px] text-[0.6rem] font-bold uppercase tracking-wide text-neutral-600">
-                              {item.format.trim().toUpperCase()}
-                            </li>
-                          ) : null}
-                          {otherFormats.slice(0, maxBadges).map((fmt) => (
-                            <li
-                              key={fmt}
-                              className="rounded border border-neutral-200/95 bg-neutral-50 px-1.5 py-[1px] text-[0.6rem] font-bold uppercase tracking-wide text-neutral-600"
-                            >
-                              {fmt.toUpperCase()}
-                            </li>
-                          ))}
-                          {otherFormats.length > maxBadges ? (
-                            <li className="px-0.5 text-[0.6rem] font-medium text-neutral-500">
-                              +{otherFormats.length - maxBadges}
-                            </li>
-                          ) : null}
-                        </ul>
-                      )}
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-
-        {!loading && !empty ? (
-          <div className="mt-10 flex justify-center md:mt-12">
-            <Link
-              href="/gallery"
-              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-10 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)]"
+          {loading ? (
+            <ul
+              className="grid grid-cols-1 min-[380px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4"
+              aria-busy="true"
+              aria-label="Loading catalog previews"
             >
-              Browse Gallery
-            </Link>
-          </div>
-        ) : null}
+              {Array.from({ length: EXPLORE_GRID_LIMIT }).map((_, i) => (
+                <li
+                  key={i}
+                  className="flex flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                >
+                  <div className="aspect-[5/4] animate-pulse bg-neutral-200/90 sm:aspect-[4/3]" />
+                  <div className="space-y-2 p-4">
+                    <div className="h-4 w-[88%] max-w-[12rem] animate-pulse rounded bg-neutral-200/90" />
+                    <div className="h-3 w-[62%] max-w-[9rem] animate-pulse rounded bg-neutral-100" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : empty ? (
+            <div className="rounded-2xl border border-dashed border-neutral-200 bg-white px-6 py-14 text-center text-neutral-600 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+              <p className="text-base font-medium text-neutral-800">No flag assets available yet.</p>
+            </div>
+          ) : catalogItems.length > 0 ? (
+            <ul
+              className="grid grid-cols-1 min-[380px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4"
+              role="list"
+            >
+              {catalogItems.map((item) => renderCard(item))}
+            </ul>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-neutral-300 bg-white/90 px-4 py-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:px-6 sm:py-8 md:px-8">
+              <p className="mb-5 text-center text-sm font-medium text-neutral-700">
+                Random gallery previews — tap a hub to browse all formats for that territory.
+              </p>
+              <ul
+                className="mx-auto grid max-w-5xl grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5"
+                role="list"
+              >
+                {countryItems.map((item) => renderCard(item))}
+              </ul>
+            </div>
+          )}
+
+          {showFooter ? (
+            <div className="mt-10 flex justify-center md:mt-12">
+              <Link
+                href="/gallery"
+                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-10 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)]"
+              >
+                Browse Gallery
+              </Link>
+            </div>
+          ) : null}
         </div>
       </div>
     </section>
