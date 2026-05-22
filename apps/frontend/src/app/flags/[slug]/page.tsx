@@ -5,8 +5,7 @@ import { ProductDetailView } from '@/components/marketplace/ProductDetailView';
 import { isValidPublicSlug } from '@/lib/seo/slug';
 import { buildMarketplaceProductMetadata } from '@/lib/seo/marketplace-product-metadata';
 import { SITE_NAME } from '@/lib/seo/site-config';
-import { getProductBySlug } from '@/services/marketplace';
-import { getNeonGalleryRedirectForProductSlug } from '@/lib/server/neon-catalog';
+import { resolvePublishedMarketplaceProduct } from '@/lib/server/resolve-published-marketplace-product';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -15,17 +14,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!isValidPublicSlug(slug)) {
     return { title: 'Not found' };
   }
-  const product = getProductBySlug(slug);
+  const product = await resolvePublishedMarketplaceProduct(slug);
   if (product) {
     return buildMarketplaceProductMetadata(product);
-  }
-  const neon = await getNeonGalleryRedirectForProductSlug(slug);
-  if (neon) {
-    return {
-      title: `${neon.title} — ${SITE_NAME}`,
-      description: `View flag downloads and formats for ${neon.title} on ${SITE_NAME}.`,
-      robots: { index: true, follow: true },
-    };
   }
   return {
     title: `Flag asset | ${SITE_NAME}`,
@@ -40,14 +31,12 @@ export default async function FlagProductPage({ params }: Props) {
     notFound();
   }
 
-  const product = getProductBySlug(slug);
-  if (product) {
-    return <ProductDetailView slug={slug} product={product} />;
+  const product = await resolvePublishedMarketplaceProduct(slug);
+  if (product?.detailPath?.startsWith('/assets/')) {
+    redirect(product.detailPath);
   }
-
-  const neonRedirect = await getNeonGalleryRedirectForProductSlug(slug);
-  if (neonRedirect) {
-    redirect(`/gallery/${neonRedirect.gallerySlug}`);
+  if (product) {
+    return <ProductDetailView slug={product.slug} product={product} />;
   }
 
   return <LegacyFlagDetailPageGate />;

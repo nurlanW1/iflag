@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { getNeonCatalogProductBySlug } from '@/lib/server/neon-catalog';
 import { getProductBySlug } from '@/services/marketplace';
 
 export type AssetSeoPayload = {
@@ -26,6 +27,24 @@ export const resolveAssetSeoBySlug = cache(async (slug: string): Promise<AssetSe
       priceCents: local.priceCents,
       currency: local.currency,
     };
+  }
+
+  try {
+    const neon = await getNeonCatalogProductBySlug(slug);
+    if (neon) {
+      const canonical =
+        neon.seo.canonicalPath?.trim() || neon.detailPath?.trim() || `/assets/${neon.slug}`;
+      return {
+        title: neon.title,
+        description: neon.description,
+        image: neon.previewUrl || neon.thumbnailUrl,
+        canonicalPath: canonical,
+        priceCents: neon.priceCents,
+        currency: neon.currency,
+      };
+    }
+  } catch {
+    /* Neon / DB may be unavailable in local builds */
   }
 
   const base = process.env.NEXT_PUBLIC_API_URL?.trim();

@@ -31,6 +31,10 @@ export type PublishedCountryFlagDTO = {
   region: string | null;
   created_at: string;
   updated_at: string;
+  /** Logical product grouping slug (hyphenated) — duplicates across formats collapse in catalog. */
+  asset_group_key: string | null;
+  display_title: string | null;
+  ratio: string | null;
 };
 
 export type ListPublishedFlagsFilters = {
@@ -87,6 +91,9 @@ function rowToDto(r: Record<string, unknown>): PublishedCountryFlagDTO {
       r.processing_status != null ? String(r.processing_status) : null,
     iso_alpha_2: r.iso_alpha_2 != null ? String(r.iso_alpha_2) : null,
     region: r.region != null ? String(r.region) : null,
+    asset_group_key: r.asset_group_key != null ? String(r.asset_group_key) : null,
+    display_title: r.display_title != null ? String(r.display_title) : null,
+    ratio: r.ratio != null ? String(r.ratio) : null,
     created_at: toIso(r.created_at),
     updated_at: toIso(r.updated_at),
   };
@@ -188,6 +195,9 @@ export async function listPublishedCountryFlagFiles(
        cff.mime_type,
        cff.file_size_bytes,
        cff.variant_name,
+       cff.asset_group_key,
+       cff.display_title,
+       cff.ratio,
        cff.premium_tier,
        cff.price_cents,
        cff.watermark_enabled,
@@ -240,6 +250,9 @@ export async function getPublishedCountryFlagById(id: string): Promise<Published
        cff.mime_type,
        cff.file_size_bytes,
        cff.variant_name,
+       cff.asset_group_key,
+       cff.display_title,
+       cff.ratio,
        cff.premium_tier,
        cff.price_cents,
        cff.watermark_enabled,

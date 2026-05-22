@@ -1,7 +1,9 @@
 // Countries Service - Manage countries and their flag files
 
 import pool from '../db.js';
+import { basename, dirname, extname } from 'node:path';
 import { createHash } from 'crypto';
+import { deriveAssetGroupKeyFromParts, deriveDisplayTitle } from '../lib/asset-group-key.js';
 
 export interface Country {
   id: string;
@@ -534,14 +536,40 @@ export async function createFlagFile(
     .update(`${data.country_id}-${data.file_name}-${data.file_size_bytes}`)
     .digest('hex');
 
+  const cn = await pool.query<{ slug: string; name: string }>(
+    `SELECT slug, name FROM countries WHERE id = $1 LIMIT 1`,
+    [data.country_id]
+  );
+  const countrySlugDb = cn.rows[0]?.slug?.trim() || 'unknown';
+  const countryNameDb =
+    cn.rows[0]?.name?.trim() || countrySlugDb.replace(/[-_]/g, ' ').slice(0, 250);
+
+  const stem = basename(data.file_name, extname(data.file_name));
+  const folderSegments = dirname(data.file_path?.trim() || '.')
+    .split(/[/\\\\]/g)
+    .filter(Boolean);
+
+  const assetGroupKey = deriveAssetGroupKeyFromParts({
+    countrySlug: countrySlugDb,
+    folderSegments,
+    fileStemNoExt: stem,
+  }).slice(0, 240);
+
+  const displayTitle = deriveDisplayTitle({
+    countryName: countryNameDb,
+    fileStemNoExt: stem,
+  }).slice(0, 250);
+
   const result = await pool.query(
     `INSERT INTO country_flag_files (
       country_id, file_name, file_path, file_url, file_size_bytes, mime_type,
       format, variant_name, ratio, width, height, aspect_ratio, dpi,
       premium_tier, price_cents, watermark_enabled, tags, metadata,
-      status, uploaded_by, checksum
+      status, uploaded_by, checksum,
+      asset_group_key, display_title
     ) VALUES (
-      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21,
+      $22, $23
     ) RETURNING *`,
     [
       data.country_id,
@@ -565,6 +593,8 @@ export async function createFlagFile(
       data.status || 'draft',
       data.uploaded_by,
       checksum,
+      assetGroupKey,
+      displayTitle,
     ]
   );
 

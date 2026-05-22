@@ -1,10 +1,14 @@
 /**
- * Map Railway `GET /api/assets` JSON rows → marketplace `PublicProduct`.
- * Keeps Neon/R2 thumbnails policy in sync with `neon-catalog` (no exposing paid `file_url` in grids when avoidable).
+ * Map Railway `GET /api/assets` JSON rows → marketplace `PublicProduct` (grouped by `asset_group_key`).
+ * Parallels server `neon-catalog` + `group-flag-products` so landing rails match browse.
  */
 
-import type { Product, ProductFile } from '@/types/marketplace';
+import type { Product } from '@/types/marketplace';
 import { toPublicProduct, type PublicProduct } from '@/lib/marketplace/product-mapper';
+import {
+  productsFromNeonLikeRows,
+  type NeonLikeFlagRow,
+} from '@/lib/marketplace/group-flag-products';
 
 /** Matches `SEED_IDS.catCountry` in `seed.ts` — inlined so client bundles avoid `seed.ts` (uses `fs` at import time). */
 const SEED_CAT_COUNTRY_ID = '11111111-1111-4111-8111-111111111101';
@@ -18,6 +22,9 @@ export type RailwayPublishedFlagAsset = {
   file_name: string;
   file_key?: string | null;
   variant_name?: string | null;
+  ratio?: string | null;
+  asset_group_key?: string | null;
+  display_title?: string | null;
   format: string;
   premium_tier?: string | null;
   price_cents?: number | null;
@@ -25,7 +32,7 @@ export type RailwayPublishedFlagAsset = {
   thumbnail_url?: string | null;
   preview_url?: string | null;
   mime_type?: string | null;
-  file_size_bytes?: number | null;
+  file_size_bytes?: number | string | null;
   tags?: string[] | null;
   created_at: string;
   updated_at: string;
@@ -33,22 +40,36 @@ export type RailwayPublishedFlagAsset = {
   region?: string | null;
 };
 
-function toIso(d: unknown): string {
-  if (d instanceof Date) return d.toISOString();
-  if (typeof d === 'string') return d;
-  return new Date().toISOString();
+function railToNeonLike(a: RailwayPublishedFlagAsset): NeonLikeFlagRow {
+  return {
+    id: String(a.id),
+    file_name: a.file_name,
+    variant_name: a.variant_name ?? null,
+    ratio: a.ratio ?? null,
+    title: a.title ?? null,
+    asset_group_key: a.asset_group_key ?? null,
+    display_title: a.display_title ?? null,
+    format: String(a.format ?? ''),
+    premium_tier: a.premium_tier ?? null,
+    price_cents: a.price_cents ?? null,
+    created_at: a.created_at,
+    updated_at: a.updated_at,
+    file_key: a.file_key ?? null,
+    file_url: a.file_url ?? null,
+    preview_url: a.preview_url ?? null,
+    thumbnail_url: a.thumbnail_url ?? null,
+    mime_type: a.mime_type ?? null,
+    file_size_bytes: a.file_size_bytes ?? null,
+    country_slug: a.country_slug ?? null,
+    country_name: a.country_name ?? null,
+    iso_alpha_2: a.iso_alpha_2 ?? null,
+    region: a.region ?? null,
+    tags: a.tags ?? null,
+  };
 }
 
-function humanizeSlugForTitle(slug: string): string {
-  return slug
-    .split(/[-_]+/)
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(' ');
-}
-
-function pickThumb(a: RailwayPublishedFlagAsset): string | null {
-  const tierRaw = (a.premium_tier ?? 'free').toLowerCase();
+function pickThumbRow(row: NeonLikeFlagRow): string | null {
+  const tierRaw = (row.premium_tier ?? 'free').toLowerCase();
   const free = tierRaw === 'free';
   const pick = (...cands: Array<string | null | undefined>): string | null => {
     for (const c of cands) {
@@ -58,95 +79,35 @@ function pickThumb(a: RailwayPublishedFlagAsset): string | null {
     return null;
   };
   if (free) {
-    return pick(a.preview_url, a.thumbnail_url, a.file_url);
+    return pick(row.preview_url, row.thumbnail_url, row.file_url);
   }
-  return pick(a.preview_url, a.thumbnail_url);
+  return pick(row.preview_url, row.thumbnail_url);
 }
 
-function tagsFrom(a: RailwayPublishedFlagAsset): string[] {
-  const t = a.tags;
-  if (!Array.isArray(t)) return [];
-  return t.map((x) => String(x).trim()).filter(Boolean);
-}
-
-/** Convert Railway catalog row → `PublicProduct` for landing / browse parity. */
-export function railwayPublishedFlagToPublicProduct(a: RailwayPublishedFlagAsset): PublicProduct {
-  const countrySlugRaw =
-    a.country_slug?.trim() ||
-    a.country_name?.trim()?.toLowerCase().replace(/\s+/g, '-') ||
-    null;
-  const countrySlug =
-    countrySlugRaw && countrySlugRaw.length > 0 ? countrySlugRaw : 'unknown';
-
-  const countryNameDisplay =
-    a.country_name?.trim() ||
-    humanizeSlugForTitle(countrySlug === 'unknown' ? 'Imported' : countrySlug);
-
-  const tierRaw = (a.premium_tier ?? 'free').toLowerCase();
+function publicPreviewUrlForRow(row: NeonLikeFlagRow, thumb: string | null): string | null {
+  const tierRaw = (row.premium_tier ?? 'free').toLowerCase();
   const isFree = tierRaw === 'free';
-  const thumb = pickThumb(a);
-  const fmt = String(a.format ?? '').toLowerCase();
+  const fmt = row.format.toLowerCase();
   const imgLike = ['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(fmt);
-  const publicUrlForPreview = isFree && imgLike ? thumb : null;
+  return isFree && imgLike ? thumb : null;
+}
 
-  const size = a.file_size_bytes;
+const railGroupDeps = {
+  thumbForRow: pickThumbRow,
+  publicPreviewUrlForRow,
+  categoryId: SEED_CAT_COUNTRY_ID,
+};
 
-  const file: ProductFile = {
-    id: a.id,
-    productId: a.id,
-    tier: isFree ? 'preview_free' : 'pro',
-    format: a.format || 'svg',
-    qualityLabel: 'Master',
-    storageKey: (a.file_key ?? '').trim(),
-    publicUrl: publicUrlForPreview,
-    fileName: a.file_name,
-    mimeType: (a.mime_type ?? 'application/octet-stream').trim() || 'application/octet-stream',
-    bytes:
-      typeof size === 'number' && Number.isFinite(size)
-        ? size
-        : typeof size === 'string' && Number.parseInt(size, 10)
-          ? Number.parseInt(size, 10)
-          : null,
-    sortOrder: 0,
-    createdAt: toIso(a.created_at),
-    updatedAt: toIso(a.updated_at),
-  };
+/** Group Railway rows the same way as Neon catalog (one card per logical design when `asset_group_key` set). */
+export function railwayPublishedFlagsToGroupedPublicProducts(
+  rows: RailwayPublishedFlagAsset[]
+): PublicProduct[] {
+  const neonLike = rows.map(railToNeonLike);
+  const products: Product[] = productsFromNeonLikeRows(neonLike, railGroupDeps);
+  return products.map(toPublicProduct);
+}
 
-  const label = (a.title?.trim() || a.variant_name?.trim() || a.file_name || '').trim();
-  const productTitle = [countryNameDisplay, label].filter(Boolean).join(' — ').slice(0, 200);
-
-  const fk = a.file_key?.trim();
-
-  const product: Product = {
-    id: a.id,
-    title: productTitle || label || countryNameDisplay,
-    slug: `nf-${String(a.id).toLowerCase()}`,
-    detailPath: `/gallery/${countrySlug}`,
-    description: null,
-    countryCode: a.iso_alpha_2?.trim()?.toUpperCase() ?? null,
-    region: a.region ?? null,
-    categoryId: SEED_CAT_COUNTRY_ID,
-    tags: tagsFrom(a),
-    thumbnailUrl: thumb,
-    previewUrl: thumb,
-    freeDownloadUrl: isFree ? publicUrlForPreview : null,
-    proFileKeys:
-      !isFree && fk
-        ? [{ fileId: a.id, format: a.format || 'svg', qualityLabel: 'Master', storageKey: fk }]
-        : [],
-    files: [file],
-    license: {
-      summary: 'License terms apply at checkout and on the product page.',
-      detail: null,
-    },
-    priceCents: Math.max(0, a.price_cents ?? 0),
-    currency: 'USD',
-    isFeatured: false,
-    isPublished: true,
-    seo: { metaTitle: null, metaDescription: null, canonicalPath: null, ogImageUrl: null },
-    createdAt: toIso(a.created_at),
-    updatedAt: toIso(a.updated_at),
-  };
-
-  return toPublicProduct(product);
+/** @deprecated Prefer `railwayPublishedFlagsToGroupedPublicProducts` for API lists. */
+export function railwayPublishedFlagToPublicProduct(a: RailwayPublishedFlagAsset): PublicProduct {
+  return railwayPublishedFlagsToGroupedPublicProducts([a])[0]!;
 }

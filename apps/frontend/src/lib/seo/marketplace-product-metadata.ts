@@ -11,7 +11,7 @@ export function buildMarketplaceProductMetadata(product: Product): Metadata {
     product.seo.metaDescription ||
     product.description ||
     `View and download ${product.title} on ${SITE_NAME}.`;
-  const canonical = marketplaceProductCanonicalPath(product.slug);
+  const canonical = product.seo.canonicalPath?.trim() || marketplaceProductCanonicalPath(product.slug);
   const ogImage = product.seo.ogImageUrl || product.previewUrl || product.thumbnailUrl;
   const ogTitle = `${titleSegment} | ${SITE_NAME}`;
   return {

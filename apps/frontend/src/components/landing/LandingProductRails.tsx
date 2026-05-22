@@ -9,7 +9,7 @@ import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
 import type { Category } from '@/types/marketplace';
 import {
-  railwayPublishedFlagToPublicProduct,
+  railwayPublishedFlagsToGroupedPublicProducts,
   type RailwayPublishedFlagAsset,
 } from '@/lib/marketplace/railway-assets-mapper';
 
@@ -35,7 +35,7 @@ async function fetchRailPublishedFlags(fullUrl: string): Promise<PublicProduct[]
   const res = await fetch(fullUrl, { cache: 'no-store' });
   if (!res.ok) return [];
   const j = (await res.json()) as { data?: RailwayPublishedFlagAsset[] };
-  return (j.data ?? []).map(railwayPublishedFlagToPublicProduct);
+  return railwayPublishedFlagsToGroupedPublicProducts(j.data ?? []);
 }
 
 async function catalogStripFromRailThenMarket(

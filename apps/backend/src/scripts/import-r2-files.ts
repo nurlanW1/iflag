@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 import type { R2Config } from '../storage/r2.js';
 import { listR2ObjectSummaries, requireR2Config, slugifySegment } from '../storage/r2.js';
-
+import { deriveAssetGroupKeyFromParts, deriveDisplayTitle } from '../lib/asset-group-key.js';
 /** Always load apps/backend/.env (not cwd). Never log env contents. */
 const __scriptDir = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__scriptDir, '../../.env') });
@@ -152,6 +152,8 @@ function publicUrlFromR2Key(cfg: R2Config, key: string): string {
 type ParsedKey = {
   countrySlug: string;
   variantFolder: string;
+  folderSegments: string[];
+  baseStem: string;
   fileSegment: string;
   format: string;
   fileName: string;
@@ -256,6 +258,8 @@ function parseObjectKey(objectKey: string): ParsedKey | null {
   return {
     countrySlug: countrySlugOut.toLowerCase(),
     variantFolder,
+    folderSegments: dirParts,
+    baseStem: baseNoExt,
     fileSegment,
     format,
     fileName,
@@ -330,8 +334,19 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
         continue;
       }
 
-      const { countrySlug, format, fileName, title, variantName } = parsed;
+      const countrySlug = parsed.countrySlug;
+      const countryNameDisp = humanizeSlug(countrySlug);
+      const assetGroupKey = deriveAssetGroupKeyFromParts({
+        countrySlug,
+        folderSegments: parsed.folderSegments,
+        fileStemNoExt: parsed.baseStem,
+      }).slice(0, 240);
+      const displayTitle = deriveDisplayTitle({
+        countryName: countryNameDisp,
+        fileStemNoExt: parsed.baseStem,
+      }).slice(0, 250);
 
+      const { format, fileName, title, variantName } = parsed;
       let countryId: string | null;
       try {
         countryId = await ensureCountryId(pool, countrySlug);
@@ -381,8 +396,10 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
               preview_url = $10,
               country_slug = $11,
               title = $12,
+              asset_group_key = $13,
+              display_title = $14,
               updated_at = CURRENT_TIMESTAMP
-            WHERE file_key = $13`,
+            WHERE file_key = $15`,
             [
               countryId,
               fileName,
@@ -396,6 +413,8 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
               previewUrl,
               countrySlug,
               title,
+              assetGroupKey,
+              displayTitle,
               fileKey,
             ]
           );
@@ -406,12 +425,13 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
               country_id, file_name, file_path, file_url, file_key, storage_provider,
               file_size_bytes, mime_type, format, variant_name, ratio,
               premium_tier, price_cents, tags, metadata, status,
-              processing_status, thumbnail_url, preview_url, country_slug, title
+              processing_status, thumbnail_url, preview_url, country_slug, title,
+              asset_group_key, display_title
             ) VALUES (
               $1, $2, $3, $4, $5, 'r2',
               $6, $7, $8, $9, NULL,
               'free', 0, ARRAY[]::text[], $10::jsonb, 'published',
-              'completed', $11, $12, $13, $14
+              'completed', $11, $12, $13, $14, $15, $16
             )`,
             [
               countryId,
@@ -428,6 +448,8 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
               previewUrl,
               countrySlug,
               title,
+              assetGroupKey,
+              displayTitle,
             ]
           );
           stats.inserted++;

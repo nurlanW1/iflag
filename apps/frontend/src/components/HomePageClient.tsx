@@ -16,6 +16,7 @@ import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { EditorialHero } from '@/components/landing/EditorialHero';
 import { LandingCategoryStrip } from '@/components/landing/LandingCategoryStrip';
+import { LandingFlagGalleryPreview } from '@/components/landing/LandingFlagGalleryPreview';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import { useRevealInView } from '@/hooks/useRevealInView';
 import { SITE_NAME } from '@/lib/seo/site-config';
@@ -234,6 +235,8 @@ export default function HomePageClient() {
           </div>
         </div>
       </section>
+
+      <LandingFlagGalleryPreview />
 
       <LandingCategoryStrip />
 

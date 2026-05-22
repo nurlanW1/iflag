@@ -8,6 +8,14 @@ import {
   isPaidCatalogProduct,
 } from '@/lib/marketplace/catalog-utils';
 
+function countryLabelFromSlug(slug: string) {
+  return slug
+    .split('-')
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}
+
 export function MarketplaceProductCard({
   product,
   categoryName,
@@ -60,11 +68,20 @@ export function MarketplaceProductCard({
             {product.title}
           </Link>
         </h3>
+        {product.countrySlug ? (
+          <p className="mt-1 text-sm font-medium text-neutral-500">{countryLabelFromSlug(product.countrySlug)}</p>
+        ) : null}
         {formats.length > 0 ? (
-          <p className="mt-3 text-base leading-relaxed text-neutral-600">
-            {formats.slice(0, 4).join(' · ')}
-            {formats.length > 4 ? '…' : ''}
-          </p>
+          <ul className="mt-3 flex flex-wrap gap-2" aria-label="Available formats">
+            {formats.map((fmt) => (
+              <li
+                key={fmt}
+                className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-[0.7rem] font-bold uppercase tracking-wide text-neutral-700"
+              >
+                {fmt}
+              </li>
+            ))}
+          </ul>
         ) : null}
         <div className="mt-auto flex items-center justify-between gap-4 pt-6">
           <span className="text-xl font-semibold tabular-nums text-[#2a2a2a]">

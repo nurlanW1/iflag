@@ -22,6 +22,8 @@ export interface PublicProduct {
   slug: string;
   /** When set, catalog cards link here instead of `/flags/{slug}`. */
   detailHref?: string | null;
+  /** Denormalized hyphenated country slug for Neon-derived cards */
+  countrySlug?: string | null;
   description: string | null;
   countryCode: string | null;
   region: string | null;
@@ -70,6 +72,7 @@ export function toPublicProduct(p: Product): PublicProduct {
     title: p.title,
     slug: p.slug,
     detailHref: p.detailPath?.trim() || null,
+    countrySlug: p.countrySlug?.trim() || null,
     description: p.description,
     countryCode: p.countryCode,
     region: p.region,

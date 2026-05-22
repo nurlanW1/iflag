@@ -15,6 +15,7 @@ import {
 import { getCategoryById, listPublishedProducts } from '@/services/marketplace';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
+import { NeonAssetDownloads } from '@/components/marketplace/NeonAssetDownloads';
 import { Crown, Download } from 'lucide-react';
 import type { Product } from '@/types/marketplace';
 
@@ -34,7 +35,10 @@ export function ProductDetailView({ slug, product }: Props) {
       f.tier === 'preview_free' && f.publicUrl != null && String(f.publicUrl).trim() !== ''
   );
 
-  const canonicalPath = marketplaceProductCanonicalPath(product.slug);
+  const neonDownloads = Boolean((product.detailPath ?? '').startsWith('/assets/'));
+
+  const canonicalPath =
+    product.seo.canonicalPath?.trim() || marketplaceProductCanonicalPath(product.slug);
 
   const seoPayload: AssetSeoPayload = {
     title: product.seo.metaTitle || product.title,
@@ -172,44 +176,56 @@ export function ProductDetailView({ slug, product }: Props) {
           </div>
 
           <aside className="h-fit space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:sticky lg:top-24 xl:p-8">
-            <div>
-              <h2 className="text-sm font-bold text-gray-900">File formats</h2>
-              {formatLabels.length > 0 ? (
-                <p className="mt-2 text-sm text-gray-600">{formatLabels.join(' · ')}</p>
-              ) : (
-                <p className="mt-2 text-sm text-gray-500">Formats listed per file below.</p>
-              )}
-              <ul className="mt-4 max-h-64 space-y-2 overflow-y-auto text-sm">
-                {publicProduct.files
-                  .slice()
-                  .sort((a, b) => a.sortOrder - b.sortOrder)
-                  .map((f) => (
-                    <li
-                      key={f.id}
-                      className="flex justify-between gap-2 rounded-lg bg-gray-50 px-3 py-2 text-gray-800"
-                    >
-                      <span className="font-medium">{f.format.toUpperCase()}</span>
-                      <span className="text-xs text-gray-500">
-                        {f.tier === 'pro' ? 'Pro' : f.tier === 'preview_free' ? 'Preview' : f.tier}
-                      </span>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-
-            {previewFile ? (
-              <a
-                href={`/api/marketplace/files/${product.id}/${previewFile.id}/download`}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
-              >
-                <Download size={18} aria-hidden />
-                Preview download
-              </a>
+            {neonDownloads ? (
+              <NeonAssetDownloads
+                files={product.files.map((f) => ({
+                  id: f.id,
+                  format: f.format,
+                  tier: f.tier,
+                }))}
+              />
             ) : (
-              <p className="text-xs text-gray-500">
-                No public preview file is linked for this product. Pro files are available to subscribers
-                after purchase.
-              </p>
+              <>
+                <div>
+                  <h2 className="text-sm font-bold text-gray-900">File formats</h2>
+                  {formatLabels.length > 0 ? (
+                    <p className="mt-2 text-sm text-gray-600">{formatLabels.join(' · ')}</p>
+                  ) : (
+                    <p className="mt-2 text-sm text-gray-500">Formats listed per file below.</p>
+                  )}
+                  <ul className="mt-4 max-h-64 space-y-2 overflow-y-auto text-sm">
+                    {publicProduct.files
+                      .slice()
+                      .sort((a, b) => a.sortOrder - b.sortOrder)
+                      .map((f) => (
+                        <li
+                          key={f.id}
+                          className="flex justify-between gap-2 rounded-lg bg-gray-50 px-3 py-2 text-gray-800"
+                        >
+                          <span className="font-medium">{f.format.toUpperCase()}</span>
+                          <span className="text-xs text-gray-500">
+                            {f.tier === 'pro' ? 'Pro' : f.tier === 'preview_free' ? 'Preview' : f.tier}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+
+                {previewFile ? (
+                  <a
+                    href={`/api/marketplace/files/${product.id}/${previewFile.id}/download`}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                  >
+                    <Download size={18} aria-hidden />
+                    Preview download
+                  </a>
+                ) : (
+                  <p className="text-xs text-gray-500">
+                    No public preview file is linked for this product. Pro files are available to subscribers
+                    after purchase.
+                  </p>
+                )}
+              </>
             )}
 
             {paid ? (

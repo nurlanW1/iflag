@@ -29,6 +29,8 @@ export interface Product {
    * Used for Neon `country_flag_files` rows (e.g. `/gallery/{countrySlug}`).
    */
   detailPath?: string | null;
+  /** Neon gallery / grouping — hyphenated slug for display ("uzbekistan", etc.). */
+  countrySlug?: string | null;
   description: string | null;
   /** ISO 3166-1 alpha-2/alpha-3 as stored; validation layer can normalize later */
   countryCode: string | null;
