@@ -14,6 +14,10 @@ export type ApiDownloadPreflightResult =
 export async function preflightApiDownload(apiPath: string): Promise<ApiDownloadPreflightResult> {
   try {
     const res = await fetch(apiPath, { credentials: 'include', redirect: 'manual' });
+    // Successful `/api/download/...` replies with HTTP 302 → CDN/R2 URL. Fetch with redirect:manual
+    // exposes that as type "opaqueredirect", status 0 (no usable headers)—not 3xx—and must still
+    // count as OK so we can kick off iframe navigation / follow-up download.
+    if (res.type === 'opaqueredirect') return 'ok';
     if (res.status === 401) return 'unauthorized';
     if (res.status === 403) return 'forbidden';
     if (res.status === 404) return 'not_found';
