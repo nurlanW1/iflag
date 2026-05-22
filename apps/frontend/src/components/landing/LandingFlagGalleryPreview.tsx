@@ -77,19 +77,23 @@ export function LandingFlagGalleryPreview() {
   return (
     <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-14 md:py-20 lg:py-24">
       <div className="marketplace-shell">
-        <SectionReveal
-          hidden={{ opacity: 0, y: 10 }}
-          visible={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mb-8 flex max-w-3xl flex-col sm:mb-10"
-        >
-          <h2 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]">
-            Explore Flag Assets
-          </h2>
-          <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
-            Browse real flag designs available in JPG, PNG, SVG, EPS and more.
-          </p>
-        </SectionReveal>
+        <div className="overflow-hidden rounded-2xl border border-neutral-200/90 bg-gradient-to-br from-white via-[#fafaf9] to-neutral-100/90 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:p-6 md:p-8 lg:rounded-[1.35rem]">
+          {/* Banner stripe — matches regional rail; thumbnails use prior wide landscape (4×3-style) */}
+          <div className="mb-8 rounded-xl bg-white/95 px-4 py-5 ring-1 ring-neutral-200/70 sm:mb-10 sm:px-6 sm:py-6">
+            <SectionReveal
+              hidden={{ opacity: 0, y: 10 }}
+              visible={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex max-w-3xl flex-col"
+            >
+              <h2 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]">
+                Explore Flag Assets
+              </h2>
+              <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
+                Browse real flag designs available in JPG, PNG, SVG, EPS and more.
+              </p>
+            </SectionReveal>
+          </div>
 
         {loading ? (
           <ul
@@ -100,10 +104,10 @@ export function LandingFlagGalleryPreview() {
             {Array.from({ length: EXPLORE_GRID_LIMIT }).map((_, i) => (
               <li
                 key={i}
-                className="flex flex-col overflow-hidden rounded-xl border border-neutral-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                className="flex flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
               >
-                <div className="aspect-[5/7] animate-pulse bg-neutral-200/85" />
-                <div className="space-y-2 p-3.5 md:p-4">
+                <div className="aspect-[5/4] animate-pulse bg-neutral-200/90 sm:aspect-[4/3]" />
+                <div className="space-y-2 p-4">
                   <div className="h-4 w-[88%] max-w-[12rem] animate-pulse rounded bg-neutral-200/90" />
                   <div className="h-3 w-[62%] max-w-[9rem] animate-pulse rounded bg-neutral-100" />
                 </div>
@@ -137,22 +141,22 @@ export function LandingFlagGalleryPreview() {
                 <li key={item.id}>
                   <Link
                     href={href}
-                    className="group flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200/85 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] duration-200 hover:border-neutral-300/95 hover:shadow-md"
+                    className="group flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] duration-300 hover:border-neutral-300 hover:shadow-md"
                   >
-                    <div className="relative aspect-[5/7] bg-neutral-50">
+                    <div className="relative aspect-[5/4] bg-neutral-100 sm:aspect-[4/3]">
                       <Image
                         src={item.image_url}
                         alt={item.title || 'Flag asset'}
                         fill
                         loading="lazy"
                         unoptimized={svg}
-                        className="object-contain p-2.5 transition-transform duration-200 group-hover:scale-[1.02]"
-                        sizes="(max-width: 379px) 100vw, (max-width: 767px) 50vw, (max-width: 1279px) 33vw, 22vw"
+                        className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
+                        sizes="(max-width: 379px) 100vw, (max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw"
                       />
                     </div>
-                    <div className="flex flex-1 flex-col gap-1.5 px-3.5 pb-3 pt-3 md:px-4 md:pb-3.5">
+                    <div className="flex flex-1 flex-col gap-2 p-4">
                       <div className="min-h-0">
-                        <p className="line-clamp-2 text-[0.9rem] font-semibold leading-snug text-[#2a2a2a] md:text-[0.95rem]">
+                        <p className="line-clamp-2 text-[0.95rem] font-semibold leading-snug text-[#2a2a2a] md:text-base">
                           {item.title}
                         </p>
                         {item.country_slug ? (
@@ -201,6 +205,7 @@ export function LandingFlagGalleryPreview() {
             </Link>
           </div>
         ) : null}
+        </div>
       </div>
     </section>
   );
