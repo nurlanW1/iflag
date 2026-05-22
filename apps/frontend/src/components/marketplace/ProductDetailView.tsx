@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import Link from 'next/link';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { PremiumAssetPreview } from '@/components/marketplace/asset-detail/PremiumAssetPreview';
 import type { AssetSeoPayload } from '@/lib/seo/asset-metadata';
@@ -15,7 +16,7 @@ type Props = {
   product: Product;
 };
 
-/** Minimal stock-style PDP: preview + title + formats + download only (SEO via JsonLd). */
+/** Stock-marketplace PDP: grey preview stage + white sticky action card + keyword row (adapted from Freepik-style layout). */
 export function ProductDetailView({ slug, product }: Props) {
   const publicProduct = toPublicProduct(product);
   const dedupedFiles = dedupePublicProductFiles(publicProduct.files);
@@ -45,6 +46,25 @@ export function ProductDetailView({ slug, product }: Props) {
   );
   const uniquePreview = [...new Set(previewImages)];
   const formatHints = dedupedFiles.map((f) => f.format);
+  const licenseHint = product.license?.summary?.trim() || null;
+
+  const tagPills =
+    product.tags.length > 0 ? (
+      <section className="mt-14 border-t border-neutral-200/70 pt-10 md:mt-16" aria-label="Related keywords">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Related keywords</h2>
+        <div className="mt-4 flex flex-wrap gap-2">{/* subtle grey chips like marketplace references */}
+          {product.tags.map((t) => (
+            <Link
+              key={t}
+              href={`/browse?q=${encodeURIComponent(t)}`}
+              className="inline-flex max-w-[14rem] truncate rounded-full border border-transparent bg-neutral-200/65 px-[0.875rem] py-2 text-[13px] font-medium text-neutral-700 transition-colors hover:border-neutral-300/80 hover:bg-neutral-300/55 hover:text-neutral-900"
+            >
+              {t}
+            </Link>
+          ))}
+        </div>
+      </section>
+    ) : null;
 
   return (
     <>
@@ -60,11 +80,11 @@ export function ProductDetailView({ slug, product }: Props) {
       />
       <main
         className={clsx(
-          'marketplace-shell bg-white pt-6 sm:pt-8 md:pb-10 md:pt-10 lg:pb-12 lg:pt-11',
-          'max-md:pb-[10.5rem]',
+          'marketplace-shell bg-neutral-100 pt-8 sm:pt-10 md:pb-14 lg:pb-16',
+          'max-md:pb-[calc(13rem+env(safe-area-inset-bottom))]',
         )}
       >
-        <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(260px,17.5rem)] lg:items-start lg:gap-10 xl:gap-14">
+        <div className="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-12 xl:grid-cols-[minmax(0,1fr)_23rem] xl:gap-14">
           <section aria-label="Preview" className="min-w-0">
             <PremiumAssetPreview
               productTitle={product.title}
@@ -73,26 +93,31 @@ export function ProductDetailView({ slug, product }: Props) {
             />
           </section>
 
-          <aside className="min-w-0 lg:sticky lg:top-20 lg:self-start">
-            <h1 className="text-2xl font-semibold tracking-tight text-neutral-950 sm:text-[1.7rem] sm:leading-snug">
-              {product.title}
-            </h1>
-            <div className="mt-5 lg:mt-6">
-              {neonDownloads ? (
-                <NeonAssetDownloads files={dedupedFiles} />
-              ) : (
-                <PremiumCatalogCommerce
-                  productId={product.id}
-                  productSlug={product.slug}
-                  currency={publicProduct.currency}
-                  paidCatalog={paid}
-                  files={dedupedFiles}
-                  previewFile={previewFilePublic}
-                />
-              )}
+          <aside className="min-w-0 lg:sticky lg:top-[4.85rem] lg:self-start">
+            <div className="rounded-xl border border-neutral-200/95 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.06)] sm:p-[1.35rem]">
+              <h1 className="text-[1.28rem] font-bold leading-snug tracking-tight text-neutral-900 sm:text-[1.375rem]">
+                {product.title}
+              </h1>
+              <div className="mt-1 border-t border-neutral-100 pt-5">
+                {neonDownloads ? (
+                  <NeonAssetDownloads files={dedupedFiles} licenseHint={licenseHint} />
+                ) : (
+                  <PremiumCatalogCommerce
+                    productId={product.id}
+                    productSlug={product.slug}
+                    currency={publicProduct.currency}
+                    paidCatalog={paid}
+                    files={dedupedFiles}
+                    previewFile={previewFilePublic}
+                    licenseHint={licenseHint}
+                  />
+                )}
+              </div>
             </div>
           </aside>
         </div>
+
+        {tagPills}
       </main>
     </>
   );

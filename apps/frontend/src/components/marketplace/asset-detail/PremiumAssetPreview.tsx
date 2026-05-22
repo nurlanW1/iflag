@@ -11,7 +11,7 @@ type Props = {
   formatHints?: string[];
 };
 
-/** Single large preview — primary URL only (stock-style hero). */
+/** Wide preview on neutral stage (similar to marketplace reference pages). */
 export function PremiumAssetPreview({ productTitle, previewUrls, formatHints = [] }: Props) {
   const uniq = [...new Set(previewUrls.filter((u) => typeof u === 'string' && u.trim()))];
   const src = uniq[0] ?? '';
@@ -19,7 +19,7 @@ export function PremiumAssetPreview({ productTitle, previewUrls, formatHints = [
   if (!src) {
     return (
       <div
-        className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-neutral-100 lg:aspect-[16/11]"
+        className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-[#dfe1e6] lg:aspect-[16/11]"
         role="img"
         aria-label={`${productTitle} — no preview`}
       />
@@ -29,17 +29,17 @@ export function PremiumAssetPreview({ productTitle, previewUrls, formatHints = [
   const svg = shouldUnoptimizeFlagImageHref(src, formatHints);
 
   return (
-    <div className="mx-auto w-full max-w-[56rem]">
-      <div className="relative overflow-hidden rounded-xl bg-neutral-50 ring-1 ring-neutral-200/80">
-        <div className="relative aspect-[4/3] w-full lg:aspect-[16/11]">
+    <div className="mx-auto w-full max-w-[58rem]">
+      <div className="overflow-hidden rounded-lg border border-neutral-400/14 bg-[#dfe1e6] shadow-inner ring-1 ring-black/[0.04]">
+        <div className="relative aspect-[4/3] w-full lg:aspect-[16/11] lg:min-h-[min(520px,50vh)]">
           <Image
             src={src}
             alt={productTitle}
             fill
             unoptimized={svg}
-            sizes="(max-width:1024px) 100vw, min(896px, 58vw)"
+            sizes="(max-width:1024px) 100vw, min(928px, 62vw)"
             priority
-            className="object-contain p-5 sm:p-8"
+            className="object-contain p-6 sm:p-10 md:p-12"
           />
         </div>
       </div>
