@@ -1,12 +1,7 @@
 'use client';
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useId, useState } from 'react';
+import { useId } from 'react';
 import { Search, Flag } from 'lucide-react';
-import type { GalleryPreviewItem } from '@/components/landing/LandingFlagGalleryPreview';
-import { loadLandingFlagTeasers } from '@/lib/client/load-landing-flag-teasers';
-import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
 type EditorialHeroProps = {
   searchQuery: string;
@@ -14,8 +9,8 @@ type EditorialHeroProps = {
   onSubmitSearch: (e: React.FormEvent) => void;
 };
 
-/** Minimal editorial collage — abstract flag-inspired planes (fallback when no live assets). */
-function HeroAbstractFallback() {
+/** Editorial collage — abstract flag-inspired planes (hero visual, right column). */
+function HeroAbstractIllustration() {
   return (
     <div className="relative mx-auto h-[200px] w-full max-w-md sm:h-[240px] lg:h-[280px]" aria-hidden>
       <div className="absolute inset-0 rounded-[1.35rem] bg-[#eef0f2]" />
@@ -35,82 +30,6 @@ function HeroAbstractFallback() {
       <div className="absolute left-1/2 top-[42%] flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-xl border border-neutral-200/90 bg-white shadow-sm lg:h-[4.25rem] lg:w-[4.25rem]">
         <Flag className="h-8 w-8 text-[var(--brand-blue)] lg:h-9 lg:w-9" strokeWidth={1.25} />
       </div>
-    </div>
-  );
-}
-
-/** Live thumbnails from Neon/R2 catalog (same API as “Explore Flag Assets”). */
-function HeroRealtimeFlags() {
-  const [items, setItems] = useState<GalleryPreviewItem[] | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const data = await loadLandingFlagTeasers({ limit: 8 });
-        if (!cancelled) setItems(data);
-      } catch {
-        if (!cancelled) setItems([]);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (items === null) {
-    return (
-      <div
-        className="mx-auto grid w-full max-w-lg grid-cols-2 gap-2 sm:max-w-xl sm:grid-cols-4 sm:gap-2.5 lg:max-w-md xl:max-w-lg"
-        aria-busy="true"
-        aria-label="Loading flag previews"
-      >
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="aspect-[4/3] animate-pulse rounded-xl bg-neutral-200/75" />
-        ))}
-      </div>
-    );
-  }
-
-  if (items.length === 0) {
-    return <HeroAbstractFallback />;
-  }
-
-  const slice = items.slice(0, 8);
-
-  return (
-    <div className="mx-auto w-full max-w-lg sm:max-w-xl lg:max-w-md xl:max-w-lg">
-      <p className="mb-2 text-center text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-neutral-500 sm:mb-3 sm:text-left lg:text-right">
-        Real catalog previews
-      </p>
-      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5" role="list">
-        {slice.map((item, index) => {
-          const svg = shouldUnoptimizeFlagImageHref(item.image_url, item.available_formats);
-          const href =
-            item.detailHref?.trim() || `/assets/${encodeURIComponent(item.slug)}`;
-          return (
-            <li key={item.id}>
-              <Link
-                href={href}
-                className="group block overflow-hidden rounded-xl border border-neutral-200/90 bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-neutral-300 hover:shadow-md"
-              >
-                <div className="relative aspect-[4/3] bg-neutral-100">
-                  <Image
-                    src={item.image_url}
-                    alt={item.title}
-                    fill
-                    unoptimized={svg}
-                    className="object-contain p-1.5 transition-transform duration-200 group-hover:scale-[1.03]"
-                    sizes="(max-width: 640px) 42vw, 160px"
-                    loading={index < 4 ? 'eager' : 'lazy'}
-                    priority={index < 4}
-                  />
-                </div>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
     </div>
   );
 }
@@ -167,7 +86,9 @@ export function EditorialHero({
             </form>
           </div>
 
-          <HeroRealtimeFlags />
+          <div className="flex justify-center lg:justify-end">
+            <HeroAbstractIllustration />
+          </div>
         </div>
       </div>
     </section>
