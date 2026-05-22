@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import GalleryGrid from './GalleryGrid';
 
@@ -14,12 +15,7 @@ interface Country {
 
 const PREVIEW_COUNT = 24;
 
-type HomeGalleryPreviewProps = {
-  /** Matches alternating editorial rails */
-  surface?: 'white' | 'mist';
-};
-
-export default function HomeGalleryPreview({ surface = 'white' }: HomeGalleryPreviewProps) {
+export default function HomeGalleryPreview() {
   const [allCountries, setAllCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
@@ -63,14 +59,12 @@ export default function HomeGalleryPreview({ surface = 'white' }: HomeGalleryPre
     setExpanded(true);
   };
 
-  const bgClass = surface === 'mist' ? 'bg-[#fafaf9]' : 'bg-white';
-
   if (loading) {
     return (
-      <section className={`${bgClass} py-16 md:py-24 lg:py-28`}>
+      <section className="bg-white py-20 md:py-28 lg:py-32">
         <div className="marketplace-shell">
           <div className="flex justify-center items-center py-20">
-            <div className="h-11 w-11 animate-spin rounded-full border-2 border-neutral-200 border-t-[var(--brand-blue)]" />
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#009ab6]"></div>
           </div>
         </div>
       </section>
@@ -78,20 +72,20 @@ export default function HomeGalleryPreview({ surface = 'white' }: HomeGalleryPre
   }
 
   return (
-    <section className={`relative border-t border-neutral-200/80 ${bgClass} py-16 md:py-24 lg:py-28`}>
+    <section className="relative bg-white py-20 md:py-28 lg:py-32">
       <div className="marketplace-shell">
         {/* Section Header */}
         <SectionReveal
-          hidden={{ opacity: 0, y: 12 }}
+          hidden={{ opacity: 0, y: 20 }}
           visible={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-          className="mb-12 md:mb-14 lg:mb-16"
+          transition={{ duration: 0.6 }}
+          className="mb-12 text-center md:mb-16 lg:mb-20"
         >
-          <h2 className="max-w-3xl text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]">
-            Trending countries
+          <h2 className="mx-auto mb-4 max-w-4xl text-3xl font-black tracking-tight text-gray-950 sm:mb-5 sm:text-4xl md:text-5xl lg:text-[2.75rem]">
+            Popular countries
           </h2>
-          <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
-            Editorial hubs updated from the gallery — tap through to territory-specific collections.
+          <p className="mx-auto max-w-2xl text-pretty text-base font-medium leading-relaxed text-black/62 sm:text-lg md:text-xl">
+            Dive into curated country hubs — previews update from the gallery API.
           </p>
         </SectionReveal>
 
@@ -99,18 +93,16 @@ export default function HomeGalleryPreview({ surface = 'white' }: HomeGalleryPre
         <div className="relative">
           {!expanded && allCountries.length > PREVIEW_COUNT && (
             <div
-              className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-40"
+              className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none z-10"
               style={{
                 background:
-                  surface === 'mist'
-                    ? 'linear-gradient(to bottom, rgba(250,250,249,0) 0%, rgba(250,250,249,0.72) 45%, rgba(250,250,249,0.94) 72%, rgb(250,250,249) 100%)'
-                    : 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 42%, rgba(255,255,255,0.92) 72%, rgb(255,255,255) 100%)',
+                  'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 40%, rgba(255, 255, 255, 0.9) 70%, rgba(255, 255, 255, 1) 100%)',
               }}
             />
           )}
 
           <div className={expanded || allCountries.length <= PREVIEW_COUNT ? '' : 'overflow-hidden'}>
-            <div className="rounded-2xl border border-neutral-200/90 bg-white p-3 shadow-[0_14px_48px_-32px_rgba(42,52,65,0.14)] sm:p-4 md:p-5 lg:rounded-[1.35rem]">
+            <div className="rounded-[1.75rem] border-2 border-[#006d7a]/12 bg-[#f5fafb] p-3 shadow-[0_12px_40px_-12px_rgba(0,109,122,0.18)] sm:p-4 md:p-5">
               <GalleryGrid
                 countries={displayCountries}
                 disableScrollReveal
@@ -131,15 +123,19 @@ export default function HomeGalleryPreview({ surface = 'white' }: HomeGalleryPre
             <button
               type="button"
               onClick={handleShowMore}
-              className="rounded-lg border border-neutral-300 bg-white px-8 py-3 text-base font-medium text-[#2a2a2a] shadow-sm transition-colors duration-200 hover:border-neutral-400 hover:bg-neutral-50 md:px-10 md:py-3.5"
+              className="group relative px-10 py-4 md:px-12 md:py-5 border-2 border-[#009ab6] rounded-full text-[#009ab6] font-bold text-base md:text-lg transition-all duration-300 hover:bg-[#009ab6] hover:text-white hover:shadow-lg hover:scale-105 active:scale-100"
             >
-              Show more countries
+              <span className="relative z-10">Show More</span>
+              <motion.div
+                className="absolute inset-0 rounded-full bg-[#009ab6] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                initial={false}
+              />
             </button>
           ) : expanded && allCountries.length > PREVIEW_COUNT ? (
             <button
               type="button"
               onClick={() => setExpanded(false)}
-              className="rounded-lg border border-transparent px-8 py-3 text-base font-medium text-neutral-600 underline-offset-4 transition-colors hover:text-[#2a2a2a] hover:underline md:px-10 md:py-3.5"
+              className="px-10 py-4 md:px-12 md:py-5 border-2 border-[#006d7a]/20 rounded-full text-black/75 font-bold text-base md:text-lg transition-all duration-300 hover:border-[#009ab6]/40 hover:text-black"
             >
               Show less
             </button>

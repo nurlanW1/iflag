@@ -11,7 +11,6 @@ import {
   bytesToHuman,
   formatBadgeLabel,
   formatIconFor,
-  pitchForExtension,
   shortMimeFamily,
 } from '@/components/marketplace/asset-detail/format-metadata';
 
@@ -84,7 +83,6 @@ export function NeonAssetDownloads({ files }: Props) {
     }).finally(() => setBusy(false));
   };
 
-  const n = sorted.length;
   const downloadLabel =
     busy && active ? 'Preparing…' : active ? `Download ${formatBadgeLabel(active.format)}` : 'Pick a format';
 
@@ -141,17 +139,15 @@ export function NeonAssetDownloads({ files }: Props) {
     <div className="space-y-7">
       <div>
         <h2 className="text-xl font-semibold tracking-tight text-neutral-950">Choose a format</h2>
-        <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-          {n > 1
-            ? `There are ${n} master exports bundled as one marketplace product — duplicate SKUs avoided. Tap a card to tailor the sidebar download.`
-            : 'Licensed download for this design — tuned for scalable web, decks, signage, or print proofs.'}
-        </p>
 
-        <ul role="radiogroup" aria-label="Available formats" className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <ul role="radiogroup" aria-label="Available formats" className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           {sorted.map((f) => {
             const Icon = formatIconFor(f.format);
-            const pitch = pitchForExtension(f.format);
             const on = active?.id === f.id;
+            const metaParts = [
+              bytesToHuman(f.bytes),
+              shortMimeFamily(f.mimeType),
+            ].filter(Boolean);
             return (
               <li key={f.id}>
                 <button
@@ -160,52 +156,34 @@ export function NeonAssetDownloads({ files }: Props) {
                   aria-checked={on}
                   onClick={() => setSel(f.id)}
                   className={clsx(
-                    'group flex min-h-[7.85rem] w-full flex-col justify-between rounded-2xl border bg-white px-4 py-[1.075rem] text-left shadow-sm transition-[border-color,box-shadow,transform] duration-200 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2',
+                    'flex w-full items-center gap-3 rounded-xl border bg-white px-3.5 py-3 text-left shadow-sm transition-[border-color,box-shadow,transform] duration-200 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2',
                     on
-                      ? 'scale-[1.01] border-[var(--brand-blue)] shadow-[0_28px_64px_-40px_var(--brand-blue-hover)] ring-2 ring-[var(--brand-blue)]/15'
-                      : 'border-neutral-200/98 hover:border-neutral-300 hover:shadow-[0_20px_50px_-40px_rgba(15,23,42,0.2)] hover:-translate-y-0.5',
+                      ? 'border-[var(--brand-blue)] ring-2 ring-[var(--brand-blue)]/18 shadow-md'
+                      : 'border-neutral-200/98 hover:border-neutral-300 hover:shadow-[0_12px_32px_-24px_rgba(15,23,42,0.25)]',
                   )}
                 >
-                  <span className="flex items-start gap-3.5">
-                    <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-neutral-50 ring-1 ring-neutral-200/90 transition-colors group-hover:bg-white">
-                      <Icon className="h-6 w-6 text-neutral-600" aria-hidden />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="flex flex-wrap items-center gap-2 gap-y-1">
-                        <span className="text-lg font-bold tracking-wide text-neutral-900">
-                          {formatBadgeLabel(f.format)}
-                        </span>
-                        <span
-                          className={clsx(
-                            'inline-flex shrink-0 rounded-md px-2 py-[0.0625rem] text-[11px] font-bold uppercase tracking-wider ring-1',
-                            f.tier === 'pro'
-                              ? 'bg-amber-50 text-amber-900 ring-amber-100'
-                              : 'bg-emerald-50 text-emerald-800 ring-emerald-100',
-                          )}
-                        >
-                          {accessLabel(f)}
-                        </span>
-                      </span>
-                      <span className="mt-2 block max-w-none text-[0.9275rem] font-semibold text-neutral-800">
-                        {pitch.headline}
-                      </span>
-                      <span className="mt-2 block max-w-none text-[0.8375rem] leading-relaxed text-neutral-600">
-                        {pitch.bestFor}
-                      </span>
-                    </span>
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-neutral-50 ring-1 ring-neutral-200/90">
+                    <Icon className="h-[1.275rem] w-[1.275rem] text-neutral-600" aria-hidden />
                   </span>
-                  <span className="mt-4 flex justify-between gap-2 border-t border-dashed border-neutral-100 pt-4 text-[13px] text-neutral-500">
-                    <span>
-                      Weight{' '}
-                      <strong className="font-semibold text-neutral-700">{bytesToHuman(f.bytes)}</strong>
-                      {shortMimeFamily(f.mimeType) ? (
-                        <>
-                          {' '}
-                          · <strong className="font-semibold text-neutral-700">{shortMimeFamily(f.mimeType)}</strong>{' '}
-                          output
-                        </>
-                      ) : null}
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-2 gap-y-0.5">
+                      <span className="text-[0.9575rem] font-bold uppercase tracking-wide text-neutral-900">
+                        {formatBadgeLabel(f.format)}
+                      </span>
+                      <span
+                        className={clsx(
+                          'inline-flex shrink-0 rounded-md px-2 py-[0.0625rem] text-[10px] font-bold uppercase tracking-wide ring-1',
+                          f.tier === 'pro'
+                            ? 'bg-amber-50 text-amber-900 ring-amber-100'
+                            : 'bg-emerald-50 text-emerald-800 ring-emerald-100',
+                        )}
+                      >
+                        {accessLabel(f)}
+                      </span>
                     </span>
+                    {metaParts.length > 0 ? (
+                      <span className="mt-1 block truncate text-[12px] text-neutral-500">{metaParts.join(' · ')}</span>
+                    ) : null}
                   </span>
                 </button>
               </li>

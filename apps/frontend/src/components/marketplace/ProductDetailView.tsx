@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { MarketplaceProductCard } from '@/components/marketplace/MarketplaceProductCard';
 import { PremiumAssetPreview } from '@/components/marketplace/asset-detail/PremiumAssetPreview';
-import { FlagEducationalSections } from '@/components/marketplace/FlagEducationalSections';
 import type { AssetSeoPayload } from '@/lib/seo/asset-metadata';
 import { marketplaceProductCanonicalPath } from '@/lib/seo/marketplace-product-metadata';
 import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/structured-data';
@@ -137,14 +136,7 @@ export function ProductDetailView({ slug, product }: Props) {
                   {product.description}
                 </p>
               </div>
-            ) : (
-              <p className="max-w-[52rem] text-sm leading-relaxed text-neutral-600">
-                Previews use lightweight raster exports; original vectors and print masters ship only through the
-                format selector.
-              </p>
-            )}
-
-            <FlagEducationalSections productTitle={product.title} />
+            ) : null}
           </section>
 
           <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
@@ -262,9 +254,7 @@ export function ProductDetailView({ slug, product }: Props) {
                   <Crown size={18} aria-hidden />
                   View subscription &amp; billing
                 </Link>
-                <p className="mt-2 text-center text-xs text-neutral-500">
-                  Paddle-secured checkout — unlock pro masters or gallery-wide access.
-                </p>
+                <p className="mt-2 text-center text-xs text-neutral-500">Paddle checkout</p>
               </div>
             </div>
           </aside>
