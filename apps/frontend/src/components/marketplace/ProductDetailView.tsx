@@ -24,7 +24,8 @@ function listCountryVariants(current: Product, limit = 14): Product[] {
   const cs = current.countrySlug?.trim().toLowerCase();
   if (!cs) return [];
   const agkNorm = current.assetGroupKey?.trim().toLowerCase() ?? '';
-  const sameAgkGroup = (p: Product) => (p.assetGroupKey?.trim().toLowerCase() ?? '') === agkNorm && agkNorm !== '';
+  const sameAgkGroup = (p: Product) =>
+    (p.assetGroupKey?.trim().toLowerCase() ?? '') === agkNorm && agkNorm !== '';
   return listPublishedProducts({})
     .filter((p) => p.slug !== current.slug && p.countrySlug?.trim().toLowerCase() === cs)
     .sort((a, b) => {
@@ -36,7 +37,7 @@ function listCountryVariants(current: Product, limit = 14): Product[] {
     .slice(0, limit);
 }
 
-/** Stock-marketplace PDP: grey preview stage + white sticky action card + keyword row (adapted from Freepik-style layout). */
+/** Premium stock-marketplace PDP — hero preview + elevated sticky acquisition panel + light discovery row. */
 export function ProductDetailView({ slug, product }: Props) {
   const publicProduct = toPublicProduct(product);
   const dedupedFiles = dedupePublicProductFiles(publicProduct.files);
@@ -66,7 +67,6 @@ export function ProductDetailView({ slug, product }: Props) {
   );
   const uniquePreview = [...new Set(previewImages)];
   const formatHints = dedupedFiles.map((f) => f.format);
-  const licenseHint = product.license?.summary?.trim() || null;
 
   const siblingProducts = listCountryVariants(product);
   const siblingPublic = siblingProducts.map(toPublicProduct);
@@ -74,21 +74,22 @@ export function ProductDetailView({ slug, product }: Props) {
     ? `/gallery/${encodeURIComponent(product.countrySlug.trim().toLowerCase())}`
     : null;
 
-  const tagPills =
+  const tagTrail =
     product.tags.length > 0 ? (
-      <section className="mt-14 border-t border-neutral-200/70 pt-10 md:mt-16" aria-label="Related keywords">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Related keywords</h2>
-        <div className="mt-4 flex flex-wrap gap-2">{/* subtle grey chips like marketplace references */}
-          {product.tags.map((t) => (
-            <Link
-              key={t}
-              href={`/browse?q=${encodeURIComponent(t)}`}
-              className="inline-flex max-w-[14rem] truncate rounded-full border border-transparent bg-neutral-200/65 px-[0.875rem] py-2 text-[13px] font-medium text-neutral-700 transition-colors hover:border-neutral-300/80 hover:bg-neutral-300/55 hover:text-neutral-900"
-            >
-              {t}
-            </Link>
+      <section className="mt-12 border-t border-neutral-300/55 pt-8 md:mt-14 lg:col-span-full" aria-label="Tags">
+        <p className="text-[13px] leading-relaxed text-neutral-500">
+          {product.tags.map((t, i) => (
+            <span key={t} className="inline whitespace-nowrap">
+              {i > 0 ? <span className="text-neutral-300"> · </span> : null}
+              <Link
+                href={`/browse?q=${encodeURIComponent(t)}`}
+                className="font-medium text-neutral-600 underline-offset-[3px] transition-colors hover:text-neutral-950 hover:underline"
+              >
+                {t}
+              </Link>
+            </span>
           ))}
-        </div>
+        </p>
       </section>
     ) : null;
 
@@ -106,45 +107,61 @@ export function ProductDetailView({ slug, product }: Props) {
       />
       <main
         className={clsx(
-          'marketplace-shell bg-neutral-100 pt-8 sm:pt-10 md:pb-14 lg:pb-16',
-          'max-md:pb-[calc(13rem+env(safe-area-inset-bottom))]',
+          'marketplace-shell min-w-0 bg-[linear-gradient(180deg,#f4f6f9_0%,#ebeff4_52%,#e8ecf1_100%)] pb-14 pt-10 sm:pt-11 md:pb-16 lg:pb-20 lg:pt-12',
+          'max-lg:pb-[calc(18rem+env(safe-area-inset-bottom))]',
         )}
       >
-        <div className="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-12 xl:grid-cols-[minmax(0,1fr)_23rem] xl:gap-14">
-          <section aria-label="Preview" className="min-w-0">
-            <PremiumAssetPreview
-              productTitle={product.title}
-              previewUrls={uniquePreview}
-              formatHints={formatHints}
-            />
-            <CountryDesignVariantRibbon variants={siblingPublic} galleryHref={variantGalleryHref} />
-          </section>
-
-          <aside className="min-w-0 lg:sticky lg:top-[4.85rem] lg:self-start">
-            <div className="rounded-xl border border-neutral-200/95 bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.06)] sm:p-[1.35rem]">
-              <h1 className="text-[1.28rem] font-bold leading-snug tracking-tight text-neutral-900 sm:text-[1.375rem]">
+        <div className="mx-auto w-full max-w-[min(100%,1436px)] px-5 sm:px-6 xl:px-8">
+          <div className="grid min-w-0 grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(17.5rem,25rem)] xl:grid-cols-[minmax(0,1fr)_26rem] lg:gap-12 xl:gap-16">
+            <div className="min-w-0 space-y-7 lg:space-y-10">
+              <h1 className="text-[1.85rem] font-bold tracking-[-0.03em] text-neutral-950 sm:text-[2rem] sm:leading-[1.15] lg:hidden">
                 {product.title}
               </h1>
-              <div className="mt-1 border-t border-neutral-100 pt-5">
-                {neonDownloads ? (
-                  <NeonAssetDownloads files={dedupedFiles} licenseHint={licenseHint} />
-                ) : (
-                  <PremiumCatalogCommerce
-                    productId={product.id}
-                    productSlug={product.slug}
-                    currency={publicProduct.currency}
-                    paidCatalog={paid}
-                    files={dedupedFiles}
-                    previewFile={previewFilePublic}
-                    licenseHint={licenseHint}
-                  />
-                )}
+              <div
+                className="rounded-[1.875rem] bg-gradient-to-br from-white/[0.65] via-white/35 to-transparent p-[0.4375rem] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_34px_80px_-52px_rgba(15,23,42,0.35)] ring-1 ring-neutral-300/33 sm:p-[0.5rem]"
+                aria-label="Hero preview container"
+              >
+                <PremiumAssetPreview
+                  productTitle={product.title}
+                  previewUrls={uniquePreview}
+                  formatHints={formatHints}
+                />
               </div>
-            </div>
-          </aside>
-        </div>
 
-        {tagPills}
+              <CountryDesignVariantRibbon variants={siblingPublic} galleryHref={variantGalleryHref} />
+            </div>
+
+            <aside className="hidden min-w-0 lg:sticky lg:top-[calc(5.75rem+env(safe-area-inset-top))] lg:z-[20] lg:block lg:self-start">
+              <div
+                className={clsx(
+                  'relative overflow-hidden rounded-[1.35rem] border border-white/70 bg-white/95 p-8 shadow-[0_32px_80px_-42px_rgba(15,23,42,0.45)] ring-1 ring-neutral-950/[0.04] backdrop-blur-md',
+                  'before:pointer-events-none before:absolute before:inset-x-10 before:-top-px before:z-[1] before:h-px before:bg-gradient-to-r before:from-transparent before:via-white before:to-transparent',
+                )}
+              >
+                <h1 className="text-[1.725rem] font-bold tracking-[-0.025em] text-neutral-950 sm:text-[1.875rem] sm:leading-[1.18] xl:text-[2rem] xl:tracking-[-0.03em]">
+                  {product.title}
+                </h1>
+
+                <div className="mt-9 border-t border-neutral-200/95 pt-9">
+                  {neonDownloads ? (
+                    <NeonAssetDownloads files={dedupedFiles} />
+                  ) : (
+                    <PremiumCatalogCommerce
+                      productId={product.id}
+                      productSlug={product.slug}
+                      currency={publicProduct.currency}
+                      paidCatalog={paid}
+                      files={dedupedFiles}
+                      previewFile={previewFilePublic}
+                    />
+                  )}
+                </div>
+              </div>
+            </aside>
+
+            {tagTrail}
+          </div>
+        </div>
       </main>
     </>
   );

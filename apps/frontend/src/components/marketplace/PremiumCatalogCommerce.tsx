@@ -2,14 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Check } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import type { PublicProductFile } from '@/lib/marketplace/product-mapper';
 import { triggerApiFileDownload } from '@/lib/client/trigger-api-download';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
-import { formatBadgeLabel } from '@/components/marketplace/asset-detail/format-metadata';
+import { bytesToHuman, formatBadgeLabel } from '@/components/marketplace/asset-detail/format-metadata';
 
 type Props = {
   productId: string;
@@ -18,10 +17,9 @@ type Props = {
   paidCatalog: boolean;
   files: PublicProductFile[];
   previewFile: PublicProductFile | null;
-  licenseHint?: string | null;
 };
 
-/** Catalog PDP — same Freepik-style panel as Neon; Paddle checkout inherits brand styling. */
+/** Catalog PDP — same premium format UI; preview download or Paddle checkout. */
 export function PremiumCatalogCommerce({
   productId,
   productSlug,
@@ -29,7 +27,6 @@ export function PremiumCatalogCommerce({
   paidCatalog,
   files,
   previewFile,
-  licenseHint,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -76,6 +73,8 @@ export function PremiumCatalogCommerce({
     }).finally(() => setBusy(false));
   };
 
+  void _currency;
+
   if (!sorted.length) {
     return (
       <p className="sr-only" role="status">
@@ -84,29 +83,11 @@ export function PremiumCatalogCommerce({
     );
   }
 
-  const hint =
-    licenseHint != null && licenseHint.length > 0 ? (
-      <div className="mt-5 flex gap-2.5 text-[13px] leading-snug text-neutral-600">
-        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white [&>svg]:h-3.5 [&>svg]:w-3.5">
-          <Check aria-hidden strokeWidth={2.5} />
-        </span>
-        <div className="min-w-0">
-          <p className="line-clamp-3">{licenseHint}</p>
-          <Link
-            href="/licenses"
-            className="mt-1 inline-block font-semibold text-[var(--brand-blue)] underline-offset-2 hover:underline"
-          >
-            What&apos;s this?
-          </Link>
-        </div>
-      </div>
-    ) : null;
-
   const formatRow = (
     <div
       role="radiogroup"
       aria-label="Format"
-      className="flex max-w-full gap-0.5 overflow-x-auto rounded-lg bg-neutral-100 p-1 [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] md:flex-wrap md:gap-1"
+      className="-mx-1 flex max-w-full gap-1.5 overflow-x-auto px-1 pb-0.5 pt-0.5 [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 md:gap-2"
     >
       {sorted.map((f) => {
         const on = active?.id === f.id;
@@ -119,10 +100,10 @@ export function PremiumCatalogCommerce({
             aria-label={formatBadgeLabel(f.format)}
             onClick={() => setSel(f.id)}
             className={clsx(
-              'min-w-[2.75rem] shrink-0 rounded-md px-3 py-2 text-[13px] font-semibold transition-[color,background,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2',
+              'min-h-[3rem] min-w-[4.25rem] shrink-0 snap-start rounded-xl px-5 text-[15px] font-semibold uppercase tracking-[0.06em] transition-[color,background,box-shadow,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 sm:min-w-[4.5rem]',
               on
-                ? 'bg-white text-neutral-900 shadow-sm ring-1 ring-neutral-200/90'
-                : 'text-neutral-600 hover:bg-white/65 hover:text-neutral-900',
+                ? 'scale-[1.02] bg-neutral-900 text-white shadow-lg shadow-neutral-900/25'
+                : 'bg-neutral-100/90 text-neutral-600 ring-1 ring-neutral-200/80 hover:bg-neutral-200/85 hover:text-neutral-900',
             )}
           >
             {formatBadgeLabel(f.format)}
@@ -132,26 +113,35 @@ export function PremiumCatalogCommerce({
     </div>
   );
 
+  const metaLine = active ? (
+    <p className="mt-5 text-[15px] font-medium tabular-nums tracking-tight text-neutral-600">
+      <span className="text-neutral-950">{formatBadgeLabel(active.format)}</span>
+      <span className="mx-2 font-light text-neutral-300">·</span>
+      <span>{bytesToHuman(active.bytes)}</span>
+    </p>
+  ) : null;
+
   const cta = previewReady ? (
     <button
       type="button"
       disabled={busy}
       onClick={() => void onPreviewDl()}
       className={clsx(
-        'mt-6 w-full rounded-md bg-[var(--brand-blue)] py-4 text-[16px] font-semibold leading-none text-[#fafaf9]',
-        'shadow-[0_2px_10px_-2px_rgba(12,39,72,0.55)] transition-colors hover:bg-[var(--brand-blue-hover)] disabled:opacity-50',
+        'mt-7 flex min-h-[3.5rem] w-full items-center justify-center gap-2.5 rounded-xl bg-neutral-950 px-5 text-[17px] font-semibold tracking-tight text-white',
+        'shadow-[0_16px_42px_-22px_rgba(0,0,0,0.55)] transition-[transform,background,box-shadow] duration-200 hover:bg-neutral-800 hover:shadow-[0_22px_44px_-22px_rgba(0,0,0,0.58)] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-55',
       )}
     >
+      <Download className="h-5 w-5 shrink-0 opacity-95" aria-hidden />
       {busy ? 'Preparing…' : `Download ${formatBadgeLabel(active!.format)}`}
     </button>
   ) : paidCatalog && active?.tier === 'pro' ? (
-    <div className="mt-6">
+    <div className="mt-7">
       <CheckoutButton
         kind="one_time"
         productSlug={productSlug}
         className={clsx(
-          'flex w-full items-center justify-center rounded-md bg-[var(--brand-blue)] px-5 py-4 text-[16px] font-semibold text-[#fafaf9]',
-          'shadow-[0_2px_10px_-2px_rgba(12,39,72,0.55)] transition-colors hover:bg-[var(--brand-blue-hover)] disabled:opacity-50',
+          'flex min-h-[3.5rem] w-full items-center justify-center rounded-xl bg-neutral-950 px-6 text-[17px] font-semibold tracking-tight text-white',
+          'shadow-[0_16px_42px_-22px_rgba(0,0,0,0.55)] transition-[transform,background,box-shadow] duration-200 hover:bg-neutral-800 hover:shadow-[0_22px_44px_-22px_rgba(0,0,0,0.58)] active:scale-[0.99] disabled:opacity-55',
         )}
       >
         Get Premium Access
@@ -162,16 +152,16 @@ export function PremiumCatalogCommerce({
   const block = (
     <div>
       {formatRow}
+      {metaLine}
       {cta}
-      {hint}
     </div>
   );
 
   return (
     <>
-      <div className="hidden md:block">{block}</div>
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] pb-[max(10px,env(safe-area-inset-bottom))] md:hidden">
-        <div className="pointer-events-auto rounded-t-xl border-x border-t border-neutral-200/95 bg-white px-4 pb-5 pt-4 shadow-[0_-14px_40px_-22px_rgba(15,23,42,0.2)]">
+      <div className="hidden lg:block">{block}</div>
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden">
+        <div className="pointer-events-auto rounded-t-[1.25rem] border border-b-0 border-neutral-200/90 bg-white px-5 pb-6 pt-5 shadow-[0_-24px_56px_-28px_rgba(15,23,42,0.22)]">
           {block}
         </div>
       </div>

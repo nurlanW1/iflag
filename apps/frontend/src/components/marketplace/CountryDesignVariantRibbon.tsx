@@ -18,23 +18,23 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
   if (variants.length === 0) return null;
 
   return (
-    <div className="mt-6 min-w-0 lg:mt-8">
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+    <div className="min-w-0">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-neutral-300/40 pb-3">
         <div>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Other designs</h2>
-          <p className="mt-0.5 text-[13px] text-neutral-600">Same country · more styles</p>
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">More from this country</h2>
+          <p className="mt-0.5 text-[13px] font-medium text-neutral-600">Other flag styles</p>
         </div>
         {galleryHref ? (
           <Link
             href={galleryHref}
-            className="shrink-0 text-[13px] font-semibold text-[var(--brand-blue)] underline-offset-4 hover:underline"
+            className="shrink-0 text-[13px] font-semibold text-neutral-800 underline-offset-4 transition-colors hover:text-[var(--brand-blue)] hover:underline"
           >
-            View gallery
+            View gallery →
           </Link>
         ) : null}
       </div>
       <div
-        className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-hidden pb-2 pl-1 pr-1 pt-0.5 [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] md:gap-3.5"
+        className="-mx-1 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-1 py-2 [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] sm:gap-3"
         role="list"
         aria-label="Other flag designs"
       >
@@ -52,9 +52,9 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
               role="listitem"
               aria-label={`${p.title} — ${paid ? 'Premium' : 'Free'}`}
               title={p.title}
-              className="group relative w-[5.75rem] shrink-0 snap-start overflow-hidden rounded-lg border border-neutral-200/90 bg-white shadow-sm ring-1 ring-black/[0.03] transition-[box-shadow,transform,border-color] hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md sm:w-[6.75rem]"
+              className="group relative w-24 shrink-0 snap-start overflow-hidden rounded-xl border border-neutral-200/90 bg-white shadow-[0_10px_30px_-18px_rgba(15,23,42,0.25)] ring-1 ring-black/[0.03] transition-[box-shadow,transform,border-color] duration-300 hover:z-[1] hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-[0_22px_40px_-24px_rgba(15,23,42,0.3)] sm:w-[6.85rem]"
             >
-              <div className="relative aspect-[4/3] w-full bg-[#eaecef]">
+              <div className="relative aspect-[4/3] w-full bg-gradient-to-b from-neutral-100 to-neutral-200/85">
                 {thumb ? (
                   <Image
                     src={thumb}
@@ -62,22 +62,22 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
                     fill
                     unoptimized={svgThumb}
                     loading="lazy"
-                    sizes="110px"
-                    className="object-contain p-1.5 transition-opacity group-hover:opacity-95"
+                    sizes="118px"
+                    className="object-contain p-1.5 transition-transform duration-300 group-hover:scale-[1.04]"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-neutral-200/35 text-[10px] font-medium text-neutral-500">
+                  <div className="flex h-full w-full items-center justify-center text-[11px] font-medium text-neutral-400">
                     —
                   </div>
                 )}
                 <span
-                  className={`pointer-events-none absolute left-1.5 top-1.5 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-                    paid ? 'bg-[var(--brand-blue)]/93 text-[#fafaf9]' : 'border border-white/75 bg-white/90 text-neutral-800'
+                  className={`pointer-events-none absolute left-1.5 top-1.5 rounded-md px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide ${
+                    paid ? 'bg-[var(--brand-blue)]/94 text-[#fafaf9]' : 'border border-white/80 bg-white/92 text-neutral-800'
                   }`}
                 >
                   {paid ? (
                     <span className="inline-flex items-center gap-0.5">
-                      <Crown size={10} aria-hidden strokeWidth={2} />
+                      <Crown size={9} aria-hidden strokeWidth={2.5} />
                       Pro
                     </span>
                   ) : (
