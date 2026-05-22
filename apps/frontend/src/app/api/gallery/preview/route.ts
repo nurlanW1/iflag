@@ -25,8 +25,17 @@ export async function GET(request: Request) {
       if (Number.isFinite(parsed)) sample = parsed;
     }
 
-    const data = await fetchRandomGalleryPreviewItems({ limit, sample });
+    const randomParam = searchParams.get('random');
+    const order =
+      randomParam === 'false' ||
+      randomParam === '0' ||
+      searchParams.get('order')?.trim().toLowerCase() === 'latest'
+        ? 'latest'
+        : 'random';
 
+    const data = await fetchRandomGalleryPreviewItems({ limit, sample, order });
+
+    /** Objects include thumbnail_url, preview_url, file_url, format, image_url, available_formats, etc. */
     return NextResponse.json({ data }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) {
     console.error('[api/gallery/preview]', e);

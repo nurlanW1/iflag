@@ -3,11 +3,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ChevronRight } from 'lucide-react';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
-import { loadLandingFlagTeasers } from '@/lib/client/load-landing-flag-teasers';
 
+/** Catalog tile from `/api/gallery/preview` (grouped Neon product teaser). */
 export type GalleryPreviewItem = {
   id: string;
   title: string;
@@ -15,34 +14,56 @@ export type GalleryPreviewItem = {
   preview_url: string | null;
   thumbnail_url: string | null;
   file_url: string | null;
+  /** Resolved display URL — prefer thumbnails before originals. */
   image_url: string;
+  /** Primary preview row format (browser-safe picks rank higher server-side). */
+  format?: string | null;
   available_formats: string[];
   asset_group_key: string | null;
   slug: string;
-  /** Default link is `/assets/${slug}`; set for country-hub fallbacks (`/gallery/...`). */
+  /** Used only by editorial hero fallback (country hubs). Catalog tiles omit this. */
   detailHref?: string | null;
 };
 
-const LANDING_GALLERY_COUNT = 6;
+const EXPLORE_GRID_LIMIT = 12;
 
 export function LandingFlagGalleryPreview() {
   const [items, setItems] = useState<GalleryPreviewItem[] | null>(null);
-  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const data = await loadLandingFlagTeasers({ limit: LANDING_GALLERY_COUNT });
-        if (!cancelled) {
-          setFailed(data.length === 0);
-          setItems(data);
+        const res = await fetch(`/api/gallery/preview?limit=${EXPLORE_GRID_LIMIT}&random=true`, {
+          cache: 'no-store',
+        });
+        let rows: GalleryPreviewItem[] = [];
+        if (res.ok) {
+          const j = (await res.json()) as { data?: GalleryPreviewItem[] };
+          rows = (j.data ?? []).slice(0, EXPLORE_GRID_LIMIT);
         }
+        /** If insufficient grouped rows after DB filter (e.g. sample variance), refill with latest. */
+        if (rows.length < EXPLORE_GRID_LIMIT) {
+          const res2 = await fetch(
+            `/api/gallery/preview?limit=${EXPLORE_GRID_LIMIT}&random=false`,
+            { cache: 'no-store' },
+          );
+          if (res2.ok) {
+            const j2 = (await res2.json()) as { data?: GalleryPreviewItem[] };
+            const extra = j2.data ?? [];
+            const seen = new Set(rows.map((r) => r.id));
+            for (const r of extra) {
+              if (rows.length >= EXPLORE_GRID_LIMIT) break;
+              if (!seen.has(r.id)) {
+                seen.add(r.id);
+                rows.push(r);
+              }
+            }
+          }
+        }
+        if (!cancelled) setItems(rows);
       } catch {
-        if (!cancelled) {
-          setFailed(true);
-          setItems([]);
-        }
+        if (!cancelled) setItems([]);
       }
     })();
     return () => {
@@ -51,119 +72,132 @@ export function LandingFlagGalleryPreview() {
   }, []);
 
   const loading = items === null;
-  const empty = !loading && (items!.length === 0 || failed);
+  const empty = !loading && items!.length === 0;
 
   return (
-    <section className="border-t border-neutral-200/80 bg-[#fafaf9] py-16 md:py-24 lg:py-28">
+    <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-14 md:py-20 lg:py-24">
       <div className="marketplace-shell">
         <SectionReveal
           hidden={{ opacity: 0, y: 10 }}
           visible={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="mb-10 flex max-w-3xl flex-col sm:mb-12"
+          className="mb-8 flex max-w-3xl flex-col sm:mb-10"
         >
           <h2 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]">
-            From the gallery
+            Explore Flag Assets
           </h2>
           <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
-            A quick look at published designs — open the full gallery for every country hub, format, and folder.
+            Browse real flag designs available in JPG, PNG, SVG, EPS and more.
           </p>
         </SectionReveal>
 
         {loading ? (
-          <ul className="mx-auto grid max-w-5xl grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-3" aria-busy="true">
-            {Array.from({ length: LANDING_GALLERY_COUNT }).map((_, i) => (
+          <ul
+            className="grid grid-cols-1 min-[380px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4"
+            aria-busy="true"
+            aria-label="Loading catalog previews"
+          >
+            {Array.from({ length: EXPLORE_GRID_LIMIT }).map((_, i) => (
               <li
                 key={i}
-                className="overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-sm"
+                className="flex flex-col overflow-hidden rounded-xl border border-neutral-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
               >
-                <div className="aspect-[5/4] animate-pulse bg-neutral-200/90 sm:aspect-[4/3]" />
-                <div className="space-y-2 p-4">
-                  <div className="h-4 w-3/4 animate-pulse rounded bg-neutral-200" />
-                  <div className="h-3 w-1/2 animate-pulse rounded bg-neutral-100" />
+                <div className="aspect-[5/7] animate-pulse bg-neutral-200/85" />
+                <div className="space-y-2 p-3.5 md:p-4">
+                  <div className="h-4 w-[88%] max-w-[12rem] animate-pulse rounded bg-neutral-200/90" />
+                  <div className="h-3 w-[62%] max-w-[9rem] animate-pulse rounded bg-neutral-100" />
                 </div>
               </li>
             ))}
           </ul>
         ) : empty ? (
-          <div className="rounded-2xl border border-dashed border-neutral-300 bg-white px-6 py-16 text-center shadow-sm">
-            <p className="text-lg font-medium text-neutral-800">Gallery preview unavailable</p>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-neutral-600">
-              Published flag assets will appear here automatically once they are synced to the catalog.
-            </p>
-            <Link
-              href="/gallery"
-              className="mt-8 inline-flex min-h-11 items-center justify-center gap-1 rounded-xl bg-[var(--brand-blue)] px-8 text-sm font-semibold text-white transition hover:bg-[var(--brand-blue-hover)]"
-            >
-              Show more
-              <ChevronRight size={18} aria-hidden />
-            </Link>
+          <div className="rounded-2xl border border-dashed border-neutral-200 bg-white px-6 py-14 text-center text-neutral-600 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            <p className="text-base font-medium text-neutral-800">No flag assets available yet.</p>
           </div>
         ) : (
-          <ul className="mx-auto grid max-w-5xl grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-3">
+          <ul
+            className="grid grid-cols-1 min-[380px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4"
+            role="list"
+          >
             {items!.map((item) => {
-              const svg = shouldUnoptimizeFlagImageHref(item.image_url, item.available_formats);
-              const href =
-                item.detailHref?.trim() || `/assets/${encodeURIComponent(item.slug)}`;
+              const svg = shouldUnoptimizeFlagImageHref(item.image_url, [
+                ...(item.available_formats ?? []),
+                ...(item.format ? [item.format] : []),
+              ]);
+              const href = `/assets/${encodeURIComponent(item.slug)}`;
+
+              const fmtSet = new Set(
+                [...(item.available_formats ?? []).map((f) => f.toLowerCase())].filter(Boolean),
+              );
+              if (item.format?.trim()) fmtSet.delete(item.format.trim().toLowerCase());
+              const otherFormats = [...fmtSet];
+              const maxBadges = 3;
+
               return (
-              <li key={item.id}>
-                <Link
-                  href={href}
-                  className="group flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-sm transition-[box-shadow,border-color] duration-300 hover:border-neutral-300 hover:shadow-md"
-                >
-                  <div className="relative aspect-[5/4] bg-neutral-100 sm:aspect-[4/3]">
-                    <Image
-                      src={item.image_url}
-                      alt={item.title}
-                      fill
-                      unoptimized={svg}
-                      className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
-                      sizes="(max-width: 439px) 100vw, (max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="flex flex-1 flex-col gap-2 p-4">
-                    <h3 className="line-clamp-2 text-left text-[0.95rem] font-semibold leading-snug text-[#2a2a2a] md:text-base">
-                      {item.title}
-                    </h3>
-                    {item.country_slug ? (
-                      <p className="text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
-                        {item.country_slug.replace(/-/g, ' ')}
-                      </p>
-                    ) : null}
-                    {item.available_formats.length > 0 ? (
-                      <ul className="mt-auto flex flex-wrap gap-1.5 pt-1" aria-label="Formats">
-                        {item.available_formats.slice(0, 5).map((fmt) => (
-                          <li
-                            key={fmt}
-                            className="rounded border border-neutral-200/90 bg-neutral-50 px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-neutral-600"
-                          >
-                            {fmt}
-                          </li>
-                        ))}
-                        {item.available_formats.length > 5 ? (
-                          <li className="px-1 text-[0.65rem] font-medium text-neutral-500">
-                            +{item.available_formats.length - 5}
-                          </li>
+                <li key={item.id}>
+                  <Link
+                    href={href}
+                    className="group flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200/85 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] duration-200 hover:border-neutral-300/95 hover:shadow-md"
+                  >
+                    <div className="relative aspect-[5/7] bg-neutral-50">
+                      <Image
+                        src={item.image_url}
+                        alt={item.title || 'Flag asset'}
+                        fill
+                        loading="lazy"
+                        unoptimized={svg}
+                        className="object-contain p-2.5 transition-transform duration-200 group-hover:scale-[1.02]"
+                        sizes="(max-width: 379px) 100vw, (max-width: 767px) 50vw, (max-width: 1279px) 33vw, 22vw"
+                      />
+                    </div>
+                    <div className="flex flex-1 flex-col gap-1.5 px-3.5 pb-3 pt-3 md:px-4 md:pb-3.5">
+                      <div className="min-h-0">
+                        <p className="line-clamp-2 text-[0.9rem] font-semibold leading-snug text-[#2a2a2a] md:text-[0.95rem]">
+                          {item.title}
+                        </p>
+                        {item.country_slug ? (
+                          <p className="mt-0.5 truncate text-[0.7rem] font-medium uppercase tracking-wide text-neutral-500">
+                            {item.country_slug.replace(/-/g, ' ')}
+                          </p>
                         ) : null}
-                      </ul>
-                    ) : null}
-                  </div>
-                </Link>
-              </li>
+                      </div>
+                      {(item.format?.trim() || otherFormats.length > 0) && (
+                        <ul className="mt-auto flex flex-wrap gap-1 pt-0.5" aria-label="Formats">
+                          {item.format?.trim() ? (
+                            <li className="rounded border border-neutral-200/95 bg-neutral-50 px-1.5 py-[1px] text-[0.6rem] font-bold uppercase tracking-wide text-neutral-600">
+                              {item.format.trim().toUpperCase()}
+                            </li>
+                          ) : null}
+                          {otherFormats.slice(0, maxBadges).map((fmt) => (
+                            <li
+                              key={fmt}
+                              className="rounded border border-neutral-200/95 bg-neutral-50 px-1.5 py-[1px] text-[0.6rem] font-bold uppercase tracking-wide text-neutral-600"
+                            >
+                              {fmt.toUpperCase()}
+                            </li>
+                          ))}
+                          {otherFormats.length > maxBadges ? (
+                            <li className="px-0.5 text-[0.6rem] font-medium text-neutral-500">
+                              +{otherFormats.length - maxBadges}
+                            </li>
+                          ) : null}
+                        </ul>
+                      )}
+                    </div>
+                  </Link>
+                </li>
               );
             })}
           </ul>
         )}
 
         {!loading && !empty ? (
-          <div className="mt-10 flex justify-center sm:mt-12">
+          <div className="mt-10 flex justify-center md:mt-12">
             <Link
               href="/gallery"
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-white px-10 text-base font-semibold text-[#2a2a2a] shadow-sm transition hover:border-neutral-400 hover:bg-neutral-50"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-10 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)]"
             >
-              Show more
-              <ChevronRight size={20} aria-hidden />
+              Browse Gallery
             </Link>
           </div>
         ) : null}

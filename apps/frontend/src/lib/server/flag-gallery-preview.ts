@@ -5,6 +5,8 @@
 import { neonLikeRowGroupKey, type NeonLikeFlagRow } from '@/lib/marketplace/group-flag-products';
 import { buildCatalogProductFromFlagBundle, NEON_SELECT_FIELDS } from '@/lib/server/neon-catalog';
 import { getDb } from '@/lib/server/db';
+import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
+import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
 
 /** Fisher–Yates shuffle */
 function shuffle<T>(items: T[]): T[] {
@@ -16,9 +18,12 @@ function shuffle<T>(items: T[]): T[] {
   return out;
 }
 
+/** Preview-safe formats only (landing / cards). JPG → PNG → WEBP → SVG. No EPS/PDF/AI previews. */
+const NON_BROWSER_PREVIEW_FMT = new Set(['eps', 'pdf', 'ai']);
+
 function previewRankForPick(format: string): number {
   const f = format.toLowerCase();
-  const order = ['png', 'jpg', 'jpeg', 'webp', 'svg'];
+  const order = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
   const i = order.indexOf(f);
   return i < 0 ? 50 + (f.charCodeAt(0) || 0) : i;
 }
@@ -28,15 +33,34 @@ function rowTs(row: NeonLikeFlagRow): number {
   return Number.isFinite(t) ? t : 0;
 }
 
-/** Row used for metadata fields — prefer raster/web over EPS/PDF for listed URLs when possible */
+/** Row used for URLs + badges — raster/web previews only where possible */
 function pickMetadataRow(bundle: NeonLikeFlagRow[]): NeonLikeFlagRow {
-  const nonPrint = bundle.filter((r) => !['eps', 'pdf'].includes(r.format.toLowerCase()));
-  const candidates = nonPrint.length ? nonPrint : bundle;
+  const imageLike = bundle.filter((r) => !NON_BROWSER_PREVIEW_FMT.has(r.format.toLowerCase()));
+  const candidates = imageLike.length ? imageLike : bundle;
   const sorted = [...candidates].sort(
     (a, b) =>
       previewRankForPick(a.format) - previewRankForPick(b.format) || rowTs(b) - rowTs(a)
   );
   return sorted[0]!;
+}
+
+/**
+ * Prefer `thumbnail_url` → `preview_url` → `file_url` before R2 object key resolution
+ * so we do not inflate tiny grid slots with originals when thumbnails exist on the CDN.
+ */
+function landingCardImageHref(row: NeonLikeFlagRow): string {
+  for (const raw of [row.thumbnail_url, row.preview_url, row.file_url]) {
+    const s = raw?.trim();
+    if (!s) continue;
+    const out = resolveGalleryAssetUrl(s);
+    if (out) return out;
+  }
+  const key = row.file_key?.trim();
+  if (key) {
+    const href = getPublicR2FileUrl(key);
+    if (href) return resolveGalleryAssetUrl(href);
+  }
+  return '';
 }
 
 export type GalleryPreviewItemDTO = {
@@ -46,7 +70,9 @@ export type GalleryPreviewItemDTO = {
   preview_url: string | null;
   thumbnail_url: string | null;
   file_url: string | null;
-  /** Resolved safe URL for <img /> (respects Neon/R2 helpers inside Product build). */
+  /** Primary preview row format (browser-safe picks rank higher). */
+  format: string;
+  /** Resolved display URL — thumbnail → preview → file → keyed R2 fallback. */
   image_url: string;
   available_formats: string[];
   asset_group_key: string | null;
@@ -55,26 +81,31 @@ export type GalleryPreviewItemDTO = {
 
 const DEFAULT_SAMPLE = 380;
 
+export type GalleryPreviewFetchOrder = 'random' | 'latest';
+
 export async function fetchRandomGalleryPreviewItems(opts: {
   limit: number;
   sample?: number;
+  /** `random`: varied tiles; `latest`: newest-published rows before grouping/shuffle-out. */
+  order?: GalleryPreviewFetchOrder;
 }): Promise<GalleryPreviewItemDTO[]> {
   const pool = getDb();
   const limit = Math.min(48, Math.max(1, opts.limit));
   const sample = Math.min(2000, Math.max(limit * 12, opts.sample ?? DEFAULT_SAMPLE));
+  const order: GalleryPreviewFetchOrder = opts.order ?? 'random';
+  const orderSql =
+    order === 'latest'
+      ? `ORDER BY COALESCE(cff.updated_at, cff.created_at) DESC NULLS LAST`
+      : `ORDER BY random()`;
 
   const res = await pool.query<NeonLikeFlagRow>(
     `SELECT ${NEON_SELECT_FIELDS}
      FROM country_flag_files cff
      LEFT JOIN countries c ON c.id = cff.country_id
      WHERE cff.status = 'published'
-       AND (
-         (cff.file_url IS NOT NULL AND trim(cff.file_url) <> '')
-         OR (cff.file_key IS NOT NULL AND trim(cff.file_key) <> '')
-         OR (cff.preview_url IS NOT NULL AND trim(cff.preview_url) <> '')
-         OR (cff.thumbnail_url IS NOT NULL AND trim(cff.thumbnail_url) <> '')
-       )
-     ORDER BY random()
+       AND cff.file_url IS NOT NULL
+       AND trim(cff.file_url) <> ''
+     ${orderSql}
      LIMIT $1`,
     [sample]
   );
@@ -90,22 +121,41 @@ export async function fetchRandomGalleryPreviewItems(opts: {
     buckets.set(k, arr);
   }
 
-  const keys = shuffle([...buckets.keys()]);
-  const pickedKeys = keys.slice(0, limit);
+  function bundleFreshness(bundle: NeonLikeFlagRow[]): number {
+    return bundle.reduce((m, r) => Math.max(m, rowTs(r)), 0);
+  }
+
+  const keyList = [...buckets.keys()];
+  const orderedKeys =
+    order === 'latest'
+      ? keyList.sort(
+          (a, b) =>
+            bundleFreshness(buckets.get(b)!) - bundleFreshness(buckets.get(a)!),
+        )
+      : shuffle(keyList);
+  const pickedKeys = orderedKeys.slice(0, limit);
 
   const out: GalleryPreviewItemDTO[] = [];
   for (const key of pickedKeys) {
     const bundle = buckets.get(key);
     if (!bundle?.length) continue;
 
+    const rep = pickMetadataRow(bundle);
+
     const product = buildCatalogProductFromFlagBundle(bundle);
-    const imageUrl = product?.thumbnailUrl?.trim() || product?.previewUrl?.trim();
+    const imageUrl = landingCardImageHref(rep);
     if (!product || !imageUrl) continue;
 
-    const rep = pickMetadataRow(bundle);
     const formats = [
       ...new Set(bundle.map((b) => String(b.format || '').toLowerCase()).filter(Boolean)),
     ].sort();
+
+    const fm = rep.format?.trim().toLowerCase();
+    const previewFmt =
+      fm && !NON_BROWSER_PREVIEW_FMT.has(fm)
+        ? fm
+        : [...formats].sort((a, b) => previewRankForPick(a) - previewRankForPick(b)).find((f) => !NON_BROWSER_PREVIEW_FMT.has(f)) ||
+          '';
 
     out.push({
       id: product.id,
@@ -114,6 +164,7 @@ export async function fetchRandomGalleryPreviewItems(opts: {
       preview_url: rep.preview_url?.trim() ?? null,
       thumbnail_url: rep.thumbnail_url?.trim() ?? null,
       file_url: rep.file_url?.trim() ?? null,
+      format: previewFmt,
       image_url: imageUrl,
       available_formats: formats,
       asset_group_key: rep.asset_group_key?.trim() || null,
@@ -121,5 +172,5 @@ export async function fetchRandomGalleryPreviewItems(opts: {
     });
   }
 
-  return shuffle(out);
+  return order === 'random' ? shuffle(out) : out;
 }
