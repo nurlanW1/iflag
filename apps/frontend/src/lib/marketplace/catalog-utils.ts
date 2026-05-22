@@ -14,6 +14,19 @@ export function formatPrice(cents: number, currency: string): string {
   }
 }
 
+/** Remove duplicate file rows keyed twice (prefer first by sortOrder). */
+export function dedupePublicProductFiles(files: PublicProductFile[]): PublicProductFile[] {
+  const sorted = [...files].sort((a, b) => a.sortOrder - b.sortOrder);
+  const seen = new Set<string>();
+  const out: PublicProductFile[] = [];
+  for (const f of sorted) {
+    if (seen.has(f.id)) continue;
+    seen.add(f.id);
+    out.push(f);
+  }
+  return out;
+}
+
 /** Distinct format codes for badges, stable order */
 export function collectFormatLabels(files: PublicProductFile[]): string[] {
   const seen = new Set<string>();

@@ -24,6 +24,8 @@ export interface PublicProduct {
   detailHref?: string | null;
   /** Denormalized hyphenated country slug for Neon-derived cards */
   countrySlug?: string | null;
+  /** Stable design key shared across formats (Neon grouping). */
+  assetGroupKey?: string | null;
   description: string | null;
   countryCode: string | null;
   region: string | null;
@@ -73,6 +75,7 @@ export function toPublicProduct(p: Product): PublicProduct {
     slug: p.slug,
     detailHref: p.detailPath?.trim() || null,
     countrySlug: p.countrySlug?.trim() || null,
+    assetGroupKey: p.assetGroupKey?.trim() || null,
     description: p.description,
     countryCode: p.countryCode,
     region: p.region,

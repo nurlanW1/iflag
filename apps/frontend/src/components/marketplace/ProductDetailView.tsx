@@ -1,7 +1,7 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { MarketplaceProductCard } from '@/components/marketplace/MarketplaceProductCard';
+import { PremiumAssetPreview } from '@/components/marketplace/asset-detail/PremiumAssetPreview';
 import { FlagEducationalSections } from '@/components/marketplace/FlagEducationalSections';
 import type { AssetSeoPayload } from '@/lib/seo/asset-metadata';
 import { marketplaceProductCanonicalPath } from '@/lib/seo/marketplace-product-metadata';
@@ -10,32 +10,55 @@ import { toPublicProduct } from '@/lib/marketplace/product-mapper';
 import {
   formatPrice,
   collectFormatLabels,
+  dedupePublicProductFiles,
   isPaidCatalogProduct,
 } from '@/lib/marketplace/catalog-utils';
 import { getCategoryById, listPublishedProducts } from '@/services/marketplace';
-import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
-import { CheckoutButton } from '@/components/billing/CheckoutButton';
 import { NeonAssetDownloads } from '@/components/marketplace/NeonAssetDownloads';
-import { MarketplacePreviewDownloadButton } from '@/components/marketplace/MarketplacePreviewDownloadButton';
-import { Crown } from 'lucide-react';
+import { PremiumCatalogCommerce } from '@/components/marketplace/PremiumCatalogCommerce';
+import { Crown, MapPinned } from 'lucide-react';
 import type { Product } from '@/types/marketplace';
-import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
 type Props = {
   slug: string;
   product: Product;
 };
 
+function titleCaseFromSlug(slug: string): string {
+  return slug
+    .split('-')
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}
+
+/** Prefer same-country cards, then widen to category without duplicating sibling items. */
+function pickSimilarProducts(current: Product, limit: number): Product[] {
+  const pool = listPublishedProducts({ categoryId: current.categoryId }).filter((p) => p.slug !== current.slug);
+  const cs = (current.countrySlug ?? '').trim().toLowerCase();
+  if (!cs) return pool.slice(0, limit);
+  const same = pool.filter((p) => (p.countrySlug ?? '').trim().toLowerCase() === cs);
+  const other = pool.filter((p) => (p.countrySlug ?? '').trim().toLowerCase() !== cs);
+  return [...same, ...other].slice(0, limit);
+}
+
+/** PDP related grid — 4 cols desktop scaling to 6 on wide screens */
+const SIMILAR_FLAG_GRID_CLASSES =
+  'grid min-w-0 grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 md:gap-6 lg:grid-cols-4 lg:gap-6 xl:grid-cols-4 xl:gap-7 2xl:grid-cols-6 2xl:gap-8';
+
 export function ProductDetailView({ slug, product }: Props) {
   const publicProduct = toPublicProduct(product);
+  const dedupedFiles = dedupePublicProductFiles(publicProduct.files);
   const category = getCategoryById(product.categoryId);
   const categoryName = category?.name ?? 'Catalog';
   const paid = isPaidCatalogProduct(publicProduct);
-  const formatLabels = collectFormatLabels(publicProduct.files);
-  const previewFile = product.files.find(
-    (f) =>
-      f.tier === 'preview_free' && f.publicUrl != null && String(f.publicUrl).trim() !== ''
+  const formatLabels = collectFormatLabels(dedupedFiles);
+
+  const previewFileDomain = product.files.find(
+    (f) => f.tier === 'preview_free' && f.publicUrl != null && String(f.publicUrl).trim() !== '',
   );
+  const previewFilePublic =
+    previewFileDomain != null ? dedupedFiles.find((f) => f.id === previewFileDomain.id) ?? null : null;
 
   const neonDownloads = Boolean((product.detailPath ?? '').startsWith('/assets/'));
 
@@ -51,19 +74,18 @@ export function ProductDetailView({ slug, product }: Props) {
     currency: product.currency,
   };
 
-  const related = listPublishedProducts({ categoryId: product.categoryId })
-    .filter((p) => p.slug !== product.slug)
-    .slice(0, 4);
+  const related = pickSimilarProducts(product, 12);
   const relatedPublic = related.map((p) => ({
     product: toPublicProduct(p),
     categoryName: getCategoryById(p.categoryId)?.name ?? categoryName,
   }));
 
   const previewImages = [publicProduct.previewUrl, publicProduct.thumbnailUrl].filter(
-    (u): u is string => typeof u === 'string' && u.length > 0
+    (u): u is string => typeof u === 'string' && u.length > 0,
   );
   const uniquePreview = [...new Set(previewImages)];
-  const formatHints = publicProduct.files.map((f) => f.format);
+  const formatHints = dedupedFiles.map((f) => f.format);
+  const countryLabel = product.countrySlug ? titleCaseFromSlug(product.countrySlug) : null;
 
   return (
     <>
@@ -77,202 +99,192 @@ export function ProductDetailView({ slug, product }: Props) {
           ]),
         ]}
       />
-      <main className="marketplace-shell py-12 sm:py-14 lg:py-20">
-        <nav aria-label="Breadcrumb" className="mb-6 text-sm text-gray-500">
-          <ol className="flex flex-wrap gap-1">
+      <main className="marketplace-shell bg-[linear-gradient(180deg,#fafaf9_0%,#fff_52%,#f4f7f9_100%)] pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] pt-10 sm:pt-12 lg:pb-14 lg:pt-14">
+        <nav aria-label="Breadcrumb" className="mb-8 text-sm text-neutral-500">
+          <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <li>
-              <Link href="/" className="text-[#009ab6] hover:underline">
+              <Link href="/" className="font-semibold text-[var(--brand-blue)] hover:underline">
                 Home
               </Link>
             </li>
-            <li aria-hidden>/</li>
+            <li aria-hidden className="text-neutral-300">
+              /
+            </li>
             <li>
-              <Link href="/browse" className="text-[#009ab6] hover:underline">
+              <Link href="/browse" className="font-semibold text-[var(--brand-blue)] hover:underline">
                 Browse
               </Link>
             </li>
-            <li aria-hidden>/</li>
-            <li className="font-medium text-gray-900">{product.title}</li>
+            <li aria-hidden className="text-neutral-300">
+              /
+            </li>
+            <li className="max-w-[min(100vw-6rem,28rem)] truncate font-semibold text-neutral-900">{product.title}</li>
           </ol>
         </nav>
 
-        <div className="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,26rem)] xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,28rem)] xl:gap-16 2xl:gap-20">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#009ab6]">{categoryName}</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-900 md:text-4xl xl:text-5xl">{product.title}</h1>
-            <p className="mt-3 text-sm text-gray-600">
-              Flag asset for creative projects. License terms apply per file and at Paddle checkout; see sidebar for
-              formats and downloads.
-            </p>
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <span className="text-2xl font-black text-gray-900">
-                {formatPrice(publicProduct.priceCents, publicProduct.currency)}
-              </span>
-              <span
-                className={`rounded-md px-2.5 py-1 text-xs font-bold ${
-                  paid ? 'bg-[#009ab6] text-white' : 'bg-emerald-600 text-white'
-                }`}
-              >
-                {paid ? (
-                  <span className="inline-flex items-center gap-1">
-                    <Crown size={12} className="shrink-0" aria-hidden />
-                    Pro
-                  </span>
-                ) : (
-                  'Free'
-                )}
-              </span>
-            </div>
-
-            {uniquePreview.length > 0 ? (
-              <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-                {uniquePreview.map((src, i) => {
-                  const svg = shouldUnoptimizeFlagImageHref(src, formatHints);
-                  return (
-                    <li
-                      key={src}
-                      className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-gray-200 bg-gray-100"
-                    >
-                      <Image
-                        src={src}
-                        alt={i === 0 ? `${product.title} flag` : `${product.title} flag preview ${i + 1}`}
-                        fill
-                        unoptimized={svg}
-                        className={svg ? 'object-contain p-3' : 'object-cover'}
-                        sizes="(max-width: 1024px) 100vw, 50vw"
-                        priority={i === 0}
-                      />
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <p className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center text-sm text-gray-500">
-                No preview images for this product yet.
-              </p>
-            )}
+        <div className="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(336px,28rem)] lg:items-start xl:gap-14 2xl:gap-[4.25rem]">
+          <section aria-label="Product preview" className="min-w-0 space-y-10">
+            <PremiumAssetPreview
+              productTitle={product.title}
+              previewUrls={uniquePreview}
+              formatHints={formatHints}
+            />
 
             {product.description ? (
-              <div className="mt-10 max-w-none">
-                <h2 className="text-lg font-bold text-gray-900">About this flag</h2>
-                <p className="mt-2 whitespace-pre-wrap leading-relaxed text-gray-700">
+              <div className="max-w-[52rem]">
+                <h2 className="text-xl font-semibold tracking-tight text-neutral-950">Overview</h2>
+                <p className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-neutral-600">
                   {product.description}
                 </p>
               </div>
-            ) : null}
-
-            <FlagEducationalSections productTitle={product.title} />
-
-            {product.tags.length > 0 ? (
-              <div className="mt-8">
-                <h2 className="text-sm font-bold text-gray-900">Tags</h2>
-                <ul className="mt-2 flex flex-wrap gap-2">
-                  {product.tags.map((t) => (
-                    <li key={t}>
-                      <Link
-                        href={`/browse?q=${encodeURIComponent(t)}`}
-                        className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-800 hover:bg-gray-200"
-                      >
-                        {t}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </div>
-
-          <aside className="h-fit space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:sticky lg:top-24 xl:p-8">
-            {neonDownloads ? (
-              <NeonAssetDownloads
-                files={product.files.map((f) => ({
-                  id: f.id,
-                  format: f.format,
-                  tier: f.tier,
-                }))}
-              />
             ) : (
-              <>
-                <div>
-                  <h2 className="text-sm font-bold text-gray-900">File formats</h2>
-                  {formatLabels.length > 0 ? (
-                    <p className="mt-2 text-sm text-gray-600">{formatLabels.join(' · ')}</p>
-                  ) : (
-                    <p className="mt-2 text-sm text-gray-500">Formats listed per file below.</p>
-                  )}
-                  <ul className="mt-4 max-h-64 space-y-2 overflow-y-auto text-sm">
-                    {publicProduct.files
-                      .slice()
-                      .sort((a, b) => a.sortOrder - b.sortOrder)
-                      .map((f) => (
-                        <li
-                          key={f.id}
-                          className="flex justify-between gap-2 rounded-lg bg-gray-50 px-3 py-2 text-gray-800"
-                        >
-                          <span className="font-medium">{f.format.toUpperCase()}</span>
-                          <span className="text-xs text-gray-500">
-                            {f.tier === 'pro' ? 'Pro' : f.tier === 'preview_free' ? 'Preview' : f.tier}
-                          </span>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-
-                {previewFile ? (
-                  <MarketplacePreviewDownloadButton
-                    apiPath={`/api/marketplace/files/${product.id}/${previewFile.id}/download`}
-                  />
-                ) : (
-                  <p className="text-xs text-gray-500">
-                    No public preview file is linked for this product. Pro files are available to subscribers
-                    after purchase.
-                  </p>
-                )}
-              </>
+              <p className="max-w-[52rem] text-sm leading-relaxed text-neutral-600">
+                Previews use lightweight raster exports; original vectors and print masters ship only through the
+                format selector.
+              </p>
             )}
 
-            {paid ? (
-              <div className="border-t border-gray-100 pt-6">
-                <h2 className="text-sm font-bold text-gray-900">One-time purchase</h2>
-                <p className="mt-1 text-xs text-gray-600">
-                  Buy a perpetual license for full-resolution files. Secure checkout via Paddle.
-                </p>
-                <div className="mt-3">
-                  <CheckoutButton kind="one_time" productSlug={product.slug}>
-                    Buy this flag with Paddle
-                  </CheckoutButton>
-                </div>
+            <FlagEducationalSections productTitle={product.title} />
+          </section>
+
+          <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+            <div className="rounded-[1.65rem] border border-neutral-200/90 bg-white/95 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.78),0_28px_80px_-40px_rgba(15,23,42,0.35)] ring-1 ring-black/[0.04] sm:p-7 xl:p-8">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500">{categoryName}</p>
+
+              <h1 className="mt-4 text-3xl font-semibold leading-[1.1] tracking-tight text-neutral-950 sm:text-4xl">
+                {product.title}
+              </h1>
+
+              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-neutral-600">
+                {product.countrySlug ? (
+                  <Link
+                    href={`/gallery/${encodeURIComponent(product.countrySlug)}`}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-sm ring-1 ring-neutral-200/90 transition hover:ring-neutral-300"
+                  >
+                    <MapPinned className="h-3.5 w-3.5 text-[var(--brand-blue)]" aria-hidden />
+                    {countryLabel ?? product.countrySlug}
+                  </Link>
+                ) : countryLabel ? (
+                  <span className="rounded-full px-3 py-1 text-xs font-semibold text-neutral-700">{countryLabel}</span>
+                ) : null}
+                <span aria-hidden className="text-neutral-300">
+                  •
+                </span>
+                <span>
+                  Available in <strong className="font-semibold text-neutral-900">{formatLabels.length}</strong> format
+                  {formatLabels.length === 1 ? '' : 's'}
+                </span>
+                {product.countryCode ? (
+                  <>
+                    <span aria-hidden className="text-neutral-300">
+                      •
+                    </span>
+                    <span className="font-mono text-xs font-semibold uppercase text-neutral-500">{product.countryCode}</span>
+                  </>
+                ) : null}
               </div>
-            ) : null}
 
-            <div className="border-t border-gray-100 pt-6">
-              <p className="text-sm text-gray-600">
-                Need vector masters, high resolution, or a commercial license bundle?
-              </p>
-              <Link
-                href="/pricing"
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#009ab6] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#007a8a]"
-              >
-                <Crown size={18} aria-hidden />
-                Pro plans (Paddle)
-              </Link>
+              {product.assetGroupKey ? (
+                <p className="mt-3 font-mono text-[11px] text-neutral-500">
+                  Design key{' '}
+                  <span className="rounded-md bg-neutral-50 px-2 py-0.5 ring-1 ring-neutral-200">
+                    {product.assetGroupKey}
+                  </span>
+                </p>
+              ) : null}
+
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                <span className="text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">
+                  {formatPrice(publicProduct.priceCents, publicProduct.currency)}
+                </span>
+                <span
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ring-2 ${
+                    paid
+                      ? 'bg-[var(--brand-blue)] text-white ring-[var(--brand-blue)]/40'
+                      : 'bg-emerald-600 text-white ring-emerald-500/40'
+                  }`}
+                >
+                  {paid ? (
+                    <span className="inline-flex items-center gap-1">
+                      <Crown size={13} aria-hidden /> Premium
+                    </span>
+                  ) : (
+                    'Free'
+                  )}
+                </span>
+              </div>
+
+              <div className="mt-6">
+                {neonDownloads ? (
+                  <NeonAssetDownloads files={dedupedFiles} />
+                ) : (
+                  <PremiumCatalogCommerce
+                    productId={product.id}
+                    productSlug={product.slug}
+                    currency={publicProduct.currency}
+                    paidCatalog={paid}
+                    files={dedupedFiles}
+                    previewFile={previewFilePublic}
+                  />
+                )}
+              </div>
+
+              {product.license?.summary ? (
+                <div className="mt-8 border-t border-dashed border-neutral-200 pt-8">
+                  <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">License</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-600">{product.license.summary}</p>
+                </div>
+              ) : null}
+
+              {product.tags.length > 0 ? (
+                <div className="mt-8">
+                  <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">Tags</h3>
+                  <ul className="mt-3 flex flex-wrap gap-2">
+                    {product.tags.map((t) => (
+                      <li key={t}>
+                        <Link
+                          href={`/browse?q=${encodeURIComponent(t)}`}
+                          className="inline-flex rounded-full bg-neutral-50 px-3 py-1.5 text-xs font-semibold text-neutral-800 ring-1 ring-neutral-200/90 transition hover:ring-neutral-300"
+                        >
+                          {t}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              <div className="mt-8 border-t border-dashed border-neutral-200 pt-6">
+                <Link
+                  href="/pricing"
+                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-blue)] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)]"
+                >
+                  <Crown size={18} aria-hidden />
+                  View subscription &amp; billing
+                </Link>
+                <p className="mt-2 text-center text-xs text-neutral-500">
+                  Paddle-secured checkout — unlock pro masters or gallery-wide access.
+                </p>
+              </div>
             </div>
-
-            {product.license?.summary ? (
-              <p className="text-xs text-gray-500">
-                <span className="font-semibold text-gray-700">License: </span>
-                {product.license.summary}
-              </p>
-            ) : null}
           </aside>
         </div>
 
         {relatedPublic.length > 0 ? (
-          <section className="mt-16 border-t border-gray-100 pt-12" aria-labelledby="related-heading">
-            <h2 id="related-heading" className="text-xl font-black text-gray-900">
-              Related in {categoryName}
-            </h2>
-            <ul className={`mt-10 ${marketplaceProductCardGridClasses}`}>
+          <section className="mt-16 border-t border-neutral-200/90 pt-12" aria-labelledby="related-heading">
+            <div className="max-w-3xl space-y-1">
+              <h2 id="related-heading" className="text-2xl font-semibold tracking-tight text-neutral-950">
+                Similar flags
+              </h2>
+              <p className="text-sm text-neutral-600">
+                Curated from {categoryName}
+                {product.countrySlug
+                  ? ` — prioritizing ${countryLabel ?? titleCaseFromSlug(product.countrySlug)}`
+                  : ''}
+                .
+              </p>
+            </div>
+            <ul className={`mt-10 ${SIMILAR_FLAG_GRID_CLASSES}`}>
               {relatedPublic.map(({ product: rp, categoryName: cn }) => (
                 <li key={rp.id} className="min-h-0">
                   <MarketplaceProductCard product={rp} categoryName={cn} />

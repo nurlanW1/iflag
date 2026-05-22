@@ -31,6 +31,11 @@ export interface Product {
   detailPath?: string | null;
   /** Neon gallery / grouping — hyphenated slug for display ("uzbekistan", etc.). */
   countrySlug?: string | null;
+  /**
+   * When multiple `country_flag_files` rows share one design (same exports, different formats),
+   * this matches `country_flag_files.asset_group_key` for API clients.
+   */
+  assetGroupKey?: string | null;
   description: string | null;
   /** ISO 3166-1 alpha-2/alpha-3 as stored; validation layer can normalize later */
   countryCode: string | null;

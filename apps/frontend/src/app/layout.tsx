@@ -12,6 +12,7 @@ import { buildDefaultMetadata } from '@/lib/seo/site-config';
 import { logProductionDeploymentWarnings } from '@/lib/seo/production-warnings';
 import { organizationJsonLd, websiteJsonLd } from '@/lib/seo/structured-data';
 import { AdSenseScriptPlaceholder } from '@/components/ads/AdSensePlaceholder';
+import { AppToaster } from '@/components/AppToaster';
 import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 import type { Viewport } from 'next';
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <Footer />
           <CookieNotice />
           <AuthModalWrapper />
+          <AppToaster />
         </AuthModalProvider>
       </AuthProvider>
     </>
