@@ -11,10 +11,30 @@ import { NeonAssetDownloads } from '@/components/marketplace/NeonAssetDownloads'
 import { PremiumCatalogCommerce } from '@/components/marketplace/PremiumCatalogCommerce';
 import type { Product } from '@/types/marketplace';
 
+import { CountryDesignVariantRibbon } from '@/components/marketplace/CountryDesignVariantRibbon';
+import { listPublishedProducts } from '@/services/marketplace';
+
 type Props = {
   slug: string;
   product: Product;
 };
+
+/** Other published designs for this country — prefer different bundle keys for variety. */
+function listCountryVariants(current: Product, limit = 14): Product[] {
+  const cs = current.countrySlug?.trim().toLowerCase();
+  if (!cs) return [];
+  const agkNorm = current.assetGroupKey?.trim().toLowerCase() ?? '';
+  const sameAgkGroup = (p: Product) => (p.assetGroupKey?.trim().toLowerCase() ?? '') === agkNorm && agkNorm !== '';
+  return listPublishedProducts({})
+    .filter((p) => p.slug !== current.slug && p.countrySlug?.trim().toLowerCase() === cs)
+    .sort((a, b) => {
+      const deprioritized = Number(sameAgkGroup(a)) - Number(sameAgkGroup(b));
+      if (deprioritized !== 0) return deprioritized;
+      if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
+      return a.title.localeCompare(b.title);
+    })
+    .slice(0, limit);
+}
 
 /** Stock-marketplace PDP: grey preview stage + white sticky action card + keyword row (adapted from Freepik-style layout). */
 export function ProductDetailView({ slug, product }: Props) {
@@ -47,6 +67,12 @@ export function ProductDetailView({ slug, product }: Props) {
   const uniquePreview = [...new Set(previewImages)];
   const formatHints = dedupedFiles.map((f) => f.format);
   const licenseHint = product.license?.summary?.trim() || null;
+
+  const siblingProducts = listCountryVariants(product);
+  const siblingPublic = siblingProducts.map(toPublicProduct);
+  const variantGalleryHref = product.countrySlug?.trim()
+    ? `/gallery/${encodeURIComponent(product.countrySlug.trim().toLowerCase())}`
+    : null;
 
   const tagPills =
     product.tags.length > 0 ? (
@@ -91,6 +117,7 @@ export function ProductDetailView({ slug, product }: Props) {
               previewUrls={uniquePreview}
               formatHints={formatHints}
             />
+            <CountryDesignVariantRibbon variants={siblingPublic} galleryHref={variantGalleryHref} />
           </section>
 
           <aside className="min-w-0 lg:sticky lg:top-[4.85rem] lg:self-start">
