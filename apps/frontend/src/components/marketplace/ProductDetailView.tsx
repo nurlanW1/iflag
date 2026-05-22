@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import clsx from 'clsx';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { MarketplaceProductCard } from '@/components/marketplace/MarketplaceProductCard';
 import { PremiumAssetPreview } from '@/components/marketplace/asset-detail/PremiumAssetPreview';
@@ -8,7 +9,6 @@ import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/structured-data';
 import { toPublicProduct } from '@/lib/marketplace/product-mapper';
 import {
   formatPrice,
-  collectFormatLabels,
   dedupePublicProductFiles,
   isPaidCatalogProduct,
 } from '@/lib/marketplace/catalog-utils';
@@ -51,8 +51,6 @@ export function ProductDetailView({ slug, product }: Props) {
   const category = getCategoryById(product.categoryId);
   const categoryName = category?.name ?? 'Catalog';
   const paid = isPaidCatalogProduct(publicProduct);
-  const formatLabels = collectFormatLabels(dedupedFiles);
-
   const previewFileDomain = product.files.find(
     (f) => f.tier === 'preview_free' && f.publicUrl != null && String(f.publicUrl).trim() !== '',
   );
@@ -98,8 +96,13 @@ export function ProductDetailView({ slug, product }: Props) {
           ]),
         ]}
       />
-      <main className="marketplace-shell bg-[linear-gradient(180deg,#fafaf9_0%,#fff_52%,#f4f7f9_100%)] pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] pt-10 sm:pt-12 lg:pb-14 lg:pt-14">
-        <nav aria-label="Breadcrumb" className="mb-8 text-sm text-neutral-500">
+      <main
+        className={clsx(
+          'marketplace-shell bg-neutral-50 pt-8 sm:pt-10 md:pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pt-12 lg:pb-12',
+          'max-md:pb-[15.5rem]',
+        )}
+      >
+        <nav aria-label="Breadcrumb" className="mb-6 text-[13px] text-neutral-500 md:mb-7">
           <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <li>
               <Link href="/" className="font-semibold text-[var(--brand-blue)] hover:underline">
@@ -121,8 +124,8 @@ export function ProductDetailView({ slug, product }: Props) {
           </ol>
         </nav>
 
-        <div className="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(336px,28rem)] lg:items-start xl:gap-14 2xl:gap-[4.25rem]">
-          <section aria-label="Product preview" className="min-w-0 space-y-10">
+        <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(300px,22.5rem)] lg:items-start lg:gap-10 xl:gap-12">
+          <section aria-label="Product preview" className="min-w-0 space-y-6 md:space-y-8">
             <PremiumAssetPreview
               productTitle={product.title}
               previewUrls={uniquePreview}
@@ -131,8 +134,7 @@ export function ProductDetailView({ slug, product }: Props) {
 
             {product.description ? (
               <div className="max-w-[52rem]">
-                <h2 className="text-xl font-semibold tracking-tight text-neutral-950">Overview</h2>
-                <p className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-neutral-600">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-600 md:text-[0.9375rem]">
                   {product.description}
                 </p>
               </div>
@@ -140,139 +142,91 @@ export function ProductDetailView({ slug, product }: Props) {
           </section>
 
           <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-[1.65rem] border border-neutral-200/90 bg-white/95 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.78),0_28px_80px_-40px_rgba(15,23,42,0.35)] ring-1 ring-black/[0.04] sm:p-7 xl:p-8">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500">{categoryName}</p>
-
-              <h1 className="mt-4 text-3xl font-semibold leading-[1.1] tracking-tight text-neutral-950 sm:text-4xl">
+            <div className="rounded-2xl border border-neutral-200/80 bg-white p-5 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.12)] sm:p-6">
+              <h1 className="text-[1.65rem] font-semibold leading-tight tracking-tight text-neutral-950 sm:text-[1.85rem]">
                 {product.title}
               </h1>
 
-              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-neutral-600">
+              <div className="mt-4 flex flex-wrap items-center gap-2 gap-y-2">
                 {product.countrySlug ? (
                   <Link
                     href={`/gallery/${encodeURIComponent(product.countrySlug)}`}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-sm ring-1 ring-neutral-200/90 transition hover:ring-neutral-300"
+                    className="inline-flex items-center gap-1 rounded-md bg-neutral-100 px-2.5 py-1 text-[13px] font-medium text-neutral-800 transition hover:bg-neutral-200"
                   >
-                    <MapPinned className="h-3.5 w-3.5 text-[var(--brand-blue)]" aria-hidden />
+                    <MapPinned className="h-3.5 w-3.5 text-neutral-500" aria-hidden />
                     {countryLabel ?? product.countrySlug}
                   </Link>
                 ) : countryLabel ? (
-                  <span className="rounded-full px-3 py-1 text-xs font-semibold text-neutral-700">{countryLabel}</span>
-                ) : null}
-                <span aria-hidden className="text-neutral-300">
-                  •
-                </span>
-                <span>
-                  Available in <strong className="font-semibold text-neutral-900">{formatLabels.length}</strong> format
-                  {formatLabels.length === 1 ? '' : 's'}
-                </span>
-                {product.countryCode ? (
-                  <>
-                    <span aria-hidden className="text-neutral-300">
-                      •
-                    </span>
-                    <span className="font-mono text-xs font-semibold uppercase text-neutral-500">{product.countryCode}</span>
-                  </>
-                ) : null}
-              </div>
-
-              {product.assetGroupKey ? (
-                <p className="mt-3 font-mono text-[11px] text-neutral-500">
-                  Design key{' '}
-                  <span className="rounded-md bg-neutral-50 px-2 py-0.5 ring-1 ring-neutral-200">
-                    {product.assetGroupKey}
+                  <span className="rounded-md bg-neutral-100 px-2.5 py-1 text-[13px] font-medium text-neutral-800">
+                    {countryLabel}
                   </span>
-                </p>
-              ) : null}
-
-              <div className="mt-6 flex flex-wrap items-center gap-4">
-                <span className="text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">
-                  {formatPrice(publicProduct.priceCents, publicProduct.currency)}
-                </span>
+                ) : null}
                 <span
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ring-2 ${
-                    paid
-                      ? 'bg-[var(--brand-blue)] text-white ring-[var(--brand-blue)]/40'
-                      : 'bg-emerald-600 text-white ring-emerald-500/40'
-                  }`}
+                  className={clsx(
+                    'inline-flex rounded-md px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide',
+                    paid ? 'bg-slate-900 text-white' : 'bg-emerald-600 text-white',
+                  )}
                 >
                   {paid ? (
                     <span className="inline-flex items-center gap-1">
-                      <Crown size={13} aria-hidden /> Premium
+                      <Crown size={12} aria-hidden /> Premium
                     </span>
                   ) : (
                     'Free'
                   )}
                 </span>
+                <span className="text-[15px] font-semibold tabular-nums text-neutral-900">
+                  {formatPrice(publicProduct.priceCents, publicProduct.currency)}
+                </span>
               </div>
 
-              <div className="mt-6">
-                {neonDownloads ? (
-                  <NeonAssetDownloads files={dedupedFiles} />
-                ) : (
-                  <PremiumCatalogCommerce
-                    productId={product.id}
-                    productSlug={product.slug}
-                    currency={publicProduct.currency}
-                    paidCatalog={paid}
-                    files={dedupedFiles}
-                    previewFile={previewFilePublic}
-                  />
-                )}
-              </div>
+              {neonDownloads ? (
+                <NeonAssetDownloads files={dedupedFiles} />
+              ) : (
+                <PremiumCatalogCommerce
+                  productId={product.id}
+                  productSlug={product.slug}
+                  currency={publicProduct.currency}
+                  paidCatalog={paid}
+                  files={dedupedFiles}
+                  previewFile={previewFilePublic}
+                />
+              )}
 
               {product.license?.summary ? (
-                <div className="mt-8 border-t border-dashed border-neutral-200 pt-8">
-                  <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">License</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-neutral-600">{product.license.summary}</p>
-                </div>
+                <p className="mt-6 line-clamp-2 border-t border-neutral-100 pt-5 text-[12px] leading-snug text-neutral-500">
+                  {product.license.summary}
+                </p>
               ) : null}
 
               {product.tags.length > 0 ? (
-                <div className="mt-8">
-                  <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">Tags</h3>
-                  <ul className="mt-3 flex flex-wrap gap-2">
-                    {product.tags.map((t) => (
-                      <li key={t}>
-                        <Link
-                          href={`/browse?q=${encodeURIComponent(t)}`}
-                          className="inline-flex rounded-full bg-neutral-50 px-3 py-1.5 text-xs font-semibold text-neutral-800 ring-1 ring-neutral-200/90 transition hover:ring-neutral-300"
-                        >
-                          {t}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <p className="mt-5 flex flex-wrap items-center gap-x-1 gap-y-1 border-t border-neutral-100 pt-5 text-[12px] text-neutral-500">
+                  {product.tags.map((t, i) => (
+                    <span key={t} className="inline-flex items-center gap-x-1">
+                      {i > 0 ? <span aria-hidden>·</span> : null}
+                      <Link href={`/browse?q=${encodeURIComponent(t)}`} className="hover:text-neutral-900 hover:underline">
+                        {t}
+                      </Link>
+                    </span>
+                  ))}
+                </p>
               ) : null}
 
-              <div className="mt-8 border-t border-dashed border-neutral-200 pt-6">
-                <Link
-                  href="/pricing"
-                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-blue)] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)]"
-                >
-                  <Crown size={18} aria-hidden />
-                  View subscription &amp; billing
+              <div className="mt-6 border-t border-neutral-100 pt-5">
+                <Link href="/pricing" className="text-[13px] font-semibold text-slate-900 underline-offset-4 hover:underline">
+                  Plans &amp; billing
                 </Link>
-                <p className="mt-2 text-center text-xs text-neutral-500">Paddle checkout</p>
               </div>
             </div>
           </aside>
         </div>
 
         {relatedPublic.length > 0 ? (
-          <section className="mt-16 border-t border-neutral-200/90 pt-12" aria-labelledby="related-heading">
-            <div className="max-w-3xl space-y-1">
-              <h2 id="related-heading" className="text-2xl font-semibold tracking-tight text-neutral-950">
-                Similar flags
+          <section className="mt-12 border-t border-neutral-200/80 pt-10 md:mt-14 md:pt-12" aria-labelledby="related-heading">
+            <div>
+              <h2 id="related-heading" className="text-xl font-semibold tracking-tight text-neutral-950 md:text-[1.375rem]">
+                Similar assets
               </h2>
-              <p className="text-sm text-neutral-600">
-                Curated from {categoryName}
-                {product.countrySlug
-                  ? ` — prioritizing ${countryLabel ?? titleCaseFromSlug(product.countrySlug)}`
-                  : ''}
-                .
-              </p>
             </div>
             <ul className={`mt-10 ${SIMILAR_FLAG_GRID_CLASSES}`}>
               {relatedPublic.map(({ product: rp, categoryName: cn }) => (
