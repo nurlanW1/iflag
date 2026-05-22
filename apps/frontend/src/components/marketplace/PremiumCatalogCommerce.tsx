@@ -3,12 +3,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import { usePathname, useRouter } from 'next/navigation';
-import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import type { PublicProductFile } from '@/lib/marketplace/product-mapper';
 import { triggerApiFileDownload } from '@/lib/client/trigger-api-download';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
-import { bytesToHuman, formatBadgeLabel } from '@/components/marketplace/asset-detail/format-metadata';
+import { formatBadgeLabel } from '@/components/marketplace/asset-detail/format-metadata';
 
 type Props = {
   productId: string;
@@ -19,11 +18,11 @@ type Props = {
   previewFile: PublicProductFile | null;
 };
 
-/** Seed PDP — Neon-style pills + preview / Paddle CTA depending on tier (desktop vs sticky mobile). */
+/** Catalog PDP — same minimal format tabs + preview download or Paddle checkout (no visible metadata). */
 export function PremiumCatalogCommerce({
   productId,
   productSlug,
-  currency,
+  currency: _currency,
   paidCatalog,
   files,
   previewFile,
@@ -56,7 +55,7 @@ export function PremiumCatalogCommerce({
   const onPreviewDl = () => {
     if (!previewFile) return;
     const fmt = formatBadgeLabel(previewFile.format);
-    toast.success(`Fetching ${fmt}`);
+    toast.success(`Starting ${fmt} download`);
     const path = `/api/marketplace/files/${productId}/${previewFile.id}/download`;
     setBusy(true);
     void triggerApiFileDownload(path, {
@@ -68,40 +67,38 @@ export function PremiumCatalogCommerce({
         toast.message('Purchase required');
         router.push(`/pricing?callbackUrl=${encodeURIComponent(back)}`);
       },
-      onNotFound: () => toast.error('File not found'),
+      onNotFound: () => toast.error('File unavailable'),
       onError: () => toast.error('Download failed'),
     }).finally(() => setBusy(false));
   };
 
   if (!sorted.length) {
     return (
-      <p className="mt-6 rounded-lg border border-dashed border-neutral-200 px-3 py-4 text-center text-sm text-neutral-500 md:border-t md:pt-6">
-        No files published.
+      <p className="sr-only" role="status">
+        No files published for this asset.
       </p>
     );
   }
 
-  const pillRow = (
+  const formatTabs = (
     <div
       role="radiogroup"
-      aria-label="Formats"
-      className="flex gap-2 overflow-x-auto pb-0.5 pt-1 [scrollbar-width:thin] md:flex-wrap md:overflow-visible"
+      aria-label="Format"
+      className="flex gap-0 overflow-x-auto [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] md:flex-wrap md:overflow-visible"
     >
       {sorted.map((f) => {
         const on = active?.id === f.id;
-        const isPro = f.tier === 'pro';
         return (
           <button
             key={f.id}
             type="button"
             role="radio"
             aria-checked={on}
-            aria-label={`${formatBadgeLabel(f.format)}${isPro ? ', premium' : ''}`}
+            aria-label={formatBadgeLabel(f.format)}
             onClick={() => setSel(f.id)}
             className={clsx(
-              'shrink-0 snap-start whitespace-nowrap rounded-full px-[1.125rem] py-2 text-[13px] font-semibold uppercase tracking-[0.04em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2',
-              on ? 'scale-[1.02] bg-slate-900 text-white shadow-md' : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200',
-              !on && isPro ? 'ring-1 ring-neutral-900/22' : null,
+              'shrink-0 border-b-2 px-3 py-2 text-[15px] font-medium transition-colors first:pl-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2',
+              on ? 'border-neutral-900 text-neutral-900' : 'border-transparent text-neutral-400 hover:text-neutral-600',
             )}
           >
             {formatBadgeLabel(f.format)}
@@ -111,54 +108,39 @@ export function PremiumCatalogCommerce({
     </div>
   );
 
-  const selectedLine = active ? (
-    <p className="mt-3 text-[15px] text-neutral-600">
-      <span className="font-semibold text-neutral-950">{formatBadgeLabel(active.format)}</span>
-      <span className="mx-1.5 font-light text-neutral-300">·</span>
-      <span className="tabular-nums">{bytesToHuman(active.bytes)}</span>
-    </p>
-  ) : null;
-
   const cta = previewReady ? (
     <button
       type="button"
       disabled={busy}
       onClick={() => void onPreviewDl()}
-      className={clsx(
-        'mt-4 flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-xl px-5 text-[15px] font-semibold text-white transition',
-        'bg-slate-900 shadow-[0_10px_28px_-14px_rgba(15,23,42,0.55)] hover:bg-slate-800',
-        busy && 'opacity-65',
-      )}
+      className="mt-5 w-full rounded-lg bg-neutral-950 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-neutral-800 disabled:opacity-50"
     >
-      <Download className="h-[1.125rem] w-[1.125rem]" aria-hidden />
       {busy ? 'Preparing…' : `Download ${formatBadgeLabel(active!.format)}`}
     </button>
   ) : paidCatalog && active?.tier === 'pro' ? (
-    <div className="mt-4">
+    <div className="mt-5">
       <CheckoutButton
         kind="one_time"
         productSlug={productSlug}
-        className="flex w-full min-h-[3.25rem] items-center justify-center rounded-xl bg-slate-900 px-5 text-[15px] font-semibold text-white shadow-[0_10px_28px_-14px_rgba(15,23,42,0.55)] transition hover:bg-slate-800"
+        className="flex w-full items-center justify-center rounded-lg bg-neutral-950 px-5 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-neutral-800 disabled:opacity-50"
       >
-        Get premium access · {currency}
+        Get Premium Access
       </CheckoutButton>
     </div>
   ) : null;
 
   const block = (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Formats</p>
-      <div className="mt-1.5">{pillRow}</div>
-      {selectedLine}
+      {formatTabs}
       {cta}
     </div>
   );
 
   return (
     <>
-      <div className="mt-6 hidden border-t border-neutral-100 pt-6 md:block">{block}</div>
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] pb-[max(12px,env(safe-area-inset-bottom))] md:hidden">
-        <div className="pointer-events-auto mx-auto rounded-t-2xl border border-b-0 border-neutral-200/90 bg-white/98 px-[4vw] pt-4 shadow-[0_-16px_48px_-14px_rgba(15,23,42,0.2)] backdrop-blur-md">
+      <div className="hidden md:block">{block}</div>
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] pb-[max(8px,env(safe-area-inset-bottom))] md:hidden">
+        <div className="pointer-events-auto border-t border-neutral-200 bg-white/95 px-4 pt-3 shadow-[0_-8px_40px_-16px_rgba(15,23,42,0.14)] backdrop-blur-sm">
           {block}
         </div>
       </div>
