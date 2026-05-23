@@ -62,6 +62,8 @@
   /* Layout — centered marketplace rail (see `.marketplace-shell`) */
   /** Editorial navbar (~84–88px content band) */
   --header-height: 88px;
+  /** Cookie banner active height — mobile download docks anchor above it via bottom:var(--cookie-banner-h). */
+  --cookie-banner-h: 0px;
   /** Warm canvas + graphite ink */
   --canvas-warm: #fafaf9;
   --ink-graphite: #2a2a2a;

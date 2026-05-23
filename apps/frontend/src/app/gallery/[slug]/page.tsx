@@ -408,7 +408,7 @@ export default function CountryDetailPage() {
       !planLoaded);
 
   return (
-    <main className="marketplace-shell min-h-screen bg-slate-50 pb-[calc(7rem+env(safe-area-inset-bottom,0px))] lg:pb-[4.75rem]">
+    <main className="marketplace-shell min-h-screen bg-slate-50 pb-[calc(7rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]">
       <div className="mx-auto max-w-[min(100%,1392px)] px-5 pb-14 pt-8 sm:px-6 sm:pb-16 sm:pt-10 xl:px-10 lg:pb-[4.75rem] lg:pt-11">
         <nav className="flex items-center gap-2 text-xs font-medium text-slate-500">
           <Link
@@ -729,7 +729,7 @@ export default function CountryDetailPage() {
       </div>
 
       {selectedFormat ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/90 bg-white/95 px-4 py-3 backdrop-blur-lg lg:hidden [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="fixed inset-x-0 bottom-[var(--cookie-banner-h,0px)] z-[110] border-t border-slate-200/90 bg-white/95 px-4 py-3 shadow-[0_-6px_30px_-12px_rgba(15,23,42,0.15)] backdrop-blur-lg lg:hidden [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={() => onDownloadPress(selectedFormat)}

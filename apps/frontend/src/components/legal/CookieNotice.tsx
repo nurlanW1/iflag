@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { PageShell } from '@/components/layout';
 import { X } from 'lucide-react';
@@ -13,6 +13,7 @@ const STORAGE_KEY = 'flagswing_cookie_notice_v1';
  */
 export function CookieNotice() {
   const [visible, setVisible] = useState(false);
+  const bannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -23,6 +24,35 @@ export function CookieNotice() {
       setVisible(true);
     }
   }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const reset = () => root.style.setProperty('--cookie-banner-h', '0px');
+
+    if (!visible) {
+      reset();
+      return;
+    }
+
+    const el = bannerRef.current;
+    if (!el) {
+      reset();
+      return;
+    }
+
+    const sync = () => {
+      root.style.setProperty('--cookie-banner-h', `${Math.ceil(el.getBoundingClientRect().height)}px`);
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    window.addEventListener('resize', sync);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', sync);
+      reset();
+    };
+  }, [visible]);
 
   const dismiss = (value: 'essential' | 'acknowledged') => {
     try {
@@ -37,6 +67,8 @@ export function CookieNotice() {
 
   return (
     <div
+      ref={bannerRef}
+      id="site-cookie-banner"
       role="dialog"
       aria-labelledby="cookie-notice-title"
       aria-describedby="cookie-notice-desc"

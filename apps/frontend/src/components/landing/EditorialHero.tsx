@@ -21,9 +21,9 @@ export function EditorialHero({
       className="relative min-h-[18rem] overflow-hidden border-b border-neutral-200/90 sm:min-h-[20rem] lg:min-h-[clamp(28rem,34.95vw,48rem)]"
       aria-labelledby={headingId}
     >
-      {/* Hero illustration — `public/images/mypexel1.webp` (WebP). */}
+      {/* Crop a thin decorative strip off the raster top inside this frame (avoid re-export). */}
       <div
-        className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat lg:bg-[length:100%_auto] lg:bg-top"
+        className="pointer-events-none absolute inset-x-0 top-[-1.75rem] h-[calc(100%+1.75rem)] bg-cover bg-center bg-no-repeat lg:bg-[length:100%_auto] lg:bg-top"
         style={{ backgroundImage: 'url(/images/mypexel1.webp)' }}
         aria-hidden
       />
