@@ -78,6 +78,14 @@ export async function triggerApiFileDownload(
     opts.onError?.();
     return false;
   }
+  // Mobile Safari/Android often blocks downloads initiated from hidden iframes; full navigation reliably follows the 302 to storage.
+  if (
+    typeof navigator !== 'undefined' &&
+    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+  ) {
+    window.location.assign(apiPath);
+    return true;
+  }
   startHiddenIframeDownload(apiPath);
   return true;
 }

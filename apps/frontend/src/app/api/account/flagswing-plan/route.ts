@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { isClerkConfigured } from '@/lib/auth/clerk-env';
+import { getAccessTokenFromCookies } from '@/lib/auth/session.server';
 import { getDb } from '@/lib/server/db';
-import { hasActiveClerkSubscription } from '@/lib/server/clerk-active-plan';
+import { userHasFlagswingPaidDownloadAccess } from '@/lib/server/flagswing-download-access';
 
 export const runtime = 'nodejs';
 
@@ -19,7 +20,8 @@ export async function GET() {
   }
   try {
     const pool = getDb();
-    const hasActivePlan = await hasActiveClerkSubscription(pool, user.id);
+    const accessToken = await getAccessTokenFromCookies();
+    const hasActivePlan = await userHasFlagswingPaidDownloadAccess(pool, user, accessToken);
     return NextResponse.json({ signedIn: true, hasActivePlan });
   } catch (e) {
     console.error('[flagswing-plan] DB error:', e);

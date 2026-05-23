@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { isClerkConfigured } from '@/lib/auth/clerk-env';
-import { serverClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
 import { sanitizeCallbackUrl } from '@/lib/auth/callback-url';
+import { getAccessTokenFromCookies } from '@/lib/auth/session.server';
 import { getDb } from '@/lib/server/db';
-import { hasActiveClerkSubscription } from '@/lib/server/clerk-active-plan';
-import { freeTierRequiresSignIn } from '@/lib/server/flagswing-download-policy';
+import { userHasFlagswingPaidDownloadAccess } from '@/lib/server/flagswing-download-access';
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 import {
   getPublicR2FileUrl,
@@ -25,14 +24,6 @@ function redirectLocation(req: Request, href: string): string {
   const h = href.trim();
   if (h.startsWith('/')) return new URL(h, new URL(req.url).origin).toString();
   return h;
-}
-
-type PremiumTier = 'free' | 'freemium' | 'paid';
-
-function normalizeTier(raw: string | null | undefined): PremiumTier {
-  const t = (raw ?? 'free').toLowerCase();
-  if (t === 'freemium' || t === 'paid' || t === 'free') return t;
-  return 'free';
 }
 
 type FileRow = {
@@ -70,7 +61,8 @@ function suggestDownloadBasename(row: FileRow): string {
  *
  * - Legacy Blob `file_url`: rewritten to **`CLOUDFLARE_R2_PUBLIC_URL`** when the same `flags/…` key exists on R2.
  * - Rows with **`file_key`**: use R2 public or short-lived signed GET when SDK credentials exist (even if `storage_provider` is stale).
- * - Free tier: public URL (or legacy blob façade) after optional sign-in policy.
+ * - Requires an active Paddle-backed entitlement: Neon `user_subscriptions`, backend `check-premium`
+ *   (JWT cookie), admin allow-list, or optional owner bypass emails (`MARKETPLACE_OWNER_DOWNLOAD_EMAILS`).
  */
 export async function GET(
   request: Request,
@@ -122,8 +114,7 @@ export async function GET(
   }
 
   const user = await currentUser();
-  const tier = normalizeTier(row.premium_tier);
-  const isAdmin = serverClerkUserMatchesAdmin(user);
+  const accessToken = await getAccessTokenFromCookies();
 
   async function redirectForHref(href: string): Promise<Response> {
     return NextResponse.redirect(redirectLocation(request, href), 302);
@@ -149,20 +140,14 @@ export async function GET(
     return legacy ?? null;
   }
 
-  if (isAdmin) {
-    const href = await resolveDownloadHref();
-    if (!href) {
-      return NextResponse.json({ error: 'File location unavailable', code: 'MISSING_URL' }, { status: 503 });
-    }
-    return redirectForHref(href);
-  }
+  const allowed = await userHasFlagswingPaidDownloadAccess(pool, user, accessToken);
 
-  if (tier === 'free') {
-    if (freeTierRequiresSignIn() && !user?.id) {
-      const returnPath = sanitizeCallbackUrl(
-        new URL(request.url).pathname + new URL(request.url).search,
-        '/browse'
-      );
+  if (!allowed) {
+    const returnPath = sanitizeCallbackUrl(
+      new URL(request.url).pathname + new URL(request.url).search,
+      '/browse',
+    );
+    if (!user?.id) {
       if (isBrowserDocumentNavigation(request)) {
         const login = new URL('/sign-in', request.url);
         login.searchParams.set('redirect_url', returnPath);
@@ -170,38 +155,7 @@ export async function GET(
       }
       return NextResponse.json({ error: 'Not signed in', code: 'NOT_AUTHENTICATED' }, { status: 401 });
     }
-    const href = await resolveDownloadHref();
-    if (!href) {
-      return NextResponse.json({ error: 'File location unavailable', code: 'MISSING_URL' }, { status: 503 });
-    }
-    return redirectForHref(href);
-  }
 
-  if (!user?.id) {
-    const returnPath = sanitizeCallbackUrl(
-      new URL(request.url).pathname + new URL(request.url).search,
-      '/browse'
-    );
-    if (isBrowserDocumentNavigation(request)) {
-      const login = new URL('/sign-in', request.url);
-      login.searchParams.set('redirect_url', returnPath);
-      return NextResponse.redirect(login, 302);
-    }
-    return NextResponse.json({ error: 'Not signed in', code: 'NOT_AUTHENTICATED' }, { status: 401 });
-  }
-
-  let active = false;
-  try {
-    active = await hasActiveClerkSubscription(pool, user.id);
-  } catch (subErr) {
-    console.error('[download] subscription lookup failed:', subErr);
-    active = false;
-  }
-  if (!active) {
-    const returnPath = sanitizeCallbackUrl(
-      new URL(request.url).pathname + new URL(request.url).search,
-      '/browse'
-    );
     if (isBrowserDocumentNavigation(request)) {
       const pricing = new URL('/pricing', request.url);
       pricing.searchParams.set('callbackUrl', returnPath);
@@ -209,7 +163,7 @@ export async function GET(
     }
     return NextResponse.json(
       { error: 'Subscription required', code: 'SUBSCRIPTION_REQUIRED' },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
