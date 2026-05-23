@@ -21,10 +21,10 @@ export function EditorialHero({
       className="relative min-h-[18rem] overflow-hidden border-b border-neutral-200/90 sm:min-h-[20rem] lg:min-h-[clamp(28rem,34.95vw,48rem)]"
       aria-labelledby={headingId}
     >
-      {/* Wide asset (native ~3816×1334): lg+ scales by viewport width — fits 1920px layouts; smaller viewports use cover. */}
+      {/* Hero illustration — `public/images/mypexel1.webp` (WebP). */}
       <div
         className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat lg:bg-[length:100%_auto] lg:bg-top"
-        style={{ backgroundImage: 'url(/images/mypexel1.png)' }}
+        style={{ backgroundImage: 'url(/images/mypexel1.webp)' }}
         aria-hidden
       />
       {/* Light left scrim only — keeps type readable without washing out the photograph */}
