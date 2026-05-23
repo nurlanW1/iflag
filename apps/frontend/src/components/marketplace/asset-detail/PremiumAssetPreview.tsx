@@ -11,6 +11,8 @@ type Props = {
   formatHints?: string[];
   /** Chessboard matte behind previews that may carry alpha (PNG/WebP/SVG/etc.) */
   useTransparencyBackdrop?: boolean;
+  /** Desktop hero: stretch vertically to match sibling commerce panel */
+  fillColumn?: boolean;
 };
 
 const checkerBg =
@@ -22,6 +24,7 @@ export function PremiumAssetPreview({
   previewUrls,
   formatHints = [],
   useTransparencyBackdrop = false,
+  fillColumn = false,
 }: Props) {
   const uniq = [...new Set(previewUrls.filter((u) => typeof u === 'string' && u.trim()))];
   const src = uniq[0] ?? '';
@@ -32,7 +35,9 @@ export function PremiumAssetPreview({
         className={clsx(
           'relative mx-auto aspect-[4/3] w-full max-w-[min(100%,66rem)] overflow-hidden rounded-[1.375rem]',
           useTransparencyBackdrop ? checkerBg : 'bg-gradient-to-b from-white to-slate-50',
-          'ring-1 ring-slate-200/65 shadow-inner lg:aspect-[16/10]',
+          'ring-1 ring-slate-200/65 shadow-inner',
+          !fillColumn && 'lg:aspect-[16/10]',
+          fillColumn && 'lg:flex-1 lg:aspect-auto lg:min-h-[14rem]',
         )}
         role="img"
         aria-label={`${productTitle} — no preview`}
@@ -43,8 +48,18 @@ export function PremiumAssetPreview({
   const svg = shouldUnoptimizeFlagImageHref(src, formatHints);
 
   return (
-    <div className="mx-auto w-full max-w-[min(100%,66rem)]">
-      <div className="-translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform hover:-translate-y-1 hover:opacity-[0.997] lg:hover:-translate-y-1">
+    <div
+      className={clsx(
+        'mx-auto w-full max-w-[min(100%,66rem)]',
+        fillColumn && 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col',
+      )}
+    >
+      <div
+        className={clsx(
+          '-translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform hover:-translate-y-1 hover:opacity-[0.997] lg:hover:-translate-y-1',
+          fillColumn && 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col',
+        )}
+      >
         <div
           className={clsx(
             'overflow-hidden rounded-[1.375rem]',
@@ -52,11 +67,14 @@ export function PremiumAssetPreview({
             'backdrop-blur-[2px]',
             'transition-[box-shadow,ring-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
             'hover:shadow-[0_40px_80px_-44px_rgba(15,23,42,0.38)] hover:ring-slate-300/80',
+            fillColumn && 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col',
           )}
         >
           <div
             className={clsx(
-              'relative aspect-[4/3] w-full lg:aspect-[16/10] lg:max-h-[min(66vh,680px)]',
+              'relative aspect-[4/3] w-full',
+              !fillColumn && 'lg:aspect-[16/10] lg:max-h-[min(66vh,680px)]',
+              fillColumn && 'lg:flex lg:min-h-0 lg:flex-1 lg:aspect-auto',
               useTransparencyBackdrop ? checkerBg : 'bg-[linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)]',
             )}
           >

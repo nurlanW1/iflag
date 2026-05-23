@@ -1,23 +1,22 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import clsx from 'clsx';
 import { usePathname, useRouter } from 'next/navigation';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import type { PublicProductFile } from '@/lib/marketplace/product-mapper';
 import { triggerApiFileDownload } from '@/lib/client/trigger-api-download';
 import { bytesToHuman, formatBadgeLabel, formatKindLabel } from '@/components/marketplace/asset-detail/format-metadata';
-import { CopyLinkShareRow } from '@/components/marketplace/asset-detail/CopyLinkShareRow';
+import { CopyLinkCartRow, type CartProductRef } from '@/components/marketplace/asset-detail/CopyLinkCartRow';
+import { CanonicalFormatSlots } from '@/components/marketplace/asset-detail/CanonicalFormatSlots';
+import { firstSelectableStockFileId } from '@/lib/marketplace/canonical-stock-formats';
 
 type Props = {
   files: PublicProductFile[];
   /** One compact line for commerce trust (license summary); optional */
   licenseSummary?: string | null;
+  cartProduct: CartProductRef;
 };
-
-const segmentRail =
-  'rounded-[1rem] bg-slate-100/98 p-1.5 ring-1 ring-slate-200/75 shadow-inner';
 
 const dlBtn =
   'group/dl relative mt-8 flex min-h-[3.5rem] w-full items-center justify-center gap-2.5 overflow-hidden rounded-2xl bg-slate-950 px-5 text-[16px] font-semibold tracking-tight text-[#fafaf9] transition-[transform,box-shadow,background-color] duration-200 hover:bg-slate-900 hover:shadow-[0_20px_40px_-18px_rgba(0,0,0,0.45)] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50';
@@ -60,7 +59,7 @@ function TrustStrip({
 }
 
 /** Neon — premium segmented formats + slate CTA + trust microcopy (APIs unchanged). */
-export function NeonAssetDownloads({ files, licenseSummary }: Props) {
+export function NeonAssetDownloads({ files, licenseSummary, cartProduct }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const back = pathname || '/browse';
@@ -74,12 +73,13 @@ export function NeonAssetDownloads({ files, licenseSummary }: Props) {
     [files],
   );
 
-  const [sel, setSel] = useState<string>(sorted[0]?.id ?? '');
+  const firstId = useMemo(() => firstSelectableStockFileId(sorted), [sorted]);
+  const [sel, setSel] = useState<string>('');
 
   useEffect(() => {
     if (!sorted.length) return;
-    if (!sel || !sorted.some((f) => f.id === sel)) setSel(sorted[0]!.id);
-  }, [sorted, sel]);
+    if (!sel || !sorted.some((f) => f.id === sel)) setSel(firstId ?? '');
+  }, [sorted, sel, firstId]);
 
   const active = sorted.find((f) => f.id === sel);
   const [busy, setBusy] = useState(false);
@@ -115,47 +115,7 @@ export function NeonAssetDownloads({ files, licenseSummary }: Props) {
   const activeKind = active ? formatKindLabel(active.format) : 'Other';
 
   const formatRow = (
-    <section aria-labelledby="fmt-heading-neon">
-      <div className="mb-3 flex items-baseline justify-between gap-3">
-        <h2 id="fmt-heading-neon" className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-          Included formats
-        </h2>
-        <span className="text-[11px] font-medium tabular-nums text-slate-400">{sorted.length} files</span>
-      </div>
-      <div
-        role="radiogroup"
-        aria-labelledby="fmt-heading-neon"
-        className={clsx(
-          segmentRail,
-          'flex gap-1 overflow-x-auto [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] pb-px sm:flex-wrap sm:overflow-visible',
-        )}
-      >
-        {sorted.map((f) => {
-          const on = active?.id === f.id;
-          const lbl = formatBadgeLabel(f.format);
-          const sz = bytesToHuman(f.bytes);
-          return (
-            <button
-              key={f.id}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              aria-label={`${lbl}, ${sz}`}
-              onClick={() => setSel(f.id)}
-              className={clsx(
-                'flex min-w-[4.85rem] shrink-0 snap-start flex-col items-center justify-center rounded-[0.6875rem] px-4 py-2.5 transition-[transform,color,background,box-shadow,ring] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2 sm:min-w-[5.75rem]',
-                on
-                  ? 'bg-white shadow-[0_12px_30px_-20px_rgba(15,23,42,0.35)] ring-2 ring-[var(--brand-blue)]/38'
-                  : 'text-slate-600 hover:bg-white/70 hover:text-slate-900',
-              )}
-            >
-              <span className="text-[13px] font-bold leading-none tracking-[0.04em] text-slate-900">{lbl}</span>
-              <span className="mt-1 text-[11px] font-medium tabular-nums leading-none text-slate-500">{sz}</span>
-            </button>
-          );
-        })}
-      </div>
-    </section>
+    <CanonicalFormatSlots headingId="fmt-heading-neon" files={sorted} selectedId={sel} onSelect={setSel} />
   );
 
   const primaryButton = active ? (
@@ -173,7 +133,7 @@ export function NeonAssetDownloads({ files, licenseSummary }: Props) {
       {active ? (
         <TrustStrip bytesLabel={bytesToHuman(active.bytes)} kind={activeKind} summary={licenseSummary} />
       ) : null}
-      <CopyLinkShareRow />
+      <CopyLinkCartRow product={cartProduct} />
     </div>
   );
 

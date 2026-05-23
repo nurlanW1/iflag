@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import { CookieNotice } from '@/components/legal/CookieNotice';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AuthModalProvider } from '@/contexts/AuthModalContext';
+import { CartProvider } from '@/contexts/CartContext';
 import AuthModalWrapper from '@/components/AuthModalWrapper';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { buildDefaultMetadata } from '@/lib/seo/site-config';
@@ -49,16 +50,18 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         Skip to main content
       </a>
       <AuthProvider>
-        <AuthModalProvider>
-          <Navbar clerkUiEnabled={clerkUiEnabled} />
-          <div id="site-content" tabIndex={-1}>
-            {children}
-          </div>
-          <Footer />
-          <CookieNotice />
-          <AuthModalWrapper />
-          <AppToaster />
-        </AuthModalProvider>
+        <CartProvider clerkUiEnabled={clerkUiEnabled}>
+          <AuthModalProvider>
+            <Navbar clerkUiEnabled={clerkUiEnabled} />
+            <div id="site-content" tabIndex={-1}>
+              {children}
+            </div>
+            <Footer />
+            <CookieNotice />
+            <AuthModalWrapper />
+            <AppToaster />
+          </AuthModalProvider>
+        </CartProvider>
       </AuthProvider>
     </>
   );

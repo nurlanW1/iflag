@@ -64,6 +64,14 @@ export function ProductDetailView({ slug, product }: Props) {
     previewFileDomain != null ? dedupedFiles.find((f) => f.id === previewFileDomain.id) ?? null : null;
 
   const neonDownloads = Boolean((product.detailPath ?? '').startsWith('/assets/'));
+  const cartPathname = neonDownloads ? `/assets/${product.slug}` : marketplaceProductCanonicalPath(product.slug);
+
+  const cartProduct = {
+    productId: product.id,
+    slug: product.slug,
+    title: product.title,
+    pathname: cartPathname,
+  };
 
   const canonicalPath =
     product.seo.canonicalPath?.trim() || marketplaceProductCanonicalPath(product.slug);
@@ -166,58 +174,73 @@ export function ProductDetailView({ slug, product }: Props) {
         )}
       >
         <div className="mx-auto w-full max-w-[min(100%,1392px)] px-5 sm:px-6 xl:px-10">
-          <div className="grid min-w-0 grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(19.25rem,25rem)] xl:grid-cols-[minmax(0,1fr)_26rem] lg:gap-12 xl:gap-16">
-            <div className="min-w-0 space-y-8 lg:space-y-10">
-              <h1 className="text-[1.75rem] font-semibold tracking-[-0.02em] text-slate-900 sm:text-[1.95rem] sm:leading-snug lg:hidden">
-                {product.title}
-              </h1>
-              <div className="min-w-0" aria-label="Hero preview">
+          <div className="min-w-0 space-y-10 lg:space-y-11">
+            <h1 className="text-[1.75rem] font-semibold tracking-[-0.02em] text-slate-900 sm:text-[1.95rem] sm:leading-snug lg:hidden">
+              {product.title}
+            </h1>
+
+            <div
+              className={clsx(
+                'grid min-w-0 grid-cols-1 gap-10',
+                'lg:grid-cols-[minmax(0,1fr)_minmax(19.25rem,25rem)] lg:items-stretch lg:gap-12',
+                'xl:grid-cols-[minmax(0,1fr)_26rem] xl:gap-16',
+              )}
+            >
+              <div className="flex min-h-0 min-w-0 flex-col lg:h-auto lg:min-h-[26rem]" aria-label="Hero preview">
                 <PremiumAssetPreview
                   productTitle={product.title}
                   previewUrls={uniquePreview}
                   formatHints={formatHints}
                   useTransparencyBackdrop={formatHintsMayHaveAlpha(formatHints)}
+                  fillColumn
                 />
               </div>
 
-              <CountryDesignVariantRibbon variants={siblingPublic} galleryHref={variantGalleryHref} />
-            </div>
-
-            <aside className="hidden min-w-0 lg:sticky lg:top-[calc(5rem+env(safe-area-inset-top))] lg:z-[20] lg:block lg:self-start">
-              <div
-                className={clsx(
-                  'rounded-[1.375rem]',
-                  'border border-white/[0.88] bg-white/[0.93] p-[1.6rem]',
-                  'shadow-[0_28px_70px_-40px_rgba(15,23,42,0.35)]',
-                  'ring-1 ring-slate-200/55 backdrop-blur-[14px]',
-                )}
-              >
-                {breadcrumbsDesktop}
-                <h1 className="text-[1.65rem] font-semibold tracking-[-0.028em] text-slate-900 xl:text-[1.8rem] xl:leading-[1.2]">
-                  {product.title}
-                </h1>
-                {metaEyebrow}
-                <div className="my-8 h-px bg-gradient-to-r from-slate-200/20 via-slate-200/90 to-slate-200/20" />
-
-                <div>
-                  {neonDownloads ? (
-                    <NeonAssetDownloads files={dedupedFiles} licenseSummary={licenseSummary} />
-                  ) : (
-                    <PremiumCatalogCommerce
-                      productId={product.id}
-                      productSlug={product.slug}
-                      currency={publicProduct.currency}
-                      paidCatalog={paid}
-                      files={dedupedFiles}
-                      previewFile={previewFilePublic}
-                      licenseSummary={licenseSummary}
-                    />
+              <aside className="hidden min-h-0 min-w-0 lg:block lg:h-auto lg:self-stretch lg:sticky lg:top-[calc(5rem+env(safe-area-inset-top))] lg:z-[20]">
+                <div
+                  className={clsx(
+                    'flex h-full min-h-[26rem] flex-col rounded-[1.375rem]',
+                    'border border-white/[0.88] bg-white/[0.93] p-[1.6rem]',
+                    'shadow-[0_28px_70px_-40px_rgba(15,23,42,0.35)]',
+                    'ring-1 ring-slate-200/55 backdrop-blur-[14px]',
                   )}
-                </div>
-              </div>
-            </aside>
+                >
+                  {breadcrumbsDesktop}
+                  <h1 className="text-[1.65rem] font-semibold tracking-[-0.028em] text-slate-900 xl:text-[1.8rem] xl:leading-[1.2]">
+                    {product.title}
+                  </h1>
+                  {metaEyebrow}
+                  <div className="my-8 h-px bg-gradient-to-r from-slate-200/20 via-slate-200/90 to-slate-200/20" />
 
-            {tagTrail}
+                  <div className="min-h-0 flex-1">
+                    {neonDownloads ? (
+                      <NeonAssetDownloads
+                        cartProduct={cartProduct}
+                        files={dedupedFiles}
+                        licenseSummary={licenseSummary}
+                      />
+                    ) : (
+                      <PremiumCatalogCommerce
+                        cartProduct={cartProduct}
+                        productId={product.id}
+                        productSlug={product.slug}
+                        currency={publicProduct.currency}
+                        paidCatalog={paid}
+                        files={dedupedFiles}
+                        previewFile={previewFilePublic}
+                        licenseSummary={licenseSummary}
+                      />
+                    )}
+                  </div>
+                </div>
+              </aside>
+
+              <div className="min-w-0 lg:col-span-full">
+                <CountryDesignVariantRibbon variants={siblingPublic} galleryHref={variantGalleryHref} />
+              </div>
+
+              {tagTrail ? <div className="min-w-0 lg:col-span-full">{tagTrail}</div> : null}
+            </div>
           </div>
         </div>
       </main>
