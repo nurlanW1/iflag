@@ -37,7 +37,7 @@ function listCountryVariants(current: Product, limit = 14): Product[] {
     .slice(0, limit);
 }
 
-/** Premium stock-marketplace PDP — hero preview + elevated sticky acquisition panel + light discovery row. */
+/** Asset download / PDP — balanced hero + sticky card, slate system + brand CTA. */
 export function ProductDetailView({ slug, product }: Props) {
   const publicProduct = toPublicProduct(product);
   const dedupedFiles = dedupePublicProductFiles(publicProduct.files);
@@ -76,14 +76,14 @@ export function ProductDetailView({ slug, product }: Props) {
 
   const tagTrail =
     product.tags.length > 0 ? (
-      <section className="mt-12 border-t border-neutral-300/55 pt-8 md:mt-14 lg:col-span-full" aria-label="Tags">
-        <p className="text-[13px] leading-relaxed text-neutral-500">
+      <section className="mt-10 border-t border-slate-200/80 pt-7 md:mt-12 lg:col-span-full" aria-label="Tags">
+        <p className="text-[12px] leading-relaxed text-slate-500">
           {product.tags.map((t, i) => (
             <span key={t} className="inline whitespace-nowrap">
-              {i > 0 ? <span className="text-neutral-300"> · </span> : null}
+              {i > 0 ? <span className="text-slate-300"> · </span> : null}
               <Link
                 href={`/browse?q=${encodeURIComponent(t)}`}
-                className="font-medium text-neutral-600 underline-offset-[3px] transition-colors hover:text-neutral-950 hover:underline"
+                className="font-medium text-slate-600 underline-offset-2 transition-colors hover:text-[var(--brand-blue)] hover:underline"
               >
                 {t}
               </Link>
@@ -107,20 +107,17 @@ export function ProductDetailView({ slug, product }: Props) {
       />
       <main
         className={clsx(
-          'marketplace-shell min-w-0 bg-[linear-gradient(180deg,#f4f6f9_0%,#ebeff4_52%,#e8ecf1_100%)] pb-14 pt-10 sm:pt-11 md:pb-16 lg:pb-20 lg:pt-12',
-          'max-lg:pb-[calc(18rem+env(safe-area-inset-bottom))]',
+          'marketplace-shell min-w-0 bg-slate-50 pb-14 pt-9 sm:pt-10 md:pb-16 lg:pb-[4.25rem] lg:pt-11',
+          'max-lg:pb-[calc(17rem+env(safe-area-inset-bottom))]',
         )}
       >
-        <div className="mx-auto w-full max-w-[min(100%,1436px)] px-5 sm:px-6 xl:px-8">
-          <div className="grid min-w-0 grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(17.5rem,25rem)] xl:grid-cols-[minmax(0,1fr)_26rem] lg:gap-12 xl:gap-16">
-            <div className="min-w-0 space-y-7 lg:space-y-10">
-              <h1 className="text-[1.85rem] font-bold tracking-[-0.03em] text-neutral-950 sm:text-[2rem] sm:leading-[1.15] lg:hidden">
+        <div className="mx-auto w-full max-w-[min(100%,1380px)] px-5 sm:px-6 xl:px-10">
+          <div className="grid min-w-0 grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] xl:grid-cols-[minmax(0,1fr)_25rem] lg:gap-11 xl:gap-14">
+            <div className="min-w-0 space-y-8 lg:space-y-10">
+              <h1 className="text-[1.75rem] font-semibold tracking-[-0.02em] text-slate-900 sm:text-[1.875rem] sm:leading-snug lg:hidden">
                 {product.title}
               </h1>
-              <div
-                className="rounded-[1.875rem] bg-gradient-to-br from-white/[0.65] via-white/35 to-transparent p-[0.4375rem] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_34px_80px_-52px_rgba(15,23,42,0.35)] ring-1 ring-neutral-300/33 sm:p-[0.5rem]"
-                aria-label="Hero preview container"
-              >
+              <div className="min-w-0" aria-label="Hero preview">
                 <PremiumAssetPreview
                   productTitle={product.title}
                   previewUrls={uniquePreview}
@@ -131,18 +128,20 @@ export function ProductDetailView({ slug, product }: Props) {
               <CountryDesignVariantRibbon variants={siblingPublic} galleryHref={variantGalleryHref} />
             </div>
 
-            <aside className="hidden min-w-0 lg:sticky lg:top-[calc(5.75rem+env(safe-area-inset-top))] lg:z-[20] lg:block lg:self-start">
+            <aside className="hidden min-w-0 lg:sticky lg:top-[calc(5.25rem+env(safe-area-inset-top))] lg:z-[20] lg:block lg:self-start">
               <div
                 className={clsx(
-                  'relative overflow-hidden rounded-[1.35rem] border border-white/70 bg-white/95 p-8 shadow-[0_32px_80px_-42px_rgba(15,23,42,0.45)] ring-1 ring-neutral-950/[0.04] backdrop-blur-md',
-                  'before:pointer-events-none before:absolute before:inset-x-10 before:-top-px before:z-[1] before:h-px before:bg-gradient-to-r before:from-transparent before:via-white before:to-transparent',
+                  'rounded-2xl border border-white/80 bg-white p-7 xl:p-8',
+                  'shadow-[0_24px_60px_-32px_rgba(15,23,42,0.22)]',
+                  'ring-1 ring-slate-200/60',
                 )}
               >
-                <h1 className="text-[1.725rem] font-bold tracking-[-0.025em] text-neutral-950 sm:text-[1.875rem] sm:leading-[1.18] xl:text-[2rem] xl:tracking-[-0.03em]">
+                <div className="mb-6 h-0.5 w-10 rounded-full bg-gradient-to-r from-[var(--brand-blue)] to-slate-200" aria-hidden />
+                <h1 className="text-[1.625rem] font-semibold tracking-[-0.025em] text-slate-900 xl:text-[1.75rem] xl:leading-tight">
                   {product.title}
                 </h1>
 
-                <div className="mt-9 border-t border-neutral-200/95 pt-9">
+                <div className="mt-8 border-t border-slate-100 pt-8">
                   {neonDownloads ? (
                     <NeonAssetDownloads files={dedupedFiles} />
                   ) : (

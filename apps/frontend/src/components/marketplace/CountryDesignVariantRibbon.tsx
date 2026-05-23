@@ -18,23 +18,23 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
   if (variants.length === 0) return null;
 
   return (
-    <div className="min-w-0">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-neutral-300/40 pb-3">
+    <div className="min-w-0 rounded-2xl bg-white/70 p-5 ring-1 ring-slate-200/60 sm:p-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">More from this country</h2>
-          <p className="mt-0.5 text-[13px] font-medium text-neutral-600">Other flag styles</p>
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">More from this country</h2>
+          <p className="mt-1 text-[14px] font-medium text-slate-700">Other flag styles</p>
         </div>
         {galleryHref ? (
           <Link
             href={galleryHref}
-            className="shrink-0 text-[13px] font-semibold text-neutral-800 underline-offset-4 transition-colors hover:text-[var(--brand-blue)] hover:underline"
+            className="text-[13px] font-semibold text-[var(--brand-blue)] underline-offset-4 hover:underline"
           >
-            View gallery →
+            Gallery
           </Link>
         ) : null}
       </div>
       <div
-        className="-mx-1 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-1 py-2 [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] sm:gap-3"
+        className="-mx-0.5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-0.5 py-1 [scrollbar-width:thin] [-webkit-overflow-scrolling:touch]"
         role="list"
         aria-label="Other flag designs"
       >
@@ -52,9 +52,9 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
               role="listitem"
               aria-label={`${p.title} — ${paid ? 'Premium' : 'Free'}`}
               title={p.title}
-              className="group relative w-24 shrink-0 snap-start overflow-hidden rounded-xl border border-neutral-200/90 bg-white shadow-[0_10px_30px_-18px_rgba(15,23,42,0.25)] ring-1 ring-black/[0.03] transition-[box-shadow,transform,border-color] duration-300 hover:z-[1] hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-[0_22px_40px_-24px_rgba(15,23,42,0.3)] sm:w-[6.85rem]"
+              className="group relative w-[6.25rem] shrink-0 snap-start overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm transition-[box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:shadow-md sm:w-28"
             >
-              <div className="relative aspect-[4/3] w-full bg-gradient-to-b from-neutral-100 to-neutral-200/85">
+              <div className="relative aspect-[4/3] w-full bg-slate-50">
                 {thumb ? (
                   <Image
                     src={thumb}

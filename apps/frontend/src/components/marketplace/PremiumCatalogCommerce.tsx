@@ -19,7 +19,12 @@ type Props = {
   previewFile: PublicProductFile | null;
 };
 
-/** Catalog PDP — same premium format UI; preview download or Paddle checkout. */
+const segmentWrap = 'rounded-2xl bg-slate-100/95 p-1.5 ring-1 ring-slate-200/80';
+const segmentBtn =
+  'min-h-[2.875rem] min-w-[4rem] shrink-0 snap-start rounded-xl px-4 text-[14px] font-semibold tracking-wide transition-[color,background,box-shadow,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2 sm:px-5';
+const btnPrimary =
+  'mt-8 flex min-h-[3.375rem] w-full items-center justify-center gap-2.5 rounded-2xl bg-[var(--brand-blue)] px-5 text-[16px] font-semibold tracking-tight text-[#fafaf9] shadow-[0_8px_24px_-8px_rgba(12,39,72,0.55)] transition-[transform,background-color,box-shadow] duration-200 hover:bg-[var(--brand-blue-hover)] hover:shadow-[0_14px_32px_-10px_rgba(12,39,72,0.52)] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50';
+
 export function PremiumCatalogCommerce({
   productId,
   productSlug,
@@ -87,7 +92,10 @@ export function PremiumCatalogCommerce({
     <div
       role="radiogroup"
       aria-label="Format"
-      className="-mx-1 flex max-w-full gap-1.5 overflow-x-auto px-1 pb-0.5 pt-0.5 [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 md:gap-2"
+      className={clsx(
+        segmentWrap,
+        '-mx-0.5 flex max-w-full gap-1 overflow-x-auto px-0.5 py-0.5 [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] sm:mx-0 sm:flex-wrap sm:overflow-visible',
+      )}
     >
       {sorted.map((f) => {
         const on = active?.id === f.id;
@@ -100,10 +108,10 @@ export function PremiumCatalogCommerce({
             aria-label={formatBadgeLabel(f.format)}
             onClick={() => setSel(f.id)}
             className={clsx(
-              'min-h-[3rem] min-w-[4.25rem] shrink-0 snap-start rounded-xl px-5 text-[15px] font-semibold uppercase tracking-[0.06em] transition-[color,background,box-shadow,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 sm:min-w-[4.5rem]',
+              segmentBtn,
               on
-                ? 'scale-[1.02] bg-neutral-900 text-white shadow-lg shadow-neutral-900/25'
-                : 'bg-neutral-100/90 text-neutral-600 ring-1 ring-neutral-200/80 hover:bg-neutral-200/85 hover:text-neutral-900',
+                ? 'bg-white text-slate-900 shadow-[0_1px_3px_rgba(15,23,42,0.12)] ring-1 ring-slate-200/90'
+                : 'text-slate-600 hover:bg-white/60 hover:text-slate-900',
             )}
           >
             {formatBadgeLabel(f.format)}
@@ -114,34 +122,26 @@ export function PremiumCatalogCommerce({
   );
 
   const metaLine = active ? (
-    <p className="mt-5 text-[15px] font-medium tabular-nums tracking-tight text-neutral-600">
-      <span className="text-neutral-950">{formatBadgeLabel(active.format)}</span>
-      <span className="mx-2 font-light text-neutral-300">·</span>
+    <p className="mt-4 text-center text-[14px] font-medium tabular-nums text-slate-500 sm:text-left">
+      <span className="text-slate-800">{formatBadgeLabel(active.format)}</span>
+      <span className="mx-2 text-slate-300">·</span>
       <span>{bytesToHuman(active.bytes)}</span>
     </p>
   ) : null;
 
   const cta = previewReady ? (
-    <button
-      type="button"
-      disabled={busy}
-      onClick={() => void onPreviewDl()}
-      className={clsx(
-        'mt-7 flex min-h-[3.5rem] w-full items-center justify-center gap-2.5 rounded-xl bg-neutral-950 px-5 text-[17px] font-semibold tracking-tight text-white',
-        'shadow-[0_16px_42px_-22px_rgba(0,0,0,0.55)] transition-[transform,background,box-shadow] duration-200 hover:bg-neutral-800 hover:shadow-[0_22px_44px_-22px_rgba(0,0,0,0.58)] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-55',
-      )}
-    >
-      <Download className="h-5 w-5 shrink-0 opacity-95" aria-hidden />
+    <button type="button" disabled={busy} onClick={() => void onPreviewDl()} className={btnPrimary}>
+      <Download className="h-[1.125rem] w-[1.125rem] shrink-0 opacity-95" aria-hidden strokeWidth={2.25} />
       {busy ? 'Preparing…' : `Download ${formatBadgeLabel(active!.format)}`}
     </button>
   ) : paidCatalog && active?.tier === 'pro' ? (
-    <div className="mt-7">
+    <div className="mt-8">
       <CheckoutButton
         kind="one_time"
         productSlug={productSlug}
         className={clsx(
-          'flex min-h-[3.5rem] w-full items-center justify-center rounded-xl bg-neutral-950 px-6 text-[17px] font-semibold tracking-tight text-white',
-          'shadow-[0_16px_42px_-22px_rgba(0,0,0,0.55)] transition-[transform,background,box-shadow] duration-200 hover:bg-neutral-800 hover:shadow-[0_22px_44px_-22px_rgba(0,0,0,0.58)] active:scale-[0.99] disabled:opacity-55',
+          'flex min-h-[3.375rem] w-full items-center justify-center rounded-2xl bg-[var(--brand-blue)] px-6 text-[16px] font-semibold tracking-tight text-[#fafaf9]',
+          'shadow-[0_8px_24px_-8px_rgba(12,39,72,0.55)] transition-[transform,background-color,box-shadow] duration-200 hover:bg-[var(--brand-blue-hover)] hover:shadow-[0_14px_32px_-10px_rgba(12,39,72,0.52)] active:scale-[0.99] disabled:opacity-50',
         )}
       >
         Get Premium Access
@@ -160,8 +160,9 @@ export function PremiumCatalogCommerce({
   return (
     <>
       <div className="hidden lg:block">{block}</div>
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden">
-        <div className="pointer-events-auto rounded-t-[1.25rem] border border-b-0 border-neutral-200/90 bg-white px-5 pb-6 pt-5 shadow-[0_-24px_56px_-28px_rgba(15,23,42,0.22)]">
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] pb-[max(10px,env(safe-area-inset-bottom))] lg:hidden">
+        <div className="pointer-events-auto mx-auto max-w-lg rounded-t-2xl border border-b-0 border-slate-200/90 bg-white/95 px-5 pb-6 pt-4 shadow-[0_-12px_48px_-16px_rgba(15,23,42,0.15)] backdrop-blur-md">
+          <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-200/90" aria-hidden />
           {block}
         </div>
       </div>
