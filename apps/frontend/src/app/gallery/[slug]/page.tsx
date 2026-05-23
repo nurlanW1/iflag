@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { GalleryCountryDownloadsPanel } from '@/components/gallery/GalleryCountryDownloadsPanel';
 import { clientUserMatchesOwnerDownloadBypass } from '@/lib/marketplace/owner-download-bypass-client';
+import { FlagProtectedPreview } from '@/components/brand/FlagProtectedPreview';
 import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
 import {
   FLAG_THUMB_PLACEHOLDER_DATA_URL,
@@ -464,22 +465,26 @@ export default function CountryDetailPage() {
                     </div>
                   ) : (
                     <>
-                      {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
-                      <img
-                        key={`${selectedVariant.id}-${selectedFormat?.id ?? 'cover'}`}
-                        src={bigPreviewSrc(selectedVariant, selectedFormat)}
-                        alt={`${pageTitle} — ${selectedVariant.name}`}
-                        className="max-h-[min(62vh,40rem)] w-auto max-w-full object-contain"
-                        referrerPolicy="no-referrer"
-                        decoding="async"
-                        onError={(e) =>
-                          imgErrorFallbackChain(
-                            e,
-                            [selectedVariant.thumbnail],
-                            flagThumbPlaceholderForFileId(selectedVariant.id),
-                          )
-                        }
-                      />
+                      <FlagProtectedPreview className="relative mx-auto inline-flex max-h-[min(62vh,40rem)] max-w-full items-center justify-center">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
+                        <img
+                          key={`${selectedVariant.id}-${selectedFormat?.id ?? 'cover'}`}
+                          src={bigPreviewSrc(selectedVariant, selectedFormat)}
+                          alt={`${pageTitle} — ${selectedVariant.name}`}
+                          className="max-h-[min(62vh,40rem)] w-auto max-w-full object-contain"
+                          referrerPolicy="no-referrer"
+                          decoding="async"
+                          draggable={false}
+                          onError={(e) =>
+                            imgErrorFallbackChain(
+                              e,
+                              [selectedVariant.thumbnail],
+                              flagThumbPlaceholderForFileId(selectedVariant.id),
+                            )
+                          }
+                        />
+                        <PhotoWatermarkOverlay className="!z-[6]" />
+                      </FlagProtectedPreview>
                     </>
                   )}
                 </div>
@@ -528,23 +533,27 @@ export default function CountryDetailPage() {
                               : 'ring-1 ring-slate-200 group-hover:ring-slate-300'
                           }`}
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
-                          <img
-                            src={v.thumbnail}
-                            alt={v.name}
-                            loading="lazy"
-                            decoding="async"
-                            referrerPolicy="no-referrer"
-                            className="h-full w-full object-cover"
-                            onError={(e) =>
-                              imgErrorFallbackChain(
-                                e,
-                                [],
-                                flagThumbPlaceholderForFileId(v.id),
-                              )
-                            }
-                          />
-                          <span className="absolute right-1.5 top-1.5 rounded-md bg-black/55 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                          <FlagProtectedPreview className="absolute inset-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
+                            <img
+                              src={v.thumbnail}
+                              alt={v.name}
+                              loading="lazy"
+                              decoding="async"
+                              referrerPolicy="no-referrer"
+                              draggable={false}
+                              className="h-full w-full object-cover"
+                              onError={(e) =>
+                                imgErrorFallbackChain(
+                                  e,
+                                  [],
+                                  flagThumbPlaceholderForFileId(v.id),
+                                )
+                              }
+                            />
+                            <PhotoWatermarkOverlay />
+                          </FlagProtectedPreview>
+                          <span className="pointer-events-none absolute right-1.5 top-1.5 z-10 rounded-md bg-black/55 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
                             {v.formats.length}
                           </span>
                         </div>

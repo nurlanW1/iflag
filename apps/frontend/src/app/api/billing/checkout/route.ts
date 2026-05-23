@@ -18,11 +18,6 @@ export const runtime = 'nodejs';
  * Returns the provider-specific response, typically `{ url: string }`.
  */
 export async function POST(request: Request) {
-  const user = await getSessionUserFromCookies();
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   let body: unknown;
   try {
     body = await request.json();
@@ -30,9 +25,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
+  const incomingAuth = request.headers.get('authorization')?.trim();
+
+  const user = await getSessionUserFromCookies();
   const access = await getAccessTokenFromCookies();
-  if (!access) {
-    return NextResponse.json({ error: 'Missing access token' }, { status: 401 });
+  const hasBackendSession = Boolean(user && access);
+
+  const hasBearerIncoming = Boolean(
+    incomingAuth?.toLowerCase().startsWith('bearer ') &&
+      incomingAuth.slice(7).trim().length > 0
+  );
+
+  /** Prefer linked backend JWT cookies; otherwise forward Clerk `getToken()` for API-side verification */
+  let forwardAuthorization: string | null = null;
+  if (hasBackendSession && access) {
+    forwardAuthorization = `Bearer ${access}`;
+  } else if (hasBearerIncoming && incomingAuth) {
+    forwardAuthorization = incomingAuth;
+  }
+
+  if (!forwardAuthorization) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const apiBase = resolveBackendApiBase();
@@ -45,7 +58,7 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${access}`,
+        Authorization: forwardAuthorization,
       },
       body: JSON.stringify(body),
       cache: 'no-store',

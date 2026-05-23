@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Crown } from 'lucide-react';
+import { FlagProtectedPreview } from '@/components/brand/FlagProtectedPreview';
 import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
@@ -55,21 +56,24 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
             >
               <div className="relative aspect-[4/3] w-full bg-slate-50">
                 {thumb ? (
-                  <Image
-                    src={thumb}
-                    alt=""
-                    fill
-                    unoptimized={svgThumb}
-                    loading="lazy"
-                    sizes="118px"
-                    className="relative z-0 object-contain p-1.5 transition-transform duration-300 group-hover:scale-[1.04]"
-                  />
+                  <FlagProtectedPreview className="absolute inset-0">
+                    <Image
+                      src={thumb}
+                      alt=""
+                      fill
+                      unoptimized={svgThumb}
+                      loading="lazy"
+                      draggable={false}
+                      sizes="118px"
+                      className="relative z-0 object-contain p-1.5 transition-transform duration-300 group-hover:scale-[1.04]"
+                    />
+                    <PhotoWatermarkOverlay />
+                  </FlagProtectedPreview>
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-[11px] font-medium text-neutral-400">
                     —
                   </div>
                 )}
-                {thumb ? <PhotoWatermarkOverlay /> : null}
                 <span className="pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-0.5 rounded-md bg-amber-400/95 px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-950 ring-1 ring-amber-600/40">
                   <Crown size={9} aria-hidden strokeWidth={2.5} />
                   Premium

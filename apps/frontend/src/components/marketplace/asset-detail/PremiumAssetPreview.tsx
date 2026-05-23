@@ -2,6 +2,7 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
+import { FlagProtectedPreview } from '@/components/brand/FlagProtectedPreview';
 import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
@@ -78,25 +79,28 @@ export function PremiumAssetPreview({
               useTransparencyBackdrop ? checkerBg : 'bg-[linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)]',
             )}
           >
-            <Image
-              src={src}
-              alt={productTitle}
-              fill
-              unoptimized={svg}
-              sizes="(max-width:1024px) 100vw, min(1060px, 72vw)"
-              priority
-              className={clsx(
-                'relative z-0 object-contain p-[clamp(1rem,3.75vw,2.85rem)]',
-                'transition-[transform] duration-[680ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
-                'hover:scale-[1.035]',
-              )}
-            />
-            <PhotoWatermarkOverlay />
-            {useTransparencyBackdrop ? (
-              <span className="pointer-events-none absolute bottom-4 right-4 z-10 rounded-lg bg-white/92 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 ring-1 ring-slate-200/80 backdrop-blur-sm">
-                Alpha preview
-              </span>
-            ) : null}
+            <FlagProtectedPreview className="absolute inset-0">
+              <Image
+                src={src}
+                alt={productTitle}
+                fill
+                unoptimized={svg}
+                draggable={false}
+                sizes="(max-width:1024px) 100vw, min(1060px, 72vw)"
+                priority
+                className={clsx(
+                  'relative z-0 object-contain p-[clamp(1rem,3.75vw,2.85rem)]',
+                  'transition-[transform] duration-[680ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+                  'hover:scale-[1.035]',
+                )}
+              />
+              <PhotoWatermarkOverlay />
+              {useTransparencyBackdrop ? (
+                <span className="pointer-events-none absolute bottom-4 right-4 z-10 rounded-lg bg-white/92 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 ring-1 ring-slate-200/80 backdrop-blur-sm">
+                  Alpha preview
+                </span>
+              ) : null}
+            </FlagProtectedPreview>
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
+import { FlagProtectedPreview } from '@/components/brand/FlagProtectedPreview';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
@@ -162,16 +163,19 @@ export function LandingFlagGalleryPreview() {
           className="group flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] duration-300 hover:border-neutral-300 hover:shadow-md"
         >
           <div className="relative aspect-[5/4] bg-neutral-100 sm:aspect-[4/3]">
-            <Image
-              src={item.image_url}
-              alt={item.title || 'Flag asset'}
-              fill
-              loading="lazy"
-              unoptimized={svg}
-              className="relative z-0 object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
-              sizes="(max-width: 379px) 100vw, (max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw"
-            />
-            <PhotoWatermarkOverlay />
+            <FlagProtectedPreview className="absolute inset-0">
+              <Image
+                src={item.image_url}
+                alt={item.title || 'Flag asset'}
+                fill
+                loading="lazy"
+                unoptimized={svg}
+                draggable={false}
+                className="relative z-0 object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
+                sizes="(max-width: 379px) 100vw, (max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw"
+              />
+              <PhotoWatermarkOverlay />
+            </FlagProtectedPreview>
           </div>
           <div className="flex flex-1 flex-col gap-2 p-4">
             <div className="min-h-0">

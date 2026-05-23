@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Search, Filter, Crown, X, SlidersHorizontal, Grid3x3, List } from 'lucide-react';
 import AssetCard from '@/components/AssetCard';
+import { FlagProtectedPreview } from '@/components/brand/FlagProtectedPreview';
 import { motion } from 'framer-motion';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 
@@ -262,13 +263,16 @@ export default function AssetsPage() {
                     className="bg-white rounded-lg p-4 hover:bg-black/5 transition-colors border border-black/10"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-24 h-16 bg-black/5 rounded flex-shrink-0">
+                      <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded bg-black/5">
                         {asset.thumbnail_url && (
-                          <img
-                            src={asset.thumbnail_url}
-                            alt={asset.title}
-                            className="w-full h-full object-cover rounded"
-                          />
+                          <FlagProtectedPreview className="absolute inset-0">
+                            <img
+                              src={asset.thumbnail_url}
+                              alt={asset.title}
+                              draggable={false}
+                              className="h-full w-full object-cover"
+                            />
+                          </FlagProtectedPreview>
                         )}
                       </div>
                       <div className="flex-1">

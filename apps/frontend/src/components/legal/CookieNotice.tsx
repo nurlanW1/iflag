@@ -80,8 +80,8 @@ export function CookieNotice() {
             Cookies &amp; privacy
           </p>
           <p id="cookie-notice-desc" className="mt-1 text-sm text-gray-600">
-            We use essential cookies to run the site (e.g. session / security). If you add analytics or
-            ads, document them in our{' '}
+            We use essential cookies for sign-in, account security, and <strong>Paddle checkout</strong> (they
+            keep your billing session tied to your login). If you add analytics or ads, document them in our{' '}
             <Link href="/cookies" className="font-medium text-[#2563eb] hover:underline">
               Cookie Policy
             </Link>{' '}

@@ -2,7 +2,6 @@
 
 import { useId } from 'react';
 import { Search } from 'lucide-react';
-import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
 
 type EditorialHeroProps = {
   searchQuery: string;
@@ -28,7 +27,6 @@ export function EditorialHero({
         style={{ backgroundImage: 'url(/images/mypexel1.webp)' }}
         aria-hidden
       />
-      <PhotoWatermarkOverlay className="!z-[1]" />
       {/* Light left scrim only — keeps type readable without washing out the photograph */}
       <div
         className="pointer-events-none absolute inset-0 z-[2] bg-gradient-to-r from-[#fafaf9]/76 from-[-5%] via-[#fafaf9]/35 via-[42%] to-transparent to-[88%]"

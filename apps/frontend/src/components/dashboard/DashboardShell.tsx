@@ -50,7 +50,10 @@ export function DashboardShell({
 
     (async () => {
       try {
-        const linkRes = await fetch('/api/auth/session-linked', { cache: 'no-store' });
+        const linkRes = await fetch('/api/auth/session-linked', {
+          cache: 'no-store',
+          credentials: 'include',
+        });
         const linkJson = (await linkRes.json()) as {
           linked?: boolean;
           reason?: string;
@@ -61,7 +64,10 @@ export function DashboardShell({
           return;
         }
 
-        const syncRes = await fetch('/api/auth/clerk-sync', { method: 'POST' });
+        const syncRes = await fetch('/api/auth/clerk-sync', {
+          method: 'POST',
+          credentials: 'include',
+        });
         const syncBody = (await syncRes.json().catch(() => ({}))) as { ok?: boolean; error?: string };
         if (cancelled) return;
         if (syncRes.ok) {

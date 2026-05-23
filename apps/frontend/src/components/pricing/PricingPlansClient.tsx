@@ -198,7 +198,7 @@ export function PricingPlansClient() {
                           : 'Subscribe with Paddle'}
                       </CheckoutButton>
                       <p className="mt-2 text-center text-xs text-gray-500">
-                        Sign in required. Secure checkout via Paddle.
+                        Sign in for checkout — secure payment hosted by Paddle.
                       </p>
                     </>
                   ) : null}

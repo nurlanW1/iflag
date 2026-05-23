@@ -14,7 +14,7 @@
 
 import express, { type Request, type Response, type Router } from 'express';
 import {
-  authenticateToken,
+  authenticateAppJwtOrClerkBilling,
   type AuthRequest,
 } from '../auth/auth.middleware.js';
 import { getUserById } from '../auth/auth.service.js';
@@ -71,7 +71,7 @@ function sendApiError(res: Response, err: any, fallbackStatus = 500) {
 
 const router: Router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticateAppJwtOrClerkBilling);
 
 router.post('/checkout', async (req: AuthRequest, res: Response) => {
   try {

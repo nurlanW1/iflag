@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Crown, Download, Eye, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { FlagProtectedPreview } from '@/components/brand/FlagProtectedPreview';
 
 interface AssetCardProps {
   asset: {
@@ -32,11 +33,14 @@ export default function AssetCard({ asset, index = 0 }: AssetCardProps) {
           {/* Image Container */}
           <div className="aspect-[4/3] bg-black/5 relative overflow-hidden">
             {asset.thumbnail_url ? (
-              <img
-                src={asset.thumbnail_url}
-                alt={asset.title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
+              <FlagProtectedPreview className="absolute inset-0">
+                <img
+                  src={asset.thumbnail_url}
+                  alt={asset.title}
+                  draggable={false}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+              </FlagProtectedPreview>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-black/30">
                 <div className="text-center">
