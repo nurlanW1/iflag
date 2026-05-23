@@ -51,23 +51,23 @@ export function CopyLinkCartRow({ product }: Props) {
   };
 
   return (
-    <div className="mt-6 flex gap-2">
+    <div className="flex gap-3">
       <button
         type="button"
         onClick={() => void onCopy()}
-        className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200/95 bg-white py-2.5 text-[13px] font-semibold text-slate-700 transition-[transform,background] duration-200 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.99]"
+        className="inline-flex min-h-[2.875rem] flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200/95 bg-white px-3 py-2.5 text-[13px] font-semibold text-slate-700 transition-[transform,background] duration-200 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.99]"
       >
-        <Link2 className="h-4 w-4 text-slate-500" aria-hidden />
+        <Link2 className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />
         Copy link
       </button>
       <button
         type="button"
         disabled={!ready}
         onClick={onCart}
-        className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200/95 bg-white py-2.5 text-[13px] font-semibold text-slate-700 transition-[transform,background] duration-200 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex min-h-[2.875rem] flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200/95 bg-white px-3 py-2.5 text-[13px] font-semibold text-slate-700 transition-[transform,background] duration-200 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
         aria-busy={!ready}
       >
-        <ShoppingCart className="h-4 w-4 text-slate-500" aria-hidden />
+        <ShoppingCart className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />
         Add to cart
       </button>
     </div>

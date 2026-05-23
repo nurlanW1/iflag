@@ -73,7 +73,7 @@ export default async function CategoryPage({ params }: Props) {
           <header className="mb-8 flex flex-col gap-5 border-b border-neutral-200 pb-10 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex max-w-3xl flex-col gap-4 sm:flex-row sm:gap-6">
               <span
-                className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl shadow-sm ring-2 ring-black/[0.04] ${vis.accent}`}
+                className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl shadow-sm ${vis.accent}`}
               >
                 <Icon className="h-8 w-8" aria-hidden strokeWidth={2} />
               </span>

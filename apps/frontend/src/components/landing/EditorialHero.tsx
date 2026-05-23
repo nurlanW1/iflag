@@ -20,7 +20,7 @@ export function EditorialHero({
     <section className="relative overflow-hidden border-b border-neutral-200/90" aria-labelledby={headingId}>
       {/* Hero background — bundled at `apps/frontend/public/images/mypexel1.png` → `/images/mypexel1.png` */}
       <div
-        className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat lg:bg-[length:auto_100%] lg:bg-right"
         style={{ backgroundImage: 'url(/images/mypexel1.png)' }}
         aria-hidden
       />
