@@ -34,7 +34,7 @@ export type NeonLikeFlagRow = {
 };
 
 const defaultLicense: ProductLicenseInfo = {
-  summary: 'License terms apply at checkout and on the product page.',
+  summary: '',
   detail: null,
 };
 

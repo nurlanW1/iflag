@@ -7,9 +7,9 @@
 /* Remove old :root color tokens if using Tailwind */
 :root {
   /* Colors */
-  --color-primary: #009ab6;
-  --color-primary-dark: #006d7a;
-  --color-primary-light: #00b8d4;
+  --color-primary: #2563eb;
+  --color-primary-dark: #1e40af;
+  --color-primary-light: #3b82f6;
   --color-secondary: #64748b;
   --color-success: #10b981;
   --color-warning: #f59e0b;
@@ -65,11 +65,15 @@
   /** Warm canvas + graphite ink */
   --canvas-warm: #fafaf9;
   --ink-graphite: #2a2a2a;
-  /** Dominant brand — qora koʻk (header, tugmalar, aksentlar) */
-  --brand-blue: #0c2748;
-  --brand-blue-hover: #154a73;
-  --brand-blue-soft: #e8eef6;
-  --brand-blue-muted: #3d5678;
+  /** Vibrant brand blue (~Tailwind blue-600) — aksent tugmalar, linklar */
+  --brand-blue: #2563eb;
+  --brand-blue-hover: #1d4ed8;
+  --brand-blue-deep: #1e40af;
+  --brand-blue-soft: #eff6ff;
+  --brand-blue-muted: #1e40af;
+  /** Navbar matnlar (Browse, Log in, ...) — toʻq koʻk */
+  --nav-link-text: #172554;
+  --nav-link-hover: #1e40af;
   --accent-navy: var(--brand-blue);
   /** Max content width: premium widescreen (~1800); never edge-to-edge on ultrawide. */
   --marketplace-shell-max-width: 1800px;
@@ -92,10 +96,11 @@ html {
 
 body {
   font-family: 'Inter', var(--font-sans);
-  font-size: 17px;
-  line-height: 1.62;
-    color: var(--ink-graphite);
-    background-color: var(--canvas-warm);
+  /* Slightly tighter body copy on phones; comfortable on desktop */
+  font-size: clamp(16px, 0.45vw + 15.1px, 17px);
+  line-height: 1.55;
+  color: var(--ink-graphite);
+  background-color: var(--canvas-warm);
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
@@ -132,6 +137,7 @@ h4 {
 #site-content {
   min-width: 0;
   width: 100%;
+  overflow-x: clip;
 }
 
 /**
@@ -144,39 +150,39 @@ h4 {
   max-width: var(--marketplace-shell-max-width);
   margin-left: auto;
   margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  /* Respect notch / curved edges on phones without shrinking content too much */
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
 }
 
-/* sm:px-6 */
 @media (min-width: 640px) {
   .marketplace-shell {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
   }
 }
 
 /* lg:px-8 */
 @media (min-width: 1024px) {
   .marketplace-shell {
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: max(2rem, env(safe-area-inset-left, 0px));
+    padding-right: max(2rem, env(safe-area-inset-right, 0px));
   }
 }
 
 /* xl:px-10 */
 @media (min-width: 1280px) {
   .marketplace-shell {
-    padding-left: 2.5rem;
-    padding-right: 2.5rem;
+    padding-left: max(2.5rem, env(safe-area-inset-left, 0px));
+    padding-right: max(2.5rem, env(safe-area-inset-right, 0px));
   }
 }
 
 /* 2xl:px-12 */
 @media (min-width: 1536px) {
   .marketplace-shell {
-    padding-left: 3rem;
-    padding-right: 3rem;
+    padding-left: max(3rem, env(safe-area-inset-left, 0px));
+    padding-right: max(3rem, env(safe-area-inset-right, 0px));
   }
 }
 

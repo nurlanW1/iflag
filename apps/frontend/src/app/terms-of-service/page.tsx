@@ -15,7 +15,7 @@ export default function TermsOfServicePage() {
     <LegalDocumentShell
       title="Terms of Service"
       subtitle={`${P.TRADING_NAME} · ${P.JURISDICTION}`}
-      icon={<Scale className="h-8 w-8 text-[#009ab6]" aria-hidden />}
+      icon={<Scale className="h-8 w-8 text-[#2563eb]" aria-hidden />}
     >
       <TermsOfServiceBody />
     </LegalDocumentShell>

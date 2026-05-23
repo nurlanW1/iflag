@@ -151,14 +151,14 @@ export default async function DashboardPurchasesPage() {
                   </p>
                   <Link
                     href={`/flags/${row.productSlug}`}
-                    className="mt-2 inline-block text-xs font-medium text-[#009ab6] hover:underline"
+                    className="mt-2 inline-block text-xs font-medium text-[#2563eb] hover:underline"
                   >
                     Product page
                   </Link>
                 </div>
                 <a
                   href={`/api/marketplace/files/${row.productId}/${row.fileId}/download`}
-                  className="inline-flex shrink-0 items-center justify-center rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#009ab6]"
+                  className="inline-flex shrink-0 items-center justify-center rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2563eb]"
                 >
                   Download
                 </a>

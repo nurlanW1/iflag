@@ -12,11 +12,11 @@ export default {
       },
       colors: {
         primary: {
-          DEFAULT: '#009ab6',
-          dark: '#006d7a',
-          light: '#00b8d4',
+          DEFAULT: '#2563eb',
+          dark: '#1e40af',
+          light: '#3b82f6',
         },
-        dark: '#006d7a',
+        dark: '#1e40af',
         light: '#f8f8f8',
       },
       fontFamily: {

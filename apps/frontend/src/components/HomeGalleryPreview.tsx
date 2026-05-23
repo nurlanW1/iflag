@@ -64,7 +64,7 @@ export default function HomeGalleryPreview() {
       <section className="bg-white py-20 md:py-28 lg:py-32">
         <div className="marketplace-shell">
           <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#009ab6]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2563eb]"></div>
           </div>
         </div>
       </section>
@@ -102,7 +102,7 @@ export default function HomeGalleryPreview() {
           )}
 
           <div className={expanded || allCountries.length <= PREVIEW_COUNT ? '' : 'overflow-hidden'}>
-            <div className="rounded-[1.75rem] border-2 border-[#006d7a]/12 bg-[#f5fafb] p-3 shadow-[0_12px_40px_-12px_rgba(0,109,122,0.18)] sm:p-4 md:p-5">
+            <div className="rounded-[1.75rem] border-2 border-[#1e40af]/12 bg-[#f5fafb] p-3 shadow-[0_12px_40px_-12px_rgba(0,109,122,0.18)] sm:p-4 md:p-5">
               <GalleryGrid
                 countries={displayCountries}
                 disableScrollReveal
@@ -123,11 +123,11 @@ export default function HomeGalleryPreview() {
             <button
               type="button"
               onClick={handleShowMore}
-              className="group relative px-10 py-4 md:px-12 md:py-5 border-2 border-[#009ab6] rounded-full text-[#009ab6] font-bold text-base md:text-lg transition-all duration-300 hover:bg-[#009ab6] hover:text-white hover:shadow-lg hover:scale-105 active:scale-100"
+              className="group relative px-10 py-4 md:px-12 md:py-5 border-2 border-[#2563eb] rounded-full text-[#2563eb] font-bold text-base md:text-lg transition-all duration-300 hover:bg-[#2563eb] hover:text-white hover:shadow-lg hover:scale-105 active:scale-100"
             >
               <span className="relative z-10">Show More</span>
               <motion.div
-                className="absolute inset-0 rounded-full bg-[#009ab6] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                className="absolute inset-0 rounded-full bg-[#2563eb] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 initial={false}
               />
             </button>
@@ -135,7 +135,7 @@ export default function HomeGalleryPreview() {
             <button
               type="button"
               onClick={() => setExpanded(false)}
-              className="px-10 py-4 md:px-12 md:py-5 border-2 border-[#006d7a]/20 rounded-full text-black/75 font-bold text-base md:text-lg transition-all duration-300 hover:border-[#009ab6]/40 hover:text-black"
+              className="px-10 py-4 md:px-12 md:py-5 border-2 border-[#1e40af]/20 rounded-full text-black/75 font-bold text-base md:text-lg transition-all duration-300 hover:border-[#2563eb]/40 hover:text-black"
             >
               Show less
             </button>

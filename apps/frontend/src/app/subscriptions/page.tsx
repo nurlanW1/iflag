@@ -53,15 +53,15 @@ export default function SubscriptionsAccountPage() {
       <h1 className="text-3xl font-black text-gray-900 lg:text-4xl xl:text-5xl">Your subscription</h1>
       <p className="mt-1 text-sm text-gray-600">
         Compare Paddle plans, upgrade, or start checkout from the{' '}
-        <Link href="/pricing" className="font-semibold text-[#009ab6] hover:underline">
+        <Link href="/pricing" className="font-semibold text-[#2563eb] hover:underline">
           pricing page
         </Link>
         .
       </p>
 
-      <div className="mt-8 rounded-2xl border border-[#009ab6]/25 bg-[#009ab6]/5 p-6">
+      <div className="mt-8 rounded-2xl border border-[#2563eb]/25 bg-[#2563eb]/5 p-6">
         <div className="flex flex-wrap items-center gap-2">
-          <Crown className="h-5 w-5 text-[#009ab6]" aria-hidden />
+          <Crown className="h-5 w-5 text-amber-500" aria-hidden />
           <h2 className="font-bold text-gray-900">Current access</h2>
         </div>
         {billingSummary && billingSummary.status !== 'none' ? (
@@ -96,14 +96,14 @@ export default function SubscriptionsAccountPage() {
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <Link
           href="/pricing"
-          className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#009ab6] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#007a8a]"
+          className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
         >
           View Paddle plans &amp; pricing
           <ArrowRight className="h-4 w-4 opacity-90" aria-hidden />
         </Link>
         <Link
           href="/dashboard/purchases"
-          className="inline-flex flex-1 items-center justify-center rounded-xl border-2 border-gray-200 bg-white px-5 py-3 text-center text-sm font-semibold text-gray-800 transition hover:border-[#009ab6] hover:text-[#009ab6]"
+          className="inline-flex flex-1 items-center justify-center rounded-xl border-2 border-gray-200 bg-white px-5 py-3 text-center text-sm font-semibold text-gray-800 transition hover:border-[#2563eb] hover:text-[#2563eb]"
         >
           Your files &amp; downloads
         </Link>

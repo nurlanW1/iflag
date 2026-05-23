@@ -32,7 +32,7 @@ export default function BlogPage() {
     <main className="min-h-screen bg-white">
       <div className="marketplace-shell py-14 sm:py-16">
         <div className="flex items-center gap-3 mb-12">
-          <Flag size={32} className="text-[#009ab6]" />
+          <Flag size={32} className="text-[#2563eb]" />
           <h1 className="text-4xl font-black text-black">Blog</h1>
         </div>
 
@@ -62,7 +62,7 @@ export default function BlogPage() {
           <p className="text-gray-600 mb-4">More blog posts coming soon!</p>
           <Link
             href="/"
-            className="inline-block bg-[#009ab6] hover:bg-[#007a8a] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+            className="inline-block bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
             Back to Home
           </Link>

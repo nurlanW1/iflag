@@ -177,10 +177,11 @@ export default function HomePageClient() {
             className="mb-12 flex max-w-3xl flex-col sm:mb-14"
           >
             <h2 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]">
-              Regional categories
+              Explore the gallery by region
             </h2>
             <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
-              Navigate gallery hubs by geography and curated themes — balanced grids inside the centered catalog rail.
+              Jump into continents, autonomy sets, diplomacy rails, or historical ribbons—balanced grids that mirror how our gallery is indexed.
+              For licensed catalog picks, browse the taxonomy strip below after this rail.
             </p>
           </SectionReveal>
 
@@ -278,7 +279,7 @@ export default function HomePageClient() {
             className="mb-14 max-w-3xl md:mb-16"
           >
             <div className="mb-5 inline-flex items-center gap-2.5 rounded-full border border-neutral-200 bg-[#fafaf9] px-4 py-2">
-              <Crown size={19} className="text-[#9a7d45]" strokeWidth={1.75} aria-hidden />
+              <Crown size={19} className="text-amber-500" strokeWidth={1.75} aria-hidden />
               <span className="text-sm font-medium uppercase tracking-[0.14em] text-neutral-600">Premium plans</span>
             </div>
             <h2 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]">

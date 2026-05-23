@@ -27,7 +27,7 @@ function AccessDeniedContent() {
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
             href="/"
-            className="inline-flex items-center justify-center rounded-xl bg-[#009ab6] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#007a8a]"
+            className="inline-flex items-center justify-center rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
           >
             Back to home
           </Link>

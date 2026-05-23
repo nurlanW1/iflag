@@ -18,7 +18,7 @@ export default function AboutPage() {
     <LegalDocumentShell
       title="About"
       subtitle={SITE_NAME}
-      icon={<Building2 className="h-8 w-8 text-[#009ab6]" aria-hidden />}
+      icon={<Building2 className="h-8 w-8 text-[#2563eb]" aria-hidden />}
     >
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">Operator</h2>
@@ -39,7 +39,7 @@ export default function AboutPage() {
           We host a catalog of digital flag and symbol assets for creative and professional projects:
           vectors, raster images, and related media where available. Each listing shows the formats you can
           download or unlock, and the{' '}
-          <Link href="/licenses" className="font-medium text-[#009ab6] hover:underline">
+          <Link href="/licenses" className="font-medium text-[#2563eb] hover:underline">
             licensing page
           </Link>{' '}
           explains how usage rights apply. Replace bracketed placeholders across legal documents with your
@@ -55,25 +55,25 @@ export default function AboutPage() {
         </p>
         <ul className="list-inside list-disc space-y-2 pl-1">
           <li>
-            <Link href="/licenses" className="font-medium text-[#009ab6] hover:underline">
+            <Link href="/licenses" className="font-medium text-[#2563eb] hover:underline">
               Licensing &amp; usage rights
             </Link>
           </li>
           <li>
-            <Link href="/privacy-policy" className="font-medium text-[#009ab6] hover:underline">
+            <Link href="/privacy-policy" className="font-medium text-[#2563eb] hover:underline">
               Privacy Policy
             </Link>{' '}
             and{' '}
-            <Link href="/cookies" className="font-medium text-[#009ab6] hover:underline">
+            <Link href="/cookies" className="font-medium text-[#2563eb] hover:underline">
               Cookie Policy
             </Link>
           </li>
           <li>
-            <Link href="/refunds" className="font-medium text-[#009ab6] hover:underline">
+            <Link href="/refunds" className="font-medium text-[#2563eb] hover:underline">
               Refund Policy
             </Link>{' '}
             and{' '}
-            <Link href="/terms-of-service" className="font-medium text-[#009ab6] hover:underline">
+            <Link href="/terms-of-service" className="font-medium text-[#2563eb] hover:underline">
               Terms of Service
             </Link>
           </li>
@@ -87,11 +87,11 @@ export default function AboutPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">Contact</h2>
         <p>
-          <a className="font-medium text-[#009ab6] hover:underline" href={`mailto:${contactEmail}`}>
+          <a className="font-medium text-[#2563eb] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>{' '}
           ·{' '}
-          <Link href="/contact" className="font-medium text-[#009ab6] hover:underline">
+          <Link href="/contact" className="font-medium text-[#2563eb] hover:underline">
             Contact form
           </Link>
         </p>

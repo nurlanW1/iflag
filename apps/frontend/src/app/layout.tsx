@@ -30,7 +30,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#009ab6',
+  themeColor: '#2563eb',
 };
 
 logProductionDeploymentWarnings();
@@ -45,7 +45,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <JsonLd data={[websiteJsonLd(), organizationJsonLd()]} />
       <a
         href="#site-content"
-        className="sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:flex focus:h-auto focus:w-auto focus:overflow-visible focus:whitespace-normal focus:rounded-lg focus:bg-gray-900 focus:px-4 focus:py-2 focus:text-sm focus:text-white focus:outline-none focus:ring-2 focus:ring-[#009ab6]"
+        className="sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:flex focus:h-auto focus:w-auto focus:overflow-visible focus:whitespace-normal focus:rounded-lg focus:bg-gray-900 focus:px-4 focus:py-2 focus:text-sm focus:text-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
       >
         Skip to main content
       </a>
@@ -53,7 +53,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <CartProvider clerkUiEnabled={clerkUiEnabled}>
           <AuthModalProvider>
             <Navbar clerkUiEnabled={clerkUiEnabled} />
-            <div id="site-content" tabIndex={-1}>
+            <div id="site-content" tabIndex={-1} className="min-w-0 w-full outline-none">
               {children}
             </div>
             <Footer />

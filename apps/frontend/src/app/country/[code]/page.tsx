@@ -73,7 +73,7 @@ export default async function CountryHubPage({ params }: Props) {
             <li key={p.id}>
               <Link
                 href={`/flags/${p.slug}`}
-                className="text-[#009ab6] font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-[#009ab6]/30 rounded"
+                className="text-[#2563eb] font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 rounded"
               >
                 {p.title}
               </Link>
@@ -92,7 +92,7 @@ export default async function CountryHubPage({ params }: Props) {
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="text-[#009ab6] hover:underline focus:outline-none focus:ring-2 focus:ring-[#009ab6]/30 rounded"
+                  className="text-[#2563eb] hover:underline focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 rounded"
                 >
                   {l.label}
                 </Link>

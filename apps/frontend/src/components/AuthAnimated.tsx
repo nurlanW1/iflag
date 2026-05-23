@@ -77,7 +77,7 @@ function AuthForm() {
         />
         
         {/* Blur Overlay */}
-        <div className="absolute inset-0 backdrop-blur-sm bg-[#009ab6]/20" />
+        <div className="absolute inset-0 backdrop-blur-sm bg-[#2563eb]/20" />
 
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col justify-between p-8">
@@ -102,7 +102,7 @@ function AuthForm() {
         <div className="w-full max-w-md mx-auto">
           {/* Logo */}
           <div className="flex items-center gap-2 mb-8">
-            <Flag size={28} className="text-[#009ab6]" />
+            <Flag size={28} className="text-[#2563eb]" />
             <span className="text-black font-black text-xl">{SITE_NAME}</span>
           </div>
 
@@ -175,7 +175,7 @@ function AuthForm() {
                     value={signUpData.fullName}
                     onChange={(e) => setSignUpData({ ...signUpData, fullName: e.target.value })}
                     placeholder="Enter your name"
-                    className="w-full pl-12 pr-4 py-3 bg-white border border-black/10 rounded-lg text-black placeholder-black/40 focus:outline-none focus:border-[#009ab6] transition-colors"
+                    className="w-full pl-12 pr-4 py-3 bg-white border border-black/10 rounded-lg text-black placeholder-black/40 focus:outline-none focus:border-[#2563eb] transition-colors"
                     required
                   />
                 </div>
@@ -196,7 +196,7 @@ function AuthForm() {
                       : setSignInData({ ...signInData, email: e.target.value })
                   }
                   placeholder="Enter your email"
-                  className="w-full pl-12 pr-4 py-3 bg-white border border-black/10 rounded-lg text-black placeholder-black/40 focus:outline-none focus:border-[#009ab6] transition-colors"
+                  className="w-full pl-12 pr-4 py-3 bg-white border border-black/10 rounded-lg text-black placeholder-black/40 focus:outline-none focus:border-[#2563eb] transition-colors"
                   required
                   autoComplete="email"
                 />
@@ -217,7 +217,7 @@ function AuthForm() {
                       : setSignInData({ ...signInData, password: e.target.value })
                   }
                   placeholder="Enter your password"
-                  className="w-full pl-12 pr-12 py-3 bg-white border border-black/10 rounded-lg text-black placeholder-black/40 focus:outline-none focus:border-[#009ab6] transition-colors"
+                  className="w-full pl-12 pr-12 py-3 bg-white border border-black/10 rounded-lg text-black placeholder-black/40 focus:outline-none focus:border-[#2563eb] transition-colors"
                   required
                   minLength={6}
                   autoComplete={isSignUp ? 'new-password' : 'current-password'}
@@ -237,7 +237,7 @@ function AuthForm() {
               <div className="flex justify-end">
                 <button
                   type="button"
-                  className="text-sm text-black/60 hover:text-[#009ab6] transition-colors"
+                  className="text-sm text-black/60 hover:text-[#2563eb] transition-colors"
                 >
                   Forgot password?
                 </button>
@@ -248,7 +248,7 @@ function AuthForm() {
             <motion.button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#009ab6] to-[#007a8a] hover:from-[#007a8a] hover:to-[#006d7a] text-white font-bold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              className="w-full bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] hover:from-[#1d4ed8] hover:to-[#1e40af] text-white font-bold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -264,7 +264,7 @@ function AuthForm() {
                 setIsSignUp(!isSignUp);
                 setError('');
               }}
-              className="text-[#009ab6] hover:text-[#007a8a] font-semibold transition-colors"
+              className="text-[#2563eb] hover:text-[#1d4ed8] font-semibold transition-colors"
             >
               {isSignUp ? 'Sign in' : 'Sign up'}
             </button>
@@ -281,7 +281,7 @@ export default function AuthAnimated() {
       <Suspense
         fallback={
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#009ab6] mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2563eb] mx-auto"></div>
           </div>
         }
       >

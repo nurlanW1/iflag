@@ -55,7 +55,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#009ab6]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2563eb]"></div>
       </div>
     );
   }
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#009ab6] to-[#006d7a] bg-clip-text text-transparent">
+        <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
           Admin dashboard
         </h1>
         <p className="text-gray-600 text-lg">
@@ -83,34 +83,34 @@ export default function AdminDashboard() {
       >
         <Link
           href="/admin/upload"
-          className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-[#009ab6]/50 hover:shadow-md"
+          className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-[#2563eb]/50 hover:shadow-md"
         >
-          <Upload className="mb-3 text-[#009ab6]" size={28} aria-hidden />
+          <Upload className="mb-3 text-[#2563eb]" size={28} aria-hidden />
           <h3 className="font-bold text-gray-900">Upload Flags</h3>
           <p className="mt-1 text-sm text-gray-600">Vercel Blob + Neon • single file</p>
-          <span className="mt-3 inline-flex text-sm font-semibold text-[#009ab6] group-hover:underline">
+          <span className="mt-3 inline-flex text-sm font-semibold text-[#2563eb] group-hover:underline">
             Open →
           </span>
         </Link>
         <Link
           href="/admin/countries"
-          className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-[#009ab6]/50 hover:shadow-md"
+          className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-[#2563eb]/50 hover:shadow-md"
         >
-          <Globe className="mb-3 text-[#009ab6]" size={28} aria-hidden />
+          <Globe className="mb-3 text-[#2563eb]" size={28} aria-hidden />
           <h3 className="font-bold text-gray-900">Manage Countries</h3>
           <p className="mt-1 text-sm text-gray-600">Countries & metadata</p>
-          <span className="mt-3 inline-flex text-sm font-semibold text-[#009ab6] group-hover:underline">
+          <span className="mt-3 inline-flex text-sm font-semibold text-[#2563eb] group-hover:underline">
             Open →
           </span>
         </Link>
         <Link
           href="/admin/assets"
-          className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-[#009ab6]/50 hover:shadow-md"
+          className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-[#2563eb]/50 hover:shadow-md"
         >
-          <Package className="mb-3 text-[#009ab6]" size={28} aria-hidden />
+          <Package className="mb-3 text-[#2563eb]" size={28} aria-hidden />
           <h3 className="font-bold text-gray-900">Manage Assets</h3>
           <p className="mt-1 text-sm text-gray-600">Asset pipeline</p>
-          <span className="mt-3 inline-flex text-sm font-semibold text-[#009ab6] group-hover:underline">
+          <span className="mt-3 inline-flex text-sm font-semibold text-[#2563eb] group-hover:underline">
             Open →
           </span>
         </Link>
@@ -123,7 +123,7 @@ export default function AdminDashboard() {
           title="Total Assets"
           value={stats?.total_assets || 0}
           subtitle={`${stats?.published_assets || 0} published`}
-          color="#009ab6"
+          color="#2563eb"
           trend="+12%"
         />
         <StatCard
@@ -159,7 +159,7 @@ export default function AdminDashboard() {
         transition={{ delay: 0.1 }}
         className="mb-8"
       >
-        <div className="bg-gradient-to-br from-[#009ab6] to-[#006d7a] rounded-2xl p-8 shadow-xl shadow-[#009ab6]/20">
+        <div className="bg-gradient-to-br from-[#2563eb] to-[#1e40af] rounded-2xl p-8 shadow-xl shadow-[#2563eb]/20">
           <h3 className="text-xl font-bold text-white mb-6">Quick Actions</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link
@@ -217,7 +217,7 @@ export default function AdminDashboard() {
               Object.entries(stats.assets_by_type).map(([type, count]: [string, any], idx) => (
                 <div key={type} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-[#009ab6]" />
+                    <div className="w-2 h-2 rounded-full bg-[#2563eb]" />
                     <span className="text-gray-700 capitalize font-medium">{type.replace('_', ' ')}</span>
                   </div>
                   <span className="font-bold text-gray-900 text-lg">{count}</span>
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
           <h3 className="text-lg font-bold text-gray-900">Recent Uploads</h3>
           <Link 
             href="/admin/assets" 
-            className="text-[#009ab6] hover:text-[#007a8a] text-sm font-semibold transition-colors flex items-center gap-1"
+            className="text-[#2563eb] hover:text-[#1d4ed8] text-sm font-semibold transition-colors flex items-center gap-1"
           >
             View All
             <ArrowRight size={14} />
@@ -314,7 +314,7 @@ export default function AdminDashboard() {
                       <td className="py-4 px-4 text-right">
                         <Link 
                           href={`/admin/assets/${asset.id}`} 
-                          className="text-[#009ab6] hover:text-[#007a8a] text-sm font-semibold transition-colors inline-flex items-center gap-1"
+                          className="text-[#2563eb] hover:text-[#1d4ed8] text-sm font-semibold transition-colors inline-flex items-center gap-1"
                         >
                           Edit
                           <ArrowRight size={12} />
@@ -331,7 +331,7 @@ export default function AdminDashboard() {
               <p>No assets uploaded yet</p>
               <Link
                 href="/admin/upload"
-                className="inline-flex items-center gap-2 mt-4 text-[#009ab6] hover:text-[#007a8a] font-semibold text-sm"
+                className="inline-flex items-center gap-2 mt-4 text-[#2563eb] hover:text-[#1d4ed8] font-semibold text-sm"
               >
                 Upload your first asset
                 <ArrowRight size={14} />

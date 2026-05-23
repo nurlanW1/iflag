@@ -103,7 +103,7 @@ function AdminUploadClerkGate() {
             <div className="mt-4 flex flex-wrap gap-3">
               <Link
                 href="/access-denied?reason=forbidden"
-                className="text-sm font-semibold text-[#006d7a] underline underline-offset-2 hover:text-[#009ab6]"
+                className="text-sm font-semibold text-[#1e40af] underline underline-offset-2 hover:text-[#2563eb]"
               >
                 More about access
               </Link>
@@ -274,7 +274,7 @@ function AdminUploadFormContent({
   }
 
   const fieldClass =
-    'mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm outline-none transition focus:border-[#009ab6] focus:ring-2 focus:ring-[#009ab6]/25';
+    'mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm outline-none transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/25';
 
   return (
     <div className="marketplace-shell">
@@ -291,7 +291,7 @@ function AdminUploadFormContent({
 
       <div className="mb-8">
         <div className="mb-3 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#009ab6]/10 text-[#009ab6]">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#2563eb]/10 text-[#2563eb]">
             <Upload size={24} />
           </div>
           <div>
@@ -367,7 +367,7 @@ function AdminUploadFormContent({
                     href={result.file_url || result.file?.file_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm font-semibold text-[#006d7a] underline underline-offset-2 hover:text-[#009ab6]"
+                    className="inline-flex items-center gap-1 text-sm font-semibold text-[#1e40af] underline underline-offset-2 hover:text-[#2563eb]"
                   >
                     Open public URL
                     <ExternalLink size={14} aria-hidden />
@@ -627,9 +627,9 @@ function AdminUploadFormContent({
         </fieldset>
 
         <div>
-          <label className="flex cursor-pointer flex-col rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/80 p-6 transition hover:border-[#009ab6]/60 hover:bg-white">
+          <label className="flex cursor-pointer flex-col rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/80 p-6 transition hover:border-[#2563eb]/60 hover:bg-white">
             <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-              <FileUp size={18} className="text-[#009ab6]" aria-hidden />
+              <FileUp size={18} className="text-[#2563eb]" aria-hidden />
               Choose file
             </span>
             <span className="mt-2 text-xs text-gray-600">One upload per submission (PNG, SVG, …)</span>
@@ -637,7 +637,7 @@ function AdminUploadFormContent({
               type="file"
               disabled={submitting}
               accept=".svg,.png,.jpg,.jpeg,.webp,.pdf,.eps"
-              className="mt-4 text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-[#009ab6] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white"
+              className="mt-4 text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-[#2563eb] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white"
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 setFile(f ?? null);
@@ -654,7 +654,7 @@ function AdminUploadFormContent({
         <button
           type="submit"
           disabled={submitting || !file}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#009ab6] to-[#007a8a] py-4 text-base font-black text-white shadow-lg shadow-[#009ab6]/25 transition hover:brightness-105 disabled:pointer-events-none disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] py-4 text-base font-black text-white shadow-lg shadow-[#2563eb]/25 transition hover:brightness-105 disabled:pointer-events-none disabled:opacity-50"
         >
           {submitting ? (
             <>

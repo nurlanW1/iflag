@@ -34,11 +34,11 @@ export default async function DashboardSubscriptionPage() {
       <h1 className="text-2xl font-black text-gray-900">Subscription</h1>
       <p className="mt-1 text-sm text-gray-600">
         Manage Paddle checkout and plan upgrades from the{' '}
-        <Link href="/pricing" className="font-medium text-[#009ab6] hover:underline">
+        <Link href="/pricing" className="font-medium text-[#2563eb] hover:underline">
           pricing page
         </Link>
         . One-time purchases stay under{' '}
-        <Link href="/dashboard/purchases" className="font-medium text-[#009ab6] hover:underline">
+        <Link href="/dashboard/purchases" className="font-medium text-[#2563eb] hover:underline">
           Purchased files
         </Link>
         .
@@ -73,7 +73,7 @@ export default async function DashboardSubscriptionPage() {
           />
           <Link
             href="/pricing"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#009ab6] hover:underline"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#2563eb] hover:underline"
           >
             Compare Paddle plans
             <ArrowRight className="h-4 w-4" aria-hidden />
@@ -81,9 +81,9 @@ export default async function DashboardSubscriptionPage() {
         </div>
       ) : (
         <div className="mt-8 space-y-6">
-          <div className="rounded-2xl border border-[#009ab6]/30 bg-gradient-to-br from-[#009ab6]/8 to-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-[#2563eb]/30 bg-gradient-to-br from-[#2563eb]/8 to-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center gap-2">
-              <Crown className="h-6 w-6 text-[#009ab6]" aria-hidden />
+              <Crown className="h-6 w-6 text-amber-500" aria-hidden />
               <h2 className="text-lg font-bold text-gray-900">Current plan</h2>
               <StatusBadge status={sub.status} />
             </div>
@@ -105,7 +105,7 @@ export default async function DashboardSubscriptionPage() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/pricing"
-                className="inline-flex items-center justify-center rounded-xl bg-[#009ab6] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#007a8a]"
+                className="inline-flex items-center justify-center rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
               >
                 Paddle pricing &amp; plans
               </Link>

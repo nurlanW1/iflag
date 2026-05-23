@@ -17,7 +17,7 @@ export default function LicensesPage() {
     <LegalDocumentShell
       title="Licensing & usage rights"
       subtitle={`${P.TRADING_NAME} · ${P.JURISDICTION}`}
-      icon={<FileText className="h-8 w-8 text-[#009ab6]" aria-hidden />}
+      icon={<FileText className="h-8 w-8 text-[#2563eb]" aria-hidden />}
     >
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">1. How to read this page</h2>
@@ -109,7 +109,7 @@ export default function LicensesPage() {
           If access ends (for example subscription lapse or refund/chargeback), your right to use new
           downloads may end immediately and your right to continue using previously downloaded assets may be
           limited as stated in your{' '}
-          <Link href="/terms-of-service" className="font-medium text-[#009ab6] hover:underline">
+          <Link href="/terms-of-service" className="font-medium text-[#2563eb] hover:underline">
             Terms
           </Link>{' '}
           or checkout terms. [PLACEHOLDER: clarify survival for paid perpetual licenses if offered.]
@@ -129,7 +129,7 @@ export default function LicensesPage() {
         <h2 className="text-xl font-bold text-gray-900">9. Contact</h2>
         <p>
           Licensing questions:{' '}
-          <a className="font-medium text-[#009ab6] hover:underline" href={`mailto:${contactEmail}`}>
+          <a className="font-medium text-[#2563eb] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>
           . [PLACEHOLDER: enterprise licensing inbox.]

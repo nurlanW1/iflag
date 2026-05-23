@@ -5,8 +5,13 @@ import type { ISODateString } from './common';
  */
 export type CategoryKind =
   | 'country_flags'
+  | 'autonomy_flags'
   | 'historical_flags'
   | 'organization_flags'
+  | 'institution_flags'
+  | 'flag_mockups'
+  | 'flag_videos'
+  | 'flag_icons'
   | 'other';
 
 export interface Category {

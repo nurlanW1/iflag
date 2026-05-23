@@ -11,7 +11,7 @@ import {
 } from '@/lib/marketplace/canonical-stock-formats';
 
 const segmentRail =
-  'rounded-[1rem] bg-slate-100/98 p-1.5 ring-1 ring-slate-200/75 shadow-inner';
+  'rounded-[1rem] bg-slate-100/98 p-1.5 ring-1 ring-slate-200/75';
 
 type Props = {
   files: PublicProductFile[];
@@ -75,9 +75,9 @@ export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId }:
               aria-label={`${lbl}, ${sz}`}
               onClick={() => onSelect(file.id)}
               className={clsx(
-                'flex min-w-[4.85rem] shrink-0 snap-start flex-col items-center justify-center rounded-[0.6875rem] px-4 py-2.5 transition-[transform,color,background,box-shadow,ring] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2 sm:min-w-[5.75rem]',
+                'flex min-w-[4.85rem] shrink-0 snap-start flex-col items-center justify-center rounded-[0.6875rem] px-4 py-2.5 transition-[color,background,ring] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2 sm:min-w-[5.75rem]',
                 on
-                  ? 'bg-white shadow-[0_12px_30px_-20px_rgba(15,23,42,0.35)] ring-2 ring-[var(--brand-blue)]/38'
+                  ? 'bg-white ring-2 ring-[var(--brand-blue)]/38'
                   : 'text-slate-600 hover:bg-white/70 hover:text-slate-900',
               )}
             >
@@ -100,9 +100,9 @@ export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId }:
               aria-label={`${lbl}, ${sz}`}
               onClick={() => onSelect(f.id)}
               className={clsx(
-                'flex min-w-[4.85rem] shrink-0 snap-start flex-col items-center justify-center rounded-[0.6875rem] px-4 py-2.5 transition-[transform,color,background,box-shadow,ring] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2 sm:min-w-[5.75rem]',
+                'flex min-w-[4.85rem] shrink-0 snap-start flex-col items-center justify-center rounded-[0.6875rem] px-4 py-2.5 transition-[color,background,ring] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2 sm:min-w-[5.75rem]',
                 on
-                  ? 'bg-white shadow-[0_12px_30px_-20px_rgba(15,23,42,0.35)] ring-2 ring-[var(--brand-blue)]/38'
+                  ? 'bg-white ring-2 ring-[var(--brand-blue)]/38'
                   : 'text-slate-600 hover:bg-white/70 hover:text-slate-900',
               )}
             >

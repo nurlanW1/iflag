@@ -29,7 +29,7 @@ export default function HelpPage() {
     <main className="min-h-screen bg-white">
       <div className="marketplace-shell py-14 sm:py-16">
         <div className="flex items-center gap-3 mb-8">
-          <Flag size={32} className="text-[#009ab6]" />
+          <Flag size={32} className="text-[#2563eb]" />
           <h1 className="text-4xl font-black text-black">Help Center</h1>
         </div>
 
@@ -39,7 +39,7 @@ export default function HelpPage() {
             <input
               type="text"
               placeholder="Search for help..."
-              className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-lg focus:outline-none focus:border-[#009ab6]"
+              className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2563eb]"
             />
           </div>
         </div>
@@ -52,7 +52,7 @@ export default function HelpPage() {
               className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-start gap-4">
-                <topic.icon className="text-[#009ab6] mt-1" size={24} />
+                <topic.icon className="text-[#2563eb] mt-1" size={24} />
                 <div>
                   <h2 className="text-xl font-bold text-black mb-2">{topic.title}</h2>
                   <p className="text-gray-600">{topic.description}</p>
@@ -64,7 +64,7 @@ export default function HelpPage() {
 
         <div className="bg-gray-50 rounded-xl p-8">
           <div className="flex items-start gap-4">
-            <MessageCircle className="text-[#009ab6] mt-1" size={24} />
+            <MessageCircle className="text-[#2563eb] mt-1" size={24} />
             <div>
               <h2 className="text-2xl font-bold text-black mb-4">Still Need Help?</h2>
               <p className="text-gray-700 mb-4">
@@ -72,7 +72,7 @@ export default function HelpPage() {
               </p>
               <Link
                 href="/contact"
-                className="inline-block bg-[#009ab6] hover:bg-[#007a8a] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                className="inline-block bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
               >
                 Contact Support
               </Link>

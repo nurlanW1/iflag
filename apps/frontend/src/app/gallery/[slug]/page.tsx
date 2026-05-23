@@ -361,9 +361,9 @@ export default function CountryDetailPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-stone-50">
+      <main className="flex min-h-screen items-center justify-center bg-slate-50">
         <div
-          className="h-9 w-9 animate-spin rounded-full border-[3px] border-stone-200 border-t-[#009ab6]"
+          className="h-9 w-9 animate-spin rounded-full border-[3px] border-slate-200 border-t-[var(--brand-blue)]"
           aria-hidden
         />
       </main>
@@ -372,17 +372,17 @@ export default function CountryDetailPage() {
 
   if (!data) {
     return (
-      <main className="min-h-screen bg-stone-50">
+      <main className="min-h-screen bg-slate-50">
         <div className="mx-auto max-w-lg px-4 py-24 text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 text-stone-400">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
             <ImageOff size={24} aria-hidden />
           </div>
-          <p className="text-lg font-medium text-stone-900">
+          <p className="text-lg font-medium text-slate-900">
             Couldn&apos;t load this flag collection
           </p>
           <Link
             href="/gallery"
-            className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[#009ab6] hover:text-[#007a94]"
+            className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[var(--brand-blue)] hover:underline"
           >
             <ArrowLeft size={16} />
             Back to gallery
@@ -408,12 +408,12 @@ export default function CountryDetailPage() {
       !planLoaded);
 
   return (
-    <main className="min-h-screen bg-stone-50 pb-[calc(7rem+env(safe-area-inset-bottom,0px))] lg:pb-12">
-      <div className="marketplace-shell pt-8 sm:pt-10 lg:pt-14">
-        <nav className="flex items-center gap-2 text-xs font-medium text-stone-500">
+    <main className="marketplace-shell min-h-screen bg-slate-50 pb-[calc(7rem+env(safe-area-inset-bottom,0px))] lg:pb-[4.75rem]">
+      <div className="mx-auto max-w-[min(100%,1392px)] px-5 pb-14 pt-8 sm:px-6 sm:pb-16 sm:pt-10 xl:px-10 lg:pb-[4.75rem] lg:pt-11">
+        <nav className="flex items-center gap-2 text-xs font-medium text-slate-500">
           <Link
             href="/gallery"
-            className="group inline-flex items-center gap-1.5 transition-colors hover:text-stone-900"
+            className="group inline-flex items-center gap-1.5 transition-colors hover:text-slate-900"
           >
             <ArrowLeft
               size={14}
@@ -422,28 +422,28 @@ export default function CountryDetailPage() {
             />
             Gallery
           </Link>
-          <span className="text-stone-300">/</span>
-          <span className="truncate text-stone-700">{pageTitle}</span>
+          <span className="text-slate-300">/</span>
+          <span className="truncate text-slate-700">{pageTitle}</span>
         </nav>
 
-        <header className="mt-6 flex flex-wrap items-end justify-between gap-5 border-b border-stone-200/80 pb-6 lg:mt-8 lg:pb-8">
+        <header className="mt-6 flex flex-wrap items-end justify-between gap-5 border-b border-slate-200/80 pb-6 lg:mt-8 lg:pb-8">
           <div>
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-400">
-              <Sparkles size={12} className="text-[#009ab6]" aria-hidden />
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              <Sparkles size={12} className="text-[var(--brand-blue)]" aria-hidden />
               Flag collection
               {data.country.code ? (
-                <span className="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-stone-600">
+                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-600">
                   {data.country.code}
                 </span>
               ) : null}
             </div>
-            <h1 className="mt-2 text-balance text-4xl font-semibold tracking-tight text-stone-900 sm:text-5xl xl:text-6xl xl:tracking-tight">
+            <h1 className="mt-2 text-balance text-[1.75rem] font-semibold tracking-[-0.02em] text-slate-900 sm:text-[1.95rem] xl:text-[2rem] xl:tracking-tight">
               {pageTitle}
             </h1>
-            <p className="mt-1.5 text-sm text-stone-500">
-              <span className="font-semibold text-stone-800">{data.variants.length}</span>{' '}
+            <p className="mt-2 text-[13px] text-slate-500">
+              <span className="font-semibold text-slate-700">{data.variants.length}</span>{' '}
               {data.variants.length === 1 ? 'design' : 'designs'} ·{' '}
-              <span className="font-semibold text-stone-800">
+              <span className="font-semibold text-slate-700">
                 {data.variants.reduce((s, v) => s + v.formats.length, 0)}
               </span>{' '}
               total files
@@ -452,7 +452,7 @@ export default function CountryDetailPage() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition-colors hover:bg-stone-50"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/95 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
               aria-label="Save to favorites"
             >
               <Heart size={14} aria-hidden />
@@ -460,7 +460,7 @@ export default function CountryDetailPage() {
             </button>
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition-colors hover:bg-stone-50"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/95 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
               aria-label="Share collection"
               onClick={() => {
                 if (typeof window === 'undefined') return;
@@ -480,13 +480,13 @@ export default function CountryDetailPage() {
           </div>
         </header>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_24rem] lg:items-start lg:gap-10 xl:grid-cols-[minmax(0,1.22fr)_26rem] xl:gap-12 2xl:gap-14">
-          <div className="space-y-5">
+        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18.75rem,24rem)] lg:items-stretch lg:gap-5 xl:grid-cols-[minmax(0,1fr)_25rem] xl:gap-6">
+          <div className="flex min-h-0 min-w-0 flex-col space-y-6">
             {selectedVariant ? (
-              <div className="overflow-hidden rounded-[1.5rem] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70">
+              <div className="overflow-hidden rounded-[1.375rem] border border-slate-200/80 bg-white">
                 <div
                   className="relative flex min-h-[24rem] items-center justify-center px-5 py-10 sm:min-h-[30rem] sm:px-10 sm:py-12 lg:min-h-[min(62vh,36rem)] xl:min-h-[min(65vh,40rem)]"
-                  style={{ background: 'linear-gradient(145deg,#f5f5f4 0%,#fafaf9 48%,#eef2ef 100%)' }}
+                  style={{ background: 'linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)' }}
                 >
                   {selectedFormat && tierBadge(selectedFormat) ? (
                     <span className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-900 ring-1 ring-amber-200/80">
@@ -494,15 +494,15 @@ export default function CountryDetailPage() {
                     </span>
                   ) : null}
                   {selectedFormat && showsDocumentPlaceholder(selectedFormat) ? (
-                    <div className="flex max-w-md flex-col items-center gap-6 rounded-[1.35rem] border border-stone-200/90 bg-white/90 px-10 py-12 text-center shadow-[0_20px_50px_-24px_rgba(0,0,0,0.35)] ring-1 ring-stone-200/70">
-                      <div className="flex h-[4.75rem] w-[4.75rem] items-center justify-center rounded-[1rem] bg-gradient-to-br from-stone-100 to-white text-xl font-black tracking-tighter text-[#009ab6] ring-2 ring-[#009ab6]/35">
+                    <div className="flex max-w-md flex-col items-center gap-6 rounded-[1.25rem] border border-slate-200/90 bg-white px-10 py-12 text-center">
+                      <div className="flex h-[4.75rem] w-[4.75rem] items-center justify-center rounded-[1rem] bg-slate-100 text-xl font-black tracking-tighter text-[var(--brand-blue)] ring-2 ring-[var(--brand-blue)]/25">
                         {selectedFormat.formatCode.toUpperCase()}
                       </div>
                       <div>
-                        <p className="text-lg font-semibold text-stone-900">
+                        <p className="text-lg font-semibold text-slate-900">
                           {selectedFormat.format} preview
                         </p>
-                        <p className="mt-2 max-w-[24rem] text-sm leading-relaxed text-stone-600">
+                        <p className="mt-2 max-w-[24rem] text-sm leading-relaxed text-slate-600">
                           This format does not render in the browser. Download the approved file after sign-in
                           (subscription may apply).
                         </p>
@@ -515,7 +515,7 @@ export default function CountryDetailPage() {
                         key={`${selectedVariant.id}-${selectedFormat?.id ?? 'cover'}`}
                         src={bigPreviewSrc(selectedVariant, selectedFormat)}
                         alt={`${pageTitle} — ${selectedVariant.name}`}
-                        className="max-h-[min(62vh,40rem)] w-auto max-w-full object-contain drop-shadow-[0_18px_28px_rgba(0,0,0,0.18)]"
+                        className="max-h-[min(62vh,40rem)] w-auto max-w-full object-contain"
                         referrerPolicy="no-referrer"
                         decoding="async"
                         onError={(e) =>
@@ -529,11 +529,11 @@ export default function CountryDetailPage() {
                     </>
                   )}
                 </div>
-                <div className="flex flex-col gap-1 border-t border-stone-100 px-5 py-3 text-center sm:px-6">
-                  <p className="truncate text-sm font-medium text-stone-700" title={selectedVariant.name}>
+                <div className="flex flex-col gap-1 border-t border-slate-100 px-5 py-3 text-center sm:px-6">
+                  <p className="truncate text-sm font-medium text-slate-700" title={selectedVariant.name}>
                     {selectedVariant.name}
                   </p>
-                  <p className="text-xs text-stone-500">
+                  <p className="text-xs text-slate-500">
                     {selectedVariant.formats.length} format
                     {selectedVariant.formats.length === 1 ? '' : 's'} available
                   </p>
@@ -542,17 +542,17 @@ export default function CountryDetailPage() {
             ) : null}
 
             {data.variants.length > 1 ? (
-              <section className="rounded-[1.25rem] bg-white px-4 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/70 sm:px-5">
+              <section className="rounded-[1.25rem] border border-slate-200/80 bg-white px-4 py-4 sm:px-5">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
                       Other designs
                     </p>
-                    <h2 className="mt-1 text-sm font-semibold text-stone-900">
+                    <h2 className="mt-1 text-sm font-semibold text-slate-900">
                       Choose another shape or style
                     </h2>
                   </div>
-                  <span className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-500">
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
                     {data.variants.length}
                   </span>
                 </div>
@@ -565,15 +565,13 @@ export default function CountryDetailPage() {
                         key={v.id}
                         type="button"
                         onClick={() => onPickVariant(v)}
-                        className={`group w-[7.5rem] shrink-0 text-left transition-transform sm:w-32 ${
-                          isActive ? '-translate-y-0.5' : 'hover:-translate-y-0.5'
-                        }`}
+                        className={`group w-[7.5rem] shrink-0 text-left sm:w-32`}
                       >
                         <div
-                          className={`relative aspect-square overflow-hidden rounded-2xl bg-stone-100 transition-all ${
+                          className={`relative aspect-square overflow-hidden rounded-2xl bg-slate-100 transition-all ${
                             isActive
-                              ? 'ring-2 ring-[#009ab6] ring-offset-2 ring-offset-white shadow-[0_10px_30px_-14px_rgba(0,154,182,0.5)]'
-                              : 'ring-1 ring-stone-200 group-hover:ring-stone-300'
+                              ? 'ring-2 ring-[var(--brand-blue)]'
+                              : 'ring-1 ring-slate-200 group-hover:ring-slate-300'
                           }`}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
@@ -598,7 +596,7 @@ export default function CountryDetailPage() {
                         </div>
                         <p
                           className={`mt-2 line-clamp-2 px-0.5 text-[11px] font-medium leading-tight ${
-                            isActive ? 'text-stone-900' : 'text-stone-600'
+                            isActive ? 'text-slate-900' : 'text-slate-600'
                           }`}
                           title={v.name}
                         >
@@ -612,17 +610,17 @@ export default function CountryDetailPage() {
             ) : null}
           </div>
 
-          <aside className="w-full shrink-0 self-start lg:sticky lg:top-[5rem]">
-            <div className="overflow-hidden rounded-[1.25rem] bg-white px-5 py-6 shadow-[0_14px_50px_-24px_rgba(15,23,42,0.35)] ring-1 ring-stone-200/90">
-              <div className="border-b border-stone-100 pb-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-400">
-                  Download formats
+          <aside className="w-full shrink-0 lg:sticky lg:top-[calc(5rem+env(safe-area-inset-top))] lg:z-[20] lg:h-auto lg:self-stretch">
+            <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[1.375rem] border border-slate-200/80 bg-white p-[1.6rem]">
+              <div className="border-b border-slate-100 pb-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  Included formats
                 </p>
-                <h2 className="mt-1.5 text-lg font-semibold tracking-tight text-stone-900">
-                  Pick any of 5 file types
+                <h2 className="mt-2 text-[1.05rem] font-semibold tracking-tight text-slate-900">
+                  AI · SVG · EPS · JPG · PNG
                 </h2>
-                <p className="mt-1.5 text-xs leading-snug text-stone-500">
-                  AI · SVG · EPS keep crisp at any size. JPG · PNG are ready for the web.
+                <p className="mt-2 text-[12px] leading-snug text-slate-500">
+                  Vector masters stay sharp; JPG and PNG are web-ready. Some slots may be empty for a design.
                 </p>
               </div>
 
@@ -640,26 +638,26 @@ export default function CountryDetailPage() {
                         disabled={!available}
                         onClick={() => onPickSlot(slot)}
                         aria-pressed={isSelected}
-                        className={`group flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-all sm:gap-4 sm:px-3.5 sm:py-3 ${
+                        className={`group flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors sm:gap-4 sm:px-3.5 sm:py-3 ${
                           isSelected
-                            ? 'border-[#009ab6] bg-gradient-to-br from-[#009ab6]/[0.07] to-white ring-[3px] ring-[#009ab6]/20'
+                            ? 'border-slate-200 bg-white ring-2 ring-[var(--brand-blue)]/35'
                             : available
-                              ? 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50'
-                              : 'cursor-not-allowed border-stone-100 bg-stone-50/60 opacity-65'
+                              ? 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80'
+                              : 'cursor-not-allowed border-slate-100 bg-slate-50/50 opacity-60'
                         }`}
                       >
                         <div
                           className={`flex h-12 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br font-mono text-sm font-extrabold tracking-tight ring-1 sm:h-[3.25rem] sm:w-[3.75rem] ${
-                            available ? meta.accent : 'from-stone-100 to-stone-50 text-stone-400 ring-stone-200'
+                            available ? meta.accent : 'from-slate-100 to-slate-50 text-slate-400 ring-slate-200'
                           }`}
                         >
                           {meta.label}
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-stone-900">{meta.label}</span>
-                            <span className={`h-1.5 w-1.5 rounded-full ${available ? meta.pill : 'bg-stone-300'}`} />
-                            <span className="text-[11px] uppercase tracking-wide text-stone-400">
+                            <span className="text-sm font-semibold text-slate-900">{meta.label}</span>
+                            <span className={`h-1.5 w-1.5 rounded-full ${available ? meta.pill : 'bg-slate-300'}`} />
+                            <span className="text-[11px] uppercase tracking-wide text-slate-400">
                               {meta.subtitle}
                             </span>
                             {badge ? (
@@ -668,7 +666,7 @@ export default function CountryDetailPage() {
                               </span>
                             ) : null}
                           </div>
-                          <p className="mt-0.5 truncate text-[11px] text-stone-500 sm:text-xs">
+                          <p className="mt-0.5 truncate text-[11px] text-slate-500 sm:text-xs">
                             {available
                               ? `${fmt!.dimensions} · ${fmt!.size}`
                               : 'Not available for this design'}
@@ -677,14 +675,14 @@ export default function CountryDetailPage() {
                         <span
                           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                             isSelected
-                              ? 'border-[#009ab6]'
+                              ? 'border-[var(--brand-blue)]'
                               : available
-                                ? 'border-stone-300 group-hover:border-stone-400'
-                                : 'border-stone-200'
+                                ? 'border-slate-300 group-hover:border-slate-400'
+                                : 'border-slate-200'
                           }`}
                           aria-hidden
                         >
-                          {isSelected ? <span className="h-2.5 w-2.5 rounded-full bg-[#009ab6]" /> : null}
+                          {isSelected ? <span className="h-2.5 w-2.5 rounded-full bg-[var(--brand-blue)]" /> : null}
                         </span>
                       </button>
                     </li>
@@ -698,7 +696,7 @@ export default function CountryDetailPage() {
                     type="button"
                     onClick={() => onDownloadPress(selectedFormat)}
                     disabled={!!downloadDisabled}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#009ab6] to-[#007a94] py-3.5 text-[15px] font-semibold text-white shadow-[0_2px_14px_-2px_rgba(0,154,182,0.45)] transition-all hover:from-[#008aaa] hover:to-[#006d80] hover:shadow-[0_4px_20px_-4px_rgba(0,154,182,0.5)] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 py-3.5 text-[15px] font-semibold tracking-tight text-[#fafaf9] transition-[transform,background-color] duration-200 hover:bg-slate-900 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {downloading === selectedFormat.id ? (
                       <>
@@ -713,10 +711,10 @@ export default function CountryDetailPage() {
                     )}
                   </button>
                   {!isSignedIn ? (
-                    <p className="text-center text-xs text-stone-500">
+                    <p className="text-center text-xs text-slate-500">
                       <Link
                         href={`/sign-up?redirect_url=${redirectBack}`}
-                        className="font-medium text-[#009ab6] hover:underline"
+                        className="font-medium text-[var(--brand-blue)] hover:underline"
                       >
                         Create an account
                       </Link>{' '}
@@ -731,12 +729,12 @@ export default function CountryDetailPage() {
       </div>
 
       {selectedFormat ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200/90 bg-white/85 px-4 py-3 backdrop-blur-lg lg:hidden [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/90 bg-white/95 px-4 py-3 backdrop-blur-lg lg:hidden [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={() => onDownloadPress(selectedFormat)}
             disabled={!!downloadDisabled}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#009ab6] py-3.5 text-[15px] font-semibold text-white shadow-[0_-2px_18px_-4px_rgba(0,154,182,0.35)] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 py-3.5 text-[15px] font-semibold tracking-tight text-[#fafaf9] transition-[transform,background-color] duration-200 hover:bg-slate-900 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {downloading === selectedFormat.id ? (
               <>

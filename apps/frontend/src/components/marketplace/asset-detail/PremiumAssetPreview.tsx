@@ -35,7 +35,7 @@ export function PremiumAssetPreview({
         className={clsx(
           'relative mx-auto aspect-[4/3] w-full max-w-[min(100%,66rem)] overflow-hidden rounded-[1.375rem]',
           useTransparencyBackdrop ? checkerBg : 'bg-gradient-to-b from-white to-slate-50',
-          'ring-1 ring-slate-200/65 shadow-inner',
+          'ring-1 ring-slate-200/70',
           !fillColumn && 'lg:aspect-[16/10]',
           fillColumn && 'lg:flex-1 lg:aspect-auto lg:min-h-[14rem]',
         )}
@@ -51,7 +51,7 @@ export function PremiumAssetPreview({
     <div
       className={clsx(
         'mx-auto w-full max-w-[min(100%,66rem)]',
-        fillColumn && 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col',
+        fillColumn && 'lg:mx-0 lg:max-w-none lg:flex lg:min-h-0 lg:flex-1 lg:flex-col',
       )}
     >
       <div
@@ -63,10 +63,9 @@ export function PremiumAssetPreview({
         <div
           className={clsx(
             'overflow-hidden rounded-[1.375rem]',
-            'bg-white/90 shadow-[0_28px_64px_-40px_rgba(15,23,42,0.35)] ring-1 ring-slate-200/70',
-            'backdrop-blur-[2px]',
-            'transition-[box-shadow,ring-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
-            'hover:shadow-[0_40px_80px_-44px_rgba(15,23,42,0.38)] hover:ring-slate-300/80',
+            'border border-slate-200/80 bg-white',
+            'transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'hover:border-slate-300/90',
             fillColumn && 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col',
           )}
         >
@@ -92,7 +91,7 @@ export function PremiumAssetPreview({
               )}
             />
             {useTransparencyBackdrop ? (
-              <span className="pointer-events-none absolute bottom-4 right-4 rounded-lg bg-white/92 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 shadow-sm ring-1 ring-slate-200/80 backdrop-blur-sm">
+              <span className="pointer-events-none absolute bottom-4 right-4 rounded-lg bg-white/92 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 ring-1 ring-slate-200/80 backdrop-blur-sm">
                 Alpha preview
               </span>
             ) : null}

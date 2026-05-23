@@ -10,7 +10,13 @@ import type { Category } from '@/types/marketplace';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 import { MarketplaceProductCard } from './MarketplaceProductCard';
 
-type TierFilter = 'all' | 'free' | 'pro';
+type TierFilter = 'all' | 'pro';
+
+function tierFromSearchParam(raw: string | null): TierFilter {
+  if (raw === 'pro') return 'pro';
+  return 'all';
+}
+
 type SortKey = 'newest' | 'oldest' | 'title' | 'popular';
 
 type ApiResponse = {
@@ -43,7 +49,6 @@ function syncBrowseUrl(
     tier: TierFilter;
     sort: SortKey;
     page: number;
-    hasFreeDownload: boolean;
   },
   pathname: string
 ) {
@@ -57,8 +62,7 @@ function syncBrowseUrl(
   else url.searchParams.delete('tier');
   if (opts.sort !== 'newest') url.searchParams.set('sort', opts.sort);
   else url.searchParams.delete('sort');
-  if (opts.hasFreeDownload) url.searchParams.set('hasFreeDownload', 'true');
-  else url.searchParams.delete('hasFreeDownload');
+  url.searchParams.delete('hasFreeDownload');
   if (opts.page > 1) url.searchParams.set('page', String(opts.page));
   else url.searchParams.delete('page');
   window.history.replaceState({}, '', url.pathname + url.search);
@@ -80,15 +84,9 @@ export function ProductBrowseSection({
   );
   const [draftQ, setDraftQ] = useState(searchParams.get('q') ?? '');
   const [appliedQ, setAppliedQ] = useState(searchParams.get('q') ?? '');
-  const [tier, setTier] = useState<TierFilter>(
-    (searchParams.get('tier') as TierFilter) || 'all'
-  );
+  const [tier, setTier] = useState<TierFilter>(() => tierFromSearchParam(searchParams.get('tier')));
   const [sort, setSort] = useState<SortKey>(
     (searchParams.get('sort') as SortKey) || 'newest'
-  );
-  const [freePreviewOnly, setFreePreviewOnly] = useState(
-    searchParams.get('hasFreeDownload') === 'true' ||
-      searchParams.get('hasFreeDownload') === '1'
   );
   const [page, setPage] = useState(Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1));
   const [items, setItems] = useState<PublicProduct[]>([]);
@@ -111,7 +109,6 @@ export function ProductBrowseSection({
       params.set('sort', sort);
       if (appliedQ.trim()) params.set('q', appliedQ.trim());
       if (tier !== 'all') params.set('tier', tier);
-      if (freePreviewOnly) params.set('hasFreeDownload', 'true');
       const slug = fixedCategorySlug ?? categorySlug;
       if (slug) params.set('categorySlug', slug);
 
@@ -132,7 +129,6 @@ export function ProductBrowseSection({
               tier,
               sort,
               page: nextPage,
-              hasFreeDownload: freePreviewOnly,
             },
             window.location.pathname
           );
@@ -145,7 +141,7 @@ export function ProductBrowseSection({
         setLoadingMore(false);
       }
     },
-    [appliedQ, tier, sort, categorySlug, fixedCategorySlug, syncUrl, freePreviewOnly]
+    [appliedQ, tier, sort, categorySlug, fixedCategorySlug, syncUrl]
   );
 
   useEffect(() => {
@@ -170,38 +166,43 @@ export function ProductBrowseSection({
 
   return (
     <div className={['min-w-0', className].filter(Boolean).join(' ') || 'min-w-0'}>
-      <div className="mb-10 flex flex-col gap-8 lg:flex-row lg:items-stretch lg:justify-between lg:gap-12">
+      <div className="mb-8 flex flex-col gap-6 sm:mb-10 lg:flex-row lg:items-stretch lg:justify-between lg:gap-12">
         <form
           onSubmit={onSubmitSearch}
-          className="flex min-w-0 w-full flex-1 flex-col gap-3 sm:max-w-4xl lg:flex-row lg:items-stretch lg:gap-3"
+          className="flex min-w-0 w-full flex-1 flex-col gap-3 sm:max-w-none sm:flex-row lg:max-w-4xl xl:max-w-5xl"
         >
-          <div className="relative min-h-12 flex-1 sm:min-h-14">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 sm:left-5 sm:h-6 sm:w-6" />
-            <input
-              type="search"
-              value={draftQ}
-              onChange={(e) => setDraftQ(e.target.value)}
-              placeholder="Search flags, tags, country…"
-              className="h-12 w-full min-h-12 rounded-2xl border border-gray-200 py-3 pl-12 pr-4 text-base text-gray-900 shadow-sm outline-none transition-shadow placeholder:text-gray-400 focus:border-[#009ab6] focus:ring-2 focus:ring-[#009ab6]/25 sm:h-14 sm:min-h-[3.5rem] sm:py-3.5 sm:pl-14 sm:pr-5 sm:text-[1.05rem]"
-              aria-label="Search catalog"
-            />
+          <div className="flex min-h-[48px] w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow focus-within:border-[#2563eb] focus-within:ring-2 focus-within:ring-[#2563eb]/25 sm:min-h-[3.5rem] sm:flex-row sm:items-stretch">
+            <div className="relative flex min-h-0 min-w-0 flex-1 items-center">
+              <Search
+                className="pointer-events-none absolute left-3.5 h-5 w-5 shrink-0 text-gray-400 sm:left-5 sm:h-6 sm:w-6"
+                aria-hidden
+              />
+              <input
+                type="search"
+                value={draftQ}
+                onChange={(e) => setDraftQ(e.target.value)}
+                placeholder="Search flags, tags, country…"
+                className="min-h-[48px] w-full min-w-0 border-0 bg-transparent py-0 pl-11 pr-4 text-base leading-snug text-gray-900 outline-none placeholder:text-gray-400 sm:min-h-[3.5rem] sm:pl-14 sm:pr-5 sm:text-[1.05rem]"
+                aria-label="Search catalog"
+              />
+            </div>
+            <button
+              type="submit"
+              className="inline-flex min-h-[48px] w-full shrink-0 items-center justify-center self-stretch border-t border-gray-200/95 bg-[#2563eb] px-5 text-base font-bold leading-snug tracking-tight text-white transition hover:bg-[#1d4ed8] focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#2563eb] sm:h-14 sm:w-auto sm:min-h-[3.5rem] sm:border-l sm:border-t-0 sm:px-10 sm:text-[1.05rem]"
+            >
+              Search
+            </button>
           </div>
-          <button
-            type="submit"
-            className="inline-flex min-h-[3rem] shrink-0 items-center justify-center rounded-2xl bg-[#009ab6] px-8 py-3 text-lg font-bold text-white shadow-sm transition hover:bg-[#007a8a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#009ab6] sm:px-10"
-          >
-            Search
-          </button>
         </form>
 
-        <div className="flex flex-wrap gap-x-4 gap-y-4 lg:justify-end">
+        <div className="grid w-full grid-cols-1 gap-4 xs:grid-cols-2 sm:grid-cols-2 xl:flex xl:flex-nowrap xl:justify-end xl:gap-4">
           {!fixedCategorySlug ? (
-            <label className="flex min-w-[10.5rem] flex-col gap-2 text-sm font-semibold tracking-tight text-gray-700">
+            <label className="flex w-full min-w-0 flex-col gap-2 text-sm font-semibold tracking-tight text-gray-700 xl:max-w-[11rem]">
               Category
               <select
                 value={categorySlug}
                 onChange={(e) => setCategorySlug(e.target.value)}
-                className="rounded-xl border border-gray-200 bg-white py-3 pl-3 pr-9 text-base text-gray-900 shadow-sm focus:border-[#009ab6] focus:outline-none focus:ring-2 focus:ring-[#009ab6]/20"
+                className="min-h-[44px] w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-3 pr-9 text-base text-gray-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
               >
                 <option value="">All categories</option>
                 {categories
@@ -214,39 +215,29 @@ export function ProductBrowseSection({
               </select>
             </label>
           ) : null}
-          <label className="flex min-w-[7.75rem] flex-col gap-2 text-sm font-semibold tracking-tight text-gray-700">
-            Type
+          <label className="flex w-full min-w-0 flex-col gap-2 text-sm font-semibold tracking-tight text-gray-700 xl:max-w-[9.5rem]">
+            Tier
             <select
               value={tier}
               onChange={(e) => setTier(e.target.value as TierFilter)}
-              className="rounded-xl border border-gray-200 bg-white py-3 pl-3 pr-9 text-base text-gray-900 shadow-sm focus:border-[#009ab6] focus:outline-none focus:ring-2 focus:ring-[#009ab6]/20"
+              className="min-h-[44px] w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-3 pr-9 text-base text-gray-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
             >
               <option value="all">All</option>
-              <option value="free">Free</option>
-              <option value="pro">Pro / paid</option>
+              <option value="pro">Paid (Pro)</option>
             </select>
           </label>
-          <label className="flex min-w-[8.75rem] flex-col gap-2 text-sm font-semibold tracking-tight text-gray-700">
+          <label className="flex w-full min-w-0 flex-col gap-2 text-sm font-semibold tracking-tight text-gray-700 xl:max-w-[10.25rem]">
             Sort
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
-              className="rounded-xl border border-gray-200 bg-white py-3 pl-3 pr-9 text-base text-gray-900 shadow-sm focus:border-[#009ab6] focus:outline-none focus:ring-2 focus:ring-[#009ab6]/20"
+              className="min-h-[44px] w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-3 pr-9 text-base text-gray-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
             >
               <option value="newest">Newest</option>
               <option value="oldest">Oldest</option>
               <option value="title">Title A–Z</option>
               <option value="popular">Popular</option>
             </select>
-          </label>
-          <label className="flex min-h-[3.25rem] items-center gap-2.5 self-end text-sm font-medium text-gray-800">
-            <input
-              type="checkbox"
-              checked={freePreviewOnly}
-              onChange={(e) => setFreePreviewOnly(e.target.checked)}
-              className="h-[1.125rem] w-[1.125rem] rounded border-gray-300 text-[#009ab6] focus:ring-[#009ab6]"
-            />
-            Free preview only
           </label>
         </div>
       </div>
@@ -256,7 +247,7 @@ export function ProductBrowseSection({
         {fixedCategorySlug ? (
           <>
             {' · '}
-            <Link href="/browse" className="font-medium text-[#009ab6] hover:underline">
+            <Link href="/browse" className="font-medium text-[#2563eb] hover:underline">
               Browse all
             </Link>
           </>
@@ -302,7 +293,7 @@ export function ProductBrowseSection({
             type="button"
             onClick={onLoadMore}
             disabled={loadingMore}
-            className="rounded-xl border-2 border-gray-200 bg-white px-10 py-3.5 text-base font-semibold text-gray-900 transition hover:border-[#009ab6] hover:text-[#009ab6] disabled:opacity-50"
+            className="min-h-12 w-full max-w-xl rounded-xl border-2 border-gray-200 bg-white px-8 py-3.5 text-base font-semibold text-gray-900 transition hover:border-[#2563eb] hover:text-[#2563eb] disabled:opacity-50 sm:w-auto md:max-w-none"
           >
             {loadingMore ? 'Loading…' : 'Load more'}
           </button>

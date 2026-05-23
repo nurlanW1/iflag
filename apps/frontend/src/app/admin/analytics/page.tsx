@@ -49,7 +49,7 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#009ab6]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2563eb]"></div>
       </div>
     );
   }
@@ -64,7 +64,7 @@ export default function AnalyticsPage() {
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#009ab6] to-[#006d7a] bg-clip-text text-transparent">
+            <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
               Analytics
             </h1>
             <p className="text-gray-600 text-lg">
@@ -78,8 +78,8 @@ export default function AnalyticsPage() {
                 onClick={() => setTimeRange(range)}
                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
                   timeRange === range
-                    ? 'bg-[#009ab6] text-white shadow-lg'
-                    : 'text-gray-600 hover:text-[#009ab6]'
+                    ? 'bg-[#2563eb] text-white shadow-lg'
+                    : 'text-gray-600 hover:text-[#2563eb]'
                 }`}
               >
                 {range === '7d' ? '7 Days' : range === '30d' ? '30 Days' : range === '90d' ? '90 Days' : 'All Time'}
@@ -96,7 +96,7 @@ export default function AnalyticsPage() {
           title="Total Views"
           value={mockData.totalViews.toLocaleString()}
           change="+12.5%"
-          color="#009ab6"
+          color="#2563eb"
         />
         <StatCard
           icon={Download}
@@ -137,7 +137,7 @@ export default function AnalyticsPage() {
             {mockData.dailyStats.map((stat, idx) => (
               <div key={idx} className="flex-1 flex flex-col items-center gap-2">
                 <div
-                  className="w-full bg-gradient-to-t from-[#009ab6] to-[#007a8a] rounded-t-lg transition-all hover:opacity-80"
+                  className="w-full bg-gradient-to-t from-[#2563eb] to-[#1d4ed8] rounded-t-lg transition-all hover:opacity-80"
                   style={{ height: `${(stat.downloads / 300) * 100}%` }}
                   title={`${stat.downloads} downloads`}
                 />
@@ -196,7 +196,7 @@ export default function AnalyticsPage() {
             {mockData.topAssets.map((asset, idx) => (
               <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-[#009ab6]/10 flex items-center justify-center font-bold text-[#009ab6]">
+                  <div className="w-10 h-10 rounded-lg bg-[#2563eb]/10 flex items-center justify-center font-bold text-[#2563eb]">
                     {idx + 1}
                   </div>
                   <div>

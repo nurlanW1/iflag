@@ -48,8 +48,8 @@ function GalleryCell({
       <div
         className={
           largeTiles
-            ? 'aspect-square min-h-0 rounded-xl sm:rounded-2xl bg-[#006d7a]/5 overflow-hidden border-2 border-[#006d7a]/15 hover:border-[#009ab6] hover:shadow-lg transition-all duration-300 flex items-center justify-center p-1.5 sm:p-2.5 md:p-3'
-            : 'aspect-square bg-[#006d7a]/5 rounded-lg overflow-hidden border border-[#006d7a]/10 hover:border-[#009ab6] hover:shadow-md transition-all duration-300 flex items-center justify-center p-2'
+            ? 'aspect-square min-h-0 rounded-xl sm:rounded-2xl bg-[#1e40af]/5 overflow-hidden border-2 border-[#1e40af]/15 hover:border-[#2563eb] hover:shadow-lg transition-all duration-300 flex items-center justify-center p-1.5 sm:p-2.5 md:p-3'
+            : 'aspect-square bg-[#1e40af]/5 rounded-lg overflow-hidden border border-[#1e40af]/10 hover:border-[#2563eb] hover:shadow-md transition-all duration-300 flex items-center justify-center p-2'
         }
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN / blob previews */}
@@ -91,7 +91,7 @@ function GalleryCell({
       {linkToCountryGallery ? (
         <Link
           href={`/gallery/${country.slug}`}
-          className="block cursor-pointer text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#009ab6] focus-visible:ring-offset-2 rounded-xl"
+          className="block cursor-pointer text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563eb] focus-visible:ring-offset-2 rounded-xl"
         >
           {tile}
         </Link>

@@ -71,7 +71,7 @@ export default function Footer() {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-[#2a2a2a]"
+                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-[#2a2a2a]"
                 aria-label="Twitter"
               >
                 <Twitter size={22} aria-hidden />
@@ -80,7 +80,7 @@ export default function Footer() {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-[#2a2a2a]"
+                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-[#2a2a2a]"
                 aria-label="Facebook"
               >
                 <Facebook size={22} aria-hidden />
@@ -89,7 +89,7 @@ export default function Footer() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-[#2a2a2a]"
+                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-[#2a2a2a]"
                 aria-label="Instagram"
               >
                 <Instagram size={22} aria-hidden />
@@ -98,7 +98,7 @@ export default function Footer() {
                 href="https://linkedin.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-[#2a2a2a]"
+                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-[#2a2a2a]"
                 aria-label="LinkedIn"
               >
                 <Linkedin size={22} aria-hidden />
@@ -107,7 +107,7 @@ export default function Footer() {
                 href="https://github.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-[#2a2a2a]"
+                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-[#2a2a2a]"
                 aria-label="GitHub"
               >
                 <Github size={22} aria-hidden />

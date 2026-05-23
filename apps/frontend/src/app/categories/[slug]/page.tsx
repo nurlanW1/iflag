@@ -1,9 +1,10 @@
-import Link from 'next/link';
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ProductBrowseSection } from '@/components/marketplace/ProductBrowseSection';
+import { visualsForCategoryKind } from '@/lib/marketplace/category-visuals';
 import { getCategoryBySlug, listPublishedProducts } from '@/services/marketplace';
 import { PRIMARY_HUB_LINKS } from '@/lib/seo/internal-links';
 import { isValidPublicSlug } from '@/lib/seo/slug';
@@ -53,6 +54,8 @@ export default async function CategoryPage({ params }: Props) {
   }
 
   const products = listPublishedProducts({ categoryId: category.id });
+  const vis = visualsForCategoryKind(category.kind);
+  const Icon = vis.Icon;
 
   return (
     <>
@@ -67,11 +70,22 @@ export default async function CategoryPage({ params }: Props) {
       />
       <main className="marketplace-shell py-12 sm:py-14">
         <article>
-          <h1 className="text-3xl font-black text-black mb-4">{category.name}</h1>
-          {category.description ? (
-            <p className="text-black/70 mb-8 leading-relaxed">{category.description}</p>
-          ) : null}
-          <h2 className="text-xl font-bold text-black mb-4">Products</h2>
+          <header className="mb-8 flex flex-col gap-5 border-b border-neutral-200 pb-10 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex max-w-3xl flex-col gap-4 sm:flex-row sm:gap-6">
+              <span
+                className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl shadow-sm ring-2 ring-black/[0.04] ${vis.accent}`}
+              >
+                <Icon className="h-8 w-8" aria-hidden strokeWidth={2} />
+              </span>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">{vis.chip}</p>
+                <h1 className="mt-1 text-3xl font-black tracking-tight text-neutral-950 sm:text-4xl">{category.name}</h1>
+                {category.description ? (
+                  <p className="mt-3 text-pretty text-base leading-relaxed text-neutral-600">{category.description}</p>
+                ) : null}
+              </div>
+            </div>
+          </header>
           <Suspense fallback={<p className="text-black/60">Loading catalog…</p>}>
             <ProductBrowseSection fixedCategorySlug={category.slug} syncUrl={false} />
           </Suspense>
@@ -84,7 +98,7 @@ export default async function CategoryPage({ params }: Props) {
                 <li key={l.href}>
                   <Link
                     href={l.href}
-                    className="text-[#009ab6] hover:underline focus:outline-none focus:ring-2 focus:ring-[#009ab6]/30 rounded"
+                    className="text-[#2563eb] hover:underline focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 rounded"
                   >
                     {l.label}
                   </Link>

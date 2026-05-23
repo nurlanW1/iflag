@@ -25,7 +25,7 @@ export function Spinner({ label = 'Loading', className = '', size = 'md' }: Spin
     >
       <span className="sr-only">{label}</span>
       <span
-        className={`animate-spin rounded-full border-[#009ab6] border-t-transparent ${sizeClass[size]}`}
+        className={`animate-spin rounded-full border-[#2563eb] border-t-transparent ${sizeClass[size]}`}
       />
     </div>
   );

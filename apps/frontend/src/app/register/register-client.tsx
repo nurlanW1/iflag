@@ -43,7 +43,7 @@ function RegisterForm() {
           background: `
             radial-gradient(circle at 20% 30%, rgba(0, 154, 182, 0.85) 0%, transparent 50%),
             radial-gradient(circle at 80% 70%, rgba(0, 109, 122, 0.9) 0%, transparent 50%),
-            linear-gradient(135deg, #004d5a 0%, #009ab6 50%, #00363f 100%)
+            linear-gradient(135deg, #1e40af 0%, #2563eb 52%, #172554 100%)
           `,
         }}
       >
@@ -64,7 +64,7 @@ function RegisterForm() {
             Already have an account?{' '}
             <Link
               href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
-              className="font-semibold text-[#009ab6] hover:underline"
+              className="font-semibold text-[#2563eb] hover:underline"
             >
               Sign in
             </Link>
@@ -90,7 +90,7 @@ function RegisterForm() {
                   autoComplete="name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full rounded-xl border-2 border-gray-200 py-3 pl-10 pr-4 text-gray-900 outline-none transition focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/15"
+                  className="w-full rounded-xl border-2 border-gray-200 py-3 pl-10 pr-4 text-gray-900 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/15"
                 />
               </div>
             </div>
@@ -107,7 +107,7 @@ function RegisterForm() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border-2 border-gray-200 py-3 pl-10 pr-4 text-gray-900 outline-none transition focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/15"
+                  className="w-full rounded-xl border-2 border-gray-200 py-3 pl-10 pr-4 text-gray-900 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/15"
                 />
               </div>
             </div>
@@ -126,7 +126,7 @@ function RegisterForm() {
                   minLength={8}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border-2 border-gray-200 py-3 pl-10 pr-12 text-gray-900 outline-none transition focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/15"
+                  className="w-full rounded-xl border-2 border-gray-200 py-3 pl-10 pr-12 text-gray-900 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/15"
                 />
                 <button
                   type="button"
@@ -141,7 +141,7 @@ function RegisterForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-[#009ab6] py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-[#007a8a] disabled:opacity-60"
+              className="w-full rounded-xl bg-[#2563eb] py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-[#1d4ed8] disabled:opacity-60"
             >
               {loading ? 'Creating account…' : 'Sign up'}
             </button>

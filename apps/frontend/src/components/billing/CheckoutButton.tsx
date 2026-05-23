@@ -93,7 +93,7 @@ export function CheckoutButton({
         style={style}
         className={
           className ||
-          'w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#009ab6] disabled:opacity-50'
+          'w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#2563eb] disabled:opacity-50'
         }
       >
         {loading ? 'Redirecting…' : children}

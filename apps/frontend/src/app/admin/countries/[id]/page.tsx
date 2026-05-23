@@ -191,7 +191,7 @@ export default function CountryDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#009ab6]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2563eb]"></div>
       </div>
     );
   }
@@ -206,12 +206,12 @@ export default function CountryDetailPage() {
       >
         <Link
           href="/admin/countries"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-[#009ab6] mb-4 font-medium transition-colors"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-[#2563eb] mb-4 font-medium transition-colors"
         >
           <ArrowLeft size={18} />
           Back to Countries
         </Link>
-        <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#009ab6] to-[#006d7a] bg-clip-text text-transparent">
+        <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
           {isNew ? 'Create New Country' : country?.name || 'Edit Country'}
         </h1>
       </motion.div>
@@ -226,7 +226,7 @@ export default function CountryDetailPage() {
             className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm"
           >
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <Globe size={24} className="text-[#009ab6]" />
+              <Globe size={24} className="text-[#2563eb]" />
               Basic Information
             </h2>
 
@@ -248,7 +248,7 @@ export default function CountryDetailPage() {
                       }));
                     }
                   }}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900"
                   required
                   placeholder="e.g., United States"
                 />
@@ -263,7 +263,7 @@ export default function CountryDetailPage() {
                   type="text"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900 font-mono text-sm"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900 font-mono text-sm"
                   required
                   placeholder="e.g., united-states"
                 />
@@ -281,7 +281,7 @@ export default function CountryDetailPage() {
                     value={formData.iso_alpha_2}
                     onChange={(e) => setFormData({ ...formData, iso_alpha_2: e.target.value.toUpperCase() })}
                     maxLength={2}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900 font-mono text-center font-bold"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900 font-mono text-center font-bold"
                     placeholder="US"
                   />
                 </div>
@@ -294,7 +294,7 @@ export default function CountryDetailPage() {
                     value={formData.iso_alpha_3}
                     onChange={(e) => setFormData({ ...formData, iso_alpha_3: e.target.value.toUpperCase() })}
                     maxLength={3}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900 font-mono text-center font-bold"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900 font-mono text-center font-bold"
                     placeholder="USA"
                   />
                 </div>
@@ -306,7 +306,7 @@ export default function CountryDetailPage() {
                     type="text"
                     value={formData.iso_numeric}
                     onChange={(e) => setFormData({ ...formData, iso_numeric: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900 font-mono text-center"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900 font-mono text-center"
                     placeholder="840"
                   />
                 </div>
@@ -321,7 +321,7 @@ export default function CountryDetailPage() {
                   <select
                     value={formData.region}
                     onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900"
                   >
                     <option value="">Select region</option>
                     <option value="Europe">Europe</option>
@@ -338,7 +338,7 @@ export default function CountryDetailPage() {
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900"
                   >
                     <option value="country">Country</option>
                     <option value="autonomy">Autonomy</option>
@@ -357,7 +357,7 @@ export default function CountryDetailPage() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={4}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900 resize-none"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900 resize-none"
                   placeholder="Brief description of the country..."
                 />
               </div>
@@ -371,7 +371,7 @@ export default function CountryDetailPage() {
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900"
                   >
                     <option value="draft">Draft</option>
                     <option value="published">Published</option>
@@ -386,7 +386,7 @@ export default function CountryDetailPage() {
                     type="number"
                     value={formData.display_order}
                     onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900"
                   />
                 </div>
               </div>
@@ -398,7 +398,7 @@ export default function CountryDetailPage() {
                   id="is_featured"
                   checked={formData.is_featured}
                   onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
-                  className="w-5 h-5 text-[#009ab6] border-gray-300 rounded focus:ring-[#009ab6] focus:ring-2"
+                  className="w-5 h-5 text-[#2563eb] border-gray-300 rounded focus:ring-[#2563eb] focus:ring-2"
                 />
                 <label htmlFor="is_featured" className="text-sm font-semibold text-gray-700 cursor-pointer">
                   Featured Country
@@ -410,7 +410,7 @@ export default function CountryDetailPage() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 bg-gradient-to-r from-[#009ab6] to-[#007a8a] hover:from-[#007a8a] hover:to-[#006d7a] text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-[#009ab6]/20 hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] hover:from-[#1d4ed8] hover:to-[#1e40af] text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-[#2563eb]/20 hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save size={20} />
                 {saving ? 'Saving...' : isNew ? 'Create Country' : 'Save Changes'}
@@ -428,10 +428,10 @@ export default function CountryDetailPage() {
             >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  <FileText size={24} className="text-[#009ab6]" />
+                  <FileText size={24} className="text-[#2563eb]" />
                   Flag Files
                 </h2>
-                <label className="flex items-center gap-2 bg-gradient-to-r from-[#009ab6] to-[#007a8a] hover:from-[#007a8a] hover:to-[#006d7a] text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-[#009ab6]/20 hover:shadow-xl transition-all cursor-pointer">
+                <label className="flex items-center gap-2 bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] hover:from-[#1d4ed8] hover:to-[#1e40af] text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-[#2563eb]/20 hover:shadow-xl transition-all cursor-pointer">
                   <Upload size={18} />
                   Upload Flag
                   <input
@@ -452,7 +452,7 @@ export default function CountryDetailPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {flagFiles.map((flag) => (
-                    <div key={flag.id} className="border-2 border-gray-200 rounded-xl p-4 hover:border-[#009ab6] transition-colors group">
+                    <div key={flag.id} className="border-2 border-gray-200 rounded-xl p-4 hover:border-[#2563eb] transition-colors group">
                       <div className="aspect-video bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
                         <img
                           src={flag.file_url}
@@ -476,7 +476,7 @@ export default function CountryDetailPage() {
                             type="button"
                             onClick={() => openFlagAssetInNewTab(flag.file_url)}
                             title="Open file in new tab"
-                            className="p-2 text-[#009ab6] hover:bg-[#009ab6]/10 rounded-lg transition-colors"
+                            className="p-2 text-[#2563eb] hover:bg-[#2563eb]/10 rounded-lg transition-colors"
                           >
                             <ExternalLink size={16} />
                           </button>
@@ -502,7 +502,7 @@ export default function CountryDetailPage() {
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-gradient-to-br from-[#009ab6] to-[#006d7a] rounded-2xl p-6 shadow-xl shadow-[#009ab6]/20 sticky top-8"
+              className="bg-gradient-to-br from-[#2563eb] to-[#1e40af] rounded-2xl p-6 shadow-xl shadow-[#2563eb]/20 sticky top-8"
             >
               <h3 className="text-lg font-bold text-white mb-6">Statistics</h3>
               <div className="space-y-6">

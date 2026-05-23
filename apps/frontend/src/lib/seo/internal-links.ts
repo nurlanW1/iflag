@@ -8,7 +8,11 @@ export const PRIMARY_HUB_LINKS = [
   { href: '/assets', label: 'All assets' },
   { href: '/gallery', label: 'Gallery' },
   { href: '/categories/country-flags', label: 'Country flags category' },
-  /** Matches seed / DB slug `international-organizations` */
-  { href: '/categories/international-organizations', label: 'Organization flags' },
+  { href: '/categories/autonomous-flags', label: 'Autonomous & regional flags' },
+  { href: '/categories/organization-flags', label: 'International organization flags' },
+  { href: '/categories/institution-flags', label: 'Institution flags' },
   { href: '/categories/historical-flags', label: 'Historical flags' },
+  { href: '/categories/flag-mockups', label: 'Flag mockups' },
+  { href: '/categories/flag-videos', label: 'Flag videos' },
+  { href: '/categories/flag-icons', label: 'Flag icons' },
 ] as const;

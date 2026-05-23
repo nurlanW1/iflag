@@ -57,7 +57,7 @@ export default function SubscriptionsPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#009ab6]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2563eb]"></div>
       </div>
     );
   }
@@ -70,7 +70,7 @@ export default function SubscriptionsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#009ab6] to-[#006d7a] bg-clip-text text-transparent">
+        <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
           Subscriptions
         </h1>
         <p className="text-gray-600 text-lg">
@@ -84,7 +84,7 @@ export default function SubscriptionsPage() {
           icon={Users}
           title="Total Subscriptions"
           value={stats.total}
-          color="#009ab6"
+          color="#2563eb"
         />
         <StatCard
           icon={CheckCircle2}

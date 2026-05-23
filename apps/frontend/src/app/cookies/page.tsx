@@ -17,14 +17,14 @@ export default function CookiesPage() {
     <LegalDocumentShell
       title="Cookie Policy"
       subtitle={`${P.TRADING_NAME} · ${P.JURISDICTION}`}
-      icon={<Cookie className="h-8 w-8 text-[#009ab6]" aria-hidden />}
+      icon={<Cookie className="h-8 w-8 text-[#2563eb]" aria-hidden />}
     >
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">1. Introduction</h2>
         <p>
           This Cookie Policy explains how <strong>{P.OPERATOR_LEGAL_NAME}</strong> uses cookies and similar
           technologies on <strong>{P.TRADING_NAME}</strong>. It should be read alongside our{' '}
-          <Link href="/privacy-policy" className="font-medium text-[#009ab6] hover:underline">
+          <Link href="/privacy-policy" className="font-medium text-[#2563eb] hover:underline">
             Privacy Policy
           </Link>
           .
@@ -109,7 +109,7 @@ export default function CookiesPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">9. Contact</h2>
         <p>
-          <a className="font-medium text-[#009ab6] hover:underline" href={`mailto:${contactEmail}`}>
+          <a className="font-medium text-[#2563eb] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>
         </p>

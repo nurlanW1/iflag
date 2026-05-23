@@ -43,7 +43,7 @@ export default function FAQPage() {
     <main className="min-h-screen bg-white">
       <div className="marketplace-shell py-14 sm:py-16 lg:py-20">
         <div className="flex items-center gap-3 mb-12">
-          <Flag size={32} className="text-[#009ab6]" />
+          <Flag size={32} className="text-[#2563eb]" />
           <h1 className="text-4xl font-black text-black">Frequently Asked Questions</h1>
         </div>
 
@@ -59,7 +59,7 @@ export default function FAQPage() {
               >
                 <span className="font-semibold text-black pr-4">{faq.question}</span>
                 <ChevronDown
-                  className={`text-[#009ab6] transition-transform flex-shrink-0 ${
+                  className={`text-[#2563eb] transition-transform flex-shrink-0 ${
                     openIndex === idx ? 'transform rotate-180' : ''
                   }`}
                   size={20}
@@ -81,7 +81,7 @@ export default function FAQPage() {
           </p>
           <a
             href="mailto:support@flagstock.com"
-            className="inline-block bg-[#009ab6] hover:bg-[#007a8a] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+            className="inline-block bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
             Contact Support
           </a>

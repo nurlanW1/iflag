@@ -185,7 +185,7 @@ function AdminChrome({
         <div className="p-4 sm:p-6">
           <div className="mb-6 hidden border-b border-gray-200/80 pb-6 md:block">
             <Link href="/admin" className="group mb-3 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#009ab6] to-[#006d7a] shadow-lg shadow-[#009ab6]/20 transition-all group-hover:shadow-xl group-hover:shadow-[#009ab6]/30">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563eb] to-[#1e40af] shadow-lg shadow-[#2563eb]/20 transition-all group-hover:shadow-xl group-hover:shadow-[#2563eb]/30">
                 <Flag size={20} className="text-white" />
               </div>
               <div>
@@ -201,7 +201,7 @@ function AdminChrome({
               className="group flex items-center gap-3"
               onClick={() => setMobileNavOpen(false)}
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#009ab6] to-[#006d7a] shadow-lg shadow-[#009ab6]/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563eb] to-[#1e40af] shadow-lg shadow-[#2563eb]/20">
                 <Flag size={20} className="text-white" />
               </div>
               <div className="min-w-0">
@@ -330,12 +330,12 @@ function AdminNavLink({
         whileTap={{ scale: 0.98 }}
         className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
           active
-            ? 'bg-gradient-to-r from-[#009ab6] to-[#007a8a] text-white shadow-lg shadow-[#009ab6]/20'
-            : 'text-gray-700 hover:bg-gray-50 hover:text-[#009ab6]'
+            ? 'bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] text-white shadow-lg shadow-[#2563eb]/20'
+            : 'text-gray-700 hover:bg-gray-50 hover:text-[#2563eb]'
         }`}
       >
         <div className="flex items-center gap-3">
-          <Icon size={18} className={active ? 'text-white' : 'text-gray-500 group-hover:text-[#009ab6]'} />
+          <Icon size={18} className={active ? 'text-white' : 'text-gray-500 group-hover:text-[#2563eb]'} />
           <span>{children}</span>
         </div>
         {active && <ChevronRight size={16} className="text-white/80" />}

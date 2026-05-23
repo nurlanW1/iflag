@@ -46,13 +46,13 @@ export default function AssetCard({ asset, index = 0 }: AssetCardProps) {
               </div>
             )}
 
-            {/* Premium Badge - Accent (10%) */}
-            {asset.is_premium && (
-              <div className="absolute top-3 right-3 bg-[#009ab6] text-white px-2 py-1 rounded text-xs font-bold flex items-center gap-1 z-10">
-                <Crown size={12} />
-                Premium
-              </div>
-            )}
+            <div
+              className="pointer-events-none absolute right-3 top-3 z-10 inline-flex items-center gap-1 rounded-lg bg-amber-400/95 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-amber-950 shadow-sm ring-1 ring-amber-600/35 backdrop-blur-[2px] sm:text-xs"
+              title="Premium stock"
+            >
+              <Crown size={12} className="shrink-0 sm:h-[13px] sm:w-[13px]" aria-hidden strokeWidth={2.25} />
+              Premium
+            </div>
 
             {/* Overlay on Hover */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -95,17 +95,15 @@ export default function AssetCard({ asset, index = 0 }: AssetCardProps) {
 
           {/* Card Footer */}
           <div className="p-4">
-            <h3 className="text-black font-semibold text-sm mb-2 line-clamp-2 group-hover:text-[#009ab6] transition-colors">
+            <h3 className="text-black font-semibold text-sm mb-2 line-clamp-2 group-hover:text-[#2563eb] transition-colors">
               {asset.title}
             </h3>
             <div className="flex items-center justify-between">
               <span className="text-black/60 text-xs uppercase">{asset.asset_type || 'Flag'}</span>
-              {asset.is_premium && (
-                <span className="text-[#009ab6] text-xs font-semibold flex items-center gap-1">
-                  <Crown size={12} />
-                  Premium
-                </span>
-              )}
+              <span className="flex items-center gap-1 text-xs font-semibold text-amber-800">
+                <Crown size={12} className="shrink-0 text-amber-700" aria-hidden strokeWidth={2.25} />
+                Premium
+              </span>
             </div>
           </div>
         </div>

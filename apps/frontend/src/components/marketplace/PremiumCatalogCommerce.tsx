@@ -25,7 +25,7 @@ type Props = {
 };
 
 const dlBtn =
-  'group/dl relative mt-8 flex min-h-[3.5rem] w-full items-center justify-center gap-2.5 overflow-hidden rounded-2xl bg-slate-950 px-5 text-[16px] font-semibold tracking-tight text-[#fafaf9] transition-[transform,box-shadow,background-color] duration-200 hover:bg-slate-900 hover:shadow-[0_20px_40px_-18px_rgba(0,0,0,0.45)] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50';
+  'group/dl relative mt-8 flex min-h-[3.5rem] w-full items-center justify-center gap-2.5 overflow-hidden rounded-2xl bg-slate-950 px-5 text-[16px] font-semibold tracking-tight text-[#fafaf9] transition-[transform,background-color] duration-200 hover:bg-slate-900 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50';
 
 function PreviewTrustFoot({
   bytesLabel,
@@ -178,7 +178,7 @@ export function PremiumCatalogCommerce({
         productSlug={productSlug}
         className={clsx(
           'flex min-h-[3.5rem] w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-950 px-6 text-[16px] font-semibold tracking-tight text-[#fafaf9]',
-          'shadow-[0_16px_40px_-20px_rgba(0,0,0,0.5)] transition-[transform,background-color,box-shadow] duration-200 hover:bg-slate-900 hover:shadow-[0_22px_44px_-20px_rgba(0,0,0,0.5)] active:scale-[0.99] disabled:opacity-50',
+          'transition-[transform,background-color] duration-200 hover:bg-slate-900 active:scale-[0.99] disabled:opacity-50',
         )}
       >
         Get Premium Access
@@ -210,7 +210,7 @@ export function PremiumCatalogCommerce({
     <>
       <div className="hidden lg:block">{block}</div>
       <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] pb-[max(10px,env(safe-area-inset-bottom))] lg:hidden">
-        <div className="pointer-events-auto mx-auto max-w-lg rounded-t-[1.375rem] border border-b-0 border-slate-200/90 bg-white/96 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 shadow-[0_-28px_64px_-32px_rgba(15,23,42,0.18)] backdrop-blur-xl backdrop-saturate-150">
+        <div className="pointer-events-auto mx-auto max-w-lg rounded-t-[1.375rem] border border-b-0 border-slate-200/90 bg-white/96 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur-xl backdrop-saturate-150">
           <div className="mx-auto mb-3 h-[2px] w-[2.875rem] rounded-full bg-gradient-to-r from-transparent via-slate-300 to-transparent" aria-hidden />
           {block}
         </div>

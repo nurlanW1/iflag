@@ -13,7 +13,7 @@ export default async function DashboardDownloadsPage() {
       <h1 className="text-2xl font-black text-gray-900">Downloads</h1>
       <p className="mt-1 text-sm text-gray-600">
         A timeline of download activity. Per-file downloads are also available from{' '}
-        <Link href="/dashboard/purchases" className="font-medium text-[#009ab6] hover:underline">
+        <Link href="/dashboard/purchases" className="font-medium text-[#2563eb] hover:underline">
           Purchased files
         </Link>
         .

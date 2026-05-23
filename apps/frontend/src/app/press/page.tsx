@@ -5,7 +5,7 @@ export default function PressPage() {
     <main className="min-h-screen bg-white">
       <div className="marketplace-shell py-14 sm:py-16">
         <div className="flex items-center gap-3 mb-8">
-          <Flag size={32} className="text-[#009ab6]" />
+          <Flag size={32} className="text-[#2563eb]" />
           <h1 className="text-4xl font-black text-black">Press Kit</h1>
         </div>
 
@@ -19,13 +19,13 @@ export default function PressPage() {
         <div className="grid md:grid-cols-2 gap-6 mb-12">
           <div className="bg-white border border-gray-200 rounded-xl p-6">
             <div className="flex items-center gap-3 mb-4">
-              <ImageIcon className="text-[#009ab6]" size={24} />
+              <ImageIcon className="text-[#2563eb]" size={24} />
               <h2 className="text-xl font-bold text-black">Logos</h2>
             </div>
             <p className="text-gray-600 mb-4">
               Download our logo in various formats and sizes for use in articles and publications.
             </p>
-            <button className="bg-[#009ab6] hover:bg-[#007a8a] text-white px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2">
+            <button className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2">
               <Download size={18} />
               Download Logos
             </button>
@@ -33,13 +33,13 @@ export default function PressPage() {
 
           <div className="bg-white border border-gray-200 rounded-xl p-6">
             <div className="flex items-center gap-3 mb-4">
-              <FileText className="text-[#009ab6]" size={24} />
+              <FileText className="text-[#2563eb]" size={24} />
               <h2 className="text-xl font-bold text-black">Brand Guidelines</h2>
             </div>
             <p className="text-gray-600 mb-4">
               Learn about our brand identity, color palette, and usage guidelines.
             </p>
-            <button className="bg-[#009ab6] hover:bg-[#007a8a] text-white px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2">
+            <button className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2">
               <Download size={18} />
               Download Guidelines
             </button>
@@ -53,7 +53,7 @@ export default function PressPage() {
           </p>
           <a
             href="mailto:press@flagstock.com"
-            className="text-[#009ab6] hover:underline font-semibold"
+            className="text-[#2563eb] hover:underline font-semibold"
           >
             press@flagstock.com
           </a>

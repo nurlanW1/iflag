@@ -22,7 +22,7 @@ function layout(inner: string): string {
         <table role="presentation" width="100%" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;box-shadow:0 1px 2px rgba(0,0,0,0.05);">
           <tr>
             <td style="padding:28px 28px 8px 28px;">
-              <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:0.08em;color:#009ab6;text-transform:uppercase;">Flagswing</p>
+              <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:0.08em;color:#2563eb;text-transform:uppercase;">Flagswing</p>
             </td>
           </tr>
           <tr>

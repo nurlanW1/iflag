@@ -181,9 +181,9 @@ export function ProductDetailView({ slug, product }: Props) {
 
             <div
               className={clsx(
-                'grid min-w-0 grid-cols-1 gap-10',
-                'lg:grid-cols-[minmax(0,1fr)_minmax(19.25rem,25rem)] lg:items-stretch lg:gap-12',
-                'xl:grid-cols-[minmax(0,1fr)_26rem] xl:gap-16',
+                'grid min-w-0 grid-cols-1 gap-6',
+                'lg:grid-cols-[minmax(0,1fr)_minmax(18.75rem,24rem)] lg:items-stretch lg:gap-5',
+                'xl:grid-cols-[minmax(0,1fr)_25rem] xl:gap-6',
               )}
             >
               <div className="flex min-h-0 min-w-0 flex-col lg:h-auto lg:min-h-[26rem]" aria-label="Hero preview">
@@ -200,9 +200,8 @@ export function ProductDetailView({ slug, product }: Props) {
                 <div
                   className={clsx(
                     'flex h-full min-h-[26rem] flex-col rounded-[1.375rem]',
-                    'border border-white/[0.88] bg-white/[0.93] p-[1.6rem]',
-                    'shadow-[0_28px_70px_-40px_rgba(15,23,42,0.35)]',
-                    'ring-1 ring-slate-200/55 backdrop-blur-[14px]',
+                    'border border-slate-200/80 bg-white p-[1.6rem]',
+                    'backdrop-blur-[14px]',
                   )}
                 >
                   {breadcrumbsDesktop}

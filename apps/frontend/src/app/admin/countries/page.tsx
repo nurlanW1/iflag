@@ -95,7 +95,7 @@ export default function CountriesPage() {
       >
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#009ab6] to-[#006d7a] bg-clip-text text-transparent">
+            <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
               Countries Management
             </h1>
             <p className="text-gray-600 text-lg">
@@ -104,7 +104,7 @@ export default function CountriesPage() {
           </div>
           <Link
             href="/admin/countries/new"
-            className="flex items-center gap-2 bg-gradient-to-r from-[#009ab6] to-[#007a8a] hover:from-[#007a8a] hover:to-[#006d7a] text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-[#009ab6]/20 hover:shadow-xl hover:shadow-[#009ab6]/30 transition-all duration-200"
+            className="flex items-center gap-2 bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] hover:from-[#1d4ed8] hover:to-[#1e40af] text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-[#2563eb]/20 hover:shadow-xl hover:shadow-[#2563eb]/30 transition-all duration-200"
           >
             <Plus size={20} />
             New Country
@@ -122,7 +122,7 @@ export default function CountriesPage() {
               setPage(1);
             }}
             placeholder="Search countries by name, ISO code, or region..."
-            className="w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#009ab6] focus:ring-4 focus:ring-[#009ab6]/10 transition-all text-gray-900 placeholder-gray-400"
+            className="w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900 placeholder-gray-400"
           />
           {searchQuery && (
             <button
@@ -138,12 +138,12 @@ export default function CountriesPage() {
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 text-gray-700 hover:text-[#009ab6] font-medium transition-colors"
+            className="flex items-center gap-2 text-gray-700 hover:text-[#2563eb] font-medium transition-colors"
           >
             <Filter size={18} />
             Filters
             {activeFiltersCount > 0 && (
-              <span className="bg-[#009ab6] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-[#2563eb] text-white text-xs font-bold px-2 py-0.5 rounded-full">
                 {activeFiltersCount}
               </span>
             )}
@@ -151,7 +151,7 @@ export default function CountriesPage() {
           {activeFiltersCount > 0 && (
             <button
               onClick={clearFilters}
-              className="text-sm text-gray-600 hover:text-[#009ab6] font-medium transition-colors"
+              className="text-sm text-gray-600 hover:text-[#2563eb] font-medium transition-colors"
             >
               Clear all
             </button>
@@ -178,7 +178,7 @@ export default function CountriesPage() {
                         setRegionFilter(e.target.value);
                         setPage(1);
                       }}
-                      className="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#009ab6] focus:ring-2 focus:ring-[#009ab6]/10 transition-all text-gray-900"
+                      className="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 transition-all text-gray-900"
                     >
                       <option value="">All Regions</option>
                       {regions.map(region => (
@@ -196,7 +196,7 @@ export default function CountriesPage() {
                         setCategoryFilter(e.target.value);
                         setPage(1);
                       }}
-                      className="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#009ab6] focus:ring-2 focus:ring-[#009ab6]/10 transition-all text-gray-900"
+                      className="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 transition-all text-gray-900"
                     >
                       <option value="">All Categories</option>
                       {categories.map(cat => (
@@ -214,7 +214,7 @@ export default function CountriesPage() {
                         setStatusFilter(e.target.value);
                         setPage(1);
                       }}
-                      className="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#009ab6] focus:ring-2 focus:ring-[#009ab6]/10 transition-all text-gray-900"
+                      className="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 transition-all text-gray-900"
                     >
                       <option value="">All Status</option>
                       {statuses.map(status => (
@@ -232,7 +232,7 @@ export default function CountriesPage() {
       {/* Countries Table */}
       {loading ? (
         <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#009ab6]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2563eb]"></div>
         </div>
       ) : countries.length === 0 ? (
         <motion.div
@@ -249,7 +249,7 @@ export default function CountriesPage() {
           </p>
           <Link
             href="/admin/countries/new"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#009ab6] to-[#007a8a] text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-[#009ab6]/20 hover:shadow-xl transition-all"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-[#2563eb]/20 hover:shadow-xl transition-all"
           >
             <Plus size={20} />
             Create First Country
@@ -343,7 +343,7 @@ export default function CountriesPage() {
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/admin/countries/${country.id}`}
-                            className="p-2 text-[#009ab6] hover:bg-[#009ab6]/10 rounded-lg transition-colors"
+                            className="p-2 text-[#2563eb] hover:bg-[#2563eb]/10 rounded-lg transition-colors"
                             title="Edit"
                           >
                             <Edit size={18} />
@@ -380,14 +380,14 @@ export default function CountriesPage() {
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#009ab6] hover:bg-[#009ab6]/5 transition-all font-semibold text-gray-700 disabled:text-gray-400"
+                  className="px-4 py-2 border-2 border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#2563eb] hover:bg-[#2563eb]/5 transition-all font-semibold text-gray-700 disabled:text-gray-400"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => setPage(p => p + 1)}
                   disabled={page * limit >= total}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#009ab6] hover:bg-[#009ab6]/5 transition-all font-semibold text-gray-700 disabled:text-gray-400"
+                  className="px-4 py-2 border-2 border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#2563eb] hover:bg-[#2563eb]/5 transition-all font-semibold text-gray-700 disabled:text-gray-400"
                 >
                   Next
                 </button>

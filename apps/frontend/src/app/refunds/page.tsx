@@ -17,7 +17,7 @@ export default function RefundsPage() {
     <LegalDocumentShell
       title="Refund Policy"
       subtitle={`${P.TRADING_NAME} · ${P.JURISDICTION}`}
-      icon={<Banknote className="h-8 w-8 text-[#009ab6]" aria-hidden />}
+      icon={<Banknote className="h-8 w-8 text-[#2563eb]" aria-hidden />}
     >
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">1. Overview</h2>
@@ -25,7 +25,7 @@ export default function RefundsPage() {
           This Refund Policy explains how cancellations, refunds, and billing disputes work for purchases
           made through <strong>{P.TRADING_NAME}</strong>, operated by{' '}
           <strong>{P.OPERATOR_LEGAL_NAME}</strong>. It supplements our{' '}
-          <Link href="/terms-of-service" className="font-medium text-[#009ab6] hover:underline">
+          <Link href="/terms-of-service" className="font-medium text-[#2563eb] hover:underline">
             Terms of Service
           </Link>
           .
@@ -91,7 +91,7 @@ export default function RefundsPage() {
         <h2 className="text-xl font-bold text-gray-900">7. How to request help</h2>
         <p>
           Email{' '}
-          <a className="font-medium text-[#009ab6] hover:underline" href={`mailto:${contactEmail}`}>
+          <a className="font-medium text-[#2563eb] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>{' '}
           with your transaction reference, account email, and a short description. [PLACEHOLDER: SLA and

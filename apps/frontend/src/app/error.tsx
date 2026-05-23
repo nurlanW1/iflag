@@ -23,7 +23,7 @@ export default function RootError({
         <button
           type="button"
           onClick={() => reset()}
-          className="rounded-xl bg-[#009ab6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#007a8a]"
+          className="rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1d4ed8]"
         >
           Try again
         </button>

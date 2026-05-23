@@ -143,7 +143,7 @@ function GalleryContent() {
           className="pointer-events-none absolute inset-0 opacity-[0.18]"
           style={{
             background:
-              'radial-gradient(circle at 18% 30%, #00b8d4 0%, transparent 38%), radial-gradient(circle at 82% 70%, #009ab6 0%, transparent 42%)',
+              'radial-gradient(circle at 18% 30%, #60a5fa 0%, transparent 38%), radial-gradient(circle at 82% 70%, #2563eb 0%, transparent 42%)',
           }}
         />
         <div className="relative marketplace-shell pb-16 pt-14 sm:pb-20 sm:pt-20 lg:pb-24 lg:pt-20">
@@ -166,7 +166,7 @@ function GalleryContent() {
               <FileImage size={13} aria-hidden /> {totalFiles.toLocaleString()} files
             </span>
             {filterLabel ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#009ab6] px-3 py-1 font-semibold text-white shadow-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2563eb] px-3 py-1 font-semibold text-white shadow-sm">
                 {filterLabel}
                 <Link href="/gallery" aria-label="Clear filter" className="-mr-1 ml-1 rounded-full p-0.5 hover:bg-white/15">
                   <X size={12} />
@@ -192,7 +192,7 @@ function GalleryContent() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by country or ISO code…"
-                  className="w-full rounded-xl border border-stone-200 bg-stone-50/80 py-2.5 pl-10 pr-9 text-sm text-stone-900 placeholder-stone-400 transition-all focus:border-[#009ab6] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#009ab6]/20"
+                  className="w-full rounded-xl border border-stone-200 bg-stone-50/80 py-2.5 pl-10 pr-9 text-sm text-stone-900 placeholder-stone-400 transition-all focus:border-[#2563eb] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
                 />
                 {searchQuery ? (
                   <button
@@ -215,7 +215,7 @@ function GalleryContent() {
                       href={buildHref(id)}
                       className={`group inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
                         active
-                          ? 'bg-[#009ab6] text-white shadow-sm shadow-[#009ab6]/30'
+                          ? 'bg-[#2563eb] text-white shadow-sm shadow-[#2563eb]/30'
                           : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
                       }`}
                     >
@@ -232,7 +232,7 @@ function GalleryContent() {
                     value={sortKey}
                     onChange={(e) => setSortKey(e.target.value as SortKey)}
                     aria-label="Sort countries"
-                    className="appearance-none rounded-xl border border-stone-200 bg-stone-50/80 py-2.5 pl-3 pr-9 text-xs font-semibold text-stone-700 transition-all hover:bg-white focus:border-[#009ab6] focus:outline-none focus:ring-2 focus:ring-[#009ab6]/20"
+                    className="appearance-none rounded-xl border border-stone-200 bg-stone-50/80 py-2.5 pl-3 pr-9 text-xs font-semibold text-stone-700 transition-all hover:bg-white focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
                   >
                     {SORT_OPTIONS.map((opt) => (
                       <option key={opt.id} value={opt.id}>
@@ -281,7 +281,7 @@ function GalleryContent() {
                     href={buildHref(id)}
                     className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold transition-all ${
                       active
-                        ? 'bg-[#009ab6] text-white'
+                        ? 'bg-[#2563eb] text-white'
                         : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
                     }`}
                   >
@@ -346,7 +346,7 @@ function CardGrid({ countries }: { countries: Country[] }) {
         >
           <Link
             href={`/gallery/${country.slug}`}
-            className="group block overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#009ab6]/50 hover:shadow-[0_12px_30px_-14px_rgba(0,154,182,0.45)]"
+            className="group block overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#2563eb]/50 hover:shadow-[0_12px_30px_-14px_rgba(37,99,235,0.45)]"
           >
             <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
               {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
@@ -384,7 +384,7 @@ function CardGrid({ countries }: { countries: Country[] }) {
               </div>
               <ArrowRight
                 size={15}
-                className="shrink-0 text-stone-300 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-[#009ab6]"
+                className="shrink-0 text-stone-300 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-[#2563eb]"
                 aria-hidden
               />
             </div>
@@ -435,7 +435,7 @@ function CardList({ countries }: { countries: Country[] }) {
                 {country.count} {country.count === 1 ? 'flag file' : 'flag files'} available
               </p>
             </div>
-            <div className="flex items-center gap-1 text-xs font-semibold text-[#009ab6] opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="flex items-center gap-1 text-xs font-semibold text-[#2563eb] opacity-0 transition-opacity group-hover:opacity-100">
               View <ArrowRight size={14} aria-hidden />
             </div>
           </Link>
@@ -492,7 +492,7 @@ function EmptyState({
 }) {
   return (
     <div className="rounded-3xl border border-dashed border-stone-200 bg-white px-6 py-16 text-center">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#009ab6]/10 text-[#009ab6]">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#2563eb]/10 text-[#2563eb]">
         <Search size={22} aria-hidden />
       </div>
       <h2 className="mt-5 text-lg font-semibold text-stone-900">No countries match</h2>
@@ -513,7 +513,7 @@ function EmptyState({
           <button
             type="button"
             onClick={onClearFilter}
-            className="rounded-xl bg-[#009ab6] px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-[#009ab6]/30 transition-colors hover:bg-[#008aaa]"
+            className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-[#2563eb]/30 transition-colors hover:bg-[#3b82f6]"
           >
             View all countries
           </button>
@@ -529,7 +529,7 @@ export default function GalleryPage() {
       fallback={
         <main className="flex min-h-screen items-center justify-center bg-stone-50">
           <div
-            className="h-9 w-9 animate-spin rounded-full border-[3px] border-stone-200 border-t-[#009ab6]"
+            className="h-9 w-9 animate-spin rounded-full border-[3px] border-stone-200 border-t-[#2563eb]"
             aria-hidden
           />
         </main>

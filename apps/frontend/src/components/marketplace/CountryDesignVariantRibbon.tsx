@@ -2,7 +2,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Crown } from 'lucide-react';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
-import { isPaidCatalogProduct } from '@/lib/marketplace/catalog-utils';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
 type Props = {
@@ -12,7 +11,7 @@ type Props = {
 };
 
 /**
- * Horizontal strip of same-country flag designs (thumbnails + Free/Pro), below main preview.
+ * Horizontal strip of same-country flag designs (all shown as premium stock), below main preview.
  */
 export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
   if (variants.length === 0) return null;
@@ -39,7 +38,6 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
         aria-label="Other flag designs"
       >
         {variants.map((p) => {
-          const paid = isPaidCatalogProduct(p);
           const href = p.detailHref?.trim() || `/flags/${p.slug}`;
           const thumb = p.thumbnailUrl ?? p.previewUrl;
           const formatHints = p.files.map((f) => f.format);
@@ -50,7 +48,7 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
               key={p.id}
               href={href}
               role="listitem"
-              aria-label={`${p.title} — ${paid ? 'Premium' : 'Free'}`}
+              aria-label={`${p.title} — Premium stock`}
               title={p.title}
               className="group relative w-[6.25rem] shrink-0 snap-start overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm transition-[box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:shadow-md sm:w-28"
             >
@@ -70,19 +68,9 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
                     —
                   </div>
                 )}
-                <span
-                  className={`pointer-events-none absolute left-1.5 top-1.5 rounded-md px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide ${
-                    paid ? 'bg-[var(--brand-blue)]/94 text-[#fafaf9]' : 'border border-white/80 bg-white/92 text-neutral-800'
-                  }`}
-                >
-                  {paid ? (
-                    <span className="inline-flex items-center gap-0.5">
-                      <Crown size={9} aria-hidden strokeWidth={2.5} />
-                      Pro
-                    </span>
-                  ) : (
-                    'Free'
-                  )}
+                <span className="pointer-events-none absolute left-1.5 top-1.5 inline-flex items-center gap-0.5 rounded-md bg-amber-400/95 px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-950 ring-1 ring-amber-600/40">
+                  <Crown size={9} aria-hidden strokeWidth={2.5} />
+                  Premium
                 </span>
               </div>
             </Link>

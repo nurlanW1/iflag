@@ -91,12 +91,12 @@ export default function AssetsPage() {
                 placeholder="Search flags, countries, organizations..."
                 value={filters.search}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                className="w-full pl-12 pr-4 py-4 bg-white border border-black/10 rounded-lg text-black placeholder-black/40 focus:outline-none focus:ring-2 focus:ring-[#009ab6] focus:border-transparent"
+                className="w-full pl-12 pr-4 py-4 bg-white border border-black/10 rounded-lg text-black placeholder-black/40 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
               />
             </div>
             <button
               type="submit"
-              className="px-8 py-4 bg-[#009ab6] hover:bg-[#007a8a] text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
+              className="px-8 py-4 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
             >
               <Search size={20} />
               Search
@@ -106,14 +106,14 @@ export default function AssetsPage() {
               onClick={() => setShowFilters(!showFilters)}
               className={`px-6 py-4 rounded-lg font-semibold transition-colors flex items-center gap-2 border ${
                 showFilters || activeFiltersCount > 0
-                  ? 'bg-[#009ab6] text-white border-[#009ab6]'
+                  ? 'bg-[#2563eb] text-white border-[#2563eb]'
                   : 'bg-white text-black hover:bg-black/5 border-black/10'
               }`}
             >
               <SlidersHorizontal size={20} />
               Filters
               {activeFiltersCount > 0 && (
-                <span className="bg-white text-[#009ab6] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                <span className="bg-white text-[#2563eb] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
                   {activeFiltersCount}
                 </span>
               )}
@@ -138,7 +138,7 @@ export default function AssetsPage() {
                 {activeFiltersCount > 0 && (
                   <button
                     onClick={clearFilters}
-                    className="text-[#009ab6] hover:text-[#007a8a] text-sm font-semibold"
+                    className="text-[#2563eb] hover:text-[#1d4ed8] text-sm font-semibold"
                   >
                     Clear all
                   </button>
@@ -163,7 +163,7 @@ export default function AssetsPage() {
                       onClick={() => toggleAssetType(type)}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         filters.asset_type.includes(type)
-                          ? 'bg-[#009ab6] text-white'
+                          ? 'bg-[#2563eb] text-white'
                           : 'bg-black/5 text-black/70 hover:bg-black/10'
                       }`}
                     >
@@ -181,22 +181,12 @@ export default function AssetsPage() {
                     onClick={() => setFilters({ ...filters, is_premium: filters.is_premium === true ? undefined : true })}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors text-left flex items-center gap-2 ${
                       filters.is_premium === true
-                        ? 'bg-[#009ab6] text-white'
+                        ? 'bg-amber-400 text-amber-950 ring-1 ring-amber-600/35'
                         : 'bg-black/5 text-black/70 hover:bg-black/10'
                     }`}
                   >
                     <Crown size={16} />
-                    Premium Only
-                  </button>
-                  <button
-                    onClick={() => setFilters({ ...filters, is_premium: filters.is_premium === false ? undefined : false })}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors text-left ${
-                      filters.is_premium === false
-                        ? 'bg-black text-white'
-                        : 'bg-black/5 text-black/70 hover:bg-black/10'
-                    }`}
-                  >
-                    Free Only
+                    Premium only
                   </button>
                 </div>
               </div>
@@ -207,7 +197,7 @@ export default function AssetsPage() {
                 <select
                   value={filters.sort}
                   onChange={(e) => setFilters({ ...filters, sort: e.target.value as any })}
-                  className="w-full px-4 py-2 bg-white border border-black/10 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#009ab6]"
+                  className="w-full px-4 py-2 bg-white border border-black/10 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
                 >
                   <option value="newest">Newest First</option>
                   <option value="oldest">Oldest First</option>
@@ -230,7 +220,7 @@ export default function AssetsPage() {
             <button
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-lg transition-colors ${
-                viewMode === 'grid' ? 'bg-[#009ab6] text-white' : 'bg-black/5 text-black/70 hover:bg-black/10'
+                viewMode === 'grid' ? 'bg-[#2563eb] text-white' : 'bg-black/5 text-black/70 hover:bg-black/10'
               }`}
             >
               <Grid3x3 size={20} />
@@ -238,7 +228,7 @@ export default function AssetsPage() {
             <button
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-lg transition-colors ${
-                viewMode === 'list' ? 'bg-[#009ab6] text-white' : 'bg-black/5 text-black/70 hover:bg-black/10'
+                viewMode === 'list' ? 'bg-[#2563eb] text-white' : 'bg-black/5 text-black/70 hover:bg-black/10'
               }`}
             >
               <List size={20} />
@@ -249,7 +239,7 @@ export default function AssetsPage() {
         {/* Results Grid */}
         {loading ? (
           <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#009ab6]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2563eb]"></div>
           </div>
         ) : (
           <>
@@ -286,7 +276,7 @@ export default function AssetsPage() {
                         <div className="flex items-center gap-3 text-sm text-black/60">
                           <span className="uppercase">{asset.asset_type || 'Flag'}</span>
                           {asset.is_premium && (
-                            <span className="flex items-center gap-1 text-[#009ab6]">
+                            <span className="flex items-center gap-1 text-[#2563eb]">
                               <Crown size={14} />
                               Premium
                             </span>

@@ -2,11 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Crown } from 'lucide-react';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
-import {
-  collectFormatLabels,
-  formatPrice,
-  isPaidCatalogProduct,
-} from '@/lib/marketplace/catalog-utils';
+import { collectFormatLabels, formatPrice } from '@/lib/marketplace/catalog-utils';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
 function countryLabelFromSlug(slug: string) {
@@ -25,7 +21,6 @@ export function MarketplaceProductCard({
   categoryName: string;
 }) {
   const formats = collectFormatLabels(product.files);
-  const paid = isPaidCatalogProduct(product);
   const href = product.detailHref?.trim() || `/flags/${product.slug}`;
   const formatHints = product.files.map((f) => f.format);
   const thumb = product.thumbnailUrl;
@@ -51,18 +46,11 @@ export function MarketplaceProductCard({
         )}
         <div className="pointer-events-none absolute left-3 top-3 flex flex-wrap gap-2">
           <span
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium tracking-wide ${
-              paid ? 'bg-[var(--brand-blue)]/92 text-[#fafaf9]' : 'border border-neutral-200/95 bg-white/92 text-neutral-800 backdrop-blur-[2px]'
-            }`}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-400/95 px-3 py-1.5 text-sm font-bold uppercase tracking-wide text-amber-950 shadow-sm ring-1 ring-amber-600/35 backdrop-blur-[2px]"
+            title="Premium stock"
           >
-            {paid ? (
-              <span className="inline-flex items-center gap-1.5">
-                <Crown size={15} className="shrink-0 opacity-95" aria-hidden />
-                Pro
-              </span>
-            ) : (
-              'Free'
-            )}
+            <Crown size={15} className="shrink-0" aria-hidden strokeWidth={2.25} />
+            Premium
           </span>
         </div>
       </Link>

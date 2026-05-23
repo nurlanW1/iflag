@@ -3,7 +3,7 @@
 import type { CSSProperties } from 'react';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Check, Sparkles } from 'lucide-react';
+import { Check, Crown, Sparkles } from 'lucide-react';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
 import {
   PLAN_CARD_COPY,
@@ -44,9 +44,12 @@ export function PricingPlansClient() {
 
   return (
     <div className="bg-white">
-      <div className="marketplace-shell py-14 sm:py-16 lg:py-20 lg:pb-24">
+      <div className="marketplace-shell py-10 sm:py-14 lg:py-20 lg:pb-24">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-[#009ab6]">Pricing</p>
+          <p className="flex items-center justify-center gap-2 text-sm font-semibold uppercase tracking-wide text-[#2563eb]">
+            <Crown className="h-4 w-4 shrink-0 text-amber-500" aria-hidden strokeWidth={2.25} />
+            Pricing
+          </p>
           <h1 className="mt-2 text-4xl font-black tracking-tight text-gray-900 sm:text-5xl lg:text-6xl xl:text-7xl">
             Simple plans for creators and teams
           </h1>
@@ -105,7 +108,7 @@ export function PricingPlansClient() {
                 key={plan.id}
                 className={`flex flex-col rounded-2xl border p-6 shadow-sm sm:p-7 xl:p-8 ${
                   plan.highlighted
-                    ? 'border-[#009ab6]/40 bg-gradient-to-b from-[#009ab6]/5 to-white ring-2 ring-[#009ab6]/20'
+                    ? 'border-[#2563eb]/40 bg-gradient-to-b from-[#2563eb]/5 to-white ring-2 ring-[#2563eb]/20'
                     : 'border-gray-200 bg-white'
                 }`}
               >
@@ -115,7 +118,7 @@ export function PricingPlansClient() {
                     <p className="mt-1 text-sm text-gray-600">{plan.tagline}</p>
                   </div>
                   {plan.highlighted ? (
-                    <span className="shrink-0 rounded-full bg-[#009ab6] px-2.5 py-0.5 text-xs font-bold text-white">
+                    <span className="shrink-0 rounded-full bg-[#2563eb] px-2.5 py-0.5 text-xs font-bold text-white">
                       Popular
                     </span>
                   ) : null}
@@ -177,7 +180,7 @@ export function PricingPlansClient() {
                   {isFree ? (
                     <Link
                       href="/browse"
-                      className="flex w-full items-center justify-center rounded-xl border-2 border-gray-900 bg-white py-3 text-sm font-semibold text-gray-900 transition hover:border-[#009ab6] hover:text-[#009ab6]"
+                      className="flex w-full items-center justify-center rounded-xl border-2 border-gray-900 bg-white py-3 text-sm font-semibold text-gray-900 transition hover:border-[#2563eb] hover:text-[#2563eb]"
                     >
                       Browse catalog
                     </Link>
@@ -187,7 +190,7 @@ export function PricingPlansClient() {
                       <CheckoutButton
                         kind="subscription"
                         planSlug={proSlug}
-                        className="w-full rounded-xl bg-[#009ab6] py-3 text-sm font-semibold text-white transition hover:bg-[#007a8a] disabled:opacity-50"
+                        className="w-full rounded-xl bg-[#2563eb] py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:opacity-50"
                         style={{ width: '100%' } as CSSProperties}
                       >
                         {interval === 'annual' && !annualReady
@@ -202,7 +205,7 @@ export function PricingPlansClient() {
                   {isBusiness ? (
                     <Link
                       href="/contact"
-                      className="flex w-full items-center justify-center rounded-xl border-2 border-gray-200 bg-gray-50 py-3 text-sm font-semibold text-gray-800 transition hover:border-[#009ab6] hover:text-[#009ab6]"
+                      className="flex w-full items-center justify-center rounded-xl border-2 border-gray-200 bg-gray-50 py-3 text-sm font-semibold text-gray-800 transition hover:border-[#2563eb] hover:text-[#2563eb]"
                     >
                       Contact us
                     </Link>
@@ -216,7 +219,7 @@ export function PricingPlansClient() {
         {/* Comparison table */}
         <div className="mt-20 lg:mt-24">
           <div className="mb-6 flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-[#009ab6]" aria-hidden />
+            <Sparkles className="h-5 w-5 text-[#2563eb]" aria-hidden />
             <h2 className="text-xl font-black text-gray-900">Compare plans</h2>
           </div>
           <div className="overflow-x-auto rounded-2xl border border-gray-200">
@@ -229,7 +232,7 @@ export function PricingPlansClient() {
                   <th scope="col" className="px-4 py-3 font-semibold text-gray-900">
                     Free
                   </th>
-                  <th scope="col" className="px-4 py-3 font-semibold text-[#009ab6]">
+                  <th scope="col" className="px-4 py-3 font-semibold text-[#2563eb]">
                     Pro
                   </th>
                   <th scope="col" className="px-4 py-3 font-semibold text-gray-500">
