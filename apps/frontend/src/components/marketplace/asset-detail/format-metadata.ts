@@ -95,3 +95,12 @@ export function bytesToHuman(bytes: number | null | undefined): string {
   const gb = mb / 1024;
   return `${gb >= 100 ? gb.toFixed(1) : gb.toFixed(2)} GB`;
 }
+
+/** Short badge for asset type (vector vs raster). */
+export function formatKindLabel(extRaw: string): 'Vector' | 'Raster' | 'Print' | 'Other' {
+  const k = extRaw.trim().replace(/^\./, '').toLowerCase();
+  if (['svg', 'eps', 'ai'].includes(k)) return 'Vector';
+  if (['pdf'].includes(k)) return 'Print';
+  if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(k)) return 'Raster';
+  return 'Other';
+}

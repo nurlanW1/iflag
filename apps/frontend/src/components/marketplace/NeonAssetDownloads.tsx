@@ -7,20 +7,60 @@ import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import type { PublicProductFile } from '@/lib/marketplace/product-mapper';
 import { triggerApiFileDownload } from '@/lib/client/trigger-api-download';
-import { bytesToHuman, formatBadgeLabel } from '@/components/marketplace/asset-detail/format-metadata';
+import { bytesToHuman, formatBadgeLabel, formatKindLabel } from '@/components/marketplace/asset-detail/format-metadata';
+import { CopyLinkShareRow } from '@/components/marketplace/asset-detail/CopyLinkShareRow';
 
 type Props = {
   files: PublicProductFile[];
+  /** One compact line for commerce trust (license summary); optional */
+  licenseSummary?: string | null;
 };
 
-const segmentWrap = 'rounded-2xl bg-slate-100/95 p-1.5 ring-1 ring-slate-200/80';
-const segmentBtn =
-  'min-h-[2.875rem] min-w-[4rem] shrink-0 snap-start rounded-xl px-4 text-[14px] font-semibold tracking-wide transition-[color,background,box-shadow,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2 sm:px-5';
-const btnPrimary =
-  'mt-8 flex min-h-[3.375rem] w-full items-center justify-center gap-2.5 rounded-2xl bg-[var(--brand-blue)] px-5 text-[16px] font-semibold tracking-tight text-[#fafaf9] shadow-[0_8px_24px_-8px_rgba(12,39,72,0.55)] transition-[transform,background-color,box-shadow] duration-200 hover:bg-[var(--brand-blue-hover)] hover:shadow-[0_14px_32px_-10px_rgba(12,39,72,0.52)] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50';
+const segmentRail =
+  'rounded-[1rem] bg-slate-100/98 p-1.5 ring-1 ring-slate-200/75 shadow-inner';
 
-/** Neon download block — refined segment control + brand CTA */
-export function NeonAssetDownloads({ files }: Props) {
+const dlBtn =
+  'group/dl relative mt-8 flex min-h-[3.5rem] w-full items-center justify-center gap-2.5 overflow-hidden rounded-2xl bg-slate-950 px-5 text-[16px] font-semibold tracking-tight text-[#fafaf9] transition-[transform,box-shadow,background-color] duration-200 hover:bg-slate-900 hover:shadow-[0_20px_40px_-18px_rgba(0,0,0,0.45)] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50';
+
+function TrustStrip({
+  bytesLabel,
+  kind,
+  summary,
+}: {
+  bytesLabel: string;
+  kind: string;
+  summary?: string | null;
+}) {
+  return (
+    <div className="mt-5 space-y-3">
+      <p className="text-center text-[12px] font-medium tracking-wide text-slate-500 sm:text-left">
+        <span className="tabular-nums text-slate-600">{bytesLabel}</span>
+        <span className="mx-2 text-slate-300">·</span>
+        Instant download when eligible
+      </p>
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+        <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-700 ring-1 ring-slate-200/90">
+          {kind}
+        </span>
+        {summary ? (
+          <span
+            className="line-clamp-2 max-w-full rounded-full bg-emerald-50/90 px-3 py-1 text-[11px] font-medium leading-snug text-emerald-900 ring-1 ring-emerald-200/80"
+            title={summary}
+          >
+            {summary}
+          </span>
+        ) : (
+          <span className="rounded-full bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200/80">
+            See license terms
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Neon — premium segmented formats + slate CTA + trust microcopy (APIs unchanged). */
+export function NeonAssetDownloads({ files, licenseSummary }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const back = pathname || '/browse';
@@ -72,59 +112,68 @@ export function NeonAssetDownloads({ files }: Props) {
     );
   }
 
+  const activeKind = active ? formatKindLabel(active.format) : 'Other';
+
   const formatRow = (
-    <div
-      role="radiogroup"
-      aria-label="Format"
-      className={clsx(
-        segmentWrap,
-        '-mx-0.5 flex max-w-full gap-1 overflow-x-auto px-0.5 py-0.5 [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] sm:mx-0 sm:flex-wrap sm:overflow-visible',
-      )}
-    >
-      {sorted.map((f) => {
-        const on = active?.id === f.id;
-        return (
-          <button
-            key={f.id}
-            type="button"
-            role="radio"
-            aria-checked={on}
-            aria-label={formatBadgeLabel(f.format)}
-            onClick={() => setSel(f.id)}
-            className={clsx(
-              segmentBtn,
-              on
-                ? 'bg-white text-slate-900 shadow-[0_1px_3px_rgba(15,23,42,0.12)] ring-1 ring-slate-200/90'
-                : 'text-slate-600 hover:bg-white/60 hover:text-slate-900',
-            )}
-          >
-            {formatBadgeLabel(f.format)}
-          </button>
-        );
-      })}
-    </div>
+    <section aria-labelledby="fmt-heading-neon">
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <h2 id="fmt-heading-neon" className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+          Included formats
+        </h2>
+        <span className="text-[11px] font-medium tabular-nums text-slate-400">{sorted.length} files</span>
+      </div>
+      <div
+        role="radiogroup"
+        aria-labelledby="fmt-heading-neon"
+        className={clsx(
+          segmentRail,
+          'flex gap-1 overflow-x-auto [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] pb-px sm:flex-wrap sm:overflow-visible',
+        )}
+      >
+        {sorted.map((f) => {
+          const on = active?.id === f.id;
+          const lbl = formatBadgeLabel(f.format);
+          const sz = bytesToHuman(f.bytes);
+          return (
+            <button
+              key={f.id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              aria-label={`${lbl}, ${sz}`}
+              onClick={() => setSel(f.id)}
+              className={clsx(
+                'flex min-w-[4.85rem] shrink-0 snap-start flex-col items-center justify-center rounded-[0.6875rem] px-4 py-2.5 transition-[transform,color,background,box-shadow,ring] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2 sm:min-w-[5.75rem]',
+                on
+                  ? 'bg-white shadow-[0_12px_30px_-20px_rgba(15,23,42,0.35)] ring-2 ring-[var(--brand-blue)]/38'
+                  : 'text-slate-600 hover:bg-white/70 hover:text-slate-900',
+              )}
+            >
+              <span className="text-[13px] font-bold leading-none tracking-[0.04em] text-slate-900">{lbl}</span>
+              <span className="mt-1 text-[11px] font-medium tabular-nums leading-none text-slate-500">{sz}</span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
   );
 
-  const metaLine = active ? (
-    <p className="mt-4 text-center text-[14px] font-medium tabular-nums text-slate-500 sm:text-left">
-      <span className="text-slate-800">{formatBadgeLabel(active.format)}</span>
-      <span className="mx-2 text-slate-300">·</span>
-      <span>{bytesToHuman(active.bytes)}</span>
-    </p>
-  ) : null;
-
   const primaryButton = active ? (
-    <button type="button" disabled={busy} onClick={() => void onPrimaryDownload()} className={btnPrimary}>
-      <Download className="h-[1.125rem] w-[1.125rem] shrink-0 opacity-95" aria-hidden strokeWidth={2.25} />
-      {busy ? 'Preparing…' : `Download ${formatBadgeLabel(active.format)}`}
+    <button type="button" disabled={busy} onClick={() => void onPrimaryDownload()} className={dlBtn}>
+      <span className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent opacity-70" aria-hidden />
+      <Download className="relative h-[1.15rem] w-[1.15rem] shrink-0 opacity-[0.93] transition-transform duration-200 group-hover/dl:translate-y-px" aria-hidden strokeWidth={2.35} />
+      <span className="relative">{busy ? 'Preparing…' : `Download ${formatBadgeLabel(active.format)}`}</span>
     </button>
   ) : null;
 
   const block = (
-    <div>
+    <div className="space-y-0">
       {formatRow}
-      {metaLine}
-      {primaryButton}
+      <div>{primaryButton}</div>
+      {active ? (
+        <TrustStrip bytesLabel={bytesToHuman(active.bytes)} kind={activeKind} summary={licenseSummary} />
+      ) : null}
+      <CopyLinkShareRow />
     </div>
   );
 
@@ -132,8 +181,8 @@ export function NeonAssetDownloads({ files }: Props) {
     <>
       <div className="hidden lg:block">{block}</div>
       <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] pb-[max(10px,env(safe-area-inset-bottom))] lg:hidden">
-        <div className="pointer-events-auto mx-auto max-w-lg rounded-t-2xl border border-b-0 border-slate-200/90 bg-white/95 px-5 pb-6 pt-4 shadow-[0_-12px_48px_-16px_rgba(15,23,42,0.15)] backdrop-blur-md">
-          <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-200/90" aria-hidden />
+        <div className="pointer-events-auto mx-auto max-w-lg rounded-t-[1.375rem] border border-b-0 border-slate-200/90 bg-white/96 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 shadow-[0_-28px_64px_-32px_rgba(15,23,42,0.18)] backdrop-blur-xl backdrop-saturate-150">
+          <div className="mx-auto mb-3 h-1 w-[2.875rem] rounded-full bg-slate-200/90" aria-hidden />
           {block}
         </div>
       </div>
