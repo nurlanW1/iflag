@@ -62,7 +62,7 @@ function suggestDownloadBasename(row: FileRow): string {
  * - Legacy Blob `file_url`: rewritten to **`CLOUDFLARE_R2_PUBLIC_URL`** when the same `flags/…` key exists on R2.
  * - Rows with **`file_key`**: use R2 public or short-lived signed GET when SDK credentials exist (even if `storage_provider` is stale).
  * - Requires an active Paddle-backed entitlement: Neon `user_subscriptions`, backend `check-premium`
- *   (JWT cookie), admin allow-list, or optional owner bypass emails (`MARKETPLACE_OWNER_DOWNLOAD_EMAILS`).
+ *   (JWT cookie), or optional owner bypass emails (`MARKETPLACE_OWNER_DOWNLOAD_EMAILS` — default single owner).
  */
 export async function GET(
   request: Request,

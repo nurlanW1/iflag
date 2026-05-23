@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
@@ -167,9 +168,10 @@ export function LandingFlagGalleryPreview() {
               fill
               loading="lazy"
               unoptimized={svg}
-              className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
+              className="relative z-0 object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
               sizes="(max-width: 379px) 100vw, (max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw"
             />
+            <PhotoWatermarkOverlay />
           </div>
           <div className="flex flex-1 flex-col gap-2 p-4">
             <div className="min-h-0">

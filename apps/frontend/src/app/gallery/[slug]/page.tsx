@@ -4,14 +4,15 @@ import {
   useState,
   useEffect,
   useCallback,
-  useMemo,
   type SyntheticEvent,
 } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import { ArrowLeft, Download, Lock, Sparkles, ImageOff, Heart, Share2 } from 'lucide-react';
+import { ArrowLeft, Lock, Sparkles, ImageOff, Heart, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
-import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
+import { GalleryCountryDownloadsPanel } from '@/components/gallery/GalleryCountryDownloadsPanel';
+import { clientUserMatchesOwnerDownloadBypass } from '@/lib/marketplace/owner-download-bypass-client';
+import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
 import {
   FLAG_THUMB_PLACEHOLDER_DATA_URL,
   flagThumbPlaceholderForFileId,
@@ -53,53 +54,16 @@ interface CountryData {
   variants: Variant[];
 }
 
-const CANONICAL_FORMATS = ['AI', 'SVG', 'EPS', 'JPG', 'PNG'] as const;
-type CanonicalFormatId = (typeof CANONICAL_FORMATS)[number];
+const DEFAULT_FORMAT_PICK_ORDER = ['PNG', 'JPG', 'SVG', 'EPS', 'AI'] as const;
 
-/** Visual identity per format slot — keeps the 5 download cards distinguishable at a glance. */
-const FORMAT_META: Record<CanonicalFormatId, { label: string; subtitle: string; accent: string; pill: string }> = {
-  AI: {
-    label: 'AI',
-    subtitle: 'Adobe Illustrator',
-    accent: 'from-amber-100 to-amber-50 text-amber-900 ring-amber-200',
-    pill: 'bg-amber-500',
-  },
-  SVG: {
-    label: 'SVG',
-    subtitle: 'Scalable vector',
-    accent: 'from-sky-100 to-sky-50 text-sky-900 ring-sky-200',
-    pill: 'bg-sky-500',
-  },
-  EPS: {
-    label: 'EPS',
-    subtitle: 'Encapsulated PS',
-    accent: 'from-violet-100 to-violet-50 text-violet-900 ring-violet-200',
-    pill: 'bg-violet-500',
-  },
-  JPG: {
-    label: 'JPG',
-    subtitle: 'Photo raster',
-    accent: 'from-rose-100 to-rose-50 text-rose-900 ring-rose-200',
-    pill: 'bg-rose-500',
-  },
-  PNG: {
-    label: 'PNG',
-    subtitle: 'Transparent',
-    accent: 'from-emerald-100 to-emerald-50 text-emerald-900 ring-emerald-200',
-    pill: 'bg-emerald-500',
-  },
-};
-
-/** Priority for *auto* selection when a variant changes; preview-friendly first. */
-const DEFAULT_PICK_ORDER: CanonicalFormatId[] = ['PNG', 'JPG', 'SVG', 'EPS', 'AI'];
-
-function findFormatBySlot(variant: Variant | null, slot: CanonicalFormatId): Format | null {
+function findFormatBySlot(variant: Variant | null, slot: string): Format | null {
   if (!variant) return null;
-  return variant.formats.find((f) => f.format.toUpperCase() === slot) ?? null;
+  const needle = slot.toUpperCase();
+  return variant.formats.find((f) => f.format.toUpperCase() === needle) ?? null;
 }
 
 function pickDefaultFormat(variant: Variant): Format | null {
-  for (const slot of DEFAULT_PICK_ORDER) {
+  for (const slot of DEFAULT_FORMAT_PICK_ORDER) {
     const f = findFormatBySlot(variant, slot);
     if (f) return f;
   }
@@ -176,7 +140,7 @@ export default function CountryDetailPage() {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isLoaded: clerkLoaded, isSignedIn } = useUser();
-  const isAdmin = clientClerkUserMatchesAdmin(user);
+  const isOwnerDownloadBypass = clientUserMatchesOwnerDownloadBypass(user);
 
   const [data, setData] = useState<CountryData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -244,10 +208,10 @@ export default function CountryDetailPage() {
     setSelectedFormat(pickDefaultFormat(variant));
   }, []);
 
-  const onPickSlot = useCallback(
-    (slot: CanonicalFormatId) => {
+  const onPickFormatById = useCallback(
+    (fileId: string) => {
       if (!selectedVariant) return;
-      const next = findFormatBySlot(selectedVariant, slot);
+      const next = selectedVariant.formats.find((f) => f.id === fileId);
       if (next) setSelectedFormat(next);
     },
     [selectedVariant],
@@ -312,13 +276,12 @@ export default function CountryDetailPage() {
         return `Download ${format.format}`;
       }
       if (!isSignedIn) return 'Sign in to download';
-      if (format.premiumTier !== 'free' && !isAdmin) {
-        if (!planLoaded) return 'Checking plan…';
-        if (!hasActivePlan) return 'Upgrade to download';
-      }
+      if (isOwnerDownloadBypass) return `Download ${format.format}`;
+      if (!planLoaded) return 'Checking plan…';
+      if (!hasActivePlan) return 'Subscribe to download';
       return `Download ${format.format}`;
     },
-    [isSignedIn, isAdmin, hasActivePlan, planLoaded],
+    [isSignedIn, isOwnerDownloadBypass, hasActivePlan, planLoaded],
   );
 
   const onDownloadPress = useCallback(
@@ -331,7 +294,7 @@ export default function CountryDetailPage() {
         router.push(`/sign-in?redirect_url=${redirectBack}`);
         return;
       }
-      if (format.premiumTier !== 'free' && !isAdmin && !hasActivePlan) {
+      if (!isOwnerDownloadBypass && !hasActivePlan) {
         if (!planLoaded) return;
         router.push('/pricing');
         return;
@@ -342,22 +305,13 @@ export default function CountryDetailPage() {
       handleLegacyDiskDownload,
       handleProtectedDownload,
       isSignedIn,
-      isAdmin,
+      isOwnerDownloadBypass,
       hasActivePlan,
       planLoaded,
       router,
       redirectBack,
     ],
   );
-
-  const availabilityForSelectedVariant = useMemo(() => {
-    const map: Partial<Record<CanonicalFormatId, Format>> = {};
-    for (const slot of CANONICAL_FORMATS) {
-      const f = findFormatBySlot(selectedVariant, slot);
-      if (f) map[slot] = f;
-    }
-    return map;
-  }, [selectedVariant]);
 
   if (loading) {
     return (
@@ -403,12 +357,12 @@ export default function CountryDetailPage() {
     downloading === selectedFormat.id ||
     (selectedFormat.downloadProtected &&
       isSignedIn &&
-      selectedFormat.premiumTier !== 'free' &&
-      !isAdmin &&
+      !isOwnerDownloadBypass &&
+      !hasActivePlan &&
       !planLoaded);
 
   return (
-    <main className="marketplace-shell min-h-screen bg-slate-50 pb-[calc(7rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]">
+    <main className="marketplace-shell min-h-screen bg-slate-50 max-lg:pb-[calc(21rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]">
       <div className="mx-auto max-w-[min(100%,1392px)] px-5 pb-14 pt-8 sm:px-6 sm:pb-16 sm:pt-10 xl:px-10 lg:pb-[4.75rem] lg:pt-11">
         <nav className="flex items-center gap-2 text-xs font-medium text-slate-500">
           <Link
@@ -489,7 +443,7 @@ export default function CountryDetailPage() {
                   style={{ background: 'linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)' }}
                 >
                   {selectedFormat && tierBadge(selectedFormat) ? (
-                    <span className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-900 ring-1 ring-amber-200/80">
+                    <span className="absolute left-4 top-4 z-30 inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-900 ring-1 ring-amber-200/80">
                       <Lock size={10} aria-hidden /> {tierBadge(selectedFormat)}
                     </span>
                   ) : null}
@@ -611,145 +565,32 @@ export default function CountryDetailPage() {
           </div>
 
           <aside className="w-full shrink-0 lg:sticky lg:top-[calc(5rem+env(safe-area-inset-top))] lg:z-[20] lg:h-auto lg:self-stretch">
-            <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[1.375rem] border border-slate-200/80 bg-white p-[1.6rem]">
-              <div className="border-b border-slate-100 pb-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                  Included formats
-                </p>
-                <h2 className="mt-2 text-[1.05rem] font-semibold tracking-tight text-slate-900">
-                  AI · SVG · EPS · JPG · PNG
-                </h2>
-                <p className="mt-2 text-[12px] leading-snug text-slate-500">
-                  Vector masters stay sharp; JPG and PNG are web-ready. Some slots may be empty for a design.
-                </p>
-              </div>
-
-              <ul className="mt-4 space-y-2">
-                {CANONICAL_FORMATS.map((slot) => {
-                  const fmt = availabilityForSelectedVariant[slot] ?? null;
-                  const meta = FORMAT_META[slot];
-                  const available = !!fmt;
-                  const isSelected = available && selectedFormat?.id === fmt!.id;
-                  const badge = available ? tierBadge(fmt!) : null;
-                  return (
-                    <li key={slot}>
-                      <button
-                        type="button"
-                        disabled={!available}
-                        onClick={() => onPickSlot(slot)}
-                        aria-pressed={isSelected}
-                        className={`group flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors sm:gap-4 sm:px-3.5 sm:py-3 ${
-                          isSelected
-                            ? 'border-slate-200 bg-white ring-2 ring-[var(--brand-blue)]/35'
-                            : available
-                              ? 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80'
-                              : 'cursor-not-allowed border-slate-100 bg-slate-50/50 opacity-60'
-                        }`}
-                      >
-                        <div
-                          className={`flex h-12 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br font-mono text-sm font-extrabold tracking-tight ring-1 sm:h-[3.25rem] sm:w-[3.75rem] ${
-                            available ? meta.accent : 'from-slate-100 to-slate-50 text-slate-400 ring-slate-200'
-                          }`}
-                        >
-                          {meta.label}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-slate-900">{meta.label}</span>
-                            <span className={`h-1.5 w-1.5 rounded-full ${available ? meta.pill : 'bg-slate-300'}`} />
-                            <span className="text-[11px] uppercase tracking-wide text-slate-400">
-                              {meta.subtitle}
-                            </span>
-                            {badge ? (
-                              <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-900 ring-1 ring-amber-200/80">
-                                <Lock size={9} aria-hidden /> {badge}
-                              </span>
-                            ) : null}
-                          </div>
-                          <p className="mt-0.5 truncate text-[11px] text-slate-500 sm:text-xs">
-                            {available
-                              ? `${fmt!.dimensions} · ${fmt!.size}`
-                              : 'Not available for this design'}
-                          </p>
-                        </div>
-                        <span
-                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                            isSelected
-                              ? 'border-[var(--brand-blue)]'
-                              : available
-                                ? 'border-slate-300 group-hover:border-slate-400'
-                                : 'border-slate-200'
-                          }`}
-                          aria-hidden
-                        >
-                          {isSelected ? <span className="h-2.5 w-2.5 rounded-full bg-[var(--brand-blue)]" /> : null}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-
-              {selectedFormat ? (
-                <div className="mt-5 hidden lg:block lg:space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => onDownloadPress(selectedFormat)}
-                    disabled={!!downloadDisabled}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 py-3.5 text-[15px] font-semibold tracking-tight text-[#fafaf9] transition-[transform,background-color] duration-200 hover:bg-slate-900 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {downloading === selectedFormat.id ? (
-                      <>
-                        <div className="h-5 w-5 animate-spin rounded-full border-[2.5px] border-white/30 border-t-white" />
-                        Processing…
-                      </>
-                    ) : (
-                      <>
-                        <Download size={18} strokeWidth={2} />
-                        {downloadLabel(selectedFormat)}
-                      </>
-                    )}
-                  </button>
-                  {!isSignedIn ? (
-                    <p className="text-center text-xs text-slate-500">
-                      <Link
-                        href={`/sign-up?redirect_url=${redirectBack}`}
-                        className="font-medium text-[var(--brand-blue)] hover:underline"
-                      >
-                        Create an account
-                      </Link>{' '}
-                      for synced downloads.
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
+            <div className="flex min-h-[26rem] h-full flex-col overflow-hidden rounded-[1.375rem] border border-slate-200/80 bg-white p-[1.6rem] backdrop-blur-[14px]">
+              <GalleryCountryDownloadsPanel
+                formats={(selectedVariant?.formats ?? []).map((f) => ({
+                  id: f.id,
+                  format: f.format,
+                  file: f.file,
+                  size: f.size,
+                }))}
+                selectedFormatId={selectedFormat?.id ?? null}
+                onSelectFormatId={onPickFormatById}
+                onDownload={() => selectedFormat && onDownloadPress(selectedFormat)}
+                downloadBusy={Boolean(selectedFormat && downloading === selectedFormat.id)}
+                downloadDisabled={downloadDisabled}
+                downloadButtonLabel={selectedFormat ? downloadLabel(selectedFormat) : 'Download'}
+                cartProduct={{
+                  productId: selectedVariant?.id ?? `gallery-country:${data.country.slug}`,
+                  slug: data.country.slug,
+                  title:
+                    `${pageTitle}${selectedVariant ? ` · ${selectedVariant.name}` : ''}`,
+                  pathname: pathname || `/gallery/${data.country.slug}`,
+                }}
+              />
             </div>
           </aside>
         </div>
       </div>
-
-      {selectedFormat ? (
-        <div className="fixed inset-x-0 bottom-[var(--cookie-banner-h,0px)] z-[110] border-t border-slate-200/90 bg-white/95 px-4 py-3 shadow-[0_-6px_30px_-12px_rgba(15,23,42,0.15)] backdrop-blur-lg lg:hidden [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
-          <button
-            type="button"
-            onClick={() => onDownloadPress(selectedFormat)}
-            disabled={!!downloadDisabled}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 py-3.5 text-[15px] font-semibold tracking-tight text-[#fafaf9] transition-[transform,background-color] duration-200 hover:bg-slate-900 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {downloading === selectedFormat.id ? (
-              <>
-                <div className="h-5 w-5 animate-spin rounded-full border-[2.5px] border-white/30 border-t-white" />
-                Processing…
-              </>
-            ) : (
-              <>
-                <Download size={18} strokeWidth={2} />
-                {downloadLabel(selectedFormat)}
-              </>
-            )}
-          </button>
-        </div>
-      ) : null}
     </main>
   );
 }

@@ -13,8 +13,8 @@ function normalizeMarketplaceEmail(email: string): string {
 }
 
 /**
- * Emails that may download **pro** marketplace files without purchase/subscription.
- * Set `MARKETPLACE_OWNER_DOWNLOAD_EMAILS` to a comma-separated list; defaults to the site owner.
+ * Emails that may bypass **paid marketplace + gallery** gates (preview/pro) without Paddle.
+ * Bypass is **only** for explicit `MARKETPLACE_OWNER_DOWNLOAD_EMAILS` (defaults to operator inbox). Admin allow-list alone does nothing here.
  */
 export function getMarketplaceOwnerDownloadEmails(): string[] {
   const raw = process.env.MARKETPLACE_OWNER_DOWNLOAD_EMAILS;

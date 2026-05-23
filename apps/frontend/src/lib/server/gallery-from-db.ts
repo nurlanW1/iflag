@@ -11,7 +11,6 @@ import {
   fallbackUrlsForGalleryListThumb,
   resolvedFlagPublicHref,
 } from '@/lib/server/flag-asset-url';
-import { freeTierRequiresSignIn } from '@/lib/server/flagswing-download-policy';
 
 /** Gallery/country tiles — canonical API fields (`id`, `thumbnail_url`, `flag_count`) plus legacy `thumbnail`/`count` for browsers. */
 export type GalleryCountrySummary = {
@@ -407,14 +406,9 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
       previewUrl = flagThumbPlaceholderForFileId(String(r.id));
     }
 
-    const signInForFree = freeTierRequiresSignIn();
-    const downloadProtected = tier !== 'free' || signInForFree;
-    const canonicalFileHref = resolvedFlagPublicHref({
-      fileKey: r.file_key,
-      fallbackRawUrls: fileUrl ? [fileUrl] : [],
-    });
-    const directDownloadUrl =
-      tier === 'free' && !signInForFree && canonicalFileHref ? canonicalFileHref : undefined;
+    /** Always gate file bytes through `/api/download/[id]` — never expose a public direct file URL for client-side grabs. */
+    const downloadProtected = true;
+    const directDownloadUrl = undefined;
 
     const formatRow: FormatRow = {
       id: String(r.id),

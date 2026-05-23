@@ -2,6 +2,7 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
+import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
 type Props = {
@@ -85,13 +86,14 @@ export function PremiumAssetPreview({
               sizes="(max-width:1024px) 100vw, min(1060px, 72vw)"
               priority
               className={clsx(
-                'object-contain p-[clamp(1rem,3.75vw,2.85rem)]',
+                'relative z-0 object-contain p-[clamp(1rem,3.75vw,2.85rem)]',
                 'transition-[transform] duration-[680ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
                 'hover:scale-[1.035]',
               )}
             />
+            <PhotoWatermarkOverlay />
             {useTransparencyBackdrop ? (
-              <span className="pointer-events-none absolute bottom-4 right-4 rounded-lg bg-white/92 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 ring-1 ring-slate-200/80 backdrop-blur-sm">
+              <span className="pointer-events-none absolute bottom-4 right-4 z-10 rounded-lg bg-white/92 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 ring-1 ring-slate-200/80 backdrop-blur-sm">
                 Alpha preview
               </span>
             ) : null}

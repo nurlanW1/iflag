@@ -20,6 +20,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
+import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 
 interface Country {
@@ -356,22 +357,23 @@ function CardGrid({ countries }: { countries: Country[] }) {
                 loading="lazy"
                 decoding="async"
                 referrerPolicy="no-referrer"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.08]"
+                className="relative z-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.08]"
                 onError={(e) => {
                   const el = e.currentTarget;
                   el.onerror = null;
                   el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
                 }}
               />
+              <PhotoWatermarkOverlay />
               {country.code ? (
-                <span className="absolute left-2 top-2 rounded-md bg-black/40 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                <span className="absolute left-2 top-2 z-10 rounded-md bg-black/40 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
                   {country.code}
                 </span>
               ) : null}
-              <span className="absolute right-2 top-2 rounded-md bg-white/85 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-stone-700 shadow-sm ring-1 ring-stone-200 backdrop-blur">
+              <span className="absolute right-2 top-2 z-10 rounded-md bg-white/85 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-stone-700 shadow-sm ring-1 ring-stone-200 backdrop-blur">
                 {country.count}
               </span>
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex translate-y-2 items-center justify-center gap-1.5 bg-gradient-to-t from-black/55 to-transparent px-2 py-2 text-xs font-semibold text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex translate-y-2 items-center justify-center gap-1.5 bg-gradient-to-t from-black/55 to-transparent px-2 py-2 text-xs font-semibold text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                 View files <ArrowRight size={13} />
               </div>
             </div>
@@ -412,13 +414,14 @@ function CardList({ countries }: { countries: Country[] }) {
                 loading="lazy"
                 decoding="async"
                 referrerPolicy="no-referrer"
-                className="h-full w-full object-cover"
+                className="relative z-0 h-full w-full object-cover"
                 onError={(e) => {
                   const el = e.currentTarget;
                   el.onerror = null;
                   el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
                 }}
               />
+              <PhotoWatermarkOverlay />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">

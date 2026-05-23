@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
 import { useRevealInView } from '@/hooks/useRevealInView';
 import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
 import { galleryCompactTileGridClasses, galleryHomeLargeTileGridClasses } from '@/lib/ui/marketplace-layout';
@@ -48,8 +49,8 @@ function GalleryCell({
       <div
         className={
           largeTiles
-            ? 'aspect-square min-h-0 rounded-xl sm:rounded-2xl bg-[#1e40af]/5 overflow-hidden border-2 border-[#1e40af]/15 hover:border-[#2563eb] hover:shadow-lg transition-all duration-300 flex items-center justify-center p-1.5 sm:p-2.5 md:p-3'
-            : 'aspect-square bg-[#1e40af]/5 rounded-lg overflow-hidden border border-[#1e40af]/10 hover:border-[#2563eb] hover:shadow-md transition-all duration-300 flex items-center justify-center p-2'
+            ? 'relative aspect-square min-h-0 rounded-xl sm:rounded-2xl bg-[#1e40af]/5 overflow-hidden border-2 border-[#1e40af]/15 hover:border-[#2563eb] hover:shadow-lg transition-all duration-300 flex items-center justify-center p-1.5 sm:p-2.5 md:p-3'
+            : 'relative aspect-square bg-[#1e40af]/5 rounded-lg overflow-hidden border border-[#1e40af]/10 hover:border-[#2563eb] hover:shadow-md transition-all duration-300 flex items-center justify-center p-2'
         }
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN / blob previews */}
@@ -57,7 +58,7 @@ function GalleryCell({
           key={src}
           src={src}
           alt={`${country.name} flag`}
-          className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-300"
+          className="relative z-0 h-full w-full object-contain group-hover:scale-110 transition-transform duration-300"
           loading="lazy"
           referrerPolicy="no-referrer"
           decoding="async"
@@ -67,6 +68,7 @@ function GalleryCell({
             el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
           }}
         />
+        <PhotoWatermarkOverlay />
       </div>
       <p
         className={

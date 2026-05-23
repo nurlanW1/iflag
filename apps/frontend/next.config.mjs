@@ -18,6 +18,12 @@ const publicAdminAllowlist =
 const publicAdminEmailFirst =
   publicAdminAllowlist.split(/[,;\n]+/).map((s) => s.trim()).find(Boolean) || DEFAULT_ADMIN_OWNER;
 
+/** Storefront downloads: only these Clerk emails bypass paid gates (gallery + marketplace gates). ADMIN_EMAIL alone does not. */
+const marketplaceOwnerDownloadPublic =
+  process.env.NEXT_PUBLIC_MARKETPLACE_OWNER_DOWNLOAD_EMAILS?.trim() ||
+  process.env.MARKETPLACE_OWNER_DOWNLOAD_EMAILS?.trim() ||
+  DEFAULT_ADMIN_OWNER;
+
 const nextConfig = {
   reactStrictMode: true,
   /**
@@ -28,6 +34,7 @@ const nextConfig = {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: clerkPublishableKey,
     NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST: publicAdminAllowlist,
     NEXT_PUBLIC_ADMIN_EMAIL: publicAdminEmailFirst,
+    NEXT_PUBLIC_MARKETPLACE_OWNER_DOWNLOAD_EMAILS: marketplaceOwnerDownloadPublic,
   },
   images: {
     formats: ['image/avif', 'image/webp'],

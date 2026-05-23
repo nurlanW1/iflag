@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Crown } from 'lucide-react';
+import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
@@ -61,14 +62,15 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
                     unoptimized={svgThumb}
                     loading="lazy"
                     sizes="118px"
-                    className="object-contain p-1.5 transition-transform duration-300 group-hover:scale-[1.04]"
+                    className="relative z-0 object-contain p-1.5 transition-transform duration-300 group-hover:scale-[1.04]"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-[11px] font-medium text-neutral-400">
                     —
                   </div>
                 )}
-                <span className="pointer-events-none absolute left-1.5 top-1.5 inline-flex items-center gap-0.5 rounded-md bg-amber-400/95 px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-950 ring-1 ring-amber-600/40">
+                {thumb ? <PhotoWatermarkOverlay /> : null}
+                <span className="pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-0.5 rounded-md bg-amber-400/95 px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-950 ring-1 ring-amber-600/40">
                   <Crown size={9} aria-hidden strokeWidth={2.5} />
                   Premium
                 </span>
