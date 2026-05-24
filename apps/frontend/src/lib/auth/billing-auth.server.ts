@@ -6,28 +6,32 @@ export type BillingAuthSource = 'backend_cookie' | 'incoming_bearer' | 'clerk_se
 
 export type BillingAuthResolution =
   | { ok: true; authorization: string; source: BillingAuthSource }
-  | { ok: false; status: 401; error: string; code: 'AUTH_REQUIRED' };
+  | { ok: false; status: 401; error: string; code: 'AUTH_REQUIRED' | 'CLERK_TOKEN_MISSING' };
+
+function parseBearer(header: string | null | undefined): string | null {
+  const trimmed = header?.trim();
+  if (!trimmed?.toLowerCase().startsWith('bearer ')) return null;
+  const token = trimmed.slice(7).trim();
+  return token.length > 0 ? trimmed : null;
+}
 
 /**
  * Resolve Authorization for Paddle/billing proxies.
- * Order: linked backend JWT cookies → client Bearer → Clerk session on this host (no cross-domain cookie needed).
+ * Prefer client Clerk Bearer (fresh) over legacy backend cookies that may be stale.
  */
 export async function resolveBillingAuthorization(
   request: Request,
 ): Promise<BillingAuthResolution> {
-  const incomingAuth = request.headers.get('authorization')?.trim();
+  const incomingBearer = parseBearer(request.headers.get('authorization'));
+
+  if (incomingBearer) {
+    return { ok: true, authorization: incomingBearer, source: 'incoming_bearer' };
+  }
 
   const backendUser = await getSessionUserFromCookies();
   const access = await getAccessTokenFromCookies();
   if (backendUser && access) {
     return { ok: true, authorization: `Bearer ${access}`, source: 'backend_cookie' };
-  }
-
-  if (
-    incomingAuth?.toLowerCase().startsWith('bearer ') &&
-    incomingAuth.slice(7).trim().length > 0
-  ) {
-    return { ok: true, authorization: incomingAuth, source: 'incoming_bearer' };
   }
 
   if (isClerkConfigured()) {
@@ -37,6 +41,12 @@ export async function resolveBillingAuthorization(
       if (clerkToken) {
         return { ok: true, authorization: `Bearer ${clerkToken}`, source: 'clerk_session' };
       }
+      return {
+        ok: false,
+        status: 401,
+        error: 'Clerk session found but no token could be issued. Refresh and try again.',
+        code: 'CLERK_TOKEN_MISSING',
+      };
     }
   }
 

@@ -1,8 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
+import { SignInButton, useAuth, useUser } from '@clerk/nextjs';
 import { useState } from 'react';
 import type { CheckoutKind } from './checkout-button-types';
 
@@ -15,9 +14,16 @@ type Props = {
   children: React.ReactNode;
 };
 
+async function fetchClerkSessionToken(
+  getToken: ReturnType<typeof useAuth>['getToken'],
+): Promise<string | null> {
+  const fresh = await getToken({ skipCache: true });
+  if (fresh) return fresh;
+  return getToken();
+}
+
 /**
- * Clerk checkout: same-origin `/api/billing/checkout` with `credentials: "include"`.
- * The Route Handler resolves Clerk session server-side — backend login cookies are optional.
+ * Paddle checkout for Clerk users — sign-in state from `useUser()`, token from `getToken()`.
  */
 export function CheckoutButtonClerk({
   kind,
@@ -28,10 +34,10 @@ export function CheckoutButtonClerk({
   children,
 }: Props) {
   const pathname = usePathname();
-  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { isLoaded, isSignedIn, user } = useUser();
+  const { getToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [needsLogin, setNeedsLogin] = useState(false);
 
   const checkoutPayload = JSON.stringify({
     kind,
@@ -39,35 +45,37 @@ export function CheckoutButtonClerk({
     planSlug: kind === 'subscription' ? planSlug : undefined,
   });
 
-  const postCheckout = async () => {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    const clerkJwt = await getToken({ skipCache: true });
-    if (clerkJwt) {
-      headers.Authorization = `Bearer ${clerkJwt}`;
-    }
-    return fetch('/api/billing/checkout', {
+  const postCheckout = async (token: string) =>
+    fetch('/api/billing/checkout', {
       method: 'POST',
       credentials: 'include',
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
       body: checkoutPayload,
     });
-  };
 
-  const onClick = async () => {
+  const onSubscribeClick = async () => {
     setError(null);
-    setNeedsLogin(false);
 
     if (!isLoaded) return;
 
     if (!isSignedIn) {
-      const returnTo = pathname && pathname.startsWith('/') ? pathname : '/pricing';
+      const returnTo = pathname?.startsWith('/') ? pathname : '/pricing';
       window.location.assign(`/sign-in?redirect_url=${encodeURIComponent(returnTo)}`);
       return;
     }
 
     setLoading(true);
     try {
-      const res = await postCheckout();
+      const token = await fetchClerkSessionToken(getToken);
+      if (!token) {
+        setError('Could not read your Clerk session. Refresh the page and try again.');
+        return;
+      }
+
+      const res = await postCheckout(token);
       const data = (await res.json()) as {
         url?: string;
         error?: string;
@@ -76,7 +84,10 @@ export function CheckoutButtonClerk({
       };
 
       if (res.status === 401) {
-        setNeedsLogin(true);
+        setError(
+          data.error ||
+            'Checkout authorization failed. Confirm CLERK_SECRET_KEY is set on the billing API.',
+        );
         return;
       }
       if (!res.ok) {
@@ -117,29 +128,69 @@ export function CheckoutButtonClerk({
     }
   };
 
+  if (!isLoaded) {
+    return (
+      <button
+        type="button"
+        disabled
+        style={style}
+        className={
+          className ||
+          'w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white opacity-50'
+        }
+      >
+        Loading…
+      </button>
+    );
+  }
+
+  if (!isSignedIn) {
+    const returnTo = pathname?.startsWith('/') ? pathname : '/pricing';
+    return (
+      <div>
+        <SignInButton mode="redirect" forceRedirectUrl={returnTo}>
+          <button
+            type="button"
+            style={style}
+            className={
+              className ||
+              'w-full rounded-xl bg-[#2563eb] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]'
+            }
+          >
+            Sign in to subscribe
+          </button>
+        </SignInButton>
+        <p className="mt-2 text-center text-xs text-gray-500">
+          Sign in with your account — checkout is hosted by Paddle.
+        </p>
+      </div>
+    );
+  }
+
+  const signedInLabel =
+    user?.primaryEmailAddress?.emailAddress?.trim() ||
+    user?.emailAddresses?.[0]?.emailAddress?.trim();
+
   return (
     <div>
       <button
         type="button"
-        onClick={onClick}
-        disabled={loading || !isLoaded}
+        onClick={() => void onSubscribeClick()}
+        disabled={loading}
         style={style}
         className={
           className ||
           'w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#2563eb] disabled:opacity-50'
         }
       >
-        {!isLoaded ? 'Loading…' : loading ? 'Redirecting…' : children}
+        {loading ? 'Redirecting…' : children}
       </button>
-      {needsLogin ? (
-        <p className="mt-2 text-xs text-amber-800">
-          Sign in to continue.{' '}
-          <Link href="/sign-in" className="font-medium underline">
-            Sign in
-          </Link>
+      {signedInLabel ? (
+        <p className="mt-2 text-center text-xs text-gray-500">
+          Signed in as {signedInLabel} — secure Paddle checkout.
         </p>
       ) : null}
-      {error && !needsLogin ? <p className="mt-2 text-xs text-red-600">{error}</p> : null}
+      {error ? <p className="mt-2 text-xs text-red-600">{error}</p> : null}
     </div>
   );
 }

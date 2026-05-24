@@ -17,8 +17,7 @@ type Props = {
 };
 
 /**
- * Paddle checkout entry. Uses Clerk `getToken()` when a publishable key is configured
- * (always under `ClerkProvider` in root layout). Otherwise cookie-only / email auth.
+ * Paddle checkout entry. Uses Clerk when a publishable key is configured (ClerkProvider in root layout).
  */
 export function CheckoutButton(props: Props) {
   if (getClerkPublishableKey()) {
