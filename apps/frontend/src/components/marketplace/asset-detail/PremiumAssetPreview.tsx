@@ -2,8 +2,7 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import { FlagProtectedPreview } from '@/components/brand/FlagProtectedPreview';
-import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
+import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
 type Props = {
@@ -79,7 +78,7 @@ export function PremiumAssetPreview({
               useTransparencyBackdrop ? checkerBg : 'bg-[linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)]',
             )}
           >
-            <FlagProtectedPreview className="absolute inset-0">
+            <ProductPreviewImage className="absolute inset-0" watermarkEnabled protectEnabled>
               <Image
                 src={src}
                 alt={productTitle}
@@ -94,13 +93,12 @@ export function PremiumAssetPreview({
                   'hover:scale-[1.035]',
                 )}
               />
-              <PhotoWatermarkOverlay />
               {useTransparencyBackdrop ? (
                 <span className="pointer-events-none absolute bottom-4 right-4 z-10 rounded-lg bg-white/92 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 ring-1 ring-slate-200/80 backdrop-blur-sm">
                   Alpha preview
                 </span>
               ) : null}
-            </FlagProtectedPreview>
+            </ProductPreviewImage>
           </div>
         </div>
       </div>

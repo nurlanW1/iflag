@@ -12,8 +12,7 @@ import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { GalleryCountryDownloadsPanel } from '@/components/gallery/GalleryCountryDownloadsPanel';
 import { clientUserMatchesOwnerDownloadBypass } from '@/lib/marketplace/owner-download-bypass-client';
-import { FlagProtectedPreview } from '@/components/brand/FlagProtectedPreview';
-import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
+import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import {
   FLAG_THUMB_PLACEHOLDER_DATA_URL,
   flagThumbPlaceholderForFileId,
@@ -72,7 +71,7 @@ function pickDefaultFormat(variant: Variant): Format | null {
 }
 
 function previewSrc(f: Format): string {
-  return f.previewUrl || f.url || '';
+  return f.previewUrl || '';
 }
 
 /** Stable display URL per file row (helps when multiple rows share one CDN blob path). Avoid mutating signed URLs. */
@@ -465,7 +464,11 @@ export default function CountryDetailPage() {
                     </div>
                   ) : (
                     <>
-                      <FlagProtectedPreview className="relative mx-auto inline-flex max-h-[min(62vh,40rem)] max-w-full items-center justify-center">
+                      <ProductPreviewImage
+                        className="relative mx-auto inline-flex max-h-[min(62vh,40rem)] max-w-full items-center justify-center"
+                        watermarkEnabled
+                        protectEnabled
+                      >
                         {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
                         <img
                           key={`${selectedVariant.id}-${selectedFormat?.id ?? 'cover'}`}
@@ -483,8 +486,7 @@ export default function CountryDetailPage() {
                             )
                           }
                         />
-                        <PhotoWatermarkOverlay className="!z-[6]" />
-                      </FlagProtectedPreview>
+                      </ProductPreviewImage>
                     </>
                   )}
                 </div>
@@ -533,7 +535,7 @@ export default function CountryDetailPage() {
                               : 'ring-1 ring-slate-200 group-hover:ring-slate-300'
                           }`}
                         >
-                          <FlagProtectedPreview className="absolute inset-0">
+                          <ProductPreviewImage className="absolute inset-0" watermarkEnabled protectEnabled>
                             {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
                             <img
                               src={v.thumbnail}
@@ -551,8 +553,7 @@ export default function CountryDetailPage() {
                                 )
                               }
                             />
-                            <PhotoWatermarkOverlay />
-                          </FlagProtectedPreview>
+                          </ProductPreviewImage>
                           <span className="pointer-events-none absolute right-1.5 top-1.5 z-10 rounded-md bg-black/55 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
                             {v.formats.length}
                           </span>

@@ -2,8 +2,6 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
-import { FlagProtectedPreview } from '@/components/brand/FlagProtectedPreview';
 import { useRevealInView } from '@/hooks/useRevealInView';
 import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
 import { galleryCompactTileGridClasses, galleryHomeLargeTileGridClasses } from '@/lib/ui/marketplace-layout';
@@ -54,14 +52,14 @@ function GalleryCell({
             : 'relative aspect-square bg-[#1e40af]/5 rounded-lg overflow-hidden border border-[#1e40af]/10 hover:border-[#2563eb] hover:shadow-md transition-all duration-300 flex items-center justify-center p-2'
         }
       >
-        <FlagProtectedPreview
+        <div
           className={
             largeTiles
               ? 'relative min-h-0 flex-1 w-full rounded-lg sm:rounded-xl overflow-hidden'
               : 'relative h-full w-full overflow-hidden rounded-md'
           }
         >
-          {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN / blob previews */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- country hub navigation thumbnail (no product watermark) */}
           <img
             key={src}
             src={src}
@@ -70,15 +68,13 @@ function GalleryCell({
             loading="lazy"
             referrerPolicy="no-referrer"
             decoding="async"
-            draggable={false}
             onError={(e) => {
               const el = e.target as HTMLImageElement;
               el.onerror = null;
               el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
             }}
           />
-          <PhotoWatermarkOverlay />
-        </FlagProtectedPreview>
+        </div>
       </div>
       <p
         className={

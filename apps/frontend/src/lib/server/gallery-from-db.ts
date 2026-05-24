@@ -383,18 +383,18 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
         ? `${r.width}×${r.height} px`
         : 'Original';
 
-    /** Prefer explicit `preview_url`, then image-capable `file_url`, then thumbnails. */
+    /** Prefer explicit `preview_url`, then `thumbnail_url`, then `file_url` for free/image rows only. */
     const thumbStored = r.thumbnail_url?.trim() || '';
     const previewStored = r.preview_url?.trim() || '';
     const fileUrl = r.file_url?.trim() || '';
     const cascade: string[] = [];
     if (previewStored) {
       cascade.push(previewStored);
-    } else if (isImgPreviewableFormat(r.format) && fileUrl) {
-      cascade.push(fileUrl);
-    } else if (thumbStored) {
+    }
+    if (thumbStored) {
       cascade.push(thumbStored);
-    } else if (fileUrl) {
+    }
+    if (tier === 'free' && isImgPreviewableFormat(r.format) && fileUrl) {
       cascade.push(fileUrl);
     }
 

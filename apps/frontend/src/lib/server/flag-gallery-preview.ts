@@ -7,6 +7,7 @@ import { buildCatalogProductFromFlagBundle, NEON_SELECT_FIELDS } from '@/lib/ser
 import { getDb } from '@/lib/server/db';
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
+import { previewDisplayUrlCandidates } from '@/lib/server/flag-asset-url';
 
 /** Fisher–Yates shuffle */
 function shuffle<T>(items: T[]): T[] {
@@ -45,22 +46,31 @@ function pickMetadataRow(bundle: NeonLikeFlagRow[]): NeonLikeFlagRow {
 }
 
 /**
- * Prefer `thumbnail_url` → `preview_url` → `file_url` before R2 object key resolution
- * so we do not inflate tiny grid slots with originals when thumbnails exist on the CDN.
+ * Prefer `preview_url` → `thumbnail_url` → `file_url` (free rows only) before R2 object key resolution
+ * so grid slots never inflate with premium originals when previews exist on the CDN.
  */
 function landingCardImageHref(row: NeonLikeFlagRow): string {
-  for (const raw of [row.thumbnail_url, row.preview_url, row.file_url]) {
-    const s = raw?.trim();
-    if (!s) continue;
-    const out = resolveGalleryAssetUrl(s);
+  const tierRaw = (row.premium_tier ?? 'free').toLowerCase();
+  const free = tierRaw === 'free';
+  for (const raw of previewDisplayUrlCandidates({
+    premiumTierRaw: row.premium_tier,
+    previewUrl: row.preview_url,
+    thumbnailUrl: row.thumbnail_url,
+    fileUrl: free ? row.file_url : null,
+  })) {
+    const out = resolveGalleryAssetUrl(raw);
     if (out) return out;
   }
   const key = row.file_key?.trim();
-  if (key) {
+  if (key && free) {
     const href = getPublicR2FileUrl(key);
     if (href) return resolveGalleryAssetUrl(href);
   }
   return '';
+}
+
+function isFreeTier(raw: string | null | undefined): boolean {
+  return (raw ?? 'free').toLowerCase() === 'free';
 }
 
 export type GalleryPreviewItemDTO = {
@@ -167,7 +177,7 @@ export async function fetchRandomGalleryPreviewItems(opts: {
       country_slug: product.countrySlug ?? null,
       preview_url: rep.preview_url?.trim() ?? null,
       thumbnail_url: rep.thumbnail_url?.trim() ?? null,
-      file_url: rep.file_url?.trim() ?? null,
+      file_url: isFreeTier(rep.premium_tier) ? rep.file_url?.trim() ?? null : null,
       format: previewFmt,
       image_url: imageUrl,
       available_formats: formats,

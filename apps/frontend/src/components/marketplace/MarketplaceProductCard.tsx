@@ -1,8 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Crown } from 'lucide-react';
-import { FlagProtectedPreview } from '@/components/brand/FlagProtectedPreview';
-import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
+import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
 import { collectFormatLabels, formatPrice } from '@/lib/marketplace/catalog-utils';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
@@ -32,7 +31,7 @@ export function MarketplaceProductCard({
     <article className="group flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-[0_10px_34px_-26px_rgba(42,52,65,0.14)] transition-[box-shadow,border-color] duration-300 hover:border-neutral-300 hover:shadow-[0_18px_46px_-28px_rgba(42,52,65,0.18)]">
       <Link href={href} className="relative block aspect-[4/3] overflow-hidden bg-neutral-100">
         {thumb ? (
-          <FlagProtectedPreview className="absolute inset-0">
+          <ProductPreviewImage className="absolute inset-0" watermarkEnabled protectEnabled>
             <Image
               src={thumb}
               alt={product.title}
@@ -43,8 +42,7 @@ export function MarketplaceProductCard({
               sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, (max-width: 1800px) 25vw, 380px"
               loading="lazy"
             />
-            <PhotoWatermarkOverlay />
-          </FlagProtectedPreview>
+          </ProductPreviewImage>
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-neutral-100 text-base font-medium text-neutral-400">
             Preview unavailable

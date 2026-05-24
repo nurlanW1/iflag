@@ -20,8 +20,6 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
-import { PhotoWatermarkOverlay } from '@/components/brand/PhotoWatermark';
-import { FlagProtectedPreview } from '@/components/brand/FlagProtectedPreview';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 
 interface Country {
@@ -351,24 +349,20 @@ function CardGrid({ countries }: { countries: Country[] }) {
             className="group block overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#2563eb]/50 hover:shadow-[0_12px_30px_-14px_rgba(37,99,235,0.45)]"
           >
             <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
-              <FlagProtectedPreview className="absolute inset-0">
-                {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
-                <img
-                  src={country.thumbnail?.trim() || FLAG_THUMB_PLACEHOLDER_DATA_URL}
-                  alt={`${country.name} flag`}
-                  loading="lazy"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                  draggable={false}
-                  className="relative z-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.08]"
-                  onError={(e) => {
-                    const el = e.currentTarget;
-                    el.onerror = null;
-                    el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
-                  }}
-                />
-                <PhotoWatermarkOverlay />
-              </FlagProtectedPreview>
+              {/* eslint-disable-next-line @next/next/no-img-element -- country hub navigation thumbnail */}
+              <img
+                src={country.thumbnail?.trim() || FLAG_THUMB_PLACEHOLDER_DATA_URL}
+                alt={`${country.name} flag`}
+                loading="lazy"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.08]"
+                onError={(e) => {
+                  const el = e.currentTarget;
+                  el.onerror = null;
+                  el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
+                }}
+              />
               {country.code ? (
                 <span className="absolute left-2 top-2 z-10 rounded-md bg-black/40 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
                   {country.code}
@@ -411,24 +405,20 @@ function CardList({ countries }: { countries: Country[] }) {
             className="group flex items-center gap-3 px-3 py-3 transition-colors hover:bg-stone-50 sm:gap-4 sm:px-4 sm:py-3.5"
           >
             <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-stone-100 ring-1 ring-stone-200 sm:h-16 sm:w-24">
-              <FlagProtectedPreview className="absolute inset-0">
-                {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN previews */}
-                <img
-                  src={country.thumbnail?.trim() || FLAG_THUMB_PLACEHOLDER_DATA_URL}
-                  alt={`${country.name} flag`}
-                  loading="lazy"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                  draggable={false}
-                  className="relative z-0 h-full w-full object-cover"
-                  onError={(e) => {
-                    const el = e.currentTarget;
-                    el.onerror = null;
-                    el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
-                  }}
-                />
-                <PhotoWatermarkOverlay />
-              </FlagProtectedPreview>
+              {/* eslint-disable-next-line @next/next/no-img-element -- country hub navigation thumbnail */}
+              <img
+                src={country.thumbnail?.trim() || FLAG_THUMB_PLACEHOLDER_DATA_URL}
+                alt={`${country.name} flag`}
+                loading="lazy"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  const el = e.currentTarget;
+                  el.onerror = null;
+                  el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
+                }}
+              />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">

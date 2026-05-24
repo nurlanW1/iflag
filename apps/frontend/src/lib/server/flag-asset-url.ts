@@ -20,8 +20,26 @@ function uniqStrings(values: Array<string | null | undefined>): string[] {
 }
 
 /**
- * Country list thumbnails: prefer R2/canonical URLs for **free** rows (`file_url` before stale blob previews).
- * **Paid/freemium** must not advertise `file_url` in grid (preview/thumb only), matching Neon policy.
+ * Display cascade for storefront previews:
+ * `preview_url` → `thumbnail_url` → `file_url` (free / preview-safe assets only).
+ * Premium originals must never be used as a browser preview fallback.
+ */
+export function previewDisplayUrlCandidates(input: {
+  premiumTierRaw?: string | null;
+  previewUrl?: string | null | undefined;
+  thumbnailUrl?: string | null | undefined;
+  fileUrl?: string | null | undefined;
+}): string[] {
+  const free = (input.premiumTierRaw ?? 'free').toLowerCase() === 'free';
+  const safe = uniqStrings([input.previewUrl, input.thumbnailUrl]);
+  if (free) {
+    return uniqStrings([...safe, input.fileUrl]);
+  }
+  return safe;
+}
+
+/**
+ * Country list thumbnails — same cascade as product cards; never exposes paid `file_url`.
  */
 export function fallbackUrlsForGalleryListThumb(input: {
   premiumTierRaw?: string | null;
@@ -29,11 +47,7 @@ export function fallbackUrlsForGalleryListThumb(input: {
   previewUrl?: string | null | undefined;
   thumbnailUrl?: string | null | undefined;
 }): string[] {
-  const free = (input.premiumTierRaw ?? 'free').toLowerCase() === 'free';
-  if (free) {
-    return uniqStrings([input.fileUrl, input.previewUrl, input.thumbnailUrl]);
-  }
-  return uniqStrings([input.previewUrl, input.thumbnailUrl]);
+  return previewDisplayUrlCandidates(input);
 }
 
 /**

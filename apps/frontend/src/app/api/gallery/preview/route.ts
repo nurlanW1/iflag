@@ -33,9 +33,14 @@ export async function GET(request: Request) {
         ? 'latest'
         : 'random';
 
-    const data = await fetchRandomGalleryPreviewItems({ limit, sample, order });
+    const rows = await fetchRandomGalleryPreviewItems({ limit, sample, order });
 
-    /** Objects include thumbnail_url, preview_url, file_url, format, image_url, available_formats, etc. */
+    /** Never expose raw originals — clients render `image_url` and link by `slug`. */
+    const data = rows.map(({ file_url: _omit, ...item }) => ({
+      ...item,
+      file_url: null,
+    }));
+
     return NextResponse.json({ data }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) {
     console.error('[api/gallery/preview]', e);

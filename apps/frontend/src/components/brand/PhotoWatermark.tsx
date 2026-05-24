@@ -23,6 +23,9 @@ type PhotoWatermarkOverlayProps = {
 /**
  * Centered site-logo watermark — white glyphs at 50% opacity.
  * Parent must be `position: relative`. Keep ribbons/badges at `z-10` or above.
+ *
+ * TODO: Right-click protection is UI-level only.
+ * Real premium protection requires private R2 originals + signed download URLs.
  */
 export function PhotoWatermarkOverlay({ className }: PhotoWatermarkOverlayProps) {
   return (
