@@ -141,8 +141,8 @@ export function ProductDetailView({ slug, product }: Props) {
           'max-lg:pb-[calc(21rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]',
         )}
       >
-        <div className="mx-auto max-w-[min(100%,1392px)] px-5 pb-14 pt-8 sm:px-6 sm:pb-16 sm:pt-10 xl:px-10 lg:pb-[4.75rem] lg:pt-11">
-          <nav className="flex items-center gap-2 text-xs font-medium text-slate-500">
+        <div className="mx-auto max-w-[min(100%,1392px)] px-4 pb-10 pt-4 sm:px-5 sm:pb-12 sm:pt-5 lg:pb-10 lg:pt-5 xl:px-8">
+          <nav className="flex items-center gap-2 text-[11px] font-medium text-slate-500">
             <Link
               href={browseBackHref}
               className="group inline-flex items-center gap-1.5 transition-colors hover:text-slate-900"
@@ -158,23 +158,35 @@ export function ProductDetailView({ slug, product }: Props) {
             <span className="truncate text-slate-700">{product.title}</span>
           </nav>
 
-          <header className="mt-6 flex flex-wrap items-end justify-between gap-5 border-b border-slate-200/80 pb-6 lg:mt-8 lg:pb-8">
+          <header className="mt-3 flex flex-wrap items-end justify-between gap-3 border-b border-slate-200/80 pb-3 lg:mt-4 lg:gap-4 lg:pb-4">
             <div>
-              <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                <Sparkles size={12} className="text-[var(--brand-blue)]" aria-hidden />
+              <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                <Sparkles size={11} className="text-[var(--brand-blue)]" aria-hidden />
                 {categoryName}
                 {countryLine ? (
-                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold normal-case tracking-normal text-slate-600">
+                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold normal-case tracking-normal text-slate-600">
                     {countryLine}
                   </span>
                 ) : null}
               </div>
-              <h1 className="mt-2 text-balance text-[1.75rem] font-semibold tracking-[-0.02em] text-slate-900 sm:text-[1.95rem] xl:text-[2rem] xl:tracking-tight">
+              <h1 className="mt-1.5 text-balance text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl lg:max-w-[min(100%,42rem)] xl:text-[1.65rem]">
                 {product.title}
               </h1>
-              <p className="mt-2 text-[13px] text-slate-500">
+              <p className="mt-1 hidden text-xs text-slate-500 lg:block">
                 <span className="font-semibold text-slate-700">{dedupedFiles.length}</span>{' '}
                 {dedupedFiles.length === 1 ? 'format' : 'formats'} available
+                {siblingProducts.length > 0 ? (
+                  <>
+                    {' '}
+                    ·{' '}
+                    <span className="font-semibold text-slate-700">{siblingProducts.length + 1}</span> designs for
+                    this country
+                  </>
+                ) : null}
+              </p>
+              <p className="mt-1 text-xs text-slate-500 lg:hidden">
+                <span className="font-semibold text-slate-700">{dedupedFiles.length}</span>{' '}
+                {dedupedFiles.length === 1 ? 'format' : 'formats'}
                 {siblingProducts.length > 0 ? (
                   <>
                     {' '}
@@ -187,16 +199,17 @@ export function ProductDetailView({ slug, product }: Props) {
             </div>
           </header>
 
-          <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18.75rem,24rem)] lg:items-stretch lg:gap-5 xl:grid-cols-[minmax(0,1fr)_25rem] xl:gap-6">
-            <div className="flex min-h-0 min-w-0 flex-col space-y-6">
+          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_21.5rem] lg:items-start lg:gap-x-5 xl:grid-cols-[minmax(0,1fr)_22.5rem]">
+            <div className="flex min-h-0 min-w-0 flex-col space-y-4 lg:space-y-5">
               <PremiumAssetPreview
                 productTitle={product.title}
                 previewUrls={uniquePreview}
                 formatHints={formatHints}
                 useTransparencyBackdrop={formatHintsMayHaveAlpha(formatHints)}
                 variant="gallery"
-                caption={product.title}
-                formatCount={dedupedFiles.length}
+                density="compact"
+                caption={undefined}
+                formatCount={undefined}
               />
 
               {siblingPublic.length > 0 ? (
@@ -206,8 +219,8 @@ export function ProductDetailView({ slug, product }: Props) {
               {tagTrail}
             </div>
 
-            <aside className="w-full shrink-0 lg:sticky lg:top-[calc(5rem+env(safe-area-inset-top))] lg:z-[20] lg:h-auto lg:self-stretch">
-              <div className="flex min-h-[26rem] h-full flex-col overflow-hidden rounded-[1.375rem] border border-slate-200/80 bg-white p-[1.6rem] backdrop-blur-[14px]">
+            <aside className="w-full max-w-xl shrink-0 justify-self-start lg:sticky lg:top-[calc(4.75rem+env(safe-area-inset-top))] lg:z-[20] lg:h-auto lg:max-w-none">
+              <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm sm:p-4 lg:max-h-[min(92vh,52rem)] lg:overflow-y-auto">
                 <NeonAssetDownloads
                   cartProduct={cartProduct}
                   files={dedupedFiles}
@@ -217,6 +230,7 @@ export function ProductDetailView({ slug, product }: Props) {
                   productId={neonDownloads ? undefined : product.id}
                   previewFile={neonDownloads ? undefined : previewFilePublic}
                   requiresEntitlement={neonDownloads ? undefined : paid}
+                  compactLayout
                 />
               </div>
             </aside>

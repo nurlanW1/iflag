@@ -19,20 +19,47 @@ type Props = {
   onSelect: (fileId: string) => void;
   /** id of adjacent <h2> (radiogroup label) */
   headingId: string;
+  compact?: boolean;
 };
 
 /** Always shows EPS · SVG · PNG · JPG slots; missing files are disabled at 50% opacity. Rare non-canonical files render after these. */
-export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId }: Props) {
+export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId, compact }: Props) {
   const extras = extraStockFilesBeyondCanonical(files);
   const availableCanon = countAvailableCanonicalSlots(files);
 
+  const slotBtnBase = compact
+    ? 'flex min-w-[4rem] shrink-0 snap-start flex-col items-center justify-center rounded-md px-2.5 py-1.5 sm:min-w-[4.5rem]'
+    : 'flex min-w-[4.85rem] shrink-0 snap-start flex-col items-center justify-center rounded-[0.6875rem] px-4 py-2.5 sm:min-w-[5.75rem]';
+  const slotLabelCls =
+    'font-bold leading-none tracking-[0.04em] text-slate-900 ' +
+    (compact ? 'text-[12px]' : 'text-[13px]');
+  const sizeLabelCls = compact
+    ? 'mt-0.5 text-[10px] font-medium tabular-nums leading-none'
+    : 'mt-1 text-[11px] font-medium tabular-nums leading-none';
+
   return (
     <section aria-labelledby={headingId}>
-      <div className="mb-3 flex items-baseline justify-between gap-3">
-        <h2 id={headingId} className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+      <div
+        className={clsx(
+          'flex items-baseline justify-between gap-3',
+          compact ? 'mb-2' : 'mb-3',
+        )}
+      >
+        <h2
+          id={headingId}
+          className={clsx(
+            'font-semibold uppercase tracking-[0.16em] text-slate-400',
+            compact ? 'text-[10px]' : 'text-[11px]',
+          )}
+        >
           Included formats
         </h2>
-        <span className="text-[11px] font-medium tabular-nums text-slate-400">
+        <span
+          className={clsx(
+            'font-medium tabular-nums text-slate-400',
+            compact ? 'text-[10px]' : 'text-[11px]',
+          )}
+        >
           {availableCanon} / {STOCK_FORMAT_ORDER.length} formats
         </span>
       </div>
@@ -40,8 +67,11 @@ export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId }:
         role="radiogroup"
         aria-labelledby={headingId}
         className={clsx(
-          segmentRail,
-          'flex gap-1.5 overflow-x-auto [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] pb-px sm:flex-wrap sm:gap-2 sm:overflow-visible',
+          compact
+            ? 'rounded-lg bg-slate-100/98 p-1.5 ring-1 ring-slate-200/75'
+            : segmentRail,
+          'flex overflow-x-auto [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] pb-px sm:flex-wrap sm:overflow-visible',
+          compact ? 'gap-1 sm:gap-1.5' : 'gap-1.5 sm:gap-2',
         )}
       >
         {STOCK_FORMAT_ORDER.map((slot) => {
@@ -53,11 +83,11 @@ export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId }:
                 type="button"
                 disabled
                 tabIndex={-1}
-                className="flex min-w-[4.85rem] shrink-0 snap-start cursor-not-allowed flex-col items-center justify-center rounded-[0.6875rem] px-4 py-2.5 opacity-50 select-none sm:min-w-[5.75rem]"
+                className={clsx(slotBtnBase, 'cursor-not-allowed opacity-50 select-none')}
                 aria-label={`${slot}, not included`}
               >
-                <span className="text-[13px] font-bold leading-none tracking-[0.04em] text-slate-900">{slot}</span>
-                <span className="mt-1 text-[11px] font-medium tabular-nums leading-none text-slate-400">—</span>
+                <span className={slotLabelCls}>{slot}</span>
+                <span className={clsx(sizeLabelCls, 'text-slate-400')}>—</span>
               </button>
             );
           }
@@ -75,14 +105,15 @@ export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId }:
               aria-label={`${lbl}, ${sz}`}
               onClick={() => onSelect(file.id)}
               className={clsx(
-                'flex min-w-[4.85rem] shrink-0 snap-start flex-col items-center justify-center rounded-[0.6875rem] px-4 py-2.5 transition-[color,background,ring] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2 sm:min-w-[5.75rem]',
+                slotBtnBase,
+                'transition-[color,background,ring] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2',
                 on
                   ? 'bg-white ring-2 ring-[var(--brand-blue)]/38'
                   : 'text-slate-600 hover:bg-white/70 hover:text-slate-900',
               )}
             >
-              <span className="text-[13px] font-bold leading-none tracking-[0.04em] text-slate-900">{slot}</span>
-              <span className="mt-1 text-[11px] font-medium tabular-nums leading-none text-slate-500">{sz}</span>
+              <span className={slotLabelCls}>{slot}</span>
+              <span className={clsx(sizeLabelCls, 'text-slate-500')}>{sz}</span>
             </button>
           );
         })}
@@ -100,14 +131,15 @@ export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId }:
               aria-label={`${lbl}, ${sz}`}
               onClick={() => onSelect(f.id)}
               className={clsx(
-                'flex min-w-[4.85rem] shrink-0 snap-start flex-col items-center justify-center rounded-[0.6875rem] px-4 py-2.5 transition-[color,background,ring] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2 sm:min-w-[5.75rem]',
+                slotBtnBase,
+                'transition-[color,background,ring] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2',
                 on
                   ? 'bg-white ring-2 ring-[var(--brand-blue)]/38'
                   : 'text-slate-600 hover:bg-white/70 hover:text-slate-900',
               )}
             >
-              <span className="text-[13px] font-bold leading-none tracking-[0.04em] text-slate-900">{lbl}</span>
-              <span className="mt-1 text-[11px] font-medium tabular-nums leading-none text-slate-500">{sz}</span>
+              <span className={slotLabelCls}>{lbl}</span>
+              <span className={clsx(sizeLabelCls, 'text-slate-500')}>{sz}</span>
             </button>
           );
         })}

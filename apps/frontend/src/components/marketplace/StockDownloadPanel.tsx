@@ -1,5 +1,6 @@
 'use client';
 
+import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Download } from 'lucide-react';
@@ -38,6 +39,8 @@ type Props = {
   selectedId?: string | null;
   onSelectId?: (fileId: string) => void;
   headingId?: string;
+  /** Marketplace PDP: tighter spacing to fit preview + buy block in view */
+  compactLayout?: boolean;
 };
 
 function downloadPath(productId: string | undefined, fileId: string): string {
@@ -64,6 +67,7 @@ export function StockDownloadPanel({
   selectedId,
   onSelectId,
   headingId = 'fmt-heading-stock',
+  compactLayout = false,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -134,7 +138,11 @@ export function StockDownloadPanel({
   const activeKind = active ? formatKindLabel(active.format) : 'Other';
 
   const actionBlock = !active ? null : showPurchaseOffers ? (
-    <DownloadPurchaseOffers assetLabel={assetLabel ?? cartProduct.title} productSlug={productSlug} />
+    <DownloadPurchaseOffers
+      assetLabel={assetLabel ?? cartProduct.title}
+      productSlug={productSlug}
+      compact={compactLayout}
+    />
   ) : onDirectDownload ? (
     <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-2">
       <div className="min-w-0 flex-1">
@@ -192,12 +200,22 @@ export function StockDownloadPanel({
       </button>
     </div>
   ) : (
-    <DownloadPurchaseOffers assetLabel={assetLabel ?? cartProduct.title} productSlug={productSlug} />
+    <DownloadPurchaseOffers
+      assetLabel={assetLabel ?? cartProduct.title}
+      productSlug={productSlug}
+      compact={compactLayout}
+    />
   );
 
   const block = (
-    <div className="flex flex-col gap-4">
-      <CanonicalFormatSlots headingId={headingId} files={sorted} selectedId={sel} onSelect={setSel} />
+    <div className={clsx(compactLayout ? 'flex flex-col gap-2.5' : 'flex flex-col gap-4')}>
+      <CanonicalFormatSlots
+        headingId={headingId}
+        files={sorted}
+        selectedId={sel}
+        onSelect={setSel}
+        compact={compactLayout}
+      />
       {actionBlock}
       {active && !showPurchaseOffers && !onDirectDownload ? (
         <NeonTrustFoot
@@ -207,7 +225,7 @@ export function StockDownloadPanel({
           eligibilityLineSuffix={isPreviewSlot ? 'Free preview download' : 'Included with your plan'}
         />
       ) : null}
-      <div className="border-t border-slate-100 pt-5">
+      <div className={clsx('border-t border-slate-100', compactLayout ? 'pt-3' : 'pt-5')}>
         <CopyLinkCartRow product={cartProduct} />
       </div>
     </div>

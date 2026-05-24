@@ -13,6 +13,8 @@ type Props = {
   productId?: string;
   previewFile?: PublicProductFile | null;
   requiresEntitlement?: boolean;
+  /** Denser sidebar + format rail for marketplace PDP */
+  compactLayout?: boolean;
 };
 
 /** Neon / assets PDP — thin wrapper around unified stock download panel. */

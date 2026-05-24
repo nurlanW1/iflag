@@ -14,6 +14,8 @@ type Props = {
   useTransparencyBackdrop?: boolean;
   /** Gallery-style card with generous padding (stock PDP default). */
   variant?: 'gallery' | 'compact';
+  /** Tighter preview cap for marketplace PDP (fits above-the-fold with sidebar). */
+  density?: 'default' | 'compact';
   /** Footer line under preview (gallery country pages). */
   caption?: string;
   formatCount?: number;
@@ -29,25 +31,46 @@ export function PremiumAssetPreview({
   formatHints = [],
   useTransparencyBackdrop = false,
   variant = 'gallery',
+  density = 'default',
   caption,
   formatCount,
 }: Props) {
   const uniq = [...new Set(previewUrls.filter((u) => typeof u === 'string' && u.trim()))];
   const src = uniq[0] ?? '';
-  const showFooter = Boolean(caption?.trim() || (formatCount != null && formatCount > 0));
+  const compact = density === 'compact';
+  const showFooter =
+    !compact && Boolean(caption?.trim() || (formatCount != null && formatCount > 0));
 
   if (variant === 'gallery') {
+    const frame = compact
+      ? clsx(
+          'relative flex min-h-[11rem] items-center justify-center px-3 py-4 sm:min-h-[13rem] sm:px-4 sm:py-5',
+          'lg:max-h-[min(40vh,15.5rem)] lg:min-h-0',
+          useTransparencyBackdrop ? checkerBg : 'bg-[linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)]',
+        )
+      : clsx(
+          'relative flex min-h-[24rem] items-center justify-center px-5 py-10 sm:min-h-[30rem] sm:px-10 sm:py-12 lg:min-h-[min(62vh,36rem)] xl:min-h-[min(65vh,40rem)]',
+          useTransparencyBackdrop ? checkerBg : 'bg-[linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)]',
+        );
+
+    const imgClamp = compact
+      ? 'max-h-[min(40vh,15rem)] w-auto max-w-full object-contain lg:max-h-[min(38vh,14rem)]'
+      : 'max-h-[min(62vh,40rem)] w-auto max-w-full object-contain';
+
     return (
-      <div className="overflow-hidden rounded-[1.375rem] border border-slate-200/80 bg-white">
-        <div
-          className={clsx(
-            'relative flex min-h-[24rem] items-center justify-center px-5 py-10 sm:min-h-[30rem] sm:px-10 sm:py-12 lg:min-h-[min(62vh,36rem)] xl:min-h-[min(65vh,40rem)]',
-            useTransparencyBackdrop ? checkerBg : 'bg-[linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)]',
-          )}
-        >
+      <div
+        className={clsx(
+          'overflow-hidden border border-slate-200/80 bg-white',
+          compact ? 'rounded-xl' : 'rounded-[1.375rem]',
+        )}
+      >
+        <div className={frame}>
           {src ? (
             <ProductPreviewImage
-              className="relative mx-auto inline-flex max-h-[min(62vh,40rem)] max-w-full items-center justify-center"
+              className={clsx(
+                'relative mx-auto inline-flex max-w-full items-center justify-center',
+                compact ? 'max-h-[min(40vh,15rem)] lg:max-h-[min(38vh,14rem)]' : 'max-h-[min(62vh,40rem)]',
+              )}
               watermarkEnabled
               protectEnabled
             >
@@ -55,7 +78,7 @@ export function PremiumAssetPreview({
               <img
                 src={src}
                 alt={productTitle}
-                className="max-h-[min(62vh,40rem)] w-auto max-w-full object-contain"
+                className={imgClamp}
                 referrerPolicy="no-referrer"
                 decoding="async"
                 draggable={false}
@@ -71,7 +94,14 @@ export function PremiumAssetPreview({
             </div>
           )}
           {useTransparencyBackdrop && src ? (
-            <span className="pointer-events-none absolute bottom-4 right-4 z-10 rounded-lg bg-white/92 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 ring-1 ring-slate-200/80 backdrop-blur-sm">
+            <span
+              className={clsx(
+                'pointer-events-none absolute z-10 rounded-lg bg-white/92 font-bold uppercase tracking-[0.14em] text-slate-500 ring-1 ring-slate-200/80 backdrop-blur-sm',
+                compact
+                  ? 'bottom-2 right-2 px-2 py-0.5 text-[9px]'
+                  : 'bottom-4 right-4 px-2.5 py-1 text-[10px]',
+              )}
+            >
               Alpha preview
             </span>
           ) : null}
