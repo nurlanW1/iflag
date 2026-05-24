@@ -1,12 +1,8 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
-import {
-  BACKEND_UNREACHABLE_MESSAGE,
-  joinBackendApiPath,
-  logBackendApiHostOnce,
-  resolveBackendApiBase,
-} from '@/lib/auth/backend-url';
+import { backendUnreachableResponse, fetchBackendApi } from '@/lib/auth/backend-fetch.server';
+import { logBackendApiHostOnce, resolveBackendApiBase } from '@/lib/auth/backend-url';
 import { applyAuthSessionCookies } from '@/lib/auth/session-cookies.server';
 import { isClerkConfigured } from '@/lib/auth/clerk-env';
 
@@ -40,7 +36,7 @@ export async function POST() {
           'INTERNAL_AUTH_BRIDGE_SECRET is missing on this server. Set the same value on Vercel and the API server to link dashboard purchases.',
         code: 'BRIDGE_SECRET_MISSING',
       },
-      { status: 503 }
+      { status: 503 },
     );
   }
 
@@ -61,9 +57,8 @@ export async function POST() {
     [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ').trim() ||
     null;
 
-  let backendRes: Response;
   try {
-    backendRes = await fetch(joinBackendApiPath(apiBase.baseUrl, '/auth/bridge/clerk-session'), {
+    const backendRes = await fetchBackendApi(apiBase.baseUrl, '/auth/bridge/clerk-session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -75,45 +70,42 @@ export async function POST() {
         email_verified: verified,
       }),
     });
+
+    if (!backendRes.ok) {
+      const errBody = (await backendRes.json().catch(() => ({}))) as {
+        error?: string;
+        code?: string;
+      };
+      return NextResponse.json(
+        { ok: false, error: errBody.error || 'Bridge exchange failed', code: errBody.code },
+        { status: backendRes.status === 401 ? 401 : backendRes.status },
+      );
+    }
+
+    const data = (await backendRes.json()) as {
+      accessToken: string;
+      refreshToken: string;
+      user: {
+        id: string;
+        email: string;
+        full_name: string | null;
+        role: 'user' | 'admin';
+        email_verified: boolean;
+      };
+    };
+
+    const jar = await cookies();
+    applyAuthSessionCookies(jar, {
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+    });
+
+    return NextResponse.json({
+      ok: true,
+      user: data.user,
+    });
   } catch (err) {
     console.error('[auth/clerk-sync] backend fetch failed:', err);
-    return NextResponse.json(
-      { ok: false, error: BACKEND_UNREACHABLE_MESSAGE, code: 'API_UNREACHABLE' },
-      { status: 503 }
-    );
+    return backendUnreachableResponse(apiBase.baseUrl, '/auth/bridge/clerk-session', err, 503);
   }
-
-  if (!backendRes.ok) {
-    const errBody = (await backendRes.json().catch(() => ({}))) as {
-      error?: string;
-      code?: string;
-    };
-    return NextResponse.json(
-      { ok: false, error: errBody.error || 'Bridge exchange failed', code: errBody.code },
-      { status: backendRes.status === 401 ? 401 : backendRes.status }
-    );
-  }
-
-  const data = (await backendRes.json()) as {
-    accessToken: string;
-    refreshToken: string;
-    user: {
-      id: string;
-      email: string;
-      full_name: string | null;
-      role: 'user' | 'admin';
-      email_verified: boolean;
-    };
-  };
-
-  const jar = await cookies();
-  applyAuthSessionCookies(jar, {
-    accessToken: data.accessToken,
-    refreshToken: data.refreshToken,
-  });
-
-  return NextResponse.json({
-    ok: true,
-    user: data.user,
-  });
 }

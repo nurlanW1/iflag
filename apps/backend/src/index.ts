@@ -69,6 +69,7 @@ const corsOptions: cors.CorsOptions = {
         /* ignore malformed Origin */
       }
     }
+    console.warn('[cors] rejected origin:', origin);
     callback(null, false);
   },
   credentials: true,
@@ -118,6 +119,11 @@ app.get('/health', async (_req, res) => {
     console.error('[health] database check failed:', error);
     res.status(503).json({ status: 'unhealthy', database: 'disconnected' });
   }
+});
+
+// API prefix probe (used by frontend connectivity checks)
+app.get('/api', (_req, res) => {
+  res.json({ ok: true, service: 'flagswing-api', version: '1.1.0' });
 });
 
 // API routes

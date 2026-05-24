@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireClerkAdminBearerJson } from '@/lib/server/require-clerk-admin-bearer';
-import {
-  BACKEND_UNREACHABLE_MESSAGE,
-  resolveBackendApiBase,
-} from '@/lib/auth/backend-url';
+import { backendUnreachableResponse, fetchBackendApi } from '@/lib/auth/backend-fetch.server';
+import { resolveBackendApiBase } from '@/lib/auth/backend-url';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -23,22 +21,18 @@ export async function POST(request: Request): Promise<Response> {
 
   const url = new URL(request.url);
   const qs = url.searchParams.toString();
-  const target = `${api.baseUrl}/admin/flag-files/import-r2${qs ? `?${qs}` : ''}`;
+  const path = `/admin/flag-files/import-r2${qs ? `?${qs}` : ''}`;
   const auth = request.headers.get('authorization');
 
   try {
-    const backendRes = await fetch(target, {
+    const backendRes = await fetchBackendApi(api.baseUrl, path, {
       method: 'POST',
       headers: auth ? { Authorization: auth } : {},
-      cache: 'no-store',
     });
     const data = await backendRes.json().catch(() => ({}));
     return NextResponse.json(data, { status: backendRes.status });
   } catch (err) {
     console.error('[admin/flag-files/import-r2] proxy failed:', err);
-    return NextResponse.json(
-      { error: BACKEND_UNREACHABLE_MESSAGE, code: 'API_UNREACHABLE' },
-      { status: 503 }
-    );
+    return backendUnreachableResponse(api.baseUrl, path, err, 503);
   }
 }

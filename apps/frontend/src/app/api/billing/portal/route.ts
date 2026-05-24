@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAccessTokenFromCookies, getSessionUserFromCookies } from '@/lib/auth/session.server';
-import {
-  BACKEND_UNREACHABLE_MESSAGE,
-  resolveBackendApiBase,
-} from '@/lib/auth/backend-url';
+import { backendUnreachableResponse, fetchBackendApi } from '@/lib/auth/backend-fetch.server';
+import { resolveBackendApiBase } from '@/lib/auth/backend-url';
 
 export const runtime = 'nodejs';
 
@@ -24,18 +22,17 @@ export async function POST() {
   }
 
   try {
-    const r = await fetch(`${apiBase.baseUrl}/billing/portal`, {
+    const r = await fetchBackendApi(apiBase.baseUrl, '/billing/portal', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${access}`,
       },
-      cache: 'no-store',
     });
     const data = await r.json().catch(() => ({}));
     return NextResponse.json(data, { status: r.status });
   } catch (err) {
     console.error('[billing/portal proxy] backend error:', err);
-    return NextResponse.json({ error: BACKEND_UNREACHABLE_MESSAGE, code: 'API_UNREACHABLE' }, { status: 502 });
+    return backendUnreachableResponse(apiBase.baseUrl, '/billing/portal', err);
   }
 }

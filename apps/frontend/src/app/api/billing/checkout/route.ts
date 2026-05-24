@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import {
-  BACKEND_UNREACHABLE_MESSAGE,
-  resolveBackendApiBase,
-} from '@/lib/auth/backend-url';
+import { backendUnreachableResponse, fetchBackendApi } from '@/lib/auth/backend-fetch.server';
+import { resolveBackendApiBase } from '@/lib/auth/backend-url';
 import { resolveBillingAuthorization } from '@/lib/auth/billing-auth.server';
 
 export const runtime = 'nodejs';
@@ -37,19 +35,18 @@ export async function POST(request: Request) {
   }
 
   try {
-    const r = await fetch(`${apiBase.baseUrl}/billing/checkout`, {
+    const r = await fetchBackendApi(apiBase.baseUrl, '/billing/checkout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: authResult.authorization,
       },
       body: JSON.stringify(body),
-      cache: 'no-store',
     });
     const data = await r.json().catch(() => ({}));
     return NextResponse.json(data, { status: r.status });
   } catch (err) {
     console.error('[billing/checkout proxy] backend error:', err);
-    return NextResponse.json({ error: BACKEND_UNREACHABLE_MESSAGE, code: 'API_UNREACHABLE' }, { status: 502 });
+    return backendUnreachableResponse(apiBase.baseUrl, '/billing/checkout', err);
   }
 }

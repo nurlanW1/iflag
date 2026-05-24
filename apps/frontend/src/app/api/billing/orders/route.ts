@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAccessTokenFromCookies, getSessionUserFromCookies } from '@/lib/auth/session.server';
-import {
-  BACKEND_UNREACHABLE_MESSAGE,
-  resolveBackendApiBase,
-} from '@/lib/auth/backend-url';
+import { backendUnreachableResponse, fetchBackendApi } from '@/lib/auth/backend-fetch.server';
+import { joinBackendApiPath, resolveBackendApiBase } from '@/lib/auth/backend-url';
 
 export const runtime = 'nodejs';
 
@@ -25,19 +23,18 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const qs = url.searchParams.toString();
+  const path = `/billing/orders${qs ? `?${qs}` : ''}`;
 
   try {
-    const r = await fetch(
-      `${apiBase.baseUrl}/billing/orders${qs ? `?${qs}` : ''}`,
-      {
-        headers: { Authorization: `Bearer ${access}` },
-        cache: 'no-store',
-      }
-    );
+    const r = await fetch(joinBackendApiPath(apiBase.baseUrl, path), {
+      headers: { Authorization: `Bearer ${access}` },
+      cache: 'no-store',
+      signal: AbortSignal.timeout(15_000),
+    });
     const data = await r.json().catch(() => ({}));
     return NextResponse.json(data, { status: r.status });
   } catch (err) {
     console.error('[billing/orders proxy] backend error:', err);
-    return NextResponse.json({ error: BACKEND_UNREACHABLE_MESSAGE, code: 'API_UNREACHABLE' }, { status: 502 });
+    return backendUnreachableResponse(apiBase.baseUrl, path, err);
   }
 }

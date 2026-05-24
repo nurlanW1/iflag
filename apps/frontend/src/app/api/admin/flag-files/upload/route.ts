@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireClerkAdminBearerJson } from '@/lib/server/require-clerk-admin-bearer';
-import {
-  BACKEND_UNREACHABLE_MESSAGE,
-  resolveBackendApiBase,
-} from '@/lib/auth/backend-url';
+import { backendUnreachableResponse, fetchBackendApi } from '@/lib/auth/backend-fetch.server';
+import { resolveBackendApiBase } from '@/lib/auth/backend-url';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -12,7 +10,7 @@ export const maxDuration = 120;
  * Admin flag upload: verifies Clerk on Vercel, then proxies multipart body to the Express API
  * which uploads to **Cloudflare R2** and inserts `country_flag_files` on Neon.
  *
- * Requires `NEXT_PUBLIC_API_URL` pointing at the backend (…/api) and R2 env on the API server.
+ * Requires `NEXT_PUBLIC_API_URL` pointing at the Railway backend and R2 env on the API server.
  */
 export async function POST(request: Request): Promise<Response> {
   const gate = await requireClerkAdminBearerJson(request);
@@ -31,22 +29,17 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const auth = request.headers.get('authorization');
-  const target = `${api.baseUrl}/admin/flag-files/upload`;
 
   try {
-    const backendRes = await fetch(target, {
+    const backendRes = await fetchBackendApi(api.baseUrl, '/admin/flag-files/upload', {
       method: 'POST',
       body: formData,
       headers: auth ? { Authorization: auth } : {},
-      cache: 'no-store',
     });
     const data = await backendRes.json().catch(() => ({}));
     return NextResponse.json(data, { status: backendRes.status });
   } catch (err) {
     console.error('[admin/flag-files/upload] proxy to backend failed:', err);
-    return NextResponse.json(
-      { error: BACKEND_UNREACHABLE_MESSAGE, code: 'API_UNREACHABLE' },
-      { status: 503 }
-    );
+    return backendUnreachableResponse(api.baseUrl, '/admin/flag-files/upload', err, 503);
   }
 }
