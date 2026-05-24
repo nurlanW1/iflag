@@ -28,14 +28,35 @@ export type BackendProbeResult = {
 let loggedLegacyApiUrlWarning = false;
 let loggedResolvedHost: string | null = null;
 
+/** Prepend https:// (or http:// for localhost) when env omits the scheme. */
+function ensureUrlScheme(raw: string): string {
+  const trimmed = raw.trim();
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  if (trimmed.startsWith('//')) {
+    return `https:${trimmed}`;
+  }
+  const host = trimmed.split('/')[0]?.toLowerCase() ?? '';
+  if (
+    host === 'localhost' ||
+    host.startsWith('127.0.0.1') ||
+    host.startsWith('[::1]')
+  ) {
+    return `http://${trimmed}`;
+  }
+  return `https://${trimmed}`;
+}
+
 /**
  * Normalize env value:
+ * - ensure https:// (or http:// for localhost)
  * - trim + strip trailing slashes
  * - collapse `/api/api`
  * - append `/api` when missing
  */
 export function normalizeBackendApiBase(raw: string): string {
-  let url = raw.trim().replace(/\/+$/, '');
+  let url = ensureUrlScheme(raw).replace(/\/+$/, '');
   if (!url) return LOCAL_DEV_DEFAULT;
 
   while (/\/api\/api$/i.test(url)) {
@@ -52,13 +73,13 @@ export function normalizeBackendApiBase(raw: string): string {
 /** Railway service origin without the `/api` prefix. */
 export function getBackendOriginFromApiBase(apiBaseUrl: string): string {
   try {
-    const u = new URL(apiBaseUrl);
+    const u = new URL(ensureUrlScheme(apiBaseUrl));
     u.pathname = '/';
     u.search = '';
     u.hash = '';
     return u.origin;
   } catch {
-    return apiBaseUrl.replace(/\/api\/?$/i, '');
+    return ensureUrlScheme(apiBaseUrl).replace(/\/api\/?$/i, '');
   }
 }
 
@@ -141,7 +162,7 @@ export function resolveBackendApiBase(): BackendApiResolution {
       ok: false,
       code: 'API_URL_MISSING',
       error:
-        'NEXT_PUBLIC_API_URL is not set. Point it at your Railway backend (with or without /api), e.g. https://your-service.up.railway.app/api.',
+        'NEXT_PUBLIC_API_URL is not set. Point it at your Railway backend, e.g. https://your-service.up.railway.app/api (https:// is required if omitted from env).',
     };
   }
 
@@ -215,7 +236,7 @@ export function formatBackendUnreachableError(opts: {
   const normalizedBase = normalizeBackendApiBase(opts.baseUrl);
   const lines = [
     `Cannot reach the backend API at ${opts.attemptedUrl}.`,
-    `NEXT_PUBLIC_API_URL resolves to ${normalizedBase} (append /api automatically when omitted).`,
+    `NEXT_PUBLIC_API_URL resolves to ${normalizedBase} (https:// is added automatically when omitted).`,
     describeCause(opts.cause),
   ];
 
