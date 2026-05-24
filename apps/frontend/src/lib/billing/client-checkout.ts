@@ -54,11 +54,30 @@ export async function postPaddleCheckout(
       ok: false,
       error:
         data.error ||
-        'Checkout authorization failed. Confirm CLERK_SECRET_KEY is set on the billing API.',
+        'Checkout authorization failed. Sign in again or confirm billing API env on Railway.',
     };
   }
 
   if (!res.ok) {
+    if (res.status === 403 && data.code === 'MFA_REQUIRED') {
+      return {
+        ok: false,
+        error:
+          data.error ||
+          'This account has MFA enabled. Sign in with email and password to subscribe.',
+      };
+    }
+    if (res.status === 503 && data.code === 'BRIDGE_SECRET_MISSING') {
+      return {
+        ok: false,
+        error:
+          data.error ||
+          'Billing bridge is not configured (set INTERNAL_AUTH_BRIDGE_SECRET on Vercel and Railway).',
+      };
+    }
+    if (res.status === 503 && data.code === 'BRIDGE_FAILED') {
+      return { ok: false, error: data.error || 'Could not link your account for Paddle checkout.' };
+    }
     if (res.status === 503 && data.code === 'API_URL_MISSING') {
       return { ok: false, error: data.error || 'API URL is not configured on the server.' };
     }

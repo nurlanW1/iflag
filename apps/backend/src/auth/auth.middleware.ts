@@ -248,6 +248,11 @@ export async function authenticateAppJwtOrClerkBilling(
     next();
   } catch (e) {
     console.error('[auth] Clerk billing user resolution failed:', e);
-    res.status(500).json({ error: 'Authentication error' });
+    const message = e instanceof Error ? e.message : 'Clerk user resolution failed';
+    res.status(500).json({
+      error: 'Authentication error',
+      code: 'CLERK_USER_RESOLUTION_FAILED',
+      detail: process.env.NODE_ENV === 'production' ? undefined : message,
+    });
   }
 }

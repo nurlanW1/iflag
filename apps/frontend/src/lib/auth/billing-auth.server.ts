@@ -1,4 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
+import { exchangeCurrentClerkSessionForBackendAccessToken } from '@/lib/auth/clerk-backend-bridge.server';
 import { getAccessTokenFromCookies, getSessionUserFromCookies } from '@/lib/auth/session.server';
 import { isClerkConfigured } from '@/lib/auth/clerk-env';
 
@@ -6,7 +7,18 @@ export type BillingAuthSource = 'backend_cookie' | 'incoming_bearer' | 'clerk_se
 
 export type BillingAuthResolution =
   | { ok: true; authorization: string; source: BillingAuthSource }
-  | { ok: false; status: 401; error: string; code: 'AUTH_REQUIRED' | 'CLERK_TOKEN_MISSING' };
+  | {
+      ok: false;
+      status: 401 | 403 | 503 | 500;
+      error: string;
+      code:
+        | 'AUTH_REQUIRED'
+        | 'CLERK_TOKEN_MISSING'
+        | 'BRIDGE_SECRET_MISSING'
+        | 'BRIDGE_FAILED'
+        | 'MFA_REQUIRED'
+        | 'API_URL_MISSING';
+    };
 
 function parseBearer(header: string | null | undefined): string | null {
   const trimmed = header?.trim();
@@ -16,18 +28,13 @@ function parseBearer(header: string | null | undefined): string | null {
 }
 
 /**
- * Resolve Authorization for Paddle/billing proxies.
- * Prefer client Clerk Bearer (fresh) over legacy backend cookies that may be stale.
+ * Resolve Authorization for Paddle/billing proxies to Railway.
+ * Prefer backend JWT cookies, then Clerk → bridge exchange (backend HS256 JWT).
+ * Raw Clerk Bearer from the browser is not forwarded to Railway.
  */
 export async function resolveBillingAuthorization(
   request: Request,
 ): Promise<BillingAuthResolution> {
-  const incomingBearer = parseBearer(request.headers.get('authorization'));
-
-  if (incomingBearer) {
-    return { ok: true, authorization: incomingBearer, source: 'incoming_bearer' };
-  }
-
   const backendUser = await getSessionUserFromCookies();
   const access = await getAccessTokenFromCookies();
   if (backendUser && access) {
@@ -35,19 +42,28 @@ export async function resolveBillingAuthorization(
   }
 
   if (isClerkConfigured()) {
-    const { userId, getToken } = await auth();
+    const { userId } = await auth();
     if (userId) {
-      const clerkToken = await getToken();
-      if (clerkToken) {
-        return { ok: true, authorization: `Bearer ${clerkToken}`, source: 'clerk_session' };
+      const bridged = await exchangeCurrentClerkSessionForBackendAccessToken();
+      if (bridged.ok) {
+        return {
+          ok: true,
+          authorization: `Bearer ${bridged.accessToken}`,
+          source: 'clerk_session',
+        };
       }
       return {
         ok: false,
-        status: 401,
-        error: 'Clerk session found but no token could be issued. Refresh and try again.',
-        code: 'CLERK_TOKEN_MISSING',
+        status: bridged.status,
+        error: bridged.error,
+        code: bridged.code,
       };
     }
+  }
+
+  const incomingBearer = parseBearer(request.headers.get('authorization'));
+  if (incomingBearer) {
+    return { ok: true, authorization: incomingBearer, source: 'incoming_bearer' };
   }
 
   return { ok: false, status: 401, error: 'Unauthorized', code: 'AUTH_REQUIRED' };
