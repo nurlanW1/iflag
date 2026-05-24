@@ -13,6 +13,7 @@ type Props = {
   className?: string;
   style?: React.CSSProperties;
   children: React.ReactNode;
+  minimal?: boolean;
 };
 
 /**
@@ -26,6 +27,7 @@ export function CheckoutButtonFallback({
   className,
   style,
   children,
+  minimal = false,
 }: Props) {
   const pathname = usePathname();
   const { user, loading } = useAuth();
@@ -112,7 +114,7 @@ export function CheckoutButtonFallback({
         {loading ? 'Loading…' : busy ? 'Redirecting…' : children}
       </button>
       {error ? (
-        <p className="mt-2 text-xs text-red-600">
+        <p className={`text-red-600 ${minimal ? 'mt-1 text-[10px] leading-snug' : 'mt-2 text-xs'}`}>
           {error}{' '}
           <Link href="/login" className="font-medium underline">
             Sign in

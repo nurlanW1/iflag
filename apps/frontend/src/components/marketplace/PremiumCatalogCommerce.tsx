@@ -210,7 +210,6 @@ export function PremiumCatalogCommerce({
       <DownloadPurchaseOffers
         assetLabel={assetLabel ?? cartProduct.title}
         productSlug={ONE_TIME_STOCK.productSlug}
-        compact
       />
     )
   ) : null;
@@ -227,7 +226,7 @@ export function PremiumCatalogCommerce({
     ) : null;
 
   const block = (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       {formatRow}
       {cta}
       {footerTrust}

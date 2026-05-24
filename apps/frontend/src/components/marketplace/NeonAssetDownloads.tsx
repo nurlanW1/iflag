@@ -99,7 +99,6 @@ export function NeonAssetDownloads({
       <DownloadPurchaseOffers
         assetLabel={assetLabel ?? cartProduct.title}
         productSlug={productSlug ?? cartProduct.slug}
-        compact
       />
     ) : (
       <NeonPrimaryDownloadButton
@@ -118,7 +117,7 @@ export function NeonAssetDownloads({
   ) : null;
 
   const block = (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       {formatRow}
       {primaryButton}
       {active && !showPurchaseOffers ? (

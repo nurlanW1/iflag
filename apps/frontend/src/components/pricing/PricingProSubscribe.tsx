@@ -12,9 +12,10 @@ type Props = {
   className?: string;
   style?: CSSProperties;
   children: ReactNode;
+  minimal?: boolean;
 };
 
-function PricingProSubscribeClerk({ planSlug, className, style, children }: Props) {
+function PricingProSubscribeClerk({ planSlug, className, style, children, minimal = false }: Props) {
   const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
   const { getToken } = useAuth();
@@ -99,12 +100,16 @@ function PricingProSubscribeClerk({ planSlug, className, style, children }: Prop
       >
         {loading ? 'Redirecting…' : children}
       </button>
-      {email ? (
+      {email && !minimal ? (
         <p className="mt-2 text-center text-xs text-gray-500">
           Signed in as {email} — secure Paddle checkout.
         </p>
       ) : null}
-      {error ? <p className="mt-2 text-xs text-red-600">{error}</p> : null}
+      {error ? (
+        <p className={minimal ? 'mt-1 text-[10px] leading-snug text-red-600' : 'mt-2 text-xs text-red-600'}>
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

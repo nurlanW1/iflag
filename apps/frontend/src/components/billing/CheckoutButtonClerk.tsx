@@ -1,5 +1,6 @@
 'use client';
 
+import clsx from 'clsx';
 import { usePathname } from 'next/navigation';
 import { SignInButton, useAuth, useUser } from '@clerk/nextjs';
 import { useState } from 'react';
@@ -13,6 +14,8 @@ type Props = {
   className?: string;
   style?: React.CSSProperties;
   children: React.ReactNode;
+  /** Hide signed-in footer — use when parent shows a shared checkout footnote. */
+  minimal?: boolean;
 };
 
 /**
@@ -25,6 +28,7 @@ export function CheckoutButtonClerk({
   className,
   style,
   children,
+  minimal = false,
 }: Props) {
   const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
@@ -111,12 +115,16 @@ export function CheckoutButtonClerk({
       >
         {loading ? 'Redirecting…' : children}
       </button>
-      {email ? (
+      {email && !minimal ? (
         <p className="mt-2 text-center text-xs text-gray-500">
           Signed in as {email} — secure Paddle checkout.
         </p>
       ) : null}
-      {error ? <p className="mt-2 text-xs text-red-600">{error}</p> : null}
+      {error ? (
+        <p className={clsx('text-red-600', minimal ? 'mt-1 text-[10px] leading-snug' : 'mt-2 text-xs')}>
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

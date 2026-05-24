@@ -57,7 +57,7 @@ export function GalleryCountryDownloadsPanel({
 
   const block =
     files.length === 0 ? null : (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <CanonicalFormatSlots
           headingId="fmt-heading-gallery-country"
           files={files}
@@ -69,7 +69,6 @@ export function GalleryCountryDownloadsPanel({
             <DownloadPurchaseOffers
               assetLabel={assetLabel}
               productSlug={productSlug}
-              compact
             />
           ) : (
             <NeonPrimaryDownloadButton
