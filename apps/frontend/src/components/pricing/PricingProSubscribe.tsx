@@ -1,31 +1,20 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SignInButton, useAuth, useUser } from '@clerk/nextjs';
-import { useState } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
+import { useClerkUiEnabled } from '@/components/providers/ClerkUiProvider';
 import { postPaddleCheckout } from '@/lib/billing/client-checkout';
-import type { CheckoutKind } from './checkout-button-types';
 
 type Props = {
-  kind: CheckoutKind;
-  productSlug?: string;
-  planSlug?: string;
+  planSlug: string;
   className?: string;
-  style?: React.CSSProperties;
-  children: React.ReactNode;
+  style?: CSSProperties;
+  children: ReactNode;
 };
 
-/**
- * Paddle checkout for Clerk users — sign-in state from `useUser()`, token from `getToken()`.
- */
-export function CheckoutButtonClerk({
-  kind,
-  productSlug,
-  planSlug,
-  className,
-  style,
-  children,
-}: Props) {
+function PricingProSubscribeClerk({ planSlug, className, style, children }: Props) {
   const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
   const { getToken } = useAuth();
@@ -39,8 +28,7 @@ export function CheckoutButtonClerk({
     setLoading(true);
     try {
       const result = await postPaddleCheckout(getToken, {
-        kind,
-        productSlug,
+        kind: 'subscription',
         planSlug,
       });
       if (!result.ok) {
@@ -119,4 +107,38 @@ export function CheckoutButtonClerk({
       {error ? <p className="mt-2 text-xs text-red-600">{error}</p> : null}
     </div>
   );
+}
+
+function PricingProSubscribeLegacy({ className, style, children }: Props) {
+  const pathname = usePathname();
+  const returnTo = pathname?.startsWith('/') ? pathname : '/pricing';
+
+  return (
+    <div>
+      <Link
+        href={`/login?callbackUrl=${encodeURIComponent(returnTo)}`}
+        style={style}
+        className={
+          className ||
+          'flex w-full items-center justify-center rounded-xl bg-[#2563eb] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]'
+        }
+      >
+        Sign in to continue
+      </Link>
+      <p className="mt-2 text-center text-xs text-gray-500">
+        Sign in with your account — checkout is hosted by Paddle.
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Pro plan subscribe on /pricing — Clerk client auth only (no backend cookie session).
+ */
+export function PricingProSubscribe(props: Props) {
+  const clerkUiEnabled = useClerkUiEnabled();
+  if (!clerkUiEnabled) {
+    return <PricingProSubscribeLegacy {...props} />;
+  }
+  return <PricingProSubscribeClerk {...props} />;
 }

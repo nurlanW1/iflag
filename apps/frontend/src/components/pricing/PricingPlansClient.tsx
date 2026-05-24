@@ -4,7 +4,7 @@ import type { CSSProperties } from 'react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { Check, Crown, Sparkles } from 'lucide-react';
-import { CheckoutButton } from '@/components/billing/CheckoutButton';
+import { PricingProSubscribe } from '@/components/pricing/PricingProSubscribe';
 import {
   PLAN_CARD_COPY,
   PRICING_CHECKOUT_DISCLAIMER,
@@ -187,8 +187,7 @@ export function PricingPlansClient() {
                   ) : null}
                   {isPro ? (
                     <>
-                      <CheckoutButton
-                        kind="subscription"
+                      <PricingProSubscribe
                         planSlug={proSlug}
                         className="w-full rounded-xl bg-[#2563eb] py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:opacity-50"
                         style={{ width: '100%' } as CSSProperties}
@@ -196,7 +195,7 @@ export function PricingPlansClient() {
                         {interval === 'annual' && !annualReady
                           ? 'Subscribe monthly with Paddle'
                           : 'Subscribe with Paddle'}
-                      </CheckoutButton>
+                      </PricingProSubscribe>
                     </>
                   ) : null}
                   {isBusiness ? (

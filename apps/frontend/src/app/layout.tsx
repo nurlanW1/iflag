@@ -9,6 +9,7 @@ import { AuthModalProvider } from '@/contexts/AuthModalContext';
 import { CartProvider } from '@/contexts/CartContext';
 import AuthModalWrapper from '@/components/AuthModalWrapper';
 import { ClerkSessionBridge } from '@/components/auth/ClerkSessionBridge';
+import { ClerkUiProvider } from '@/components/providers/ClerkUiProvider';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { buildDefaultMetadata } from '@/lib/seo/site-config';
 import { logProductionDeploymentWarnings } from '@/lib/seo/production-warnings';
@@ -50,20 +51,22 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       >
         Skip to main content
       </a>
-      <AuthProvider>
-        <CartProvider clerkUiEnabled={clerkUiEnabled}>
-          <AuthModalProvider>
-            <Navbar clerkUiEnabled={clerkUiEnabled} />
-            <div id="site-content" tabIndex={-1} className="min-w-0 w-full outline-none">
-              {children}
-            </div>
-            <Footer />
-            <CookieNotice />
-            <AuthModalWrapper />
-            <AppToaster />
-          </AuthModalProvider>
-        </CartProvider>
-      </AuthProvider>
+      <ClerkUiProvider enabled={clerkUiEnabled}>
+        <AuthProvider>
+          <CartProvider clerkUiEnabled={clerkUiEnabled}>
+            <AuthModalProvider>
+              <Navbar clerkUiEnabled={clerkUiEnabled} />
+              <div id="site-content" tabIndex={-1} className="min-w-0 w-full outline-none">
+                {children}
+              </div>
+              <Footer />
+              <CookieNotice />
+              <AuthModalWrapper />
+              <AppToaster />
+            </AuthModalProvider>
+          </CartProvider>
+        </AuthProvider>
+      </ClerkUiProvider>
     </>
   );
 

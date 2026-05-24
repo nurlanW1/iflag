@@ -1,6 +1,6 @@
 'use client';
 
-import { getClerkPublishableKey } from '@/lib/auth/clerk-env';
+import { useClerkUiEnabled } from '@/components/providers/ClerkUiProvider';
 import { CheckoutButtonClerk } from './CheckoutButtonClerk';
 import { CheckoutButtonFallback } from './CheckoutButtonFallback';
 import type { CheckoutKind } from './checkout-button-types';
@@ -17,10 +17,11 @@ type Props = {
 };
 
 /**
- * Paddle checkout entry. Uses Clerk when a publishable key is configured (ClerkProvider in root layout).
+ * Paddle checkout entry. Uses Clerk when enabled in root layout (ClerkProvider).
  */
 export function CheckoutButton(props: Props) {
-  if (getClerkPublishableKey()) {
+  const clerkUiEnabled = useClerkUiEnabled();
+  if (clerkUiEnabled) {
     return <CheckoutButtonClerk {...props} />;
   }
   return <CheckoutButtonFallback {...props} />;
