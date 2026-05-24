@@ -9,8 +9,8 @@ The **Next.js frontend stays on Vercel**. Deploy the **Express + TypeScript API*
 | Setting | Value |
 |--------|--------|
 | **Root Directory** | `apps/backend` |
-| **Build Command** | `npm install && npm run build` |
-| **Start Command** | `npm run start` |
+| **Build Command** | `cd ../.. && npm ci --include=dev && npm run build --workspace=backend` |
+| **Start Command** | `node dist/index.js` |
 
 Config-as-code (optional): `apps/backend/railway.json` sets the same build/start commands, **`/health`** as the deployment health check path, and restart policy. Dashboard values are overridden when this file is used—see [Railway Config as Code](https://docs.railway.com/deploy/config-as-code).
 
@@ -169,8 +169,8 @@ Expect `{"status":"healthy","database":"connected"}` when Neon is reachable.
 1. **Git** — Commit and push backend + `railway.json` / docs changes.
 2. **Railway** — New project → **Deploy from GitHub repo**.
 3. **Service** — Set **Root Directory** to **`apps/backend`** (or set custom config path to `/apps/backend/railway.json` if needed).
-4. **Build** — `npm install && npm run build`  
-5. **Start** — `npm run start`
+4. **Build** — `cd ../.. && npm ci --include=dev && npm run build --workspace=backend`  
+5. **Start** — `node dist/index.js`
 6. **Variables** — Paste all required env vars (Neon, Clerk, Paddle, R2, JWT, bridge secret, `FRONTEND_URL`).
 7. **Deploy** — Wait for green health check on **`/health`**.
 8. **Verify** — `curl https://<railway-host>/health`

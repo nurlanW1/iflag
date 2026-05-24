@@ -1,7 +1,10 @@
-# Node.js backend production Dockerfile
+# Node.js backend production Dockerfile (monorepo — build from repo root)
 FROM node:20-alpine
-WORKDIR /app
-COPY . .
-RUN npm install && npm run build
+WORKDIR /repo
+COPY package.json package-lock.json ./
+COPY packages ./packages
+COPY apps/backend ./apps/backend
+RUN npm ci --include=dev && npm run build --workspace=backend
+WORKDIR /repo/apps/backend
 EXPOSE 4000
-CMD ["npm", "start"]
+CMD ["node", "dist/index.js"]
