@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Crown } from 'lucide-react';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
-import { collectFormatLabels, formatPrice } from '@/lib/marketplace/catalog-utils';
+import { collectFormatLabels, formatProductListPrice } from '@/lib/marketplace/catalog-utils';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
 function countryLabelFromSlug(slug: string) {
@@ -82,7 +82,7 @@ export function MarketplaceProductCard({
         ) : null}
         <div className="mt-auto flex items-center justify-between gap-4 pt-6">
           <span className="text-xl font-semibold tabular-nums text-[#2a2a2a]">
-            {formatPrice(product.priceCents, product.currency)}
+            {formatProductListPrice(product)}
           </span>
           <Link
             href={href}

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import { PRICING_MARKETING } from '@/lib/marketing/pricing-config';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import { MarketplaceProductCard } from '@/components/marketplace/MarketplaceProductCard';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
@@ -255,7 +256,7 @@ export function LandingProductRails({ gallerySlot }: { gallerySlot?: ReactNode }
       <ProductRailSection
         id="rail-premium"
         title="Premium assets"
-        subtitle="Commercial-ready downloads with Paddle checkout on the pricing page."
+        subtitle={PRICING_MARKETING.catalogRailSubtitle}
         products={premium}
         loading={loadingRails}
         viewAllHref="/browse?tier=pro"

@@ -1,17 +1,19 @@
 import type { PublicProduct, PublicProductFile } from '@/lib/marketplace/product-mapper';
+import {
+  formatPricingMoney,
+  productHasPaidTier,
+  resolveCatalogDisplayPriceCents,
+} from '@/lib/marketing/pricing-config';
 
 export function formatPrice(cents: number, currency: string): string {
   if (cents === 0) return 'Free';
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: currency || 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(cents / 100);
-  } catch {
-    return `${(cents / 100).toFixed(2)} ${currency}`;
-  }
+  return formatPricingMoney(cents, currency || 'USD');
+}
+
+/** Price label for catalog cards and PDP headers. */
+export function formatProductListPrice(product: Pick<PublicProduct, 'priceCents' | 'currency' | 'files'>): string {
+  const cents = resolveCatalogDisplayPriceCents(product.priceCents, productHasPaidTier(product));
+  return formatPrice(cents, product.currency);
 }
 
 /** Remove duplicate file rows keyed twice (prefer first by sortOrder). */

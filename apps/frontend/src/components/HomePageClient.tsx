@@ -21,13 +21,13 @@ import { SectionReveal } from '@/components/motion/SectionReveal';
 import { useRevealInView } from '@/hooks/useRevealInView';
 import { SITE_NAME } from '@/lib/seo/site-config';
 import { buildHeroDestination } from '@/lib/landing/hero-categories';
-import { HOMEPAGE_PLAN_CARDS, ONE_TIME_STOCK, formatPricingMoney } from '@/lib/marketing/pricing-config';
+import { HOMEPAGE_PLAN_CARDS, ONE_TIME_STOCK, PRICING_MARKETING, formatPricingMoney } from '@/lib/marketing/pricing-config';
 
 type PricingPlan = {
   name: string;
   priceCents: number;
   period: string;
-  features: string[];
+  features: readonly string[];
   popular: boolean;
   savingsBadge?: string;
 };
@@ -293,8 +293,7 @@ export default function HomePageClient() {
               Licenses without friction
             </h2>
             <p className="mt-4 max-w-3xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
-              Unlock broader usage where offered in-product. Paid checkout routes through Paddle as Merchant of Record —
-              detailed SKUs stay on the pricing page.
+              {PRICING_MARKETING.homepageBlurb} Paid checkout routes through Paddle as Merchant of Record.
             </p>
           </SectionReveal>
 
@@ -390,9 +389,9 @@ export default function HomePageClient() {
                 <Link
                   href="/pricing"
                   className="inline-flex min-h-[3rem] items-center justify-center rounded-xl border border-white/28 bg-transparent px-10 py-3 text-base font-semibold text-[#fafaf9] transition-colors hover:border-white/45 hover:bg-white/[0.06]"
-                  title="Compare plans — Paddle checkout"
+                  title={`Compare plans — ${PRICING_MARKETING.plansLine}`}
                 >
-                  Paddle pricing &amp; plans
+                  Plans from {PRICING_MARKETING.monthlyShort}/mo
                 </Link>
               </div>
             </SectionReveal>

@@ -4,6 +4,7 @@ import { EmptyState } from '@/components/dashboard/EmptyState';
 import { fetchAccountSubscriptionSummary } from '@/lib/account/dashboard-data';
 import { getDashboardDataUserId } from '@/lib/dashboard/account';
 import { getAccessTokenFromCookies } from '@/lib/auth/session.server';
+import { PRICING_MARKETING } from '@/lib/marketing/pricing-config';
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
@@ -33,7 +34,7 @@ export default async function DashboardSubscriptionPage() {
     <div className="w-full min-w-0">
       <h1 className="text-2xl font-black text-gray-900">Subscription</h1>
       <p className="mt-1 text-sm text-gray-600">
-        Manage Paddle checkout and plan upgrades from the{' '}
+        {PRICING_MARKETING.plansLine}. Manage checkout and upgrades on the{' '}
         <Link href="/pricing" className="font-medium text-[#2563eb] hover:underline">
           pricing page
         </Link>

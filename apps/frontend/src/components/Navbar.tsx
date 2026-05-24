@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
+import { PRICING_MARKETING } from '@/lib/marketing/pricing-config';
 import {
   User,
   LogOut,
@@ -265,7 +266,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             <Link href="/#catalog-categories" className={navText}>
               Categories
             </Link>
-            <Link href="/pricing" className={`flex items-center gap-2 ${navText}`} title="Plans — Paddle checkout">
+            <Link href="/pricing" className={`flex items-center gap-2 ${navText}`} title={PRICING_MARKETING.plansLine}>
               <Crown size={19} className="shrink-0 text-amber-500" aria-hidden strokeWidth={1.75} />
               Pricing
             </Link>

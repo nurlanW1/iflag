@@ -69,6 +69,37 @@ export const SUBSCRIPTION_BREAK_EVEN_DOWNLOADS = Math.ceil(
   PRO_CHECKOUT.monthly.displayCents / ONE_TIME_STOCK.displayCents,
 );
 
+/** Shared marketing copy — import here instead of hardcoding dollar amounts in UI. */
+export const PRICING_MARKETING = {
+  weeklyShort: formatPricingMoney(PRO_CHECKOUT.weekly.displayCents),
+  monthlyShort: formatPricingMoney(PRO_CHECKOUT.monthly.displayCents),
+  oneTimeShort: formatPricingMoney(ONE_TIME_STOCK.displayCents),
+  weeklyPerWeek: `${formatPricingMoney(PRO_CHECKOUT.weekly.displayCents)}/wk`,
+  monthlyPerMonth: `${formatPricingMoney(PRO_CHECKOUT.monthly.displayCents)}/mo`,
+  oneTimePerAsset: `${formatPricingMoney(ONE_TIME_STOCK.displayCents)} per asset`,
+  plansLine: `Weekly ${formatPricingMoney(PRO_CHECKOUT.weekly.displayCents)}/wk · Monthly ${formatPricingMoney(PRO_CHECKOUT.monthly.displayCents)}/mo · Single assets ${formatPricingMoney(ONE_TIME_STOCK.displayCents)} each`,
+  homepageBlurb:
+    `Pro downloads from ${formatPricingMoney(PRO_CHECKOUT.weekly.displayCents)}/week or ${formatPricingMoney(PRO_CHECKOUT.monthly.displayCents)}/month. Own one asset for ${formatPricingMoney(ONE_TIME_STOCK.displayCents)} — all via Paddle checkout.`,
+  catalogRailSubtitle: `Subscribe from ${formatPricingMoney(PRO_CHECKOUT.monthly.displayCents)}/mo or buy assets at ${formatPricingMoney(ONE_TIME_STOCK.displayCents)} each — Paddle checkout.`,
+  pricingPageDescription: `Free previews, Pro from ${formatPricingMoney(PRO_CHECKOUT.weekly.displayCents)}/week or ${formatPricingMoney(PRO_CHECKOUT.monthly.displayCents)}/month, and one-time assets at ${formatPricingMoney(ONE_TIME_STOCK.displayCents)}.`,
+} as const;
+
+/** Default list/card price when a paid asset has no explicit DB price. */
+export function resolveCatalogDisplayPriceCents(
+  priceCents: number,
+  hasPaidTier: boolean,
+): number {
+  if (priceCents > 0) return priceCents;
+  return hasPaidTier ? ONE_TIME_STOCK.displayCents : 0;
+}
+
+export function productHasPaidTier(product: {
+  priceCents: number;
+  files: readonly { tier: string }[];
+}): boolean {
+  return product.priceCents > 0 || product.files.some((f) => f.tier === 'pro');
+}
+
 export interface ComparisonRow {
   id: string;
   label: string;

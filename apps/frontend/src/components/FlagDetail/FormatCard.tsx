@@ -1,6 +1,10 @@
 'use client';
 
 import { Download, Crown, Check } from 'lucide-react';
+import {
+  formatPricingMoney,
+  resolveCatalogDisplayPriceCents,
+} from '@/lib/marketing/pricing-config';
 
 interface FormatCardProps {
   format: {
@@ -45,8 +49,13 @@ export default function FormatCard({
   };
 
   const formatIcon = formatIcons[format.format_code.toLowerCase()] || '📄';
-  const isFree = price.price_cents === 0;
   const isPremium = price.requires_subscription;
+
+  const isFree = price.price_cents === 0 && !isPremium;
+  const displayCents = resolveCatalogDisplayPriceCents(
+    price.price_cents,
+    isPremium || price.price_cents > 0,
+  );
 
   return (
     <div
@@ -117,7 +126,7 @@ export default function FormatCard({
               color: 'var(--color-primary)',
               marginBottom: 'var(--spacing-xs)',
             }}>
-              ${(price.price_cents / 100).toFixed(2)}
+              {formatPricingMoney(displayCents)}
             </div>
             {isPremium && (
               <span className="badge badge-warning" style={{ fontSize: '0.75rem' }}>

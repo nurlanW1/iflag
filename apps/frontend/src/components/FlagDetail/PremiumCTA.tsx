@@ -3,6 +3,7 @@
 import { Crown, X, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { PRICING_MARKETING } from '@/lib/marketing/pricing-config';
 
 interface PremiumCTAProps {
   premiumFormatsCount: number;
@@ -25,16 +26,18 @@ export default function PremiumCTA({
   if (dismissed && (variant === 'banner' || variant === 'modal')) return null;
 
   const benefits = [
-    'Unlimited premium downloads',
-    'No watermarks',
-    'High-resolution assets',
-    'Commercial license included',
-    'Cancel anytime',
+    `Catalog Pro downloads from ${PRICING_MARKETING.monthlyPerMonth}`,
+    `Or own this asset for ${PRICING_MARKETING.oneTimeShort}`,
+    `Weekly option: ${PRICING_MARKETING.weeklyPerWeek}`,
+    'No watermarks on Pro files',
+    'Cancel anytime in Paddle portal',
   ];
+
+  const ctaLabel = `View plans — ${PRICING_MARKETING.monthlyShort}/mo`;
 
   if (variant === 'modal') {
     return (
-      <div 
+      <div
         style={{
           position: 'fixed',
           top: 0,
@@ -49,8 +52,8 @@ export default function PremiumCTA({
         }}
         onClick={handleDismiss}
       >
-        <div 
-          className="card" 
+        <div
+          className="card"
           style={{ maxWidth: '500px', width: '90%' }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -78,22 +81,26 @@ export default function PremiumCTA({
           </div>
           <div className="card-body">
             <p style={{ marginBottom: 'var(--spacing-lg)' }}>
-              This asset has {premiumFormatsCount} premium format{premiumFormatsCount > 1 ? 's' : ''} available with a subscription.
+              This asset has {premiumFormatsCount} premium format{premiumFormatsCount > 1 ? 's' : ''} available.
+              Subscribe or buy once — {PRICING_MARKETING.plansLine}.
             </p>
 
             <div style={{ marginBottom: 'var(--spacing-lg)' }}>
               <strong style={{ fontSize: '0.875rem', display: 'block', marginBottom: 'var(--spacing-sm)' }}>
-                Premium Benefits:
+                Your options:
               </strong>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {benefits.map((benefit, index) => (
-                  <li key={index} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--spacing-sm)',
-                    marginBottom: 'var(--spacing-xs)',
-                    fontSize: '0.875rem',
-                  }}>
+                  <li
+                    key={index}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--spacing-sm)',
+                      marginBottom: 'var(--spacing-xs)',
+                      fontSize: '0.875rem',
+                    }}
+                  >
                     <Check size={16} style={{ color: 'var(--color-success)' }} />
                     {benefit}
                   </li>
@@ -103,7 +110,7 @@ export default function PremiumCTA({
 
             <Link href="/pricing" className="btn btn-primary" style={{ width: '100%' }}>
               <Crown size={18} />
-              View subscription plans (Paddle checkout)
+              {ctaLabel}
             </Link>
           </div>
         </div>
@@ -113,36 +120,39 @@ export default function PremiumCTA({
 
   if (variant === 'inline') {
     return (
-      <div style={{
-        padding: 'var(--spacing-md)',
-        backgroundColor: 'var(--color-warning)',
-        color: 'white',
-        borderRadius: 'var(--radius-md)',
-        textAlign: 'center',
-      }}>
+      <div
+        style={{
+          padding: 'var(--spacing-md)',
+          backgroundColor: 'var(--color-warning)',
+          color: 'white',
+          borderRadius: 'var(--radius-md)',
+          textAlign: 'center',
+        }}
+      >
         <Crown size={20} style={{ marginBottom: 'var(--spacing-xs)' }} />
         <p style={{ fontSize: '0.875rem', marginBottom: 'var(--spacing-sm)' }}>
-          Premium subscription required
+          Pro access from {PRICING_MARKETING.monthlyPerMonth} or {PRICING_MARKETING.oneTimePerAsset}
         </p>
         <Link href="/pricing" className="btn btn-sm" style={{ backgroundColor: 'white', color: 'var(--color-warning)' }}>
-          Subscribe with Paddle
+          {ctaLabel}
         </Link>
       </div>
     );
   }
 
-  // Banner variant (default)
   return (
-    <div style={{
-      padding: 'var(--spacing-md)',
-      backgroundColor: 'var(--color-warning)',
-      color: 'white',
-      borderRadius: 'var(--radius-md)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: 'var(--spacing-lg)',
-    }}>
+    <div
+      style={{
+        padding: 'var(--spacing-md)',
+        backgroundColor: 'var(--color-warning)',
+        color: 'white',
+        borderRadius: 'var(--radius-md)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 'var(--spacing-lg)',
+      }}
+    >
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
         <Crown size={24} />
         <div>
@@ -150,13 +160,13 @@ export default function PremiumCTA({
             Unlock {premiumFormatsCount} Premium Format{premiumFormatsCount > 1 ? 's' : ''}
           </strong>
           <p style={{ fontSize: '0.875rem', margin: 0, opacity: 0.9 }}>
-            Subscribe to download without watermarks (subscriptions via Paddle).
+            {PRICING_MARKETING.monthlyPerMonth} · {PRICING_MARKETING.weeklyPerWeek} · {PRICING_MARKETING.oneTimePerAsset}
           </p>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
         <Link href="/pricing" className="btn btn-sm" style={{ backgroundColor: 'white', color: 'var(--color-warning)' }}>
-          Get Premium
+          {ctaLabel}
         </Link>
         <button
           onClick={handleDismiss}
@@ -167,6 +177,8 @@ export default function PremiumCTA({
             cursor: 'pointer',
             padding: 'var(--spacing-xs)',
           }}
+          type="button"
+          aria-label="Dismiss"
         >
           <X size={18} />
         </button>

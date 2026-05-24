@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Crown, ArrowRight } from 'lucide-react';
 import type { AccountSubscriptionSummary } from '@/types/account';
+import { PRICING_MARKETING } from '@/lib/marketing/pricing-config';
 
 /**
  * Logged-in subscription account view. Public plan comparison and checkout live on /pricing.
@@ -52,7 +53,7 @@ export default function SubscriptionsAccountPage() {
       <div className="w-full min-w-0">
       <h1 className="text-3xl font-black text-gray-900 lg:text-4xl xl:text-5xl">Your subscription</h1>
       <p className="mt-1 text-sm text-gray-600">
-        Compare Paddle plans, upgrade, or start checkout from the{' '}
+        {PRICING_MARKETING.plansLine}. Compare plans or start checkout on the{' '}
         <Link href="/pricing" className="font-semibold text-[#2563eb] hover:underline">
           pricing page
         </Link>
