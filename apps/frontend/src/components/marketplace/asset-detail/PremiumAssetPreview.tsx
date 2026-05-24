@@ -12,23 +12,87 @@ type Props = {
   formatHints?: string[];
   /** Chessboard matte behind previews that may carry alpha (PNG/WebP/SVG/etc.) */
   useTransparencyBackdrop?: boolean;
-  /** Desktop hero: stretch vertically to match sibling commerce panel */
-  fillColumn?: boolean;
+  /** Gallery-style card with generous padding (stock PDP default). */
+  variant?: 'gallery' | 'compact';
+  /** Footer line under preview (gallery country pages). */
+  caption?: string;
+  formatCount?: number;
 };
 
 const checkerBg =
   'bg-[#eceef2] [background-image:linear-gradient(45deg,#dadde3_25%,transparent_25%),linear-gradient(-45deg,#dadde3_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#dadde3_75%),linear-gradient(-45deg,transparent_75%,#dadde3_75%)] [background-size:11px_11px] [background-position:0_0,0_5.5px,5.5px_-5.5px,-5.5px_0]';
 
-/** Premium floating preview card with optional checkerboard for transparent assets */
+/** Stock preview — gallery layout by default for breathing room around the flag art. */
 export function PremiumAssetPreview({
   productTitle,
   previewUrls,
   formatHints = [],
   useTransparencyBackdrop = false,
-  fillColumn = false,
+  variant = 'gallery',
+  caption,
+  formatCount,
 }: Props) {
   const uniq = [...new Set(previewUrls.filter((u) => typeof u === 'string' && u.trim()))];
   const src = uniq[0] ?? '';
+  const showFooter = Boolean(caption?.trim() || (formatCount != null && formatCount > 0));
+
+  if (variant === 'gallery') {
+    return (
+      <div className="overflow-hidden rounded-[1.375rem] border border-slate-200/80 bg-white">
+        <div
+          className={clsx(
+            'relative flex min-h-[24rem] items-center justify-center px-5 py-10 sm:min-h-[30rem] sm:px-10 sm:py-12 lg:min-h-[min(62vh,36rem)] xl:min-h-[min(65vh,40rem)]',
+            useTransparencyBackdrop ? checkerBg : 'bg-[linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)]',
+          )}
+        >
+          {src ? (
+            <ProductPreviewImage
+              className="relative mx-auto inline-flex max-h-[min(62vh,40rem)] max-w-full items-center justify-center"
+              watermarkEnabled
+              protectEnabled
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- remote CDN previews */}
+              <img
+                src={src}
+                alt={productTitle}
+                className="max-h-[min(62vh,40rem)] w-auto max-w-full object-contain"
+                referrerPolicy="no-referrer"
+                decoding="async"
+                draggable={false}
+              />
+            </ProductPreviewImage>
+          ) : (
+            <div
+              className="flex h-48 w-full max-w-md items-center justify-center rounded-xl border border-dashed border-slate-200 text-sm text-slate-400"
+              role="img"
+              aria-label={`${productTitle} — no preview`}
+            >
+              No preview
+            </div>
+          )}
+          {useTransparencyBackdrop && src ? (
+            <span className="pointer-events-none absolute bottom-4 right-4 z-10 rounded-lg bg-white/92 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 ring-1 ring-slate-200/80 backdrop-blur-sm">
+              Alpha preview
+            </span>
+          ) : null}
+        </div>
+        {showFooter ? (
+          <div className="flex flex-col gap-1 border-t border-slate-100 px-5 py-3 text-center sm:px-6">
+            {caption?.trim() ? (
+              <p className="truncate text-sm font-medium text-slate-700" title={caption}>
+                {caption}
+              </p>
+            ) : null}
+            {formatCount != null && formatCount > 0 ? (
+              <p className="text-xs text-slate-500">
+                {formatCount} format{formatCount === 1 ? '' : 's'} available
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   if (!src) {
     return (
@@ -36,9 +100,7 @@ export function PremiumAssetPreview({
         className={clsx(
           'relative mx-auto aspect-[4/3] w-full max-w-[min(100%,66rem)] overflow-hidden rounded-[1.375rem]',
           useTransparencyBackdrop ? checkerBg : 'bg-gradient-to-b from-white to-slate-50',
-          'ring-1 ring-slate-200/70',
-          !fillColumn && 'lg:aspect-[16/10]',
-          fillColumn && 'lg:flex-1 lg:aspect-auto lg:min-h-[14rem]',
+          'ring-1 ring-slate-200/70 lg:aspect-[16/10]',
         )}
         role="img"
         aria-label={`${productTitle} — no preview`}
@@ -49,57 +111,26 @@ export function PremiumAssetPreview({
   const svg = shouldUnoptimizeFlagImageHref(src, formatHints);
 
   return (
-    <div
-      className={clsx(
-        'mx-auto w-full max-w-[min(100%,66rem)]',
-        fillColumn && 'lg:mx-0 lg:max-w-none lg:flex lg:min-h-0 lg:flex-1 lg:flex-col',
-      )}
-    >
-      <div
-        className={clsx(
-          '-translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform hover:-translate-y-1 hover:opacity-[0.997] lg:hover:-translate-y-1',
-          fillColumn && 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col',
-        )}
-      >
+    <div className="mx-auto w-full max-w-[min(100%,66rem)]">
+      <div className="overflow-hidden rounded-[1.375rem] border border-slate-200/80 bg-white">
         <div
           className={clsx(
-            'overflow-hidden rounded-[1.375rem]',
-            'border border-slate-200/80 bg-white',
-            'transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-            'hover:border-slate-300/90',
-            fillColumn && 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col',
+            'relative aspect-[4/3] w-full lg:aspect-[16/10] lg:max-h-[min(66vh,680px)]',
+            useTransparencyBackdrop ? checkerBg : 'bg-[linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)]',
           )}
         >
-          <div
-            className={clsx(
-              'relative aspect-[4/3] w-full',
-              !fillColumn && 'lg:aspect-[16/10] lg:max-h-[min(66vh,680px)]',
-              fillColumn && 'lg:flex lg:min-h-0 lg:flex-1 lg:aspect-auto',
-              useTransparencyBackdrop ? checkerBg : 'bg-[linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)]',
-            )}
-          >
-            <ProductPreviewImage className="absolute inset-0" watermarkEnabled protectEnabled>
-              <Image
-                src={src}
-                alt={productTitle}
-                fill
-                unoptimized={svg}
-                draggable={false}
-                sizes="(max-width:1024px) 100vw, min(1060px, 72vw)"
-                priority
-                className={clsx(
-                  'relative z-0 object-contain p-[clamp(1rem,3.75vw,2.85rem)]',
-                  'transition-[transform] duration-[680ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
-                  'hover:scale-[1.035]',
-                )}
-              />
-              {useTransparencyBackdrop ? (
-                <span className="pointer-events-none absolute bottom-4 right-4 z-10 rounded-lg bg-white/92 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 ring-1 ring-slate-200/80 backdrop-blur-sm">
-                  Alpha preview
-                </span>
-              ) : null}
-            </ProductPreviewImage>
-          </div>
+          <ProductPreviewImage className="absolute inset-0" watermarkEnabled protectEnabled>
+            <Image
+              src={src}
+              alt={productTitle}
+              fill
+              unoptimized={svg}
+              draggable={false}
+              sizes="(max-width:1024px) 100vw, min(1060px, 72vw)"
+              priority
+              className="relative z-0 object-contain p-[clamp(1.25rem,4vw,3rem)]"
+            />
+          </ProductPreviewImage>
         </div>
       </div>
     </div>

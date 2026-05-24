@@ -1,4 +1,9 @@
-/** @type {import('next').NextConfig} */
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+/** Repo root (`iflag/`). `next` is hoisted here in npm workspaces; Turbopack must resolve it reliably. */
+const monorepoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
 const clerkPublishableKey =
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() ||
   process.env.CLERK_PUBLISHABLE_KEY?.trim() ||
@@ -24,8 +29,17 @@ const marketplaceOwnerDownloadPublic =
   process.env.MARKETPLACE_OWNER_DOWNLOAD_EMAILS?.trim() ||
   DEFAULT_ADMIN_OWNER;
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  /**
+   * Monorepo: Turbopack can mis-infer workspace root as `src/app/` and crash with “Next.js package not found”.
+   * @see https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory
+   */
+  turbopack: {
+    root: monorepoRoot,
+  },
+  outputFileTracingRoot: monorepoRoot,
   /**
    * Ensure the publishable key is available to both server and client bundles at build time.
    * Maps the common `CLERK_PUBLISHABLE_KEY` typo/alias to what @clerk/nextjs expects.

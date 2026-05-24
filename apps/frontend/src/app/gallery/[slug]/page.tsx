@@ -353,21 +353,15 @@ export default function CountryDetailPage() {
     data.country.slug,
   );
 
-  const downloadDisabled =
-    !selectedFormat ||
-    downloading === selectedFormat.id ||
-    (selectedFormat.downloadProtected &&
-      isSignedIn &&
-      !isOwnerDownloadBypass &&
-      !hasActivePlan &&
-      !planLoaded);
+  const formatRequiresEntitlement =
+    Boolean(selectedFormat?.downloadProtected) && !isOwnerDownloadBypass;
 
-  const showPurchaseOffers =
-    Boolean(selectedFormat?.downloadProtected) &&
-    clerkLoaded &&
-    !isOwnerDownloadBypass &&
-    !hasActivePlan &&
-    (!isSignedIn || planLoaded);
+  const canDirectDownload = Boolean(
+    selectedFormat &&
+      (!selectedFormat.downloadProtected ||
+        isOwnerDownloadBypass ||
+        (isSignedIn && hasActivePlan && planLoaded)),
+  );
 
   return (
     <main className="marketplace-shell min-h-screen bg-slate-50 max-lg:pb-[calc(21rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]">
@@ -595,9 +589,9 @@ export default function CountryDetailPage() {
                 onSelectFormatId={onPickFormatById}
                 onDownload={() => selectedFormat && onDownloadPress(selectedFormat)}
                 downloadBusy={Boolean(selectedFormat && downloading === selectedFormat.id)}
-                downloadDisabled={downloadDisabled}
                 downloadButtonLabel={selectedFormat ? downloadLabel(selectedFormat) : 'Download'}
-                showPurchaseOffers={showPurchaseOffers}
+                formatRequiresEntitlement={formatRequiresEntitlement}
+                canDirectDownload={canDirectDownload}
                 assetLabel={pageTitle}
                 productSlug={data.country.slug}
                 cartProduct={{

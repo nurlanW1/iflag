@@ -8,15 +8,41 @@ export type ApiDownloadPreflightResult =
   | 'not_found'
   | 'error';
 
+function filenameFromContentDisposition(header: string | null): string | null {
+  if (!header) return null;
+  const star = header.match(/filename\*=UTF-8''([^;]+)/i);
+  if (star?.[1]) {
+    try {
+      return decodeURIComponent(star[1]);
+    } catch {
+      /* ignore */
+    }
+  }
+  const quoted = header.match(/filename="([^"]+)"/i);
+  if (quoted?.[1]) return quoted[1];
+  const plain = header.match(/filename=([^;]+)/i);
+  return plain?.[1]?.trim().replace(/^["']|["']$/g, '') ?? null;
+}
+
+function saveBlobAsDownload(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.rel = 'noopener';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
 /**
  * Check download gate without following redirects (no file body for typical 302 → CDN).
  */
 export async function preflightApiDownload(apiPath: string): Promise<ApiDownloadPreflightResult> {
   try {
     const res = await fetch(apiPath, { credentials: 'include', redirect: 'manual' });
-    // Successful `/api/download/...` replies with HTTP 302 → CDN/R2 URL. Fetch with redirect:manual
-    // exposes that as type "opaqueredirect", status 0 (no usable headers)—not 3xx—and must still
-    // count as OK so we can kick off iframe navigation / follow-up download.
     if (res.type === 'opaqueredirect') return 'ok';
     if (res.status === 401) return 'unauthorized';
     if (res.status === 403) return 'forbidden';
@@ -30,26 +56,22 @@ export async function preflightApiDownload(apiPath: string): Promise<ApiDownload
   }
 }
 
+/** Fallback when blob fetch is unavailable — better than hidden iframe for attachment redirects. */
+export function startAnchorDownload(url: string): void {
+  const a = document.createElement('a');
+  a.href = url;
+  a.rel = 'noopener noreferrer';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 /**
- * Load URL in a hidden iframe so the **visible** tab stays on the gallery / product page.
- * Works for same-origin API paths and absolute CDN URLs.
+ * @deprecated Hidden iframes render PNG/SVG/JPG inline — no save dialog. Prefer blob or anchor.
  */
 export function startHiddenIframeDownload(url: string): void {
-  const iframe = document.createElement('iframe');
-  iframe.setAttribute('aria-hidden', 'true');
-  iframe.setAttribute('tabindex', '-1');
-  iframe.title = 'Download';
-  iframe.style.cssText =
-    'position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;visibility:hidden';
-  iframe.src = url;
-  document.body.appendChild(iframe);
-  window.setTimeout(() => {
-    try {
-      iframe.remove();
-    } catch {
-      /* ignore */
-    }
-  }, 300_000);
+  startAnchorDownload(url);
 }
 
 export async function triggerApiFileDownload(
@@ -78,14 +100,44 @@ export async function triggerApiFileDownload(
     opts.onError?.();
     return false;
   }
-  // Mobile Safari/Android often blocks downloads initiated from hidden iframes; full navigation reliably follows the 302 to storage.
-  if (
-    typeof navigator !== 'undefined' &&
-    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-  ) {
+
+  const isMobile =
+    typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile) {
     window.location.assign(apiPath);
     return true;
   }
-  startHiddenIframeDownload(apiPath);
+
+  try {
+    const res = await fetch(apiPath, { credentials: 'include', redirect: 'follow' });
+    if (res.status === 401) {
+      opts.onUnauthorized?.();
+      return false;
+    }
+    if (res.status === 403) {
+      opts.onForbidden?.();
+      return false;
+    }
+    if (res.status === 404) {
+      opts.onNotFound?.();
+      return false;
+    }
+    if (!res.ok) {
+      opts.onError?.();
+      return false;
+    }
+
+    const blob = await res.blob();
+    if (blob.size > 0) {
+      const filename =
+        filenameFromContentDisposition(res.headers.get('Content-Disposition')) ?? 'download';
+      saveBlobAsDownload(blob, filename);
+      return true;
+    }
+  } catch {
+    /* fall through to anchor navigation */
+  }
+
+  startAnchorDownload(apiPath);
   return true;
 }

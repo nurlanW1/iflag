@@ -11,7 +11,7 @@ import {
 } from '@/lib/marketplace/canonical-stock-formats';
 
 const segmentRail =
-  'rounded-[1rem] bg-slate-100/98 p-1.5 ring-1 ring-slate-200/75';
+  'rounded-[1rem] bg-slate-100/98 p-2 ring-1 ring-slate-200/75';
 
 type Props = {
   files: PublicProductFile[];
@@ -41,7 +41,7 @@ export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId }:
         aria-labelledby={headingId}
         className={clsx(
           segmentRail,
-          'flex gap-1 overflow-x-auto [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] pb-px sm:flex-wrap sm:overflow-visible',
+          'flex gap-1.5 overflow-x-auto [scrollbar-width:thin] [-webkit-overflow-scrolling:touch] pb-px sm:flex-wrap sm:gap-2 sm:overflow-visible',
         )}
       >
         {STOCK_FORMAT_ORDER.map((slot) => {

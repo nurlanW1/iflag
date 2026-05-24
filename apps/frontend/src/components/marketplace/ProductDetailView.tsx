@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import Link from 'next/link';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { PremiumAssetPreview } from '@/components/marketplace/asset-detail/PremiumAssetPreview';
 import type { AssetSeoPayload } from '@/lib/seo/asset-metadata';
@@ -8,7 +9,6 @@ import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/structured-data';
 import { toPublicProduct } from '@/lib/marketplace/product-mapper';
 import { dedupePublicProductFiles, isPaidCatalogProduct } from '@/lib/marketplace/catalog-utils';
 import { NeonAssetDownloads } from '@/components/marketplace/NeonAssetDownloads';
-import { PremiumCatalogCommerce } from '@/components/marketplace/PremiumCatalogCommerce';
 import type { Product } from '@/types/marketplace';
 
 import { CountryDesignVariantRibbon } from '@/components/marketplace/CountryDesignVariantRibbon';
@@ -52,7 +52,7 @@ function formatHintsMayHaveAlpha(hints: string[]): boolean {
   });
 }
 
-/** PDP — premium preview + sticky download glass card (scoped to this page only). */
+/** PDP — gallery-aligned preview + sticky download panel. */
 export function ProductDetailView({ slug, product }: Props) {
   const publicProduct = toPublicProduct(product);
   const dedupedFiles = dedupePublicProductFiles(publicProduct.files);
@@ -104,7 +104,7 @@ export function ProductDetailView({ slug, product }: Props) {
 
   const tagTrail =
     product.tags.length > 0 ? (
-      <section className="mt-10 border-t border-slate-200/80 pt-7 md:mt-12 lg:col-span-full" aria-label="Tags">
+      <section className="mt-10 border-t border-slate-200/80 pt-7 md:mt-12" aria-label="Tags">
         <p className="text-[12px] leading-relaxed text-slate-500">
           {product.tags.map((t, i) => (
             <span key={t} className="inline whitespace-nowrap">
@@ -121,39 +121,7 @@ export function ProductDetailView({ slug, product }: Props) {
       </section>
     ) : null;
 
-  const breadcrumbsDesktop = (
-    <nav aria-label="Breadcrumb" className="mb-5 hidden flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 lg:flex">
-      <Link href="/" className="text-slate-500 transition-colors hover:text-[var(--brand-blue)]">
-        Home
-      </Link>
-      <span aria-hidden className="text-slate-300">
-        /
-      </span>
-      <Link href="/browse" className="text-slate-500 transition-colors hover:text-[var(--brand-blue)]">
-        Browse
-      </Link>
-      <span aria-hidden className="text-slate-300">
-        /
-      </span>
-      <span className="max-w-[12rem] truncate text-slate-600">{categoryName}</span>
-    </nav>
-  );
-
-  const metaEyebrow = (
-    <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-medium leading-snug text-slate-500">
-      <span className="rounded-md bg-[var(--brand-blue-soft)]/80 px-2 py-0.5 text-[11px] font-semibold text-[var(--brand-blue-muted)] ring-1 ring-[var(--brand-blue)]/[0.12]">
-        {categoryName}
-      </span>
-      {countryLine ? (
-        <>
-          <span aria-hidden className="text-slate-300">
-            ·
-          </span>
-          <span>{countryLine}</span>
-        </>
-      ) : null}
-    </p>
-  );
+  const browseBackHref = neonDownloads ? '/assets' : '/browse';
 
   return (
     <>
@@ -162,87 +130,96 @@ export function ProductDetailView({ slug, product }: Props) {
           productJsonLd(slug, seoPayload, publicProduct),
           breadcrumbJsonLd([
             { name: 'Home', path: '/' },
-            { name: 'Browse', path: '/browse' },
+            { name: neonDownloads ? 'Assets' : 'Browse', path: browseBackHref },
             { name: product.title, path: canonicalPath },
           ]),
         ]}
       />
       <main
         className={clsx(
-          'marketplace-shell min-w-0 bg-slate-50 pb-14 pt-9 sm:pt-10 md:pb-16 lg:pb-[4.75rem] lg:pt-11',
-          'max-lg:pb-[calc(21rem+env(safe-area-inset-bottom)+var(--cookie-banner-h,0px))]',
+          'marketplace-shell min-h-screen bg-slate-50',
+          'max-lg:pb-[calc(21rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]',
         )}
       >
-        <div className="mx-auto w-full max-w-[min(100%,1392px)] px-5 sm:px-6 xl:px-10">
-          <div className="min-w-0 space-y-10 lg:space-y-11">
-            <h1 className="text-[1.75rem] font-semibold tracking-[-0.02em] text-slate-900 sm:text-[1.95rem] sm:leading-snug lg:hidden">
-              {product.title}
-            </h1>
-
-            <div
-              className={clsx(
-                'grid min-w-0 grid-cols-1 gap-6',
-                'lg:grid-cols-[minmax(0,1fr)_minmax(18.75rem,24rem)] lg:items-stretch lg:gap-5',
-                'xl:grid-cols-[minmax(0,1fr)_25rem] xl:gap-6',
-              )}
+        <div className="mx-auto max-w-[min(100%,1392px)] px-5 pb-14 pt-8 sm:px-6 sm:pb-16 sm:pt-10 xl:px-10 lg:pb-[4.75rem] lg:pt-11">
+          <nav className="flex items-center gap-2 text-xs font-medium text-slate-500">
+            <Link
+              href={browseBackHref}
+              className="group inline-flex items-center gap-1.5 transition-colors hover:text-slate-900"
             >
-              <div className="flex min-h-0 min-w-0 flex-col lg:h-auto lg:min-h-[26rem]" aria-label="Hero preview">
-                <PremiumAssetPreview
-                  productTitle={product.title}
-                  previewUrls={uniquePreview}
-                  formatHints={formatHints}
-                  useTransparencyBackdrop={formatHintsMayHaveAlpha(formatHints)}
-                  fillColumn
+              <ArrowLeft
+                size={14}
+                strokeWidth={2}
+                className="transition-transform group-hover:-translate-x-0.5"
+              />
+              {neonDownloads ? 'Assets' : 'Browse'}
+            </Link>
+            <span className="text-slate-300">/</span>
+            <span className="truncate text-slate-700">{product.title}</span>
+          </nav>
+
+          <header className="mt-6 flex flex-wrap items-end justify-between gap-5 border-b border-slate-200/80 pb-6 lg:mt-8 lg:pb-8">
+            <div>
+              <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                <Sparkles size={12} className="text-[var(--brand-blue)]" aria-hidden />
+                {categoryName}
+                {countryLine ? (
+                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold normal-case tracking-normal text-slate-600">
+                    {countryLine}
+                  </span>
+                ) : null}
+              </div>
+              <h1 className="mt-2 text-balance text-[1.75rem] font-semibold tracking-[-0.02em] text-slate-900 sm:text-[1.95rem] xl:text-[2rem] xl:tracking-tight">
+                {product.title}
+              </h1>
+              <p className="mt-2 text-[13px] text-slate-500">
+                <span className="font-semibold text-slate-700">{dedupedFiles.length}</span>{' '}
+                {dedupedFiles.length === 1 ? 'format' : 'formats'} available
+                {siblingProducts.length > 0 ? (
+                  <>
+                    {' '}
+                    ·{' '}
+                    <span className="font-semibold text-slate-700">{siblingProducts.length + 1}</span> designs in
+                    this country
+                  </>
+                ) : null}
+              </p>
+            </div>
+          </header>
+
+          <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18.75rem,24rem)] lg:items-stretch lg:gap-5 xl:grid-cols-[minmax(0,1fr)_25rem] xl:gap-6">
+            <div className="flex min-h-0 min-w-0 flex-col space-y-6">
+              <PremiumAssetPreview
+                productTitle={product.title}
+                previewUrls={uniquePreview}
+                formatHints={formatHints}
+                useTransparencyBackdrop={formatHintsMayHaveAlpha(formatHints)}
+                variant="gallery"
+                caption={product.title}
+                formatCount={dedupedFiles.length}
+              />
+
+              {siblingPublic.length > 0 ? (
+                <CountryDesignVariantRibbon variants={siblingPublic} galleryHref={variantGalleryHref} />
+              ) : null}
+
+              {tagTrail}
+            </div>
+
+            <aside className="w-full shrink-0 lg:sticky lg:top-[calc(5rem+env(safe-area-inset-top))] lg:z-[20] lg:h-auto lg:self-stretch">
+              <div className="flex min-h-[26rem] h-full flex-col overflow-hidden rounded-[1.375rem] border border-slate-200/80 bg-white p-[1.6rem] backdrop-blur-[14px]">
+                <NeonAssetDownloads
+                  cartProduct={cartProduct}
+                  files={dedupedFiles}
+                  licenseSummary={licenseSummary}
+                  assetLabel={product.title}
+                  productSlug={product.slug}
+                  productId={neonDownloads ? undefined : product.id}
+                  previewFile={neonDownloads ? undefined : previewFilePublic}
+                  requiresEntitlement={neonDownloads ? undefined : paid}
                 />
               </div>
-
-              <aside className="hidden min-h-0 min-w-0 lg:block lg:h-auto lg:self-stretch lg:sticky lg:top-[calc(5rem+env(safe-area-inset-top))] lg:z-[20]">
-                <div
-                  className={clsx(
-                    'flex h-full min-h-[26rem] flex-col rounded-[1.375rem]',
-                    'border border-slate-200/80 bg-white p-[1.6rem]',
-                    'backdrop-blur-[14px]',
-                  )}
-                >
-                  {breadcrumbsDesktop}
-                  <h1 className="text-[1.65rem] font-semibold tracking-[-0.028em] text-slate-900 xl:text-[1.8rem] xl:leading-[1.2]">
-                    {product.title}
-                  </h1>
-                  {metaEyebrow}
-                  <div className="my-8 h-px bg-gradient-to-r from-slate-200/20 via-slate-200/90 to-slate-200/20" />
-
-                  <div className="min-h-0 flex-1">
-                    {neonDownloads ? (
-                      <NeonAssetDownloads
-                        cartProduct={cartProduct}
-                        files={dedupedFiles}
-                        licenseSummary={licenseSummary}
-                        assetLabel={product.title}
-                        productSlug={product.slug}
-                      />
-                    ) : (
-                      <PremiumCatalogCommerce
-                        cartProduct={cartProduct}
-                        productId={product.id}
-                        productSlug={product.slug}
-                        assetLabel={product.title}
-                        currency={publicProduct.currency}
-                        paidCatalog={paid}
-                        files={dedupedFiles}
-                        previewFile={previewFilePublic}
-                        licenseSummary={licenseSummary}
-                      />
-                    )}
-                  </div>
-                </div>
-              </aside>
-
-              <div className="min-w-0 lg:col-span-full">
-                <CountryDesignVariantRibbon variants={siblingPublic} galleryHref={variantGalleryHref} />
-              </div>
-
-              {tagTrail ? <div className="min-w-0 lg:col-span-full">{tagTrail}</div> : null}
-            </div>
+            </aside>
           </div>
         </div>
       </main>

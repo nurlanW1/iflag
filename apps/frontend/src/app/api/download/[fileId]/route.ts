@@ -11,6 +11,10 @@ import {
   getSignedR2GetUrl,
   loadR2ConfigFromEnv,
 } from '@/lib/server/cloudflare-r2';
+import {
+  requestWantsAttachmentStream,
+  streamAttachmentFromUrl,
+} from '@/lib/server/attachment-download-stream';
 
 export const runtime = 'nodejs';
 
@@ -171,5 +175,11 @@ export async function GET(
   if (!href) {
     return NextResponse.json({ error: 'File location unavailable', code: 'MISSING_URL' }, { status: 503 });
   }
+
+  const attachmentName = suggestDownloadBasename(row);
+  if (requestWantsAttachmentStream(request)) {
+    return streamAttachmentFromUrl(request, href, attachmentName);
+  }
+
   return redirectForHref(href);
 }
