@@ -33,7 +33,7 @@ export async function POST() {
       {
         ok: false,
         error:
-          'INTERNAL_AUTH_BRIDGE_SECRET is missing on this server. Clerk checkout needs it (same value as backend) to issue billing cookies.',
+          'INTERNAL_AUTH_BRIDGE_SECRET is missing on this server. Set the same value on Vercel and the API server to link dashboard purchases.',
         code: 'BRIDGE_SECRET_MISSING',
       },
       { status: 503 }

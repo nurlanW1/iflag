@@ -8,6 +8,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { AuthModalProvider } from '@/contexts/AuthModalContext';
 import { CartProvider } from '@/contexts/CartContext';
 import AuthModalWrapper from '@/components/AuthModalWrapper';
+import { ClerkSessionBridge } from '@/components/auth/ClerkSessionBridge';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { buildDefaultMetadata } from '@/lib/seo/site-config';
 import { logProductionDeploymentWarnings } from '@/lib/seo/production-warnings';
@@ -81,6 +82,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             signInUrl="/sign-in"
             signUpUrl="/sign-up"
           >
+            <ClerkSessionBridge />
             {inner}
           </ClerkProvider>
         ) : (

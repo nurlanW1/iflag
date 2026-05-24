@@ -40,8 +40,7 @@ export function DashboardShell({
   const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
 
   /**
-   * Clerk dashboard users need backend JWT cookies for Paddle `/billing/*` proxies.
-   * Idempotent: checks `/api/auth/session-linked`, then POST `/api/auth/clerk-sync` when needed.
+   * Best-effort backend JWT link for dashboard/purchases APIs (optional for Paddle checkout).
    */
   useEffect(() => {
     if (!clerkLoaded || !clerkUser?.id) return;
@@ -68,16 +67,30 @@ export function DashboardShell({
           method: 'POST',
           credentials: 'include',
         });
-        const syncBody = (await syncRes.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+        const syncBody = (await syncRes.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+          code?: string;
+        };
         if (cancelled) return;
         if (syncRes.ok) {
           setBillingNotice(null);
           router.refresh();
-        } else if (syncBody.error) {
+          return;
+        }
+
+        const configCodes = new Set([
+          'BRIDGE_SECRET_MISSING',
+          'API_URL_MISSING',
+          'API_UNREACHABLE',
+        ]);
+        if (syncBody.code && configCodes.has(syncBody.code) && syncBody.error) {
           setBillingNotice(syncBody.error);
+        } else {
+          setBillingNotice(null);
         }
       } catch {
-        /* ignore — user can still use Clerk-only UI */
+        /* ignore — Paddle checkout uses Clerk session tokens without backend cookies */
       }
     })();
 

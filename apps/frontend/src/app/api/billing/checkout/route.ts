@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getAccessTokenFromCookies, getSessionUserFromCookies } from '@/lib/auth/session.server';
 import {
   BACKEND_UNREACHABLE_MESSAGE,
   resolveBackendApiBase,
 } from '@/lib/auth/backend-url';
+import { resolveBillingAuthorization } from '@/lib/auth/billing-auth.server';
 
 export const runtime = 'nodejs';
 
@@ -11,6 +11,7 @@ export const runtime = 'nodejs';
  * Generic billing checkout proxy.
  *
  * Forwards the request to the backend `POST /billing/checkout` (Paddle Billing).
+ * Auth: backend JWT cookies, client Bearer, or Clerk session on this host (see billing-auth.server).
  *
  * Body shape:
  *   { kind: 'subscription' | 'one_time', planSlug?: string, productSlug?: string }
@@ -25,27 +26,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const incomingAuth = request.headers.get('authorization')?.trim();
-
-  const user = await getSessionUserFromCookies();
-  const access = await getAccessTokenFromCookies();
-  const hasBackendSession = Boolean(user && access);
-
-  const hasBearerIncoming = Boolean(
-    incomingAuth?.toLowerCase().startsWith('bearer ') &&
-      incomingAuth.slice(7).trim().length > 0
-  );
-
-  /** Prefer linked backend JWT cookies; otherwise forward Clerk `getToken()` for API-side verification */
-  let forwardAuthorization: string | null = null;
-  if (hasBackendSession && access) {
-    forwardAuthorization = `Bearer ${access}`;
-  } else if (hasBearerIncoming && incomingAuth) {
-    forwardAuthorization = incomingAuth;
-  }
-
-  if (!forwardAuthorization) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const authResult = await resolveBillingAuthorization(request);
+  if (!authResult.ok) {
+    return NextResponse.json({ error: authResult.error, code: authResult.code }, { status: authResult.status });
   }
 
   const apiBase = resolveBackendApiBase();
@@ -58,7 +41,7 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: forwardAuthorization,
+        Authorization: authResult.authorization,
       },
       body: JSON.stringify(body),
       cache: 'no-store',

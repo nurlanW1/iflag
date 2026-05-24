@@ -16,8 +16,8 @@ type Props = {
 };
 
 /**
- * Clerk-enabled checkout: Bearer from `getToken()` + `/sign-in` for guests.
- * Only render under `<ClerkProvider />` (see `CheckoutButton` wrapper env gate).
+ * Clerk checkout: same-origin `/api/billing/checkout` with `credentials: "include"`.
+ * The Route Handler resolves Clerk session server-side — backend login cookies are optional.
  */
 export function CheckoutButtonClerk({
   kind,
@@ -39,8 +39,9 @@ export function CheckoutButtonClerk({
     planSlug: kind === 'subscription' ? planSlug : undefined,
   });
 
-  const postCheckout = async (clerkJwt: string | null) => {
+  const postCheckout = async () => {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const clerkJwt = await getToken({ skipCache: true });
     if (clerkJwt) {
       headers.Authorization = `Bearer ${clerkJwt}`;
     }
@@ -52,12 +53,6 @@ export function CheckoutButtonClerk({
     });
   };
 
-  const postClerkSync = () =>
-    fetch('/api/auth/clerk-sync', {
-      method: 'POST',
-      credentials: 'include',
-    });
-
   const onClick = async () => {
     setError(null);
     setNeedsLogin(false);
@@ -65,55 +60,20 @@ export function CheckoutButtonClerk({
     if (!isLoaded) return;
 
     if (!isSignedIn) {
-      const returnTo =
-        pathname && pathname.startsWith('/') ? pathname : '/pricing';
-      window.location.assign(
-        `/sign-in?redirect_url=${encodeURIComponent(returnTo)}`,
-      );
+      const returnTo = pathname && pathname.startsWith('/') ? pathname : '/pricing';
+      window.location.assign(`/sign-in?redirect_url=${encodeURIComponent(returnTo)}`);
       return;
     }
 
     setLoading(true);
     try {
-      const clerkJwt = await getToken();
-      let res = await postCheckout(clerkJwt);
-      let data = (await res.json()) as {
+      const res = await postCheckout();
+      const data = (await res.json()) as {
         url?: string;
         error?: string;
         code?: string;
         transaction_id?: string;
       };
-
-      if (res.status === 401) {
-        const syncRes = await postClerkSync();
-        const syncData = (await syncRes.json().catch(() => ({}))) as {
-          error?: string;
-          code?: string;
-        };
-        if (syncRes.ok) {
-          const retryJwt = (await getToken()) ?? clerkJwt;
-          res = await postCheckout(retryJwt);
-          data = (await res.json()) as typeof data;
-        } else if (syncRes.status === 401) {
-          setNeedsLogin(true);
-          return;
-        } else if (syncData.code === 'BRIDGE_SECRET_MISSING') {
-          setError(
-            syncData.error ||
-              'Checkout account linking is not configured (INTERNAL_AUTH_BRIDGE_SECRET). Contact support.',
-          );
-          return;
-        } else if (syncRes.status === 503) {
-          setError(
-            syncData.error ||
-              'Could not reach the billing service to link your login. Try again later or contact support.',
-          );
-          return;
-        } else {
-          setError(syncData.error || 'Could not sync your login for Paddle. Try again.');
-          return;
-        }
-      }
 
       if (res.status === 401) {
         setNeedsLogin(true);
@@ -125,7 +85,10 @@ export function CheckoutButtonClerk({
           return;
         }
         if (res.status === 503 && data.code === 'CLERK_AUTH_UNAVAILABLE') {
-          setError(data.error || 'Clerk is not configured on the billing API (CLERK_SECRET_KEY).');
+          setError(
+            data.error ||
+              'Clerk is not configured on the billing API (set CLERK_SECRET_KEY on the backend).',
+          );
           return;
         }
         if (res.status === 503 && data.code === 'PADDLE_NOT_CONFIGURED') {
@@ -133,6 +96,10 @@ export function CheckoutButtonClerk({
             data.error ||
               'Billing is not configured (set PADDLE_API_KEY and PADDLE_WEBHOOK_SECRET on the API server).',
           );
+          return;
+        }
+        if (res.status === 502 && data.code === 'API_UNREACHABLE') {
+          setError(data.error || 'Cannot reach the billing API. Try again shortly.');
           return;
         }
         setError(data.error || 'Checkout failed');
@@ -166,11 +133,10 @@ export function CheckoutButtonClerk({
       </button>
       {needsLogin ? (
         <p className="mt-2 text-xs text-amber-800">
-          We could not confirm your session for checkout.{' '}
+          Sign in to continue.{' '}
           <Link href="/sign-in" className="font-medium underline">
             Sign in
-          </Link>{' '}
-          and try again.
+          </Link>
         </p>
       ) : null}
       {error && !needsLogin ? <p className="mt-2 text-xs text-red-600">{error}</p> : null}
