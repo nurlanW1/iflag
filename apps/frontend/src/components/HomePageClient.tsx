@@ -21,13 +21,15 @@ import { SectionReveal } from '@/components/motion/SectionReveal';
 import { useRevealInView } from '@/hooks/useRevealInView';
 import { SITE_NAME } from '@/lib/seo/site-config';
 import { buildHeroDestination } from '@/lib/landing/hero-categories';
+import { HOMEPAGE_PLAN_CARDS, ONE_TIME_STOCK, formatPricingMoney } from '@/lib/marketing/pricing-config';
 
 type PricingPlan = {
   name: string;
-  price: string;
+  priceCents: number;
   period: string;
   features: string[];
   popular: boolean;
+  savingsBadge?: string;
 };
 
 function PlanFeatureRow({
@@ -91,8 +93,13 @@ function PricingPlanCard({ plan, idx }: { plan: PricingPlan; idx: number }) {
             ) : null}
           </div>
           <div className="text-left sm:text-right">
-            <div className="text-4xl font-semibold tabular-nums leading-none text-[var(--brand-blue)] md:text-5xl">{plan.price}</div>
+            <div className="text-4xl font-semibold tabular-nums leading-none text-[var(--brand-blue)] md:text-5xl">
+              {formatPricingMoney(plan.priceCents)}
+            </div>
             <div className="mt-2 text-base text-neutral-600">{plan.period}</div>
+            {plan.savingsBadge ? (
+              <p className="mt-1 text-sm font-medium text-emerald-700">{plan.savingsBadge}</p>
+            ) : null}
           </div>
         </div>
 
@@ -292,28 +299,13 @@ export default function HomePageClient() {
           </SectionReveal>
 
           <div className="grid gap-8 md:grid-cols-2 lg:gap-12 xl:gap-14">
-            {[
-              {
-                name: 'Weekly',
-                price: '$5',
-                period: 'per week',
-                features: ['Unlimited flag downloads', 'Commercial license', 'Priority support', 'High-res formats', 'No watermarks'],
-                popular: false,
-              },
-              {
-                name: 'Monthly',
-                price: '$15',
-                period: 'per month',
-                features: ['Everything in Weekly', 'Early access to new flags', 'Premium-only flags', 'API access', 'Bulk download', 'Custom requests'],
-                popular: true,
-              },
-            ].map((plan, idx) => (
-              <PricingPlanCard key={idx} plan={plan} idx={idx} />
+            {HOMEPAGE_PLAN_CARDS.map((plan, idx) => (
+              <PricingPlanCard key={plan.name} plan={plan} idx={idx} />
             ))}
           </div>
 
           <p className="mx-auto mt-12 max-w-2xl text-center text-pretty text-base text-neutral-600">
-            Homepage amounts are illustrative — live prices and Paddle checkout are on the{' '}
+            Single assets from {formatPricingMoney(ONE_TIME_STOCK.displayCents)} — full checkout details on the{' '}
             <Link href="/pricing" className="font-semibold text-[var(--brand-blue)] underline-offset-4 hover:underline">
               pricing page
             </Link>

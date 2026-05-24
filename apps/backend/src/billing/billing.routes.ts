@@ -97,10 +97,18 @@ router.post('/checkout', async (req: AuthRequest, res: Response) => {
       productSlug: productSlug || null,
     });
     if (!resolved) {
+      const target =
+        kind === 'subscription'
+          ? `plan "${planSlug}"`
+          : `product "${productSlug}"`;
       return res.status(400).json({
         error:
-          'No Paddle price mapped for this plan/product. ' +
-          'Configure PADDLE_PRICE_MAP_JSON or set provider_variant_id on subscription_plans.',
+          `No Paddle price mapped for ${target}. ` +
+          'Set PADDLE_PRICE_MAP_JSON on the backend (e.g. ' +
+          '{"subscriptionByPlanSlug":{"pro-monthly":"pri_..."}}) ' +
+          'or set provider_variant_id on the matching subscription_plans row.',
+        planSlug: kind === 'subscription' ? planSlug : undefined,
+        productSlug: kind === 'one_time' ? productSlug : undefined,
       });
     }
 

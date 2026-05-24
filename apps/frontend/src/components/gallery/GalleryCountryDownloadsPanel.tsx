@@ -8,6 +8,7 @@ import {
   NeonPrimaryDownloadButton,
   NeonTrustFoot,
 } from '@/components/marketplace/NeonDownloadKit';
+import { DownloadPurchaseOffers } from '@/components/billing/DownloadPurchaseOffers';
 import type { PublicProductFile } from '@/lib/marketplace/product-mapper';
 import { galleryFormatRowToPublicFile } from '@/lib/marketplace/gallery-format-files';
 
@@ -20,7 +21,6 @@ export type GalleryCountryFormat = {
 };
 
 type Props = {
-  /** Current design’s files */
   formats: GalleryCountryFormat[];
   selectedFormatId: string | null;
   onSelectFormatId: (fileId: string) => void;
@@ -30,9 +30,12 @@ type Props = {
   downloadButtonLabel: string;
   licenseSummary?: string | null;
   cartProduct: CartProductRef;
+  /** Signed-in visitor without subscription — show buy vs subscribe offers. */
+  showPurchaseOffers?: boolean;
+  assetLabel?: string;
+  productSlug?: string;
 };
 
-/** Same composition as `NeonAssetDownloads` — segmented formats, CTA, trust row, copy/add row. */
 export function GalleryCountryDownloadsPanel({
   formats,
   selectedFormatId,
@@ -43,6 +46,9 @@ export function GalleryCountryDownloadsPanel({
   downloadButtonLabel,
   licenseSummary,
   cartProduct,
+  showPurchaseOffers = false,
+  assetLabel,
+  productSlug,
 }: Props) {
   const files = useMemo<PublicProductFile[]>(() => formats.map(galleryFormatRowToPublicFile), [formats]);
 
@@ -59,14 +65,22 @@ export function GalleryCountryDownloadsPanel({
           onSelect={onSelectFormatId}
         />
         {selectedFormatId ? (
-          <NeonPrimaryDownloadButton
-            busy={downloadBusy}
-            label={downloadButtonLabel}
-            disabled={downloadDisabled || downloadBusy}
-            onClick={() => onDownload()}
-          />
+          showPurchaseOffers ? (
+            <DownloadPurchaseOffers
+              assetLabel={assetLabel}
+              productSlug={productSlug}
+              compact
+            />
+          ) : (
+            <NeonPrimaryDownloadButton
+              busy={downloadBusy}
+              label={downloadButtonLabel}
+              disabled={downloadDisabled || downloadBusy}
+              onClick={() => onDownload()}
+            />
+          )
         ) : null}
-        {active ? (
+        {active && !showPurchaseOffers ? (
           <NeonTrustFoot
             bytesLabel={bytesToHuman(active.bytes)}
             kind={activeKind}

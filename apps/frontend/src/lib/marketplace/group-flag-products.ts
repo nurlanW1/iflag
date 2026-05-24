@@ -5,6 +5,7 @@
 
 import { createHash } from 'crypto';
 import type { Product, ProductFile, ProductLicenseInfo, ProductSeo } from '@/types/marketplace';
+import { ONE_TIME_STOCK } from '@/lib/marketing/pricing-config';
 
 export type NeonLikeFlagRow = {
   id: string;
@@ -271,7 +272,9 @@ function soloRowToProduct(
         : [],
     files: [file],
     license: defaultLicense,
-    priceCents: Math.max(0, row.price_cents ?? 0),
+    priceCents: isFree
+      ? Math.max(0, row.price_cents ?? 0)
+      : Math.max(ONE_TIME_STOCK.displayCents, row.price_cents ?? ONE_TIME_STOCK.displayCents),
     currency: 'USD',
     isFeatured: false,
     isPublished: true,
@@ -322,7 +325,8 @@ function groupedRowsToProduct(
     const base = rowToProductFile(row, productId, idx);
     files.push({ ...base, publicUrl: previewForFile });
 
-    const pc = Math.max(0, row.price_cents ?? 0);
+    const rawPc = row.price_cents ?? (isFree ? 0 : ONE_TIME_STOCK.displayCents);
+    const pc = isFree ? Math.max(0, rawPc) : Math.max(ONE_TIME_STOCK.displayCents, rawPc);
     maxPrice = Math.max(maxPrice, pc);
     if (!isFree || pc > 0) anyPaid = true;
   });

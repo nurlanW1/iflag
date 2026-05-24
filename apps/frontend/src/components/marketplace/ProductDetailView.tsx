@@ -217,12 +217,15 @@ export function ProductDetailView({ slug, product }: Props) {
                         cartProduct={cartProduct}
                         files={dedupedFiles}
                         licenseSummary={licenseSummary}
+                        assetLabel={product.title}
+                        productSlug={product.slug}
                       />
                     ) : (
                       <PremiumCatalogCommerce
                         cartProduct={cartProduct}
                         productId={product.id}
                         productSlug={product.slug}
+                        assetLabel={product.title}
                         currency={publicProduct.currency}
                         paidCatalog={paid}
                         files={dedupedFiles}

@@ -10,19 +10,29 @@ import { CopyLinkCartRow, type CartProductRef } from '@/components/marketplace/a
 import { CanonicalFormatSlots } from '@/components/marketplace/asset-detail/CanonicalFormatSlots';
 import { firstSelectableStockFileId } from '@/lib/marketplace/canonical-stock-formats';
 import { NeonPrimaryDownloadButton, NeonTrustFoot } from '@/components/marketplace/NeonDownloadKit';
+import { DownloadPurchaseOffers } from '@/components/billing/DownloadPurchaseOffers';
+import { useFlagswingPlan } from '@/hooks/useFlagswingPlan';
 
 type Props = {
   files: PublicProductFile[];
-  /** One compact line for commerce trust (license summary); optional */
   licenseSummary?: string | null;
   cartProduct: CartProductRef;
+  assetLabel?: string;
+  productSlug?: string;
 };
 
 /** Neon — premium segmented formats + slate CTA + trust microcopy (APIs unchanged). */
-export function NeonAssetDownloads({ files, licenseSummary, cartProduct }: Props) {
+export function NeonAssetDownloads({
+  files,
+  licenseSummary,
+  cartProduct,
+  assetLabel,
+  productSlug,
+}: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const back = pathname || '/browse';
+  const { isSignedIn, authLoaded, hasActivePlan, planLoaded } = useFlagswingPlan();
 
   const sorted = useMemo(
     () =>
@@ -44,8 +54,15 @@ export function NeonAssetDownloads({ files, licenseSummary, cartProduct }: Props
   const active = sorted.find((f) => f.id === sel);
   const [busy, setBusy] = useState(false);
 
+  const showPurchaseOffers =
+    authLoaded && planLoaded && !hasActivePlan && Boolean(active);
+
   const onPrimaryDownload = () => {
     if (!active?.id) return;
+    if (!isSignedIn) {
+      router.push(`/sign-in?redirect_url=${encodeURIComponent(back)}`);
+      return;
+    }
     const fmt = formatBadgeLabel(active.format);
     toast.success(`Starting ${fmt} download`);
     const path = `/api/download/${active.id}`;
@@ -56,8 +73,7 @@ export function NeonAssetDownloads({ files, licenseSummary, cartProduct }: Props
         router.push(`/sign-in?redirect_url=${encodeURIComponent(back)}`);
       },
       onForbidden: () => {
-        toast.message('Subscription required');
-        router.push(`/pricing?callbackUrl=${encodeURIComponent(back)}`);
+        toast.message('Choose a purchase option below');
       },
       onNotFound: () => toast.error('File unavailable'),
       onError: () => toast.error('Download failed'),
@@ -79,19 +95,33 @@ export function NeonAssetDownloads({ files, licenseSummary, cartProduct }: Props
   );
 
   const primaryButton = active ? (
-    <NeonPrimaryDownloadButton
-      busy={busy}
-      disabled={busy}
-      label={`Download ${formatBadgeLabel(active.format)}`}
-      onClick={() => void onPrimaryDownload()}
-    />
+    showPurchaseOffers ? (
+      <DownloadPurchaseOffers
+        assetLabel={assetLabel ?? cartProduct.title}
+        productSlug={productSlug ?? cartProduct.slug}
+        compact
+      />
+    ) : (
+      <NeonPrimaryDownloadButton
+        busy={busy}
+        disabled={busy || (!authLoaded && !planLoaded)}
+        label={
+          !authLoaded || !planLoaded
+            ? 'Loading…'
+            : !isSignedIn
+              ? 'Sign in to download'
+              : `Download ${formatBadgeLabel(active.format)}`
+        }
+        onClick={() => void onPrimaryDownload()}
+      />
+    )
   ) : null;
 
   const block = (
     <div className="flex flex-col gap-6">
       {formatRow}
       {primaryButton}
-      {active ? (
+      {active && !showPurchaseOffers ? (
         <NeonTrustFoot bytesLabel={bytesToHuman(active.bytes)} kind={activeKind} summary={licenseSummary} />
       ) : null}
       <div className="border-t border-slate-100 pt-5">

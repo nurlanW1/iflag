@@ -6,41 +6,26 @@ import Link from 'next/link';
 import { Check, Crown, Sparkles } from 'lucide-react';
 import { PricingProSubscribe } from '@/components/pricing/PricingProSubscribe';
 import {
+  ONE_TIME_STOCK,
   PLAN_CARD_COPY,
   PRICING_CHECKOUT_DISCLAIMER,
   PRICING_COMPARISON_ROWS,
   PRO_CHECKOUT,
+  formatPricingMoney,
+  monthlyVsWeeklySavingsPercent,
   type BillingInterval,
 } from '@/lib/marketing/pricing-config';
-
-function formatMoney(cents: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency,
-      maximumFractionDigits: 0,
-    }).format(cents / 100);
-  } catch {
-    return `$${(cents / 100).toFixed(0)}`;
-  }
-}
 
 export function PricingPlansClient() {
   const [interval, setInterval] = useState<BillingInterval>('monthly');
 
-  const annualReady = PRO_CHECKOUT.annual.enabled;
-  const useAnnualCheckout = interval === 'annual' && annualReady;
-  const proSlug = useAnnualCheckout
-    ? PRO_CHECKOUT.annual.planSlug
-    : PRO_CHECKOUT.monthly.planSlug;
-
-  const proDisplayCents = useAnnualCheckout
-    ? PRO_CHECKOUT.annual.displayCents
-    : PRO_CHECKOUT.monthly.displayCents;
-
-  const proCurrency = useAnnualCheckout
-    ? PRO_CHECKOUT.annual.currency
-    : PRO_CHECKOUT.monthly.currency;
+  const isMonthly = interval === 'monthly';
+  const proSlug = isMonthly ? PRO_CHECKOUT.monthly.planSlug : PRO_CHECKOUT.weekly.planSlug;
+  const proDisplayCents = isMonthly
+    ? PRO_CHECKOUT.monthly.displayCents
+    : PRO_CHECKOUT.weekly.displayCents;
+  const proCurrency = isMonthly ? PRO_CHECKOUT.monthly.currency : PRO_CHECKOUT.weekly.currency;
+  const weeklySavings = monthlyVsWeeklySavingsPercent();
 
   return (
     <div className="bg-white">
@@ -54,19 +39,29 @@ export function PricingPlansClient() {
             Simple plans for creators and teams
           </h1>
           <p className="mx-auto mt-4 max-w-3xl text-pretty text-base text-gray-600 sm:text-lg">
-            Start free with previews. Subscribe for catalog-wide Pro downloads while your plan is
-            active, or buy individual flags to keep forever—whichever fits your workflow. Paid
-            checkout is hosted by Paddle (Merchant of Record).
+            Start free with previews. Subscribe for catalog-wide Pro downloads, or buy individual
+            flags for {formatPricingMoney(ONE_TIME_STOCK.displayCents)} each — whichever fits your
+            workflow. Paid checkout is hosted by Paddle (Merchant of Record).
           </p>
         </div>
 
-        {/* Billing toggle — enable annual when mapped in pricing-config + Paddle price map */}
         <div className="mt-10 flex justify-center">
           <div
             className="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1"
             role="group"
             aria-label="Billing period"
           >
+            <button
+              type="button"
+              onClick={() => setInterval('weekly')}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                interval === 'weekly'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Weekly · {formatPricingMoney(PRO_CHECKOUT.weekly.displayCents)}
+            </button>
             <button
               type="button"
               onClick={() => setInterval('monthly')}
@@ -76,27 +71,16 @@ export function PricingPlansClient() {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Monthly
-            </button>
-            <button
-              type="button"
-              onClick={() => setInterval('annual')}
-              title="Enable annual checkout in pricing-config when your Paddle annual price is mapped"
-              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                interval === 'annual'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Annual
-              {!annualReady ? (
-                <span className="ml-1.5 text-xs font-normal text-gray-500">(setup)</span>
+              Monthly · {formatPricingMoney(PRO_CHECKOUT.monthly.displayCents)}
+              {weeklySavings > 0 ? (
+                <span className="ml-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
+                  −{weeklySavings}%
+                </span>
               ) : null}
             </button>
           </div>
         </div>
 
-        {/* Plan cards */}
         <ul className="mx-auto mt-14 grid max-w-6xl gap-8 lg:grid-cols-3 lg:gap-10 xl:gap-12">
           {PLAN_CARD_COPY.map((plan) => {
             const isPro = plan.id === 'pro';
@@ -131,35 +115,27 @@ export function PricingPlansClient() {
 
                 <div className="mt-6 min-h-[4.5rem]">
                   {isFree ? (
-                    <p className="text-3xl font-black text-gray-900">$0</p>
+                    <>
+                      <p className="text-3xl font-black text-gray-900">$0</p>
+                      <p className="mt-1 text-sm text-gray-600">
+                        One-time assets from {formatPricingMoney(ONE_TIME_STOCK.displayCents)}
+                      </p>
+                    </>
                   ) : null}
                   {isPro ? (
                     <>
-                      {interval === 'annual' && !annualReady ? (
-                        <>
-                          <p className="text-2xl font-black text-gray-900">Annual — coming soon</p>
-                          <p className="mt-1 text-sm text-gray-600">
-                            Annual Pro billing through Paddle is not switched on yet. Subscribe monthly
-                            today — your payment still runs on Paddle&apos;s secure checkout.
-                          </p>
-                          <p className="mt-3 text-sm text-gray-500">
-                            Monthly today:{' '}
-                            <span className="font-semibold text-gray-900">
-                              {formatMoney(PRO_CHECKOUT.monthly.displayCents, PRO_CHECKOUT.monthly.currency)}/mo
-                            </span>
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-3xl font-black text-gray-900">
-                            {formatMoney(proDisplayCents, proCurrency)}
-                            <span className="text-lg font-semibold text-gray-500">
-                              /{useAnnualCheckout ? 'yr' : 'mo'}
-                            </span>
-                          </p>
-                          <p className="mt-1 text-xs text-gray-500">{PRICING_CHECKOUT_DISCLAIMER}</p>
-                        </>
-                      )}
+                      <p className="text-3xl font-black text-gray-900">
+                        {formatPricingMoney(proDisplayCents, proCurrency)}
+                        <span className="text-lg font-semibold text-gray-500">
+                          /{isMonthly ? 'mo' : 'wk'}
+                        </span>
+                      </p>
+                      {isMonthly && weeklySavings > 0 ? (
+                        <p className="mt-1 text-sm font-medium text-emerald-700">
+                          Save {weeklySavings}% compared to four weekly renewals
+                        </p>
+                      ) : null}
+                      <p className="mt-1 text-xs text-gray-500">{PRICING_CHECKOUT_DISCLAIMER}</p>
                     </>
                   ) : null}
                   {isBusiness ? (
@@ -186,17 +162,13 @@ export function PricingPlansClient() {
                     </Link>
                   ) : null}
                   {isPro ? (
-                    <>
-                      <PricingProSubscribe
-                        planSlug={proSlug}
-                        className="w-full rounded-xl bg-[#2563eb] py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:opacity-50"
-                        style={{ width: '100%' } as CSSProperties}
-                      >
-                        {interval === 'annual' && !annualReady
-                          ? 'Subscribe monthly with Paddle'
-                          : 'Subscribe with Paddle'}
-                      </PricingProSubscribe>
-                    </>
+                    <PricingProSubscribe
+                      planSlug={proSlug}
+                      className="w-full rounded-xl bg-[#2563eb] py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:opacity-50"
+                      style={{ width: '100%' } as CSSProperties}
+                    >
+                      Subscribe with Paddle
+                    </PricingProSubscribe>
                   ) : null}
                   {isBusiness ? (
                     <Link
@@ -212,7 +184,6 @@ export function PricingPlansClient() {
           })}
         </ul>
 
-        {/* Comparison table */}
         <div className="mt-20 lg:mt-24">
           <div className="mb-6 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-[#2563eb]" aria-hidden />

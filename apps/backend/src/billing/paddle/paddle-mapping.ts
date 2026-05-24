@@ -19,6 +19,19 @@ interface PriceMap {
   subscriptionByPlanSlug: Record<string, string>;
 }
 
+/** Flat catalog one-time checkout slug (see frontend `ONE_TIME_STOCK.productSlug`). */
+const ONE_TIME_STOCK_SLUG = 'flag-stock';
+const SUBSCRIPTION_PLAN_SLUG_ALIASES: Record<string, string[]> = {
+  'pro-weekly': ['weekly-premium'],
+  'pro-monthly': ['monthly-premium'],
+  'pro-annual': ['annual-premium'],
+};
+
+function subscriptionPlanSlugCandidates(planSlug: string): string[] {
+  const aliases = SUBSCRIPTION_PLAN_SLUG_ALIASES[planSlug] ?? [];
+  return [planSlug, ...aliases.filter((slug) => slug !== planSlug)];
+}
+
 function loadEnvMap(): PriceMap {
   const empty: PriceMap = {
     oneTimeByProductSlug: {},
@@ -53,27 +66,41 @@ export async function resolvePaddlePriceForCheckout(params: {
 
   if (params.kind === 'one_time') {
     if (!params.productSlug) return null;
-    const priceId = map.oneTimeByProductSlug[params.productSlug];
-    if (!priceId) return null;
-    return { kind: 'one_time', productSlug: params.productSlug, priceId };
+    const direct = map.oneTimeByProductSlug[params.productSlug];
+    if (direct) {
+      return { kind: 'one_time', productSlug: params.productSlug, priceId: direct };
+    }
+    const stockPrice = map.oneTimeByProductSlug[ONE_TIME_STOCK_SLUG];
+    if (stockPrice) {
+      return { kind: 'one_time', productSlug: params.productSlug, priceId: stockPrice };
+    }
+    return null;
   }
 
   if (!params.planSlug) return null;
-  const fromEnv = map.subscriptionByPlanSlug[params.planSlug];
-  if (fromEnv) {
-    return { kind: 'subscription', planSlug: params.planSlug, priceId: fromEnv };
+
+  for (const slug of subscriptionPlanSlugCandidates(params.planSlug)) {
+    const fromEnv = map.subscriptionByPlanSlug[slug];
+    if (fromEnv) {
+      return { kind: 'subscription', planSlug: params.planSlug, priceId: fromEnv };
+    }
   }
 
-  const r = await pool.query(
-    `SELECT provider_variant_id
-       FROM subscription_plans
-      WHERE slug = $1 AND billing_provider = 'paddle' AND is_active = TRUE
-      LIMIT 1`,
-    [params.planSlug]
-  );
-  const priceId = r.rows[0]?.provider_variant_id;
-  if (!priceId) return null;
-  return { kind: 'subscription', planSlug: params.planSlug, priceId };
+  for (const slug of subscriptionPlanSlugCandidates(params.planSlug)) {
+    const r = await pool.query(
+      `SELECT provider_variant_id
+         FROM subscription_plans
+        WHERE slug = $1 AND billing_provider = 'paddle' AND is_active = TRUE
+        LIMIT 1`,
+      [slug]
+    );
+    const priceId = r.rows[0]?.provider_variant_id;
+    if (priceId) {
+      return { kind: 'subscription', planSlug: params.planSlug, priceId };
+    }
+  }
+
+  return null;
 }
 
 export async function resolvePaddlePriceToLocal(

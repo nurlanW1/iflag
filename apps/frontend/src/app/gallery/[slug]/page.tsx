@@ -296,6 +296,7 @@ export default function CountryDetailPage() {
       }
       if (!isOwnerDownloadBypass && !hasActivePlan) {
         if (!planLoaded) return;
+        if (format.downloadProtected) return;
         router.push('/pricing');
         return;
       }
@@ -360,6 +361,13 @@ export default function CountryDetailPage() {
       !isOwnerDownloadBypass &&
       !hasActivePlan &&
       !planLoaded);
+
+  const showPurchaseOffers =
+    Boolean(selectedFormat?.downloadProtected) &&
+    clerkLoaded &&
+    !isOwnerDownloadBypass &&
+    !hasActivePlan &&
+    (!isSignedIn || planLoaded);
 
   return (
     <main className="marketplace-shell min-h-screen bg-slate-50 max-lg:pb-[calc(21rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]">
@@ -589,6 +597,9 @@ export default function CountryDetailPage() {
                 downloadBusy={Boolean(selectedFormat && downloading === selectedFormat.id)}
                 downloadDisabled={downloadDisabled}
                 downloadButtonLabel={selectedFormat ? downloadLabel(selectedFormat) : 'Download'}
+                showPurchaseOffers={showPurchaseOffers}
+                assetLabel={pageTitle}
+                productSlug={data.country.slug}
                 cartProduct={{
                   productId: selectedVariant?.id ?? `gallery-country:${data.country.slug}`,
                   slug: data.country.slug,

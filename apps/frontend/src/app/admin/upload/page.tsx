@@ -145,7 +145,7 @@ function AdminUploadFormContent({
   const [flagTitle, setFlagTitle] = useState('');
   const [format, setFormat] = useState<(typeof FORMATS)[number]>('svg');
   const [premiumTier, setPremiumTier] = useState<(typeof PREMIUM)[number]>('free');
-  const [priceCents, setPriceCents] = useState(0);
+  const [priceCents, setPriceCents] = useState(99);
   const [tags, setTags] = useState('');
   const [status, setStatus] = useState<'draft' | 'published'>('published');
 

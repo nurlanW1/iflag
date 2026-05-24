@@ -211,8 +211,8 @@ CREATE TRIGGER update_assets_updated_at BEFORE UPDATE ON assets
 
 -- Insert default subscription plans
 INSERT INTO subscription_plans (name, slug, duration_days, price_cents, currency) VALUES
-  ('Weekly Premium', 'weekly-premium', 7, 999, 'USD'),
-  ('Monthly Premium', 'monthly-premium', 30, 2999, 'USD');
+  ('Weekly Premium', 'weekly-premium', 7, 499, 'USD'),
+  ('Monthly Premium', 'monthly-premium', 30, 999, 'USD');
 
 -- Insert default categories
 INSERT INTO asset_categories (name, slug, description) VALUES

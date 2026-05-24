@@ -7,7 +7,9 @@ import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import type { PublicProductFile } from '@/lib/marketplace/product-mapper';
 import { triggerApiFileDownload } from '@/lib/client/trigger-api-download';
-import { CheckoutButton } from '@/components/billing/CheckoutButton';
+import { DownloadPurchaseOffers } from '@/components/billing/DownloadPurchaseOffers';
+import { ONE_TIME_STOCK } from '@/lib/marketing/pricing-config';
+import { useFlagswingPlan } from '@/hooks/useFlagswingPlan';
 import { bytesToHuman, formatBadgeLabel, formatKindLabel } from '@/components/marketplace/asset-detail/format-metadata';
 import { CopyLinkCartRow, type CartProductRef } from '@/components/marketplace/asset-detail/CopyLinkCartRow';
 import { CanonicalFormatSlots } from '@/components/marketplace/asset-detail/CanonicalFormatSlots';
@@ -22,6 +24,7 @@ type Props = {
   previewFile: PublicProductFile | null;
   licenseSummary?: string | null;
   cartProduct: CartProductRef;
+  assetLabel?: string;
 };
 
 const dlBtn =
@@ -97,10 +100,12 @@ export function PremiumCatalogCommerce({
   previewFile,
   licenseSummary,
   cartProduct,
+  assetLabel,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const back = pathname || '/browse';
+  const { isSignedIn, authLoaded, hasActivePlan, planLoaded } = useFlagswingPlan();
 
   const sorted = useMemo(
     () =>
@@ -156,6 +161,25 @@ export function PremiumCatalogCommerce({
 
   const activeKind = active ? formatKindLabel(active.format) : 'Other';
 
+  const onProDownload = () => {
+    if (!active?.id) return;
+    const fmt = formatBadgeLabel(active.format);
+    toast.success(`Starting ${fmt} download`);
+    const path = `/api/marketplace/files/${productId}/${active.id}/download`;
+    setBusy(true);
+    void triggerApiFileDownload(path, {
+      onUnauthorized: () => {
+        toast.message('Sign in required');
+        router.push(`/sign-in?redirect_url=${encodeURIComponent(back)}`);
+      },
+      onForbidden: () => {
+        toast.message('Choose a purchase option below');
+      },
+      onNotFound: () => toast.error('File unavailable'),
+      onError: () => toast.error('Download failed'),
+    }).finally(() => setBusy(false));
+  };
+
   const formatRow = (
     <CanonicalFormatSlots
       headingId="fmt-heading-catalog"
@@ -172,26 +196,31 @@ export function PremiumCatalogCommerce({
       <span className="relative">{busy ? 'Preparing…' : `Download ${formatBadgeLabel(active!.format)}`}</span>
     </button>
   ) : paidCatalog && active?.tier === 'pro' ? (
-    <div className="relative w-full">
-      <CheckoutButton
-        kind="one_time"
-        productSlug={productSlug}
-        className={clsx(
-          'flex min-h-[3.5rem] w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-950 px-6 text-[16px] font-semibold tracking-tight text-[#fafaf9]',
-          'transition-[transform,background-color] duration-200 hover:bg-slate-900 active:scale-[0.99] disabled:opacity-50',
-        )}
-      >
-        Get Premium Access
-      </CheckoutButton>
-    </div>
+    !authLoaded || !planLoaded ? (
+      <button type="button" disabled className={clsx(dlBtn, 'opacity-60')}>
+        Loading…
+      </button>
+    ) : hasActivePlan ? (
+      <button type="button" disabled={busy} onClick={() => void onProDownload()} className={dlBtn}>
+        <span className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent opacity-70" aria-hidden />
+        <Download className="relative h-[1.15rem] w-[1.15rem] shrink-0 opacity-[0.93] transition-transform duration-200 group-hover/dl:translate-y-px" aria-hidden strokeWidth={2.35} />
+        <span className="relative">{busy ? 'Preparing…' : `Download ${formatBadgeLabel(active!.format)}`}</span>
+      </button>
+    ) : (
+      <DownloadPurchaseOffers
+        assetLabel={assetLabel ?? cartProduct.title}
+        productSlug={ONE_TIME_STOCK.productSlug}
+        compact
+      />
+    )
   ) : null;
 
   const footerTrust =
     previewReady && active ? (
       <PreviewTrustFoot bytesLabel={bytesToHuman(active.bytes)} kind={activeKind} summary={licenseSummary} />
-    ) : paidCatalog && active?.tier === 'pro' ? (
+    ) : paidCatalog && active?.tier === 'pro' && hasActivePlan ? (
       <CheckoutTrustFoot summary={licenseSummary} />
-    ) : active ? (
+    ) : paidCatalog && active?.tier === 'pro' ? null : active ? (
       <div className="text-[13px] leading-relaxed text-slate-500">
         Select another format above, or browse pricing for downloadable masters.
       </div>
