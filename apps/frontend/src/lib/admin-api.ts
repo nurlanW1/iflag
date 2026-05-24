@@ -1,7 +1,9 @@
 // Admin API Helper
 // Centralized API calls for admin panel
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+import { getClientBackendApiBaseUrl } from '@/lib/auth/backend-url';
+
+const API_BASE_URL = getClientBackendApiBaseUrl();
 
 function getAuthHeaders() {
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;

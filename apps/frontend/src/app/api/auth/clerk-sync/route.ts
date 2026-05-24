@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import {
   BACKEND_UNREACHABLE_MESSAGE,
+  joinBackendApiPath,
+  logBackendApiHostOnce,
   resolveBackendApiBase,
 } from '@/lib/auth/backend-url';
 import { applyAuthSessionCookies } from '@/lib/auth/session-cookies.server';
@@ -23,9 +25,11 @@ export async function POST() {
   if (!apiBase.ok) {
     return NextResponse.json(
       { ok: false, error: apiBase.error, code: apiBase.code },
-      { status: 503 }
+      { status: 503 },
     );
   }
+
+  logBackendApiHostOnce(apiBase.baseUrl, 'auth/clerk-sync');
 
   const bridgeSecret = process.env.INTERNAL_AUTH_BRIDGE_SECRET?.trim();
   if (!bridgeSecret) {
@@ -59,7 +63,7 @@ export async function POST() {
 
   let backendRes: Response;
   try {
-    backendRes = await fetch(`${apiBase.baseUrl}/auth/bridge/clerk-session`, {
+    backendRes = await fetch(joinBackendApiPath(apiBase.baseUrl, '/auth/bridge/clerk-session'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

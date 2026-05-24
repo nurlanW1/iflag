@@ -231,7 +231,9 @@ export function DashboardShell({
               <p className="font-semibold">Billing / login link</p>
               <p className="mt-1 text-amber-900/90">{billingNotice}</p>
               <p className="mt-2 text-xs text-amber-800/80">
-                Production checklist: set <code className="rounded bg-white/80 px-1">API_URL</code> and{' '}
+                Production checklist: set{' '}
+                <code className="rounded bg-white/80 px-1">NEXT_PUBLIC_API_URL</code> to your Railway backend
+                (…/api) and{' '}
                 <code className="rounded bg-white/80 px-1">INTERNAL_AUTH_BRIDGE_SECRET</code> on Vercel (same secret on
                 the API server).
               </p>

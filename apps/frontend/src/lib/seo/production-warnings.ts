@@ -1,5 +1,12 @@
 import { isClerkConfigured } from '@/lib/auth/clerk-env';
 import { isAdminAllowlistConfigured } from '@/lib/auth/admin-email';
+import {
+  getBackendApiHost,
+  logBackendApiHostOnce,
+  normalizeBackendApiBase,
+} from '@/lib/auth/backend-url';
+
+const DEPRECATED_BACKEND_HOST = 'iflag-backend.vercel.app';
 
 /**
  * Server-only startup checks for production deployments.
@@ -34,9 +41,28 @@ export function logProductionDeploymentWarnings(): void {
     );
   }
 
-  if (!process.env.NEXT_PUBLIC_API_URL?.trim() && !process.env.API_URL?.trim()) {
+  const publicApi = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (!publicApi) {
     console.warn(
-      '[flagswing] Production: NEXT_PUBLIC_API_URL / API_URL unset. Session and API calls may fail; configure your backend base URL.'
+      '[flagswing] Production: NEXT_PUBLIC_API_URL is unset. Set it to your Railway backend (…/api) for auth bridge, billing, and catalog calls.'
+    );
+  } else {
+    const base = normalizeBackendApiBase(publicApi);
+    logBackendApiHostOnce(base, 'production');
+    const host = getBackendApiHost(base);
+    if (
+      host === DEPRECATED_BACKEND_HOST ||
+      (host.endsWith('.vercel.app') && host.includes('iflag-backend'))
+    ) {
+      console.warn(
+        `[flagswing] Production: NEXT_PUBLIC_API_URL points to deprecated host ${host}. Update Vercel to your Railway backend URL.`,
+      );
+    }
+  }
+
+  if (process.env.API_URL?.trim()) {
+    console.warn(
+      '[flagswing] Production: API_URL is set but ignored. Remove the stale value from Vercel and use NEXT_PUBLIC_API_URL for Railway.',
     );
   }
 

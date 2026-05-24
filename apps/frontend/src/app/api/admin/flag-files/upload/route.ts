@@ -12,7 +12,7 @@ export const maxDuration = 120;
  * Admin flag upload: verifies Clerk on Vercel, then proxies multipart body to the Express API
  * which uploads to **Cloudflare R2** and inserts `country_flag_files` on Neon.
  *
- * Requires `API_URL` or `NEXT_PUBLIC_API_URL` pointing at the backend (…/api) and R2 env on the API server.
+ * Requires `NEXT_PUBLIC_API_URL` pointing at the backend (…/api) and R2 env on the API server.
  */
 export async function POST(request: Request): Promise<Response> {
   const gate = await requireClerkAdminBearerJson(request);

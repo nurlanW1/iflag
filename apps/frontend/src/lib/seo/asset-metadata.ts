@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { normalizeBackendApiBase, joinBackendApiPath } from '@/lib/auth/backend-url';
 import { getNeonCatalogProductBySlug } from '@/lib/server/neon-catalog';
 import { getProductBySlug } from '@/services/marketplace';
 
@@ -47,12 +48,12 @@ export const resolveAssetSeoBySlug = cache(async (slug: string): Promise<AssetSe
     /* Neon / DB may be unavailable in local builds */
   }
 
-  const base = process.env.NEXT_PUBLIC_API_URL?.trim();
-  if (!base) {
+  const raw = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (!raw) {
     return null;
   }
 
-  const url = `${base.replace(/\/$/, '')}/assets/slug/${encodeURIComponent(slug)}`;
+  const url = joinBackendApiPath(normalizeBackendApiBase(raw), `/assets/slug/${encodeURIComponent(slug)}`);
 
   try {
     const res = await fetch(url, {

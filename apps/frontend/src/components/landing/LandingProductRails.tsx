@@ -17,13 +17,7 @@ type ProductsApi = {
   data: PublicProduct[];
 };
 
-const NEXT_PUBLIC_BACKEND =
-  typeof process.env.NEXT_PUBLIC_API_URL === 'string' ? process.env.NEXT_PUBLIC_API_URL.trim() : '';
-
-function railwayApiBase(raw: string): string | null {
-  const t = raw.trim().replace(/\/$/, '');
-  return t.length > 0 ? t : null;
-}
+import { getClientBackendApiBaseUrl } from '@/lib/auth/backend-url';
 
 async function mapMarketplacePick(r: Response): Promise<PublicProduct[]> {
   if (!r.ok) return [];
@@ -135,13 +129,15 @@ export function LandingProductRails({ gallerySlot }: { gallerySlot?: ReactNode }
   const [historical, setHistorical] = useState<PublicProduct[]>([]);
   const [vectors, setVectors] = useState<PublicProduct[]>([]);
   const [loadingRails, setLoadingRails] = useState(true);
-  const missingPublicApiBanner = NEXT_PUBLIC_BACKEND.length === 0;
+  const missingPublicApiBanner = !process.env.NEXT_PUBLIC_API_URL?.trim();
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
-        const base = railwayApiBase(NEXT_PUBLIC_BACKEND);
+        const base = process.env.NEXT_PUBLIC_API_URL?.trim()
+          ? getClientBackendApiBaseUrl()
+          : null;
 
         const cRes = await fetch('/api/marketplace/categories', { cache: 'no-store' });
         let categories: Category[] = [];
