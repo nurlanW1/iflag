@@ -55,6 +55,7 @@ export const NEON_SELECT_FIELDS = `
        cff.title,
        cff.asset_group_key,
        cff.display_title,
+       cff.design_type,
        cff.format,
        cff.premium_tier,
        cff.price_cents,

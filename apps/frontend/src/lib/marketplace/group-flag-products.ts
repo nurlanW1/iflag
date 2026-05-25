@@ -16,6 +16,7 @@ export type NeonLikeFlagRow = {
   /** Design slug grouping multiple formats — when null, row is surfaced as its own solo product until backfilled. */
   asset_group_key: string | null;
   display_title: string | null;
+  design_type?: string | null;
   format: string;
   premium_tier: string | null;
   price_cents: number | null;

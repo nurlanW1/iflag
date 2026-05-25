@@ -117,6 +117,9 @@ export async function GET(
     return NextResponse.json({ error: 'File not found', code: 'NOT_FOUND' }, { status: 404 });
   }
 
+  const tierRaw = (row.premium_tier ?? 'free').trim().toLowerCase();
+  const freeCatalogDownload = tierRaw === 'free';
+
   const user = await currentUser();
   const accessToken = await getAccessTokenFromCookies();
 
@@ -144,7 +147,8 @@ export async function GET(
     return legacy ?? null;
   }
 
-  const allowed = await userHasFlagswingPaidDownloadAccess(pool, user, accessToken);
+  const allowed =
+    freeCatalogDownload || (await userHasFlagswingPaidDownloadAccess(pool, user, accessToken));
 
   if (!allowed) {
     const returnPath = sanitizeCallbackUrl(

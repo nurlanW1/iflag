@@ -60,8 +60,8 @@
   --transition-slow: 300ms ease-in-out;
   
   /* Layout — centered marketplace rail (see `.marketplace-shell`) */
-  /** Editorial navbar (~84–88px content band) */
-  --header-height: 88px;
+  /** Sticky header offset for anchored panels (approx — mobile toolbar is shorter). */
+  --header-height: 64px;
   /** Cookie banner active height — mobile download docks anchor above it via bottom:var(--cookie-banner-h). */
   --cookie-banner-h: 0px;
   /** Warm canvas + graphite ink */
@@ -153,8 +153,8 @@ h4 {
   margin-left: auto;
   margin-right: auto;
   /* Respect notch / curved edges on phones without shrinking content too much */
-  padding-left: max(1rem, env(safe-area-inset-left, 0px));
-  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+  padding-left: max(0.875rem, env(safe-area-inset-left, 0px));
+  padding-right: max(0.875rem, env(safe-area-inset-right, 0px));
 }
 
 @media (min-width: 640px) {
@@ -166,6 +166,10 @@ h4 {
 
 /* lg:px-8 */
 @media (min-width: 1024px) {
+  :root {
+    --header-height: 76px;
+  }
+
   .marketplace-shell {
     padding-left: max(2rem, env(safe-area-inset-left, 0px));
     padding-right: max(2rem, env(safe-area-inset-right, 0px));

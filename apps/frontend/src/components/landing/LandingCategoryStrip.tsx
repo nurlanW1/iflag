@@ -53,28 +53,28 @@ export function LandingCategoryStrip() {
           </h2>
         </SectionReveal>
 
-        <div className="mb-8 grid grid-cols-1 gap-3 xs:grid-cols-2 sm:mb-10 sm:flex sm:flex-row sm:flex-wrap sm:justify-center md:gap-4">
+        <div className="mb-8 flex snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain pb-2 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] sm:mb-10 sm:snap-none sm:flex-wrap sm:justify-center sm:overflow-visible sm:pb-0 md:gap-3.5">
           <Link
             href="/browse"
-            className="inline-flex min-h-12 w-full justify-center rounded-xl bg-[var(--brand-blue)] px-6 py-3 text-center text-base font-semibold text-[#fafaf9] shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)] sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 md:flex-initial md:min-w-[10.5rem]"
+            className="inline-flex min-h-12 shrink-0 snap-start items-center justify-center rounded-xl bg-[var(--brand-blue)] px-5 py-3 text-center text-sm font-semibold text-[#fafaf9] shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)] sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 sm:text-base md:flex-initial md:min-w-[10.5rem]"
           >
             Full catalog search
           </Link>
           <Link
             href="/gallery"
-            className="inline-flex min-h-12 w-full justify-center rounded-xl border border-neutral-300 bg-white px-6 py-3 text-center text-base font-semibold text-[#2a2a2a] shadow-sm transition-colors hover:border-neutral-400 hover:bg-neutral-50 sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 md:flex-initial md:min-w-[10.5rem]"
+            className="inline-flex min-h-12 shrink-0 snap-start items-center justify-center rounded-xl border border-neutral-300 bg-white px-5 py-3 text-center text-sm font-semibold text-[#2a2a2a] shadow-sm transition-colors hover:border-neutral-400 hover:bg-neutral-50 sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 sm:text-base md:flex-initial md:min-w-[10.5rem]"
           >
             Country gallery
           </Link>
           <Link
             href="/assets"
-            className="inline-flex min-h-12 w-full justify-center rounded-xl border border-neutral-300 bg-white px-6 py-3 text-center text-base font-semibold text-[#2a2a2a] shadow-sm transition-colors hover:border-neutral-400 hover:bg-neutral-50 sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 md:flex-initial md:min-w-[10.5rem]"
+            className="inline-flex min-h-12 shrink-0 snap-start items-center justify-center rounded-xl border border-neutral-300 bg-white px-5 py-3 text-center text-sm font-semibold text-[#2a2a2a] shadow-sm transition-colors hover:border-neutral-400 hover:bg-neutral-50 sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 sm:text-base md:flex-initial md:min-w-[10.5rem]"
           >
             All assets library
           </Link>
           <Link
             href="/pricing"
-            className="inline-flex min-h-12 w-full justify-center rounded-xl border border-neutral-200 px-6 py-3 text-center text-base font-semibold text-neutral-800 shadow-sm ring-1 ring-neutral-100 transition-colors hover:border-neutral-400 hover:bg-white sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 md:flex-initial md:min-w-[11rem]"
+            className="inline-flex min-h-12 shrink-0 snap-start items-center justify-center rounded-xl border border-neutral-200 px-5 py-3 text-center text-sm font-semibold text-neutral-800 shadow-sm ring-1 ring-neutral-100 transition-colors hover:border-neutral-400 hover:bg-white sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 sm:text-base md:flex-initial md:min-w-[11rem]"
             title="Paddle checkout"
           >
             Licenses &amp; pricing
@@ -90,7 +90,7 @@ export function LandingCategoryStrip() {
               <li key={c.id} className="min-h-0 list-none">
                 <Link
                   href={href}
-                  className="group flex min-h-[6.75rem] w-full touch-manipulation flex-col rounded-2xl border border-neutral-200/95 bg-white/90 p-4 shadow-[0_14px_40px_-34px_rgba(30,41,59,0.65)] outline-none ring-1 ring-transparent transition-[border-color,box-shadow,ring,background-color] hover:border-neutral-300 hover:shadow-[0_22px_48px_-32px_rgba(30,41,59,0.72)] hover:ring-neutral-900/[0.04] active:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2 sm:p-5 sm:min-h-[7rem]"
+                  className="group flex min-h-[7rem] w-full touch-manipulation flex-col rounded-2xl border border-neutral-200/95 bg-white/90 p-4 shadow-[0_10px_32px_-28px_rgba(30,41,59,0.55)] outline-none ring-1 ring-transparent transition-[border-color,box-shadow,ring,background-color] hover:border-neutral-300 hover:shadow-[0_18px_44px_-32px_rgba(30,41,59,0.65)] hover:ring-neutral-900/[0.04] active:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2 sm:p-5 sm:min-h-[7.25rem] sm:shadow-[0_14px_40px_-34px_rgba(30,41,59,0.65)]"
                 >
                   <div className="flex items-start gap-4">
                     <span

@@ -28,8 +28,8 @@ export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId, c
   const availableCanon = countAvailableCanonicalSlots(files);
 
   const slotBtnBase = compact
-    ? 'flex min-w-[4rem] shrink-0 snap-start flex-col items-center justify-center rounded-md px-2.5 py-1.5 sm:min-w-[4.5rem]'
-    : 'flex min-w-[4.85rem] shrink-0 snap-start flex-col items-center justify-center rounded-[0.6875rem] px-4 py-2.5 sm:min-w-[5.75rem]';
+    ? 'flex min-h-[2.75rem] min-w-[4.35rem] shrink-0 snap-start flex-col items-center justify-center rounded-md px-2.5 py-2 sm:min-w-[4.65rem]'
+    : 'flex min-h-[2.875rem] min-w-[5rem] shrink-0 snap-start flex-col items-center justify-center rounded-[0.6875rem] px-4 py-2.5 sm:min-w-[5.75rem]';
   const slotLabelCls =
     'font-bold leading-none tracking-[0.04em] text-slate-900 ' +
     (compact ? 'text-[12px]' : 'text-[13px]');

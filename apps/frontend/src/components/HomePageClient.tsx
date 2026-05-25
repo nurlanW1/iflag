@@ -193,7 +193,7 @@ export default function HomePageClient() {
           </SectionReveal>
 
           <div className="rounded-2xl border border-neutral-200/90 bg-[#fafaf9] p-4 sm:p-6 lg:rounded-[1.35rem]">
-            <div className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 lg:gap-5">
+            <div className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-4 lg:gap-5">
               {[
                 { name: 'Europe', icon: Globe2 },
                 { name: 'Asia', icon: Globe2 },
@@ -223,7 +223,7 @@ export default function HomePageClient() {
                   >
                     <Link
                       href={galleryHref}
-                      className="group flex min-h-[4rem] w-full items-center gap-3 rounded-xl border border-neutral-200/95 bg-white px-3 py-3 shadow-sm transition-[border-color,box-shadow,background-color] duration-200 hover:border-neutral-400 hover:bg-neutral-50 hover:shadow-md sm:min-h-[4.25rem] sm:gap-4 sm:rounded-xl sm:px-4 sm:py-4 md:min-h-[4.75rem]"
+                      className="group flex min-h-[3.875rem] w-full items-center gap-3 rounded-xl border border-neutral-200/95 bg-white px-3 py-3 shadow-[0_1px_4px_-1px_rgba(30,41,59,0.08)] transition-[border-color,box-shadow,background-color] duration-200 hover:border-neutral-400 hover:bg-neutral-50 hover:shadow-sm sm:min-h-[4.25rem] sm:gap-4 sm:rounded-xl sm:px-4 sm:py-4 md:min-h-[4.75rem]"
                     >
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-[var(--brand-blue)] ring-1 ring-neutral-200/80 sm:h-11 sm:w-11 md:h-12 md:w-12">
                         <CatIcon size={21} strokeWidth={1.75} aria-hidden />
@@ -251,7 +251,7 @@ export default function HomePageClient() {
       {/* Stats */}
       <section className="border-t border-neutral-200/80 bg-[#fafaf9] py-16 md:py-24 lg:py-28">
         <div className="marketplace-shell">
-          <div className="grid grid-cols-2 gap-12 md:grid-cols-4 md:gap-16 lg:gap-20">
+          <div className="grid grid-cols-2 gap-6 xs:gap-8 sm:gap-10 md:grid-cols-4 md:gap-16 lg:gap-20">
             {[
               { number: '200+', label: 'Countries', icon: Globe2 },
               { number: '10K+', label: 'Flag assets', icon: Flag },

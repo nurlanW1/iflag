@@ -18,6 +18,7 @@ import {
   Heart,
   ShoppingCart,
   LayoutGrid,
+  Search,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -90,9 +91,8 @@ function NavbarCartIcon({
   );
 }
 
-/** Barcha header matnlari — sayt dominant qora koʻk */
-const navText =
-  'text-base font-semibold tracking-tight text-[var(--nav-link-text)] transition-colors duration-200 hover:text-[var(--nav-link-hover)]';
+const navTextMd =
+  'text-sm font-semibold tracking-tight text-[var(--nav-link-text)] transition-colors duration-200 hover:text-[var(--nav-link-hover)] lg:text-base';
 const navLogin =
   'text-base font-semibold tracking-tight text-[var(--nav-link-text)] underline-offset-4 transition-colors duration-200 hover:text-[var(--nav-link-hover)] hover:underline';
 
@@ -109,6 +109,15 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileMenuOpen]);
+
   const clerkAppearance = {
     elements: {
       avatarBox: 'h-11 w-11 lg:h-12 lg:w-12 ring-2 ring-[rgba(12,39,72,0.35)]',
@@ -117,7 +126,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
 
   /* Oq / och kulrang fon — sahifa `#fafaf9` dan ajralishi uchun */
   const shellClass = scrolled
-    ? 'border-neutral-200 bg-white shadow-[0_8px_30px_-12px_rgba(30,58,95,0.12)] backdrop-blur-md'
+    ? 'border-neutral-200 bg-white shadow-[0_4px_20px_-8px_rgba(30,58,95,0.1)] backdrop-blur-md md:shadow-[0_8px_30px_-12px_rgba(30,58,95,0.12)]'
     : 'border-neutral-200/80 bg-white/95 shadow-[0_1px_0_rgba(30,58,95,0.06)] backdrop-blur-md';
 
   function DesktopAuthCluster() {
@@ -224,200 +233,240 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
       aria-label="Primary"
     >
       <PageShell className="!py-0">
-        {/* Mobile / tablet */}
-        <div className="flex flex-col py-3 lg:hidden">
-          <div className="flex items-center justify-between gap-3">
+        {/* Phones: logo + search + cart + menu */}
+        <div className="flex items-center justify-between gap-2 py-2.5 md:hidden">
+          <Link
+            href="/"
+            className="flex min-h-11 min-w-0 flex-1 touch-manipulation items-center gap-2 transition hover:opacity-90"
+          >
+            <Flag
+              size={28}
+              className="h-7 w-7 shrink-0 text-[var(--brand-blue)]"
+              aria-hidden
+              strokeWidth={1.75}
+            />
+            <span className="truncate text-lg font-bold tracking-tight text-[var(--brand-blue)]">{SITE_NAME}</span>
+          </Link>
+          <div className="flex shrink-0 items-center gap-0.5">
             <Link
-              href="/"
-              className="flex min-h-[48px] min-w-0 flex-1 touch-manipulation items-center gap-2.5 transition hover:opacity-90 sm:gap-3"
+              href="/browse"
+              aria-label="Search catalog"
+              title="Browse catalog"
+              className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-[var(--nav-link-text)] transition-colors hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
             >
-              <Flag size={32} className="shrink-0 text-[var(--brand-blue)] sm:h-9 sm:w-9" aria-hidden strokeWidth={1.75} />
-              <span className="truncate text-xl font-bold tracking-tight text-[var(--brand-blue)] sm:text-2xl">
-                {SITE_NAME}
-              </span>
+              <Search size={22} aria-hidden strokeWidth={2} />
             </Link>
-            <div className="flex shrink-0 items-center gap-0.5">
-              <NavbarCartIcon />
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen((o) => !o)}
-                className="inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-lg text-[var(--nav-link-text)] transition hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
-                aria-expanded={mobileMenuOpen}
-                aria-controls="mobile-nav-menu"
-                aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-              >
-                {mobileMenuOpen ? <X size={28} aria-hidden /> : <Menu size={28} aria-hidden />}
-              </button>
-            </div>
+            <NavbarCartIcon />
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((o) => !o)}
+              className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-[var(--nav-link-text)] transition hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-nav-menu"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            >
+              {mobileMenuOpen ? <X size={26} aria-hidden /> : <Menu size={26} aria-hidden />}
+            </button>
           </div>
         </div>
 
-        {/* Desktop */}
-        <div className="hidden min-h-[72px] flex-row items-center gap-6 py-4 xl:gap-8 lg:flex">
-          <Link href="/" className="flex shrink-0 items-center gap-3 transition hover:opacity-90">
-            <Flag size={40} className="shrink-0 text-[var(--brand-blue)]" aria-hidden strokeWidth={1.75} />
-            <span className="text-[1.65rem] font-bold tracking-tight text-[var(--brand-blue)]">{SITE_NAME}</span>
+        {/* Tablets & desktop */}
+        <div className="hidden min-h-[64px] flex-row items-center gap-4 py-3 md:flex lg:min-h-[72px] lg:gap-7 lg:py-4 xl:gap-8">
+          <Link href="/" className="flex shrink-0 items-center gap-2 transition hover:opacity-90 lg:gap-3">
+            <Flag size={34} className="h-8 w-8 shrink-0 text-[var(--brand-blue)] lg:h-10 lg:w-10" aria-hidden strokeWidth={1.75} />
+            <span className="text-lg font-bold tracking-tight text-[var(--brand-blue)] lg:text-[1.65rem]">{SITE_NAME}</span>
           </Link>
 
-          <nav className="hidden shrink-0 items-center gap-8 xl:gap-9 lg:flex" aria-label="Main navigation">
-            <Link href="/browse" className={navText}>
+          <nav
+            className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-x-4 gap-y-1 lg:flex-none lg:justify-start lg:gap-x-8 xl:gap-x-9"
+            aria-label="Main navigation"
+          >
+            <Link href="/browse" className={navTextMd}>
               Browse
             </Link>
-            <Link href="/#catalog-categories" className={navText}>
+            <Link href="/#catalog-categories" className={navTextMd}>
               Categories
             </Link>
-            <Link href="/pricing" className={`flex items-center gap-2 ${navText}`} title={PRICING_MARKETING.plansLine}>
-              <Crown size={19} className="shrink-0 text-amber-500" aria-hidden strokeWidth={1.75} />
+            <Link href="/pricing" className={`flex items-center gap-2 ${navTextMd}`} title={PRICING_MARKETING.plansLine}>
+              <Crown size={18} className="h-[18px] w-[18px] shrink-0 text-amber-500 lg:h-[19px] lg:w-[19px]" aria-hidden strokeWidth={1.75} />
               Pricing
             </Link>
-            <Link href="/gallery" className={navText}>
+            <Link href="/gallery" className={navTextMd}>
               Collections
             </Link>
           </nav>
 
-          <div className="ml-auto flex shrink-0 items-center gap-4 lg:gap-5">
+          <div className="ml-auto flex shrink-0 items-center gap-3 lg:gap-5">
             <DesktopAuthCluster />
           </div>
         </div>
 
-        <AnimatePresence>
+        <AnimatePresence mode="sync">
           {mobileMenuOpen ? (
-            <motion.div
-              id="mobile-nav-menu"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden border-t border-neutral-200 bg-white lg:hidden"
-            >
-              <div className="space-y-1 py-4">
-                <Link
-                  href="/browse"
-                  className="flex items-center gap-3 px-4 py-3.5 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <LayoutGrid size={20} aria-hidden />
-                  Browse
-                </Link>
-                <Link
-                  href="/#catalog-categories"
-                  className="block px-4 py-3.5 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Categories
-                </Link>
-                <Link
-                  href="/pricing"
-                  className="flex items-center gap-3 px-4 py-3.5 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Crown size={20} className="shrink-0 text-amber-500" aria-hidden />
-                  Pricing
-                </Link>
-                <Link
-                  href="/gallery"
-                  className="block px-4 py-3.5 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Collections
-                </Link>
+            <>
+              <motion.div
+                key="nav-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-[60] bg-black/45 backdrop-blur-[1px] md:hidden"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-hidden
+              />
+              <motion.aside
+                key="nav-drawer"
+                id="mobile-nav-menu"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Navigation menu"
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'tween', duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="fixed inset-y-0 right-0 z-[61] flex w-[min(100%,300px)] max-w-[100vw] flex-col border-l border-neutral-200 bg-white shadow-[0_0_40px_-12px_rgba(30,58,95,0.35)] md:hidden"
+              >
+                <div className="flex shrink-0 items-center justify-between border-b border-neutral-100 px-4 py-3">
+                  <span className="text-sm font-bold uppercase tracking-wide text-neutral-600">Navigate</span>
+                  <button
+                    type="button"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)]"
+                    aria-label="Close menu"
+                  >
+                    <X size={24} aria-hidden />
+                  </button>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain py-3">
+                  <Link
+                    href="/browse"
+                    className="flex min-h-[3rem] items-center gap-3 px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Search size={20} aria-hidden />
+                    Browse &amp; search
+                  </Link>
+                  <Link
+                    href="/#catalog-categories"
+                    className="flex min-h-[3rem] items-center px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Categories
+                  </Link>
+                  <Link
+                    href="/pricing"
+                    className="flex min-h-[3rem] items-center gap-3 px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Crown size={20} className="shrink-0 text-amber-500" aria-hidden />
+                    Pricing
+                  </Link>
+                  <Link
+                    href="/gallery"
+                    className="flex min-h-[3rem] items-center gap-3 px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <LayoutGrid size={20} aria-hidden />
+                    Collections
+                  </Link>
 
-                <NavbarAdminNav clerkUiEnabled={clerkUiEnabled} legacyUser={user} onNavigate={() => setMobileMenuOpen(false)} />
+                  <NavbarAdminNav clerkUiEnabled={clerkUiEnabled} legacyUser={user} onNavigate={() => setMobileMenuOpen(false)} />
 
-                {user ? (
-                  <>
-                    <Link
-                      href="/gallery"
-                      className="block px-4 py-3.5 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Saved collections
-                    </Link>
-                    <NavbarCartIcon variant="mobile" onNavigate={() => setMobileMenuOpen(false)} />
-                    <Link
-                      href="/dashboard"
-                      className="block px-4 py-3.5 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        void logout();
-                      }}
-                      className="block w-full px-4 py-3.5 text-left text-base font-semibold text-[var(--nav-link-text)] opacity-85 hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)] hover:opacity-100"
-                    >
-                      Sign out
-                    </button>
-                  </>
-                ) : clerkUiEnabled ? (
-                  <>
-                    <ClerkLoading>
-                      <div className="space-y-2 px-4" aria-hidden>
-                        <div className="h-11 w-full animate-pulse rounded-lg bg-neutral-200/80" />
-                        <div className="h-11 w-full animate-pulse rounded-lg bg-neutral-200/80" />
-                      </div>
-                    </ClerkLoading>
-                    <ClerkLoaded>
-                      <Show when="signed-out">
-                        <div className="mt-2 flex flex-col gap-2 px-4 pb-4">
-                          <NavbarCartIcon variant="mobile" onNavigate={() => setMobileMenuOpen(false)} />
-                          <Link
-                            href={signInHref}
-                            className="py-2 text-base font-semibold text-[var(--nav-link-text)] hover:text-[var(--nav-link-hover)]"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            Log in
-                          </Link>
-                          <Link
-                            href={signUpHref}
-                            className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[var(--brand-blue)] py-3 text-center text-base font-semibold text-white shadow-md hover:bg-[var(--brand-blue-hover)]"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            Sign up
-                          </Link>
+                  {user ? (
+                    <>
+                      <Link
+                        href="/gallery"
+                        className="flex min-h-[3rem] items-center px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Saved collections
+                      </Link>
+                      <NavbarCartIcon variant="mobile" onNavigate={() => setMobileMenuOpen(false)} />
+                      <Link
+                        href="/dashboard"
+                        className="flex min-h-[3rem] items-center px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          void logout();
+                        }}
+                        className="flex min-h-[3rem] w-full items-center px-4 py-2 text-left text-base font-semibold text-[var(--nav-link-text)] opacity-90 hover:bg-[var(--brand-blue-soft)] hover:opacity-100"
+                      >
+                        Sign out
+                      </button>
+                    </>
+                  ) : clerkUiEnabled ? (
+                    <>
+                      <ClerkLoading>
+                        <div className="space-y-2 px-4 pt-4" aria-hidden>
+                          <div className="h-11 w-full animate-pulse rounded-lg bg-neutral-200/80" />
+                          <div className="h-11 w-full animate-pulse rounded-lg bg-neutral-200/80" />
                         </div>
-                      </Show>
-                      <Show when="signed-in">
-                        <div className="mt-2 space-y-1 px-4 pb-4">
-                          <NavbarCartIcon variant="mobile" onNavigate={() => setMobileMenuOpen(false)} />
-                          <Link
-                            href="/dashboard"
-                            className="block py-2 text-base font-semibold text-[var(--nav-link-text)] hover:text-[var(--nav-link-hover)]"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            Dashboard
-                          </Link>
-                          <div className="flex items-center justify-between pt-3">
-                            <span className="text-base font-medium text-[var(--nav-link-text)] opacity-75">Account</span>
-                            <UserButton appearance={clerkAppearance} />
+                      </ClerkLoading>
+                      <ClerkLoaded>
+                        <Show when="signed-out">
+                          <div className="mt-4 flex flex-col gap-2 border-t border-neutral-100 px-4 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))] pt-4">
+                            <Link
+                              href={signInHref}
+                              className="flex min-h-11 items-center text-base font-semibold text-[var(--nav-link-text)] hover:text-[var(--nav-link-hover)]"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              Log in
+                            </Link>
+                            <Link
+                              href={signUpHref}
+                              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[var(--brand-blue)] py-3 text-center text-base font-semibold text-white shadow-sm hover:bg-[var(--brand-blue-hover)]"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              Sign up
+                            </Link>
                           </div>
-                        </div>
-                      </Show>
-                    </ClerkLoaded>
-                  </>
-                ) : (
-                  <div className="mt-2 flex flex-col gap-2 px-4 pb-6">
-                    <NavbarCartIcon variant="mobile" onNavigate={() => setMobileMenuOpen(false)} />
-                    <Link
-                      href={signInHref}
-                      className="py-2 text-base font-semibold text-[var(--nav-link-text)] hover:text-[var(--nav-link-hover)]"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Log in
-                    </Link>
-                    <Link
-                      href={signUpHref}
-                      className="flex min-h-11 items-center justify-center rounded-lg bg-[var(--brand-blue)] py-3 text-center text-base font-semibold text-white shadow-md hover:bg-[var(--brand-blue-hover)]"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Sign up
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </motion.div>
+                        </Show>
+                        <Show when="signed-in">
+                          <div className="mt-4 space-y-1 border-t border-neutral-100 px-4 pb-6 pt-4">
+                            <NavbarCartIcon variant="mobile" onNavigate={() => setMobileMenuOpen(false)} />
+                            <Link
+                              href="/dashboard"
+                              className="flex min-h-11 items-center text-base font-semibold text-[var(--nav-link-text)] hover:text-[var(--nav-link-hover)]"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              Dashboard
+                            </Link>
+                            <div className="flex min-h-11 items-center justify-between pt-2">
+                              <span className="text-base font-medium text-[var(--nav-link-text)] opacity-75">Account</span>
+                              <UserButton appearance={clerkAppearance} />
+                            </div>
+                          </div>
+                        </Show>
+                      </ClerkLoaded>
+                    </>
+                  ) : (
+                    <div className="mt-4 flex flex-col gap-2 border-t border-neutral-100 px-4 pb-6 pt-4">
+                      <NavbarCartIcon variant="mobile" onNavigate={() => setMobileMenuOpen(false)} />
+                      <Link
+                        href={signInHref}
+                        className="flex min-h-11 items-center text-base font-semibold text-[var(--nav-link-text)] hover:text-[var(--nav-link-hover)]"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Log in
+                      </Link>
+                      <Link
+                        href={signUpHref}
+                        className="flex min-h-11 items-center justify-center rounded-lg bg-[var(--brand-blue)] py-3 text-center text-base font-semibold text-white shadow-sm hover:bg-[var(--brand-blue-hover)]"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Sign up
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </motion.aside>
+            </>
           ) : null}
         </AnimatePresence>
       </PageShell>

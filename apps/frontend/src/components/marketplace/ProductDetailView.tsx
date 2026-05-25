@@ -138,7 +138,7 @@ export function ProductDetailView({ slug, product }: Props) {
       <main
         className={clsx(
           'marketplace-shell min-h-screen bg-slate-50',
-          'max-lg:pb-[calc(21rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]',
+          'max-lg:pb-[calc(18rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]',
         )}
       >
         <div className="mx-auto max-w-[min(100%,1392px)] px-4 pb-10 pt-4 sm:px-5 sm:pb-12 sm:pt-5 lg:pb-10 lg:pt-5 xl:px-8">
@@ -169,7 +169,7 @@ export function ProductDetailView({ slug, product }: Props) {
                   </span>
                 ) : null}
               </div>
-              <h1 className="mt-1.5 text-balance text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl lg:max-w-[min(100%,42rem)] xl:text-[1.65rem]">
+              <h1 className="mt-1.5 text-balance text-[1.35rem] font-semibold leading-snug tracking-tight text-slate-900 sm:text-2xl lg:max-w-[min(100%,42rem)] xl:text-[1.65rem]">
                 {product.title}
               </h1>
               <p className="mt-1 hidden text-xs text-slate-500 lg:block">
@@ -220,7 +220,7 @@ export function ProductDetailView({ slug, product }: Props) {
             </div>
 
             <aside className="w-full max-w-xl shrink-0 justify-self-start lg:sticky lg:top-[calc(4.75rem+env(safe-area-inset-top))] lg:z-[20] lg:h-auto lg:max-w-none">
-              <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm sm:p-4 lg:max-h-[min(92vh,52rem)] lg:overflow-y-auto">
+              <div className="flex h-full min-h-0 flex-col overflow-hidden max-lg:border-0 max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none lg:max-h-[min(92vh,52rem)] lg:overflow-y-auto lg:rounded-xl lg:border lg:border-slate-200/80 lg:bg-white lg:p-3.5 lg:shadow-sm">
                 <NeonAssetDownloads
                   cartProduct={cartProduct}
                   files={dedupedFiles}

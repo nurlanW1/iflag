@@ -35,7 +35,7 @@ export function PricingPlansClient() {
             <Crown className="h-4 w-4 shrink-0 text-amber-500" aria-hidden strokeWidth={2.25} />
             Pricing
           </p>
-          <h1 className="mt-2 text-4xl font-black tracking-tight text-gray-900 sm:text-5xl lg:text-6xl xl:text-7xl">
+          <h1 className="mt-2 text-pretty text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-[2.75rem] xl:text-[3.35rem]">
             Simple plans for creators and teams
           </h1>
           <p className="mx-auto mt-4 max-w-3xl text-pretty text-base text-gray-600 sm:text-lg">
@@ -54,7 +54,7 @@ export function PricingPlansClient() {
             <button
               type="button"
               onClick={() => setInterval('weekly')}
-              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+              className={`min-h-11 rounded-lg px-4 py-2.5 text-sm font-semibold transition sm:px-5 ${
                 interval === 'weekly'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -65,7 +65,7 @@ export function PricingPlansClient() {
             <button
               type="button"
               onClick={() => setInterval('monthly')}
-              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+              className={`min-h-11 rounded-lg px-4 py-2.5 text-sm font-semibold transition sm:px-5 ${
                 interval === 'monthly'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -81,7 +81,7 @@ export function PricingPlansClient() {
           </div>
         </div>
 
-        <ul className="mx-auto mt-14 grid max-w-6xl gap-8 lg:grid-cols-3 lg:gap-10 xl:gap-12">
+        <ul className="mx-auto mt-10 grid max-w-6xl gap-6 sm:mt-12 sm:gap-8 md:grid-cols-2 md:gap-8 lg:mt-14 lg:grid-cols-3 lg:gap-10 xl:gap-12">
           {PLAN_CARD_COPY.map((plan) => {
             const isPro = plan.id === 'pro';
             const isFree = plan.id === 'free';
@@ -98,8 +98,8 @@ export function PricingPlansClient() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h2 className="text-xl font-black text-gray-900">{plan.name}</h2>
-                    <p className="mt-1 text-sm text-gray-600">{plan.tagline}</p>
+                    <h2 className="text-xl font-extrabold text-gray-900 sm:text-2xl">{plan.name}</h2>
+                    <p className="mt-1 text-sm text-gray-600 sm:text-base">{plan.tagline}</p>
                   </div>
                   {plan.highlighted ? (
                     <span className="shrink-0 rounded-full bg-[#2563eb] px-2.5 py-0.5 text-xs font-bold text-white">
@@ -143,7 +143,7 @@ export function PricingPlansClient() {
                   ) : null}
                 </div>
 
-                <ul className="mt-6 flex-1 space-y-3 text-sm text-gray-700">
+                <ul className="mt-6 flex-1 space-y-3.5 text-[0.9375rem] leading-relaxed text-gray-700 sm:text-sm sm:leading-normal">
                   {plan.bullets.map((b) => (
                     <li key={b} className="flex gap-2">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden />
@@ -156,7 +156,7 @@ export function PricingPlansClient() {
                   {isFree ? (
                     <Link
                       href="/browse"
-                      className="flex w-full items-center justify-center rounded-xl border-2 border-gray-900 bg-white py-3 text-sm font-semibold text-gray-900 transition hover:border-[#2563eb] hover:text-[#2563eb]"
+                      className="flex min-h-[2.875rem] w-full items-center justify-center rounded-xl border-2 border-gray-900 bg-white py-3.5 text-base font-semibold text-gray-900 transition hover:border-[#2563eb] hover:text-[#2563eb]"
                     >
                       Browse catalog
                     </Link>
@@ -164,7 +164,7 @@ export function PricingPlansClient() {
                   {isPro ? (
                     <PricingProSubscribe
                       planSlug={proSlug}
-                      className="w-full rounded-xl bg-[#2563eb] py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:opacity-50"
+                      className="flex min-h-[2.875rem] w-full items-center justify-center rounded-xl bg-[#2563eb] py-3.5 text-base font-semibold text-white transition hover:bg-[#1d4ed8] disabled:opacity-50"
                       style={{ width: '100%' } as CSSProperties}
                     >
                       Subscribe with Paddle
@@ -173,7 +173,7 @@ export function PricingPlansClient() {
                   {isBusiness ? (
                     <Link
                       href="/contact"
-                      className="flex w-full items-center justify-center rounded-xl border-2 border-gray-200 bg-gray-50 py-3 text-sm font-semibold text-gray-800 transition hover:border-[#2563eb] hover:text-[#2563eb]"
+                      className="flex min-h-[2.875rem] w-full items-center justify-center rounded-xl border-2 border-gray-200 bg-gray-50 py-3.5 text-base font-semibold text-gray-800 transition hover:border-[#2563eb] hover:text-[#2563eb]"
                     >
                       Contact us
                     </Link>

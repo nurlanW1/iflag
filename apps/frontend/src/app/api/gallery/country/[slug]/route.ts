@@ -64,6 +64,7 @@ function loadFromFlagStock(countrySlug: string) {
 
   const variants: Array<{
     id: string;
+    productSlug: string;
     name: string;
     type: string;
     thumbnail: string;
@@ -111,6 +112,7 @@ function loadFromFlagStock(countrySlug: string) {
           const imageUrl = `/api/gallery/image?file=${encodeURIComponent(file)}`;
           variants.push({
             id: fileId,
+            productSlug: fileId,
             name: 'Standard Flag',
             type: 'standard',
             thumbnail: imageUrl,
@@ -148,6 +150,7 @@ function loadFromFlagStock(countrySlug: string) {
       name: countryName,
       slug: countrySlug,
       code: countryCode,
+      cover_image_url: variants[0]?.thumbnail ?? null,
     },
     variants,
   };

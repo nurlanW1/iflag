@@ -5,6 +5,7 @@ import {
   flagThumbPlaceholderForFileId,
 } from '@/lib/flag-thumbnail-fallback';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
+import { slugFromAssetGroupKey } from '@/lib/marketplace/group-flag-products';
 import { isSafePublicFlagObjectPath, resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
 import {
@@ -22,6 +23,8 @@ export type GalleryCountrySummary = {
   thumbnail_url: string;
   /** Canonical count label for `/api/gallery/countries`. */
   flag_count: number;
+  /** Distinct designs (asset groups) for hub cards. */
+  design_count: number;
   /** Alias of `thumbnail_url`; kept for existing components. */
   thumbnail: string;
   /** Alias of `flag_count`; kept for existing components. */
@@ -50,11 +53,15 @@ type FlagFileRow = {
   preview_url: string | null;
   file_key: string | null;
   storage_provider: string | null;
+  asset_group_key: string | null;
+  display_title: string | null;
+  sort_title: string | null;
+  design_type: string | null;
 };
 
 export function formatToCategory(fmt: string): 'vector' | 'raster' | 'video' {
   const f = fmt.toLowerCase();
-  if (f === 'svg' || f === 'eps' || f === 'pdf') return 'vector';
+  if (f === 'svg' || f === 'eps' || f === 'pdf' || f === 'ai') return 'vector';
   if (f === 'png' || f === 'jpg' || f === 'jpeg' || f === 'webp') return 'raster';
   return 'raster';
 }
@@ -173,46 +180,90 @@ export async function fetchGalleryCountriesFromDb(
   const regionParam = filters?.region?.trim() || null;
   const catParam = filters?.dbCategory?.trim().toLowerCase() || null;
 
-  /**
-   * Simple join: only `f.status = 'published'` and `f.file_url IS NOT NULL`.
-   * Thumbnail text may be empty — UI uses `file_url` as thumbnail when missing.
-   */
   const result = await pool.query<{
     cid: string;
     name: string;
     slug: string;
     iso_alpha_2: string | null;
     flag_count: number | string;
+    design_count: number | string;
     raw_thumbnail_url: string | null;
     raw_file_url: string | null;
     raw_file_key: string | null;
+    hub_cover_hint: string | null;
+    country_thumb: string | null;
+    country_cover_column: string | null;
   }>(
-    `SELECT DISTINCT ON (c.id)
+    `SELECT
        c.id::text AS cid,
        c.name,
        c.slug,
        c.iso_alpha_2,
-       agg.cnt AS flag_count,
+       agg.file_cnt AS flag_count,
+       agg.design_cnt AS design_count,
        NULLIF(trim(f.thumbnail_url::text), '') AS raw_thumbnail_url,
-       NULLIF(trim(f.file_url::text), '') AS raw_file_url,
-       NULLIF(trim(f.file_key::text), '') AS raw_file_key
+       NULLIF(trim(COALESCE(f.file_url::text, fx0.file_url::text)), '') AS raw_file_url,
+       NULLIF(trim(COALESCE(f.file_key::text, fx0.file_key::text)), '') AS raw_file_key,
+       COALESCE(
+         NULLIF(trim(f.thumbnail_url::text), ''),
+         NULLIF(trim(f.preview_url::text), ''),
+         NULLIF(trim(f.file_url::text), ''),
+         NULLIF(trim(fx0.thumbnail_url::text), ''),
+         NULLIF(trim(fx0.preview_url::text), ''),
+         NULLIF(trim(fx0.file_url::text), '')
+       ) AS hub_cover_hint,
+       NULLIF(trim(c.thumbnail_url::text), '') AS country_thumb,
+       NULLIF(trim(c.cover_image_url::text), '') AS country_cover_column
      FROM countries c
      INNER JOIN (
-       SELECT country_id, COUNT(*)::int AS cnt
+       SELECT
+         country_id,
+         COUNT(*)::int AS file_cnt,
+         COUNT(DISTINCT COALESCE(NULLIF(trim(asset_group_key::text), ''), ('solo:' || id::text)))::int AS design_cnt
        FROM country_flag_files
        WHERE lower(trim(coalesce(status::text, ''))) = 'published'
-         AND NULLIF(trim(file_url::text), '') IS NOT NULL
+         AND COALESCE(NULLIF(trim(file_url::text), ''), '') <> ''
        GROUP BY country_id
      ) agg ON agg.country_id = c.id
-     INNER JOIN country_flag_files f ON f.country_id = c.id
-       AND lower(trim(coalesce(f.status::text, ''))) = 'published'
-       AND NULLIF(trim(f.file_url::text), '') IS NOT NULL
+     LEFT JOIN LATERAL (
+       SELECT thumbnail_url, preview_url, file_url, file_key
+       FROM country_flag_files fx
+       WHERE fx.country_id = c.id
+         AND lower(trim(coalesce(fx.status::text, ''))) = 'published'
+         AND lower(trim(coalesce(fx.format::text, ''))) IN ('webp', 'jpg', 'jpeg', 'png', 'svg')
+         AND COALESCE(
+           NULLIF(trim(fx.thumbnail_url::text), ''),
+           NULLIF(trim(fx.preview_url::text), ''),
+           NULLIF(trim(fx.file_url::text), '')
+         ) IS NOT NULL
+       ORDER BY
+         CASE WHEN COALESCE(fx.is_country_cover, FALSE) THEN 0 ELSE 1 END ASC,
+         CASE WHEN lower(trim(COALESCE(fx.design_type::text, ''))) = 'official_flat' THEN 0 ELSE 1 END ASC,
+         CASE lower(trim(fx.format::text))
+           WHEN 'webp' THEN 0
+           WHEN 'jpg' THEN 1
+           WHEN 'jpeg' THEN 1
+           WHEN 'png' THEN 2
+           WHEN 'svg' THEN 3
+           ELSE 9
+         END ASC,
+         COALESCE(fx.updated_at, fx.created_at) DESC NULLS LAST
+       LIMIT 1
+     ) f ON TRUE
+     LEFT JOIN LATERAL (
+       SELECT thumbnail_url, preview_url, file_url, file_key
+       FROM country_flag_files fy
+       WHERE fy.country_id = c.id
+         AND lower(trim(coalesce(fy.status::text, ''))) = 'published'
+       ORDER BY COALESCE(fy.updated_at, fy.created_at) DESC NULLS LAST
+       LIMIT 1
+     ) fx0 ON TRUE
      WHERE ($1::text IS NULL OR lower(trim(coalesce(c.region::text, ''))) = lower(trim($1)))
        AND (
          $2::text IS NULL
          OR lower(trim(coalesce(c.category::text, 'country'))) = lower(trim($2))
        )
-     ORDER BY c.id, f.created_at DESC NULLS LAST`,
+     ORDER BY COALESCE(NULLIF(lower(trim(coalesce(c.sort_name::text, ''))), ''), lower(trim(c.name::text))), c.name ASC`,
     [regionParam, catParam],
   );
 
@@ -222,12 +273,24 @@ export async function fetchGalleryCountriesFromDb(
     const count =
       typeof flagCountRaw === 'string' ? Number.parseInt(flagCountRaw, 10) : Number(flagCountRaw);
 
+    const designRaw = row.design_count;
+    const designs =
+      typeof designRaw === 'string' ? Number.parseInt(String(designRaw), 10) : Number(designRaw);
+
+    const coverPick =
+      row.country_cover_column?.trim() ||
+      row.hub_cover_hint?.trim() ||
+      row.country_thumb?.trim() ||
+      '';
+
     const fileUrlForRow = row.raw_file_url?.trim() || '';
     const thumbStored = row.raw_thumbnail_url?.trim() || '';
 
-    /** If `thumbnail_url` is null/empty, use `file_url` for list display. */
-    const effectiveThumbnailUrl = thumbStored || fileUrlForRow || null;
-    const effectivePreviewUrl = fileUrlForRow || null;
+    /** Prefer persisted hub cover (`countries.cover_image_url`) then weighted row from lateral join */
+    const effectiveThumbnailUrl =
+      coverPick || thumbStored || fileUrlForRow || null;
+    const effectivePreviewUrl =
+      row.hub_cover_hint?.trim() || fileUrlForRow || null;
 
     const code =
       row.iso_alpha_2?.trim()?.toUpperCase() || getCountryCode(row.name)?.toUpperCase() || null;
@@ -241,8 +304,9 @@ export async function fetchGalleryCountriesFromDb(
       }),
     });
     /** DB sometimes stores only object key in `file_url` (no scheme) — build public R2 URL when possible. */
-    if (!thumb && fileUrlForRow && !/^https?:\/\//i.test(fileUrlForRow)) {
-      const normalizedKey = fileUrlForRow.replace(/^\/+/, '');
+    const primaryPath = (coverPick || fileUrlForRow).trim();
+    if (!thumb && primaryPath && !/^https?:\/\//i.test(primaryPath)) {
+      const normalizedKey = primaryPath.replace(/^\/+/, '');
       if (isSafePublicFlagObjectPath(normalizedKey)) {
         const built = getPublicR2FileUrl(normalizedKey);
         if (built) thumb = built;
@@ -254,6 +318,7 @@ export async function fetchGalleryCountriesFromDb(
 
     const resolvedThumb = resolveGalleryAssetUrl(thumb);
     const n = Number.isFinite(count) ? count : 0;
+    const d = Number.isFinite(designs) ? designs : 0;
 
     out.push({
       id: row.cid,
@@ -262,17 +327,20 @@ export async function fetchGalleryCountriesFromDb(
       code,
       thumbnail_url: resolvedThumb,
       flag_count: n,
+      design_count: d || n,
       thumbnail: resolvedThumb,
       count: n,
     });
   }
-  return out.sort((a, b) => a.name.localeCompare(b.name));
+  return out;
 }
 
 export type CountryGalleryPayload = {
-  country: { name: string; slug: string; code: string | null };
+  country: { name: string; slug: string; code: string | null; cover_image_url: string | null };
   variants: {
     id: string;
+    /** Canonical marketplace detail slug (`/assets/[slug]`). */
+    productSlug: string;
     name: string;
     type: string;
     thumbnail: string;
@@ -305,20 +373,32 @@ function truncateDisplayPath(name: string, max = 80): string {
 }
 
 export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promise<CountryGalleryPayload | null> {
-  const cRes = await pool.query<{ id: string; name: string; slug: string; iso_alpha_2: string | null }>(
-    'SELECT id, name, slug, iso_alpha_2 FROM countries WHERE lower(slug) = lower($1) LIMIT 1',
-    [slug]
+  const cRes = await pool.query<{
+    id: string;
+    name: string;
+    slug: string;
+    iso_alpha_2: string | null;
+    cover_image_url: string | null;
+    thumbnail_url: string | null;
+  }>(
+    `SELECT id, name, slug, iso_alpha_2,
+            NULLIF(trim(cover_image_url::text), '') AS cover_image_url,
+            NULLIF(trim(thumbnail_url::text), '') AS thumbnail_url
+     FROM countries WHERE lower(slug) = lower($1) LIMIT 1`,
+    [slug],
   );
   const countryRow = cRes.rows[0];
   if (!countryRow) return null;
 
   const fRes = await pool.query<FlagFileRow>(
     `SELECT id, file_url, file_name, file_size_bytes::text, format, variant_name, width, height,
-            premium_tier, thumbnail_url, preview_url, file_key, storage_provider
+            premium_tier, thumbnail_url, preview_url, file_key, storage_provider,
+            asset_group_key, display_title, sort_title, design_type
      FROM country_flag_files
      WHERE country_id = $1 AND status = 'published'
-     ORDER BY variant_name NULLS LAST, format, created_at ASC`,
-    [countryRow.id]
+     ORDER BY COALESCE(NULLIF(trim(sort_title::text), ''), NULLIF(trim(display_title::text), ''), variant_name::text),
+              format NULLS LAST, created_at ASC`,
+    [countryRow.id],
   );
 
   if (fRes.rows.length === 0) return null;
@@ -326,10 +406,6 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
   const iso = countryRow.iso_alpha_2?.trim()?.toUpperCase() || null;
   const mappedCode = iso || getCountryCode(countryRow.name)?.toUpperCase() || null;
 
-  /**
-   * Display order: AI → SVG → EPS → JPG → PNG. Anything else falls to the end (e.g. PDF, MP4).
-   * Mirrors the 5-slot download grid on the detail page.
-   */
   const FORMAT_DISPLAY_ORDER: Record<string, number> = {
     ai: 0,
     svg: 1,
@@ -341,7 +417,6 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
     webp: 4,
   };
 
-  /** Higher score = better candidate for the variant cover thumbnail (image you can render in `<img>`). */
   function thumbScoreForFormat(fmt: string): number {
     const f = fmt.toLowerCase();
     if (f === 'png') return 5;
@@ -353,15 +428,21 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
   function variantGroupKey(row: FlagFileRow): string {
     const named = row.variant_name?.trim();
     if (named) return `n:${named.toLowerCase()}`;
-    /** Strip extension to merge {name}.png + {name}.jpg + {name}.svg into one design. */
     const base = row.file_name.replace(/\.[^.]+$/, '').trim();
     return `f:${base.toLowerCase()}`;
+  }
+
+  function designBucketKey(row: FlagFileRow): string {
+    const ag = row.asset_group_key?.trim();
+    if (ag) return `ag:${ag}`;
+    return variantGroupKey(row);
   }
 
   type FormatRow = CountryGalleryPayload['variants'][number]['formats'][number];
 
   type VariantBuilder = {
     id: string;
+    productSlug: string;
     name: string;
     type: string;
     thumbnail: string;
@@ -371,6 +452,16 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
 
   const builders = new Map<string, VariantBuilder>();
   let variantIdx = 0;
+
+  function displayNameForRow(r: FlagFileRow): string {
+    return (
+      r.display_title?.trim() ||
+      r.sort_title?.trim() ||
+      r.variant_name?.trim() ||
+      r.file_name.replace(/\.[^.]+$/, '').trim() ||
+      r.file_name
+    );
+  }
 
   for (const r of fRes.rows) {
     const nbytes = Number.parseInt(String(r.file_size_bytes), 10);
@@ -383,7 +474,6 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
         ? `${r.width}×${r.height} px`
         : 'Original';
 
-    /** Prefer explicit `preview_url`, then `thumbnail_url`, then `file_url` for free/image rows only. */
     const thumbStored = r.thumbnail_url?.trim() || '';
     const previewStored = r.preview_url?.trim() || '';
     const fileUrl = r.file_url?.trim() || '';
@@ -406,9 +496,8 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
       previewUrl = flagThumbPlaceholderForFileId(String(r.id));
     }
 
-    /** Always gate file bytes through `/api/download/[id]` — never expose a public direct file URL for client-side grabs. */
-    const downloadProtected = true;
-    const directDownloadUrl = undefined;
+    const downloadProtected =
+      String(r.premium_tier ?? 'free').trim().toLowerCase() !== 'free';
 
     const formatRow: FormatRow = {
       id: String(r.id),
@@ -416,7 +505,7 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
       formatCode: ext,
       category: formatToCategory(r.format),
       file: r.file_name,
-      url: directDownloadUrl,
+      url: undefined,
       previewUrl,
       premiumTier: tier,
       downloadProtected,
@@ -424,21 +513,23 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
       dimensions: dim,
     };
 
-    const key = variantGroupKey(r);
+    const key = designBucketKey(r);
     let builder = builders.get(key);
+    const agTrim = r.asset_group_key?.trim();
+
     if (!builder) {
-      const displayName =
-        (r.variant_name?.trim() || r.file_name.replace(/\.[^.]+$/, '').trim()) || r.file_name;
       builder = {
         id: `${countryRow.slug}-design-${variantIdx++}`,
-        name: truncateDisplayPath(displayName, 96),
-        type: 'design',
+        productSlug: agTrim ? slugFromAssetGroupKey(agTrim) : `nf-${r.id}`,
+        name: truncateDisplayPath(displayNameForRow(r), 96),
+        type: String(r.design_type ?? 'design'),
         thumbnail: '',
         thumbScore: -1,
         formats: [],
       };
       builders.set(key, builder);
     }
+
     builder.formats.push(formatRow);
 
     const score = thumbScoreForFormat(r.format);
@@ -459,19 +550,38 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
       b.thumbnail || sortedFormats[0]?.previewUrl || flagThumbPlaceholderForFileId(b.id);
     return {
       id: b.id,
+      productSlug: b.productSlug,
       name: b.name,
-      type: b.type,
+      type: b.type.replace(/_/g, ' ') || 'design',
       thumbnail: cover,
       formats: sortedFormats,
     };
   });
   variants.sort((a, b) => a.name.localeCompare(b.name));
 
+  let rawHubCover =
+    countryRow.cover_image_url?.trim() || countryRow.thumbnail_url?.trim() || variants[0]?.thumbnail || '';
+
+  let resolvedHub = rawHubCover
+    ? resolvedFlagPublicHref({
+        fallbackRawUrls: [rawHubCover],
+      })
+    : '';
+  if (!resolvedHub && rawHubCover && !/^https?:\/\//i.test(rawHubCover)) {
+    const normalizedKey = rawHubCover.replace(/^\/+/, '');
+    if (isSafePublicFlagObjectPath(normalizedKey)) {
+      const built = getPublicR2FileUrl(normalizedKey);
+      if (built) resolvedHub = built;
+    }
+  }
+  const coverPayload = resolvedHub ? resolveGalleryAssetUrl(resolvedHub) : null;
+
   return {
     country: {
       name: countryRow.name,
       slug: countryRow.slug,
       code: mappedCode,
+      cover_image_url: coverPayload,
     },
     variants,
   };

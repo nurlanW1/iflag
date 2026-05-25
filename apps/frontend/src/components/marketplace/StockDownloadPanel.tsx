@@ -17,7 +17,7 @@ import { ONE_TIME_STOCK } from '@/lib/marketing/pricing-config';
 import { useFlagswingPlan } from '@/hooks/useFlagswingPlan';
 
 const btnCompact =
-  'inline-flex min-h-[2.25rem] shrink-0 items-center justify-center gap-1.5 rounded-lg px-3.5 text-xs font-semibold transition disabled:opacity-50';
+  'inline-flex min-h-11 min-w-[2.75rem] shrink-0 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition disabled:opacity-50';
 
 type Props = {
   files: PublicProductFile[];
@@ -144,7 +144,7 @@ export function StockDownloadPanel({
       compact={compactLayout}
     />
   ) : onDirectDownload ? (
-    <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-2">
+    <div className="flex min-h-12 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
       <div className="min-w-0 flex-1">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Download</p>
         <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)}</p>
@@ -155,12 +155,12 @@ export function StockDownloadPanel({
         onClick={() => onDirectDownload()}
         className={`${btnCompact} bg-slate-950 text-white hover:bg-slate-900`}
       >
-        <Download className="h-3.5 w-3.5" aria-hidden strokeWidth={2.25} />
+        <Download className="h-4 w-4" aria-hidden strokeWidth={2.25} />
         {directDownloadBusy ? '…' : directDownloadLabel?.replace(/^Download\s+/i, '') ?? 'Get'}
       </button>
     </div>
   ) : isPreviewSlot ? (
-    <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-2">
+    <div className="flex min-h-12 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
       <div className="min-w-0 flex-1">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Preview</p>
         <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)} · free</p>
@@ -171,7 +171,7 @@ export function StockDownloadPanel({
         onClick={() => void onProtectedDownload()}
         className={`${btnCompact} bg-slate-950 text-white hover:bg-slate-900`}
       >
-        <Download className="h-3.5 w-3.5" aria-hidden strokeWidth={2.25} />
+        <Download className="h-4 w-4" aria-hidden strokeWidth={2.25} />
         {busy ? '…' : 'Get'}
       </button>
     </div>
@@ -184,7 +184,7 @@ export function StockDownloadPanel({
       Loading…
     </button>
   ) : hasActivePlan ? (
-    <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-2">
+    <div className="flex min-h-12 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
       <div className="min-w-0 flex-1">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">Pro access</p>
         <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)}</p>
@@ -195,7 +195,7 @@ export function StockDownloadPanel({
         onClick={() => void onProtectedDownload()}
         className={`${btnCompact} bg-slate-950 text-white hover:bg-slate-900`}
       >
-        <Download className="h-3.5 w-3.5" aria-hidden strokeWidth={2.25} />
+        <Download className="h-4 w-4" aria-hidden strokeWidth={2.25} />
         {busy ? '…' : 'Download'}
       </button>
     </div>
@@ -207,10 +207,10 @@ export function StockDownloadPanel({
     />
   );
 
-  const block = (
+  const renderPanel = (formatsHeadingId: string) => (
     <div className={clsx(compactLayout ? 'flex flex-col gap-2.5' : 'flex flex-col gap-4')}>
       <CanonicalFormatSlots
-        headingId={headingId}
+        headingId={formatsHeadingId}
         files={sorted}
         selectedId={sel}
         onSelect={setSel}
@@ -233,11 +233,11 @@ export function StockDownloadPanel({
 
   return (
     <>
-      <div className="hidden lg:block">{block}</div>
-      <div className="pointer-events-none fixed inset-x-0 bottom-[var(--cookie-banner-h,0px)] z-[110] pb-[max(10px,env(safe-area-inset-bottom))] lg:hidden">
-        <div className="pointer-events-auto mx-auto max-w-lg rounded-t-[1.375rem] border border-b-0 border-slate-200/90 bg-white/96 px-6 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+12px))] pt-5 shadow-[0_-8px_28px_-12px_rgba(15,23,42,0.18)] backdrop-blur-xl backdrop-saturate-150">
-          <div className="mx-auto mb-3 h-1 w-[2.875rem] rounded-full bg-slate-200/90" aria-hidden />
-          {block}
+      <div className="hidden lg:block">{renderPanel(headingId)}</div>
+      <div className="pointer-events-none fixed inset-x-0 bottom-[var(--cookie-banner-h,0px)] z-[110] pb-[max(8px,env(safe-area-inset-bottom))] lg:hidden">
+        <div className="pointer-events-auto mx-auto max-w-lg rounded-t-[1.25rem] border border-b-0 border-slate-200/80 bg-white/95 px-4 pb-[max(1rem,calc(env(safe-area-inset-bottom)+12px))] pt-4 shadow-[0_-6px_22px_-10px_rgba(15,23,42,0.14)] backdrop-blur-md backdrop-saturate-150 sm:px-5 sm:pt-5">
+          <div className="mx-auto mb-2.5 h-1 w-10 rounded-full bg-slate-200/90 sm:mb-3 sm:w-[2.875rem]" aria-hidden />
+          {renderPanel(`${headingId}-dock`)}
         </div>
       </div>
     </>

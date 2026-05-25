@@ -16,6 +16,7 @@ import {
   Sparkles,
   Globe2,
   FileImage,
+  SlidersHorizontal,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -27,6 +28,7 @@ interface Country {
   slug: string;
   code: string | null;
   count: number;
+  design_count?: number;
   thumbnail: string;
 }
 
@@ -58,6 +60,7 @@ function GalleryContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [view, setView] = useState<ViewMode>('grid');
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const filterLabel = useMemo(() => {
     const ks = kind?.trim();
@@ -137,7 +140,7 @@ function GalleryContent() {
 
   return (
     <main className="min-h-screen bg-stone-50">
-      <section className="relative min-h-[min(58dvh,520px)] overflow-hidden border-b border-stone-200/80 bg-gradient-to-br from-[#0a3b44] via-[#0d4c5b] to-[#0a3b44] sm:min-h-[min(50dvh,600px)] lg:min-h-[min(48dvh,640px)]">
+      <section className="relative min-h-[min(34dvh,300px)] overflow-hidden border-b border-stone-200/80 bg-gradient-to-br from-[#0a3b44] via-[#0d4c5b] to-[#0a3b44] sm:min-h-[min(42dvh,400px)] md:min-h-[min(48dvh,480px)] lg:min-h-[min(48dvh,560px)]">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-[0.18]"
@@ -146,19 +149,19 @@ function GalleryContent() {
               'radial-gradient(circle at 18% 30%, #60a5fa 0%, transparent 38%), radial-gradient(circle at 82% 70%, #2563eb 0%, transparent 42%)',
           }}
         />
-        <div className="relative marketplace-shell pb-16 pt-14 sm:pb-20 sm:pt-20 lg:pb-24 lg:pt-20">
+        <div className="relative marketplace-shell pb-11 pt-11 sm:pb-16 sm:pt-14 md:pb-16 md:pt-16 lg:pb-24 lg:pt-20">
           <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.22em] text-white/55">
             <Sparkles size={13} className="text-[#7adcef]" aria-hidden />
             Flag library
           </div>
-          <h1 className="mt-4 max-w-[min(100%-0.5rem,58rem)] text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl lg:max-w-[min(100%,90rem)] xl:text-6xl xl:leading-[1.06]">
+          <h1 className="mt-3 max-w-[min(100%,36rem)] text-balance text-2xl font-bold leading-tight tracking-tight text-white sm:mt-4 sm:max-w-[min(100%,52rem)] sm:text-4xl lg:max-w-[min(100%,90rem)] lg:text-[2.65rem] xl:text-6xl xl:leading-[1.06]">
             Browse high-quality flag collections by country
           </h1>
-          <p className="mt-5 max-w-none text-base leading-relaxed text-white/75 sm:mt-6 sm:text-lg xl:text-xl">
-            Curated raster &amp; vector previews — search, filter and open a folder to view every shape, format and resolution.
+          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/80 sm:mt-5 sm:text-lg md:max-w-3xl xl:text-xl">
+            Curated raster &amp; vector previews — tap a hub to browse designs and downloads.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-white/70">
+          <div className="mt-6 flex flex-wrap items-center gap-3 text-xs text-white/75 sm:mt-8 sm:text-sm">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 font-medium text-white ring-1 ring-white/15 backdrop-blur">
               <Globe2 size={13} aria-hidden /> {countries.length} countries
             </span>
@@ -177,14 +180,14 @@ function GalleryContent() {
         </div>
       </section>
 
-      <div className="sticky top-0 z-30 -mt-6 border-b border-stone-200/60 bg-stone-50/80 backdrop-blur-md">
-        <div className="marketplace-shell pt-6 pb-1">
-          <div className="rounded-2xl border border-stone-200/80 bg-white/95 px-3 py-3 shadow-[0_12px_36px_-18px_rgba(15,23,42,0.18)] ring-1 ring-stone-100 backdrop-blur sm:px-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="relative flex-1 min-w-[14rem]">
+      <div className="sticky top-0 z-30 -mt-6 border-b border-stone-200/60 bg-stone-50/92 backdrop-blur-md">
+        <div className="marketplace-shell pt-5 pb-2 sm:pt-6 sm:pb-1">
+          <div className="rounded-2xl border border-stone-200/85 bg-white/98 px-3 py-3 shadow-[0_6px_24px_-12px_rgba(15,23,42,0.12)] ring-1 ring-stone-100/90 backdrop-blur-md sm:px-4 lg:shadow-[0_12px_36px_-18px_rgba(15,23,42,0.14)]">
+            <div className="flex w-full flex-col gap-3 min-[620px]:flex-row min-[620px]:flex-wrap min-[620px]:items-center">
+              <div className="relative min-h-11 w-full min-w-0 flex-1 md:min-w-[14rem]">
                 <Search
                   className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
-                  size={17}
+                  size={18}
                   aria-hidden
                 />
                 <input
@@ -192,21 +195,32 @@ function GalleryContent() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by country or ISO code…"
-                  className="w-full rounded-xl border border-stone-200 bg-stone-50/80 py-2.5 pl-10 pr-9 text-sm text-stone-900 placeholder-stone-400 transition-all focus:border-[#2563eb] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                  className="w-full rounded-xl border border-stone-200 bg-stone-50/90 py-3 pl-11 pr-10 text-base text-stone-900 placeholder:text-stone-400 transition-all focus:border-[#2563eb] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/22 sm:text-sm"
                 />
                 {searchQuery ? (
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
                     aria-label="Clear search"
-                    className="absolute right-2.5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+                    className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-stone-400 hover:bg-stone-100 hover:text-stone-700"
                   >
-                    <X size={13} />
+                    <X size={16} />
                   </button>
                 ) : null}
               </div>
 
-              <div className="hidden flex-wrap items-center gap-1.5 lg:flex">
+              <button
+                type="button"
+                className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-stone-200 bg-stone-50/90 px-4 py-3 text-sm font-semibold text-stone-800 transition hover:bg-stone-100 min-[620px]:hidden"
+                onClick={() => setFiltersOpen(true)}
+                aria-expanded={filtersOpen}
+                aria-haspopup="dialog"
+              >
+                <SlidersHorizontal size={17} aria-hidden />
+                Filters
+              </button>
+
+              <div className="hidden flex-wrap items-center gap-1.5 min-[620px]:flex">
                 {KIND_TABS.map(({ id, label, Icon }) => {
                   const active = (id ?? null) === activeKind;
                   return (
@@ -226,13 +240,13 @@ function GalleryContent() {
                 })}
               </div>
 
-              <div className="ml-auto flex items-center gap-2">
-                <div className="relative">
+              <div className="flex w-full min-w-0 items-center gap-2 min-[620px]:ml-auto min-[620px]:w-auto">
+                <div className="relative min-w-0 flex-1 sm:flex-initial">
                   <select
                     value={sortKey}
                     onChange={(e) => setSortKey(e.target.value as SortKey)}
                     aria-label="Sort countries"
-                    className="appearance-none rounded-xl border border-stone-200 bg-stone-50/80 py-2.5 pl-3 pr-9 text-xs font-semibold text-stone-700 transition-all hover:bg-white focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                    className="h-11 w-full min-h-[44px] appearance-none rounded-xl border border-stone-200 bg-stone-50/90 px-3 py-2 pl-3 pr-10 text-sm font-semibold text-stone-800 transition-all hover:bg-white focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 sm:text-xs md:w-auto md:min-w-[10.5rem]"
                   >
                     {SORT_OPTIONS.map((opt) => (
                       <option key={opt.id} value={opt.id}>
@@ -245,57 +259,80 @@ function GalleryContent() {
                   </span>
                 </div>
 
-                <div className="hidden items-center rounded-xl bg-stone-100/80 p-1 sm:flex">
+                <div className="flex shrink-0 items-center rounded-xl bg-stone-100/90 p-1">
                   <button
                     type="button"
                     onClick={() => setView('grid')}
                     aria-label="Grid view"
                     aria-pressed={view === 'grid'}
-                    className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                    className={`flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg transition-colors ${
                       view === 'grid' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'
                     }`}
                   >
-                    <LayoutGrid size={14} />
+                    <LayoutGrid size={18} aria-hidden />
                   </button>
                   <button
                     type="button"
                     onClick={() => setView('list')}
                     aria-label="List view"
                     aria-pressed={view === 'list'}
-                    className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                    className={`flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg transition-colors ${
                       view === 'list' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'
                     }`}
                   >
-                    <Rows3 size={14} />
+                    <Rows3 size={18} aria-hidden />
                   </button>
                 </div>
               </div>
-            </div>
-
-            <div className="mt-2.5 flex flex-wrap items-center gap-1.5 lg:hidden">
-              {KIND_TABS.map(({ id, label, Icon }) => {
-                const active = (id ?? null) === activeKind;
-                return (
-                  <Link
-                    key={label}
-                    href={buildHref(id)}
-                    className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold transition-all ${
-                      active
-                        ? 'bg-[#2563eb] text-white'
-                        : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
-                    }`}
-                  >
-                    <Icon size={12} aria-hidden />
-                    {label}
-                  </Link>
-                );
-              })}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="marketplace-shell py-8 sm:py-12 lg:py-14">
+      {filtersOpen ? (
+        <div className="fixed inset-0 z-[45] lg:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/45 backdrop-blur-[1px]"
+            aria-label="Close filters"
+            onClick={() => setFiltersOpen(false)}
+          />
+          <div className="absolute inset-x-0 bottom-0 max-h-[82dvh] overflow-y-auto rounded-t-2xl border border-stone-200 bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] pt-2 shadow-[0_-12px_40px_-14px_rgba(15,23,42,0.2)]">
+            <div className="mx-auto mb-5 h-1 w-11 rounded-full bg-stone-200" aria-hidden />
+            <p className="mb-4 text-[11px] font-bold uppercase tracking-wide text-stone-500">Browse by type</p>
+            <ul className="mx-0 mb-6 list-none space-y-2 p-0">
+              {KIND_TABS.map(({ id, label, Icon }) => {
+                const active = (id ?? null) === activeKind;
+                return (
+                  <li key={label} className="list-none">
+                    <Link
+                      href={buildHref(id)}
+                      onClick={() => setFiltersOpen(false)}
+                      className={`flex min-h-12 touch-manipulation items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold transition-colors ${
+                        active
+                          ? 'bg-[#2563eb] text-white shadow-sm shadow-[#2563eb]/25'
+                          : 'bg-stone-50 text-stone-800 ring-1 ring-stone-200/90 hover:bg-stone-100'
+                      }`}
+                    >
+                      <Icon size={18} aria-hidden />
+                      {label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+            <button
+              type="button"
+              className="flex min-h-12 w-full items-center justify-center rounded-xl bg-stone-900 py-3.5 text-base font-semibold text-white hover:bg-stone-800"
+              onClick={() => setFiltersOpen(false)}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="marketplace-shell py-7 sm:py-11 lg:py-14">
         <div className="mb-5 flex items-center justify-between">
           <p className="text-xs font-medium text-stone-500 sm:text-sm">
             {loading ? (
@@ -345,7 +382,7 @@ function CardGrid({ countries }: { countries: Country[] }) {
           transition={{ duration: 0.28, delay: Math.min(idx, 14) * 0.015 }}
         >
           <Link
-            href={`/gallery/${country.slug}`}
+            href={`/countries/${country.slug}`}
             className="group block overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#2563eb]/50 hover:shadow-[0_12px_30px_-14px_rgba(37,99,235,0.45)]"
           >
             <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
@@ -356,7 +393,7 @@ function CardGrid({ countries }: { countries: Country[] }) {
                 loading="lazy"
                 decoding="async"
                 referrerPolicy="no-referrer"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.08]"
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                 onError={(e) => {
                   const el = e.currentTarget;
                   el.onerror = null;
@@ -369,7 +406,7 @@ function CardGrid({ countries }: { countries: Country[] }) {
                 </span>
               ) : null}
               <span className="absolute right-2 top-2 z-10 rounded-md bg-white/85 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-stone-700 shadow-sm ring-1 ring-stone-200 backdrop-blur">
-                {country.count}
+                {country.design_count ?? country.count}
               </span>
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex translate-y-2 items-center justify-center gap-1.5 bg-gradient-to-t from-black/55 to-transparent px-2 py-2 text-xs font-semibold text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                 View files <ArrowRight size={13} />
@@ -379,7 +416,8 @@ function CardGrid({ countries }: { countries: Country[] }) {
               <div className="min-w-0">
                 <h3 className="truncate text-sm font-semibold text-stone-900">{country.name}</h3>
                 <p className="mt-0.5 text-[11px] text-stone-500">
-                  {country.count} {country.count === 1 ? 'file' : 'files'}
+                  {country.design_count ?? country.count} designs · {country.count}{' '}
+                  {country.count === 1 ? 'file' : 'files'}
                 </p>
               </div>
               <ArrowRight
@@ -401,7 +439,7 @@ function CardList({ countries }: { countries: Country[] }) {
       {countries.map((country) => (
         <li key={`${country.code ?? 'x'}-${country.slug}-row`}>
           <Link
-            href={`/gallery/${country.slug}`}
+            href={`/countries/${country.slug}`}
             className="group flex items-center gap-3 px-3 py-3 transition-colors hover:bg-stone-50 sm:gap-4 sm:px-4 sm:py-3.5"
           >
             <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-stone-100 ring-1 ring-stone-200 sm:h-16 sm:w-24">
@@ -432,7 +470,12 @@ function CardList({ countries }: { countries: Country[] }) {
                 ) : null}
               </div>
               <p className="mt-0.5 text-[11px] text-stone-500 sm:text-xs">
-                {country.count} {country.count === 1 ? 'flag file' : 'flag files'} available
+                {country.design_count ?? country.count}{' '}
+                {country.design_count === 1 || (!country.design_count && country.count === 1)
+                  ? 'design'
+                  : 'designs'}{' '}
+                · {country.count}{' '}
+                {country.count === 1 ? 'flag file' : 'flag files'} available
               </p>
             </div>
             <div className="flex items-center gap-1 text-xs font-semibold text-[#2563eb] opacity-0 transition-opacity group-hover:opacity-100">

@@ -116,6 +116,7 @@ function loadFromFlagStock(): GalleryCountrySummary[] {
         slug: countrySlug,
         code: countryCode,
         flag_count: 1,
+        design_count: 1,
         count: 1,
         thumbnail_url: thumbnail,
         thumbnail,

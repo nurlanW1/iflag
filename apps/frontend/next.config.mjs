@@ -32,6 +32,9 @@ const marketplaceOwnerDownloadPublic =
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async rewrites() {
+    return [{ source: '/countries/:slug', destination: '/gallery/:slug' }];
+  },
   /**
    * Monorepo: Turbopack can mis-infer workspace root as `src/app/` and crash with “Next.js package not found”.
    * @see https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory

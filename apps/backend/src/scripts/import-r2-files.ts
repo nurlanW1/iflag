@@ -17,11 +17,12 @@ import pg from 'pg';
 import type { R2Config } from '../storage/r2.js';
 import { listR2ObjectSummaries, requireR2Config, slugifySegment } from '../storage/r2.js';
 import { deriveAssetGroupKeyFromParts, deriveDisplayTitle } from '../lib/asset-group-key.js';
+import { classifyFlagDesign } from '../lib/flag-design-classify.js';
 /** Always load apps/backend/.env (not cwd). Never log env contents. */
 const __scriptDir = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__scriptDir, '../../.env') });
 
-const ALLOWED_FORMATS = new Set(['png', 'svg', 'jpg', 'jpeg', 'webp', 'eps', 'pdf']);
+const ALLOWED_FORMATS = new Set(['png', 'svg', 'jpg', 'jpeg', 'webp', 'eps', 'pdf', 'ai']);
 
 const MIME_BY_EXT: Record<string, string> = {
   png: 'image/png',
@@ -31,6 +32,7 @@ const MIME_BY_EXT: Record<string, string> = {
   webp: 'image/webp',
   pdf: 'application/pdf',
   eps: 'application/postscript',
+  ai: 'application/octet-stream',
 };
 
 /** Normalized slug tokens stripped when inferring country from folder/filename text. */
@@ -318,6 +320,19 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
   const ownPool = !opts.pool;
   const pool = opts.pool ?? new pg.Pool({ connectionString: url });
 
+  const countryRegionCache = new Map<string, string | null>();
+
+  async function cachedCountryRegion(countryUuid: string): Promise<string | null> {
+    if (countryRegionCache.has(countryUuid)) return countryRegionCache.get(countryUuid) ?? null;
+    const q = await pool.query<{ region: string | null }>(
+      `SELECT region::text AS region FROM countries WHERE id = $1::uuid LIMIT 1`,
+      [countryUuid],
+    );
+    const v = q.rows[0]?.region?.trim() || null;
+    countryRegionCache.set(countryUuid, v);
+    return v;
+  }
+
   try {
     const summaries = await listR2ObjectSummaries(cfg, {
       prefix: opts.prefix,
@@ -366,6 +381,12 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
       }
 
       const fileKey = obj.key.replace(/^\/+/, '');
+      const classify = classifyFlagDesign({ r2Key: fileKey, fileStem: parsed.baseStem });
+      const premiumTier = classify.premium_tier === 'free' ? 'free' : 'paid';
+      const designTypeStr = classify.design_type;
+      const regionSnap = await cachedCountryRegion(countryId);
+      const sortTitleValue = displayTitle.slice(0, 250);
+
       const fileUrl = publicUrlFromR2Key(cfg, fileKey);
       /** Same public URL as primary asset; thumbnails/previews fallback to full file URL when not separate */
       const thumbnailUrl = fileUrl;
@@ -398,8 +419,13 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
               title = $12,
               asset_group_key = $13,
               display_title = $14,
+              premium_tier = $15,
+              design_type = $16,
+              sort_title = COALESCE(NULLIF(trim(sort_title::text), ''), $17),
+              region = $18,
+              is_country_cover = FALSE,
               updated_at = CURRENT_TIMESTAMP
-            WHERE file_key = $15`,
+            WHERE file_key = $19`,
             [
               countryId,
               fileName,
@@ -415,6 +441,10 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
               title,
               assetGroupKey,
               displayTitle,
+              premiumTier,
+              designTypeStr,
+              sortTitleValue,
+              regionSnap,
               fileKey,
             ]
           );
@@ -426,12 +456,12 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
               file_size_bytes, mime_type, format, variant_name, ratio,
               premium_tier, price_cents, tags, metadata, status,
               processing_status, thumbnail_url, preview_url, country_slug, title,
-              asset_group_key, display_title
+              asset_group_key, display_title, design_type, sort_title, region, is_country_cover
             ) VALUES (
               $1, $2, $3, $4, $5, 'r2',
               $6, $7, $8, $9, NULL,
-              'free', 0, ARRAY[]::text[], $10::jsonb, 'published',
-              'completed', $11, $12, $13, $14, $15, $16
+              $10, 0, ARRAY[]::text[], $11::jsonb, 'published',
+              'completed', $12, $13, $14, $15, $16, $17, $18, $19, $20, FALSE
             )`,
             [
               countryId,
@@ -443,6 +473,7 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
               mime,
               format,
               variantName,
+              premiumTier,
               METADATA_JSON,
               thumbnailUrl,
               previewUrl,
@@ -450,6 +481,9 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
               title,
               assetGroupKey,
               displayTitle,
+              designTypeStr,
+              sortTitleValue,
+              regionSnap,
             ]
           );
           stats.inserted++;

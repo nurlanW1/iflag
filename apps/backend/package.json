@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "import:r2": "node dist/scripts/import-r2-files.js",
-    "backfill:asset-groups": "node dist/scripts/backfill-asset-groups.js"
+    "backfill:asset-groups": "node dist/scripts/backfill-asset-groups.js",
+    "backfill:country-folders": "node dist/scripts/backfill-country-folders.js"
   },
   "dependencies": {
     "@aws-sdk/client-cloudfront": "^3.700.0",
