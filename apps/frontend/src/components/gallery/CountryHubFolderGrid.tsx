@@ -46,12 +46,18 @@ export function CountryHubFolderGrid({
               href={hubHref(country.slug, hrefForSlug)}
               className="group block overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#2563eb]/40 hover:shadow-md"
             >
-              <div className="relative aspect-[4/3] overflow-hidden bg-stone-50">
+              <div
+                className={
+                  country.has_webp_cover
+                    ? 'relative aspect-[4/3] overflow-hidden'
+                    : 'relative aspect-[4/3] overflow-hidden bg-stone-50'
+                }
+              >
                 <CountryHubFolderCover
                   countryName={country.name}
                   coverUrl={country.webp_cover_url ?? country.thumbnail}
                   hasWebpCover={country.has_webp_cover}
-                  imageClassName="object-contain p-2 transition-transform duration-300 group-hover:scale-[1.03]"
+                  imageClassName="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
                 />
                 {country.code ? (
                   <span className="absolute left-2 top-2 z-10 rounded-md bg-black/40 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-white">
@@ -81,11 +87,18 @@ export function CountryHubFolderGrid({
             href={hubHref(country.slug, hrefForSlug)}
             className="group flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] hover:border-neutral-300 hover:shadow-md"
           >
-            <div className="relative aspect-[5/4] bg-neutral-50 sm:aspect-[4/3]">
+            <div
+              className={
+                country.has_webp_cover
+                  ? 'relative aspect-[5/4] sm:aspect-[4/3]'
+                  : 'relative aspect-[5/4] bg-neutral-50 sm:aspect-[4/3]'
+              }
+            >
               <CountryHubFolderCover
                 countryName={country.name}
                 coverUrl={country.webp_cover_url ?? country.thumbnail}
                 hasWebpCover={country.has_webp_cover}
+                imageClassName="h-full w-full object-contain"
               />
             </div>
             <div className="flex flex-1 flex-col gap-1 p-4">

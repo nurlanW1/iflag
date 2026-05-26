@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Crown, Download, Eye, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
+import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 
 interface AssetCardProps {
   asset: {
@@ -20,6 +21,9 @@ interface AssetCardProps {
 }
 
 export default function AssetCard({ asset, index = 0 }: AssetCardProps) {
+  const thumb = asset.thumbnail_url?.trim() || '';
+  const isWebpThumb = Boolean(thumb && !shouldWatermarkFlagPreview(thumb));
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -31,11 +35,17 @@ export default function AssetCard({ asset, index = 0 }: AssetCardProps) {
       <Link href={`/assets/${asset.slug}`} className="block">
         <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-black/10">
           {/* Image Container */}
-          <div className="aspect-[4/3] bg-black/5 relative overflow-hidden">
-            {asset.thumbnail_url ? (
-              <ProductPreviewImage className="absolute inset-0" watermarkEnabled protectEnabled>
+          <div
+            className={`aspect-[4/3] relative overflow-hidden ${isWebpThumb ? '' : 'bg-black/5'}`}
+          >
+            {thumb ? (
+              <ProductPreviewImage
+                className="absolute inset-0"
+                watermarkEnabled={shouldWatermarkFlagPreview(thumb)}
+                protectEnabled
+              >
                 <img
-                  src={asset.thumbnail_url}
+                  src={thumb}
                   alt={asset.title}
                   draggable={false}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"

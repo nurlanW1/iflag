@@ -375,12 +375,18 @@ function CardList({ countries }: { countries: Country[] }) {
             href={`/gallery/${country.slug}`}
             className="group flex items-center gap-3 px-3 py-3 transition-colors hover:bg-stone-50 sm:gap-4 sm:px-4 sm:py-3.5"
           >
-            <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-stone-50 ring-1 ring-stone-200 sm:h-16 sm:w-24">
+            <div
+              className={
+                country.has_webp_cover
+                  ? 'relative h-14 w-20 shrink-0 overflow-hidden rounded-lg sm:h-16 sm:w-24'
+                  : 'relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-stone-50 ring-1 ring-stone-200 sm:h-16 sm:w-24'
+              }
+            >
               <CountryHubFolderCover
                 countryName={country.name}
                 coverUrl={country.webp_cover_url ?? country.thumbnail}
                 hasWebpCover={country.has_webp_cover}
-                imageClassName="object-contain p-1"
+                imageClassName="h-full w-full object-contain"
               />
             </div>
             <div className="min-w-0 flex-1">

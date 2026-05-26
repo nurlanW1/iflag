@@ -5,6 +5,7 @@ import { api } from '@/lib/api';
 import { Search, Filter, Crown, X, SlidersHorizontal, Grid3x3, List } from 'lucide-react';
 import AssetCard from '@/components/AssetCard';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
+import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 import { motion } from 'framer-motion';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 
@@ -263,9 +264,19 @@ export default function AssetsPage() {
                     className="bg-white rounded-lg p-4 hover:bg-black/5 transition-colors border border-black/10"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded bg-black/5">
+                      <div
+                        className={`relative h-16 w-24 shrink-0 overflow-hidden rounded ${
+                          asset.thumbnail_url && !shouldWatermarkFlagPreview(asset.thumbnail_url)
+                            ? ''
+                            : 'bg-black/5'
+                        }`}
+                      >
                         {asset.thumbnail_url && (
-                          <ProductPreviewImage className="absolute inset-0" watermarkEnabled protectEnabled>
+                          <ProductPreviewImage
+                            className="absolute inset-0"
+                            watermarkEnabled={shouldWatermarkFlagPreview(asset.thumbnail_url)}
+                            protectEnabled
+                          >
                             <img
                               src={asset.thumbnail_url}
                               alt={asset.title}

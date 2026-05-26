@@ -4,6 +4,7 @@ import { Crown } from 'lucide-react';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
 import { collectFormatLabels, formatProductListPrice } from '@/lib/marketplace/catalog-utils';
+import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
 function countryLabelFromSlug(slug: string) {
@@ -24,14 +25,22 @@ export function MarketplaceProductCard({
   const formats = collectFormatLabels(product.files);
   const href = product.detailHref?.trim() || `/flags/${product.slug}`;
   const formatHints = product.files.map((f) => f.format);
-  const thumb = product.thumbnailUrl;
+  const thumb = product.thumbnailUrl ?? product.previewUrl;
   const svgThumb = thumb ? shouldUnoptimizeFlagImageHref(thumb, formatHints) : false;
+  const isWebpThumb = Boolean(thumb && !shouldWatermarkFlagPreview(thumb));
 
   return (
     <article className="group flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-[0_10px_34px_-26px_rgba(42,52,65,0.14)] transition-[box-shadow,border-color] duration-300 hover:border-neutral-300 hover:shadow-[0_18px_46px_-28px_rgba(42,52,65,0.18)]">
-      <Link href={href} className="relative block aspect-[4/3] overflow-hidden bg-neutral-100">
+      <Link
+        href={href}
+        className={`relative block aspect-[4/3] overflow-hidden ${isWebpThumb ? '' : 'bg-neutral-100'}`}
+      >
         {thumb ? (
-          <ProductPreviewImage className="absolute inset-0" watermarkEnabled protectEnabled>
+          <ProductPreviewImage
+            className="absolute inset-0"
+            watermarkEnabled={shouldWatermarkFlagPreview(thumb)}
+            protectEnabled
+          >
             <Image
               src={thumb}
               alt={product.title}

@@ -211,6 +211,7 @@ export function ProductDetailView({ slug, product }: Props) {
                 density="compact"
                 caption={undefined}
                 formatCount={undefined}
+                watermarkEnabled={false}
               />
 
               {siblingPublic.length > 0 ? (

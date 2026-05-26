@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Crown } from 'lucide-react';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
+import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
@@ -61,7 +62,11 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
             >
               <div className="relative aspect-square overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 transition-all group-hover:ring-slate-300">
                 {thumb ? (
-                  <ProductPreviewImage className="absolute inset-0" watermarkEnabled protectEnabled>
+                  <ProductPreviewImage
+                    className="absolute inset-0"
+                    watermarkEnabled={shouldWatermarkFlagPreview(thumb)}
+                    protectEnabled
+                  >
                     <Image
                       src={thumb}
                       alt=""

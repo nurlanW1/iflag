@@ -3,6 +3,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
+import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
 type Props = {
@@ -21,6 +22,8 @@ type Props = {
   formatCount?: number;
   /** Stretch card to fill parent (PDP equal-height columns). */
   className?: string;
+  /** When unset, watermark is off for WebP preview URLs automatically. */
+  watermarkEnabled?: boolean;
 };
 
 const checkerBg =
@@ -37,9 +40,12 @@ export function PremiumAssetPreview({
   caption,
   formatCount,
   className,
+  watermarkEnabled: watermarkEnabledProp,
 }: Props) {
   const uniq = [...new Set(previewUrls.filter((u) => typeof u === 'string' && u.trim()))];
   const src = uniq[0] ?? '';
+  const watermarkEnabled =
+    watermarkEnabledProp !== false && shouldWatermarkFlagPreview(src);
   const compact = density === 'compact';
   const showFooter =
     !compact && Boolean(caption?.trim() || (formatCount != null && formatCount > 0));
@@ -74,7 +80,7 @@ export function PremiumAssetPreview({
                 'relative mx-auto inline-flex max-w-full items-center justify-center',
                 compact ? 'max-h-[min(42vh,18rem)] lg:h-full lg:max-h-full' : 'max-h-[min(62vh,40rem)]',
               )}
-              watermarkEnabled
+              watermarkEnabled={watermarkEnabled}
               protectEnabled
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- remote CDN previews */}
@@ -152,7 +158,11 @@ export function PremiumAssetPreview({
             useTransparencyBackdrop ? checkerBg : 'bg-[linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)]',
           )}
         >
-          <ProductPreviewImage className="absolute inset-0" watermarkEnabled protectEnabled>
+          <ProductPreviewImage
+            className="absolute inset-0"
+            watermarkEnabled={watermarkEnabled}
+            protectEnabled
+          >
             <Image
               src={src}
               alt={productTitle}
