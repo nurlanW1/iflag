@@ -110,7 +110,9 @@ export async function listPublishedCountryFlagFiles(
   limit: number;
   hasMore: boolean;
 }> {
-  const limit = Math.min(100, Math.max(1, filters.limit ?? 24));
+  const defaultLimit = filters.country_slug?.trim() ? 200 : 24;
+  const maxLimit = filters.country_slug?.trim() ? 500 : 100;
+  const limit = Math.min(maxLimit, Math.max(1, filters.limit ?? defaultLimit));
   const page = Math.max(1, filters.page ?? 1);
   const offset = (page - 1) * limit;
 
@@ -120,7 +122,7 @@ export async function listPublishedCountryFlagFiles(
     ''
   ).trim();
 
-  const conds: string[] = [`cff.status = 'published'`];
+  const conds: string[] = [`lower(trim(coalesce(cff.status::text, ''))) = 'published'`];
   const params: unknown[] = [];
 
   let p = 1;
@@ -136,9 +138,12 @@ export async function listPublishedCountryFlagFiles(
 
   const cSlug = filters.country_slug?.trim();
   if (cSlug) {
-    conds.push(`lower(trim(COALESCE(cff.country_slug, c.slug,''))) = lower(trim($${p}))`);
-    params.push(cSlug);
-    p++;
+    conds.push(
+      `(lower(trim(COALESCE(cff.country_slug, c.slug,''))) = lower(trim($${p}))
+        OR c.id IN (SELECT id FROM countries WHERE lower(trim(slug)) = lower(trim($${p}))))`,
+    );
+    params.push(cSlug, cSlug);
+    p += 2;
   }
 
   const fmt = filters.format?.trim().toLowerCase();

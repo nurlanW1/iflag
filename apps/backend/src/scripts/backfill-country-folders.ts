@@ -13,7 +13,9 @@ import dotenv from 'dotenv';
 import pg from 'pg';
 import { basename, dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { deriveAssetGroupKeyFromParts } from '../lib/asset-group-key.js';
 import { classifyFlagDesign } from '../lib/flag-design-classify.js';
+import { resolveCanonicalCountrySlug } from '../lib/resolve-canonical-country-slug.js';
 
 const __scriptDir = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__scriptDir, '../../.env') });
@@ -35,6 +37,65 @@ function stemFromFileName(fn: string): string {
 function r2LikeKey(row: FileRow): string {
   const k = row.file_key?.trim() || row.file_path?.trim() || row.file_name;
   return k;
+}
+
+async function publishAllImportedRows(pool: pg.Pool): Promise<number> {
+  const r = await pool.query(
+    `UPDATE country_flag_files
+     SET status = 'published',
+         processing_status = 'completed',
+         updated_at = CURRENT_TIMESTAMP
+     WHERE lower(trim(coalesce(status::text, ''))) IS DISTINCT FROM 'published'
+       AND NULLIF(trim(file_key::text), '') IS NOT NULL`,
+  );
+  return r.rowCount ?? 0;
+}
+
+async function reconcileCanonicalCountryAssignments(pool: pg.Pool): Promise<number> {
+  const res = await pool.query<FileRow & { inferred_slug: string }>(
+    `SELECT f.id, f.file_name, f.file_key, f.file_path, f.country_id, f.format,
+            COALESCE(NULLIF(trim(f.country_slug), ''), NULLIF(trim(c.slug), '')) AS inferred_slug
+     FROM country_flag_files f
+     LEFT JOIN countries c ON c.id = f.country_id`,
+  );
+  let moved = 0;
+  for (const row of res.rows) {
+    const inferred = row.inferred_slug?.trim();
+    if (!inferred) continue;
+    const canonical = await resolveCanonicalCountrySlug(pool, inferred);
+    const countryQ = await pool.query<{ id: string }>(
+      `SELECT id FROM countries WHERE lower(trim(slug)) = lower(trim($1)) LIMIT 1`,
+      [canonical],
+    );
+    const countryId = countryQ.rows[0]?.id;
+    if (!countryId) continue;
+
+    const stem = stemFromFileName(String(row.file_name || 'asset'));
+    const r2Key = r2LikeKey(row);
+    const folderSegments = r2Key.split('/').filter(Boolean).slice(0, -1);
+    const assetGroupKey = deriveAssetGroupKeyFromParts({
+      countrySlug: canonical,
+      folderSegments,
+      fileStemNoExt: stem,
+    }).slice(0, 240);
+
+    const upd = await pool.query(
+      `UPDATE country_flag_files SET
+          country_id = $1::uuid,
+          country_slug = $2,
+          variant_name = COALESCE(NULLIF(trim(variant_name), ''), $3),
+          asset_group_key = $4,
+          updated_at = CURRENT_TIMESTAMP
+       WHERE id = $5::uuid
+         AND (
+           country_id IS DISTINCT FROM $1::uuid
+           OR lower(trim(coalesce(country_slug, ''))) IS DISTINCT FROM lower(trim($2))
+         )`,
+      [countryId, canonical, stem.slice(0, 100), assetGroupKey, row.id],
+    );
+    if ((upd.rowCount ?? 0) > 0) moved++;
+  }
+  return moved;
 }
 
 async function classifyAllRows(pool: pg.Pool): Promise<number> {
@@ -187,9 +248,10 @@ async function syncCountryAggregates(pool: pg.Pool): Promise<void> {
   await pool.query(`
     WITH dc AS (
       SELECT country_id::uuid AS cid,
-             COUNT(DISTINCT COALESCE(NULLIF(lower(trim(asset_group_key)), ''), ('solo:' || id::text))) FILTER (
-               WHERE lower(trim(coalesce(format::text, ''))) NOT IN ('webp')
-             )::int AS design_n
+             COUNT(DISTINCT COALESCE(
+               NULLIF(trim(variant_name::text), ''),
+               regexp_replace(lower(trim(file_name::text)), '\\.[^.]+$', '')
+             ))::int AS design_n
       FROM country_flag_files
       WHERE lower(trim(coalesce(status::text, ''))) = 'published'
       GROUP BY country_id
@@ -222,6 +284,10 @@ async function main() {
 
   const pool = new pg.Pool({ connectionString: url });
   try {
+    const nPub = await publishAllImportedRows(pool);
+    console.log(`[backfill:country-folders] published rows: ${nPub}`);
+    const nMove = await reconcileCanonicalCountryAssignments(pool);
+    console.log(`[backfill:country-folders] reconciled country assignments: ${nMove}`);
     const nCls = await classifyAllRows(pool);
     console.log(`[backfill:country-folders] classified rows: ${nCls}`);
     await syncRegions(pool);

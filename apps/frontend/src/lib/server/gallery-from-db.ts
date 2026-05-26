@@ -15,6 +15,7 @@ import {
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
 import { publishedFlagHasMediaSql } from '@/lib/server/gallery-published-media';
 import { galleryOptionalColumns } from '@/lib/server/gallery-schema';
+import { buildCountryHubDescription } from '@/lib/gallery/country-hub-copy';
 import { urlLooksLikeWebpAsset } from '@/lib/gallery/country-hub-cover';
 
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
@@ -231,9 +232,10 @@ export async function fetchGalleryCountriesFromDb(
        SELECT
          country_id,
          COUNT(*)::int AS file_cnt,
-         COUNT(DISTINCT COALESCE(NULLIF(trim(asset_group_key::text), ''), ('solo:' || id::text))) FILTER (
-           WHERE lower(trim(coalesce(format::text, ''))) NOT IN ('webp')
-         )::int AS design_cnt
+         COUNT(DISTINCT COALESCE(
+           NULLIF(trim(variant_name::text), ''),
+           regexp_replace(lower(trim(file_name::text)), '\\.[^.]+$', '')
+         ))::int AS design_cnt
        FROM country_flag_files
        WHERE lower(trim(coalesce(status::text, ''))) = 'published'
          AND ${publishedFlagHasMediaSql()}
@@ -348,9 +350,13 @@ export type CountryGalleryPayload = {
     name: string;
     slug: string;
     code: string | null;
+    region: string | null;
+    description: string;
     cover_image_url: string | null;
     has_webp_cover: boolean;
     webp_cover_url: string | null;
+    file_count: number;
+    design_count: number;
   };
   variants: {
     id: string;
@@ -408,10 +414,14 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
     name: string;
     slug: string;
     iso_alpha_2: string | null;
+    region: string | null;
+    description: string | null;
     cover_image_url: string | null;
     thumbnail_url: string | null;
   }>(
     `SELECT id, name, slug, iso_alpha_2,
+            NULLIF(trim(region::text), '') AS region,
+            NULLIF(trim(description::text), '') AS description,
             ${countryCoverSelect}
             NULLIF(trim(thumbnail_url::text), '') AS thumbnail_url
      FROM countries WHERE lower(slug) = lower($1) LIMIT 1`,
@@ -425,7 +435,7 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
             premium_tier, thumbnail_url, preview_url, file_key, storage_provider,
             asset_group_key, display_title${fileExtraComma}
      FROM country_flag_files
-     WHERE country_id = $1 AND status = 'published'
+     WHERE country_id = $1 AND lower(trim(coalesce(status::text, ''))) = 'published'
      ORDER BY ${fileOrderBy},
               format NULLS LAST, created_at ASC`,
     [countryRow.id],
@@ -462,9 +472,8 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
     return `f:${base.toLowerCase()}`;
   }
 
+  /** Group by filename stem so every distinct R2 name becomes its own gallery tile. */
   function designBucketKey(row: FlagFileRow): string {
-    const ag = row.asset_group_key?.trim();
-    if (ag) return `ag:${ag}`;
     return variantGroupKey(row);
   }
 
@@ -527,34 +536,32 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
       builders.set(key, builder);
     }
 
-    if (!previewOnly) {
-      const nbytes = Number.parseInt(String(r.file_size_bytes), 10);
-      const sz = Number.isFinite(nbytes) ? nbytes : 0;
-      const ext = formatExtension(r.format);
-      const tier = normalizePremiumTier(r.premium_tier);
+    const nbytes = Number.parseInt(String(r.file_size_bytes), 10);
+    const sz = Number.isFinite(nbytes) ? nbytes : 0;
+    const ext = formatExtension(r.format);
+    const tier = normalizePremiumTier(r.premium_tier);
 
-      const dim =
-        r.width && r.height && r.width > 0 && r.height > 0
-          ? `${r.width}×${r.height} px`
-          : 'Original';
+    const dim =
+      r.width && r.height && r.width > 0 && r.height > 0
+        ? `${r.width}×${r.height} px`
+        : 'Original';
 
-      const downloadProtected =
-        String(r.premium_tier ?? 'free').trim().toLowerCase() !== 'free';
+    const downloadProtected =
+      previewOnly || String(r.premium_tier ?? 'free').trim().toLowerCase() !== 'free';
 
-      builder.formats.push({
-        id: String(r.id),
-        format: formatDisplayName(r.format),
-        formatCode: ext,
-        category: formatToCategory(r.format),
-        file: r.file_name,
-        url: undefined,
-        previewUrl,
-        premiumTier: tier,
-        downloadProtected,
-        size: formatFileSize(sz),
-        dimensions: dim,
-      });
-    }
+    builder.formats.push({
+      id: String(r.id),
+      format: formatDisplayName(r.format),
+      formatCode: ext,
+      category: formatToCategory(r.format),
+      file: r.file_name,
+      url: undefined,
+      previewUrl,
+      premiumTier: previewOnly ? 'paid' : tier,
+      downloadProtected,
+      size: formatFileSize(sz),
+      dimensions: dim,
+    });
 
     const score = thumbScoreForFormat(r.format);
     if (score > builder.thumbScore) {
@@ -612,14 +619,30 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
   }
   const hasWebp = Boolean(webpCoverUrl?.trim());
 
+  const fileCount = fRes.rows.length;
+  const designCount = variants.length;
+  const region = countryRow.region?.trim() || null;
+
   return {
     country: {
       name: countryRow.name,
       slug: countryRow.slug,
       code: mappedCode,
+      region,
+      description: buildCountryHubDescription({
+        name: countryRow.name,
+        slug: countryRow.slug,
+        isoCode: mappedCode,
+        region,
+        dbDescription: countryRow.description,
+        designCount,
+        fileCount,
+      }),
       cover_image_url: hasWebp ? webpCoverUrl : coverPayload,
       has_webp_cover: hasWebp,
       webp_cover_url: hasWebp ? webpCoverUrl : null,
+      file_count: fileCount,
+      design_count: designCount,
     },
     variants,
   };

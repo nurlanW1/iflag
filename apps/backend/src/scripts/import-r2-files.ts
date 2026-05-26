@@ -18,6 +18,7 @@ import type { R2Config } from '../storage/r2.js';
 import { listR2ObjectSummaries, requireR2Config, slugifySegment } from '../storage/r2.js';
 import { deriveAssetGroupKeyFromParts, deriveDisplayTitle } from '../lib/asset-group-key.js';
 import { classifyFlagDesign } from '../lib/flag-design-classify.js';
+import { resolveCanonicalCountrySlug } from '../lib/resolve-canonical-country-slug.js';
 /** Always load apps/backend/.env (not cwd). Never log env contents. */
 const __scriptDir = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__scriptDir, '../../.env') });
@@ -349,7 +350,7 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
         continue;
       }
 
-      const countrySlug = parsed.countrySlug;
+      const countrySlug = await resolveCanonicalCountrySlug(pool, parsed.countrySlug);
       const countryNameDisp = humanizeSlug(countrySlug);
       const assetGroupKey = deriveAssetGroupKeyFromParts({
         countrySlug,
@@ -361,7 +362,9 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
         fileStemNoExt: parsed.baseStem,
       }).slice(0, 250);
 
-      const { format, fileName, title, variantName } = parsed;
+      const { format, fileName, title } = parsed;
+      /** Unique per design stem so `unique_country_variant_format` does not drop multi-file imports. */
+      const variantName = parsed.baseStem.slice(0, 100) || title.slice(0, 100);
       let countryId: string | null;
       try {
         countryId = await ensureCountryId(pool, countrySlug);
@@ -429,6 +432,8 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
               sort_title = COALESCE(NULLIF(trim(sort_title::text), ''), $17),
               region = $18,
               is_country_cover = FALSE,
+              status = 'published',
+              processing_status = 'completed',
               updated_at = CURRENT_TIMESTAMP
             WHERE file_key = $19`,
             [

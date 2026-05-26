@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import { CountryHubFolderGrid } from '@/components/gallery/CountryHubFolderGrid';
+import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 
 const GRID_LIMIT = 12;
@@ -17,42 +19,40 @@ function shufflePick<T>(items: T[], n: number): T[] {
   return copy.slice(0, Math.min(n, copy.length));
 }
 
-async function fetchCountryHubs(limit: number): Promise<GalleryCountrySummary[]> {
-  const res = await fetch('/api/gallery/countries', { cache: 'no-store' });
-  if (!res.ok) return [];
-  const j = (await res.json()) as { countries?: GalleryCountrySummary[] };
-  const list = j.countries ?? [];
-  return shufflePick(list, limit);
-}
-
-type ExplorePhase = 'loading' | { items: GalleryCountrySummary[] } | 'empty';
+type ExplorePhase = 'loading' | { items: GalleryCountrySummary[] } | 'empty' | 'error';
 
 export function LandingFlagGalleryPreview() {
   const [phase, setPhase] = useState<ExplorePhase>('loading');
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const rows = await fetchCountryHubs(GRID_LIMIT);
-        if (cancelled) return;
-        if (rows.length > 0) {
-          setPhase({ items: rows });
-        } else {
-          setPhase('empty');
-        }
-      } catch {
-        if (!cancelled) setPhase('empty');
+  const load = useCallback(async () => {
+    setPhase('loading');
+    try {
+      const { ok, data } = await fetchJsonWithRetry<{ countries?: GalleryCountrySummary[] }>(
+        '/api/gallery/countries',
+        { retries: 2, delayMs: 500 },
+      );
+      const list = ok && data?.countries ? data.countries : [];
+      const rows = shufflePick(list, GRID_LIMIT);
+      if (rows.length > 0) {
+        setPhase({ items: rows });
+      } else if (!ok) {
+        setPhase('error');
+      } else {
+        setPhase('empty');
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    } catch {
+      setPhase('error');
+    }
   }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const loading = phase === 'loading';
   const empty = phase === 'empty';
-  const items = phase !== 'loading' && phase !== 'empty' ? phase.items : [];
+  const errored = phase === 'error';
+  const items = phase !== 'loading' && phase !== 'empty' && phase !== 'error' ? phase.items : [];
 
   return (
     <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-14 md:py-20 lg:py-24">
@@ -94,16 +94,32 @@ export function LandingFlagGalleryPreview() {
                 </li>
               ))}
             </ul>
-          ) : empty ? (
+          ) : empty || errored ? (
             <div className="rounded-2xl border border-dashed border-neutral-200 bg-white px-6 py-14 text-center text-neutral-600 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-              <p className="text-base font-medium text-neutral-800">No country folders yet.</p>
-              <p className="mt-2 text-sm text-neutral-500">Import flags from R2 to populate country hubs.</p>
+              <p className="text-base font-medium text-neutral-800">
+                {errored ? 'Could not load country folders.' : 'No country folders yet.'}
+              </p>
+              <p className="mt-2 text-sm text-neutral-500">
+                {errored
+                  ? 'Check your connection and try again.'
+                  : 'Import flags from R2 to populate country hubs.'}
+              </p>
+              {errored ? (
+                <button
+                  type="button"
+                  onClick={() => void load()}
+                  className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[var(--brand-blue)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--brand-blue-hover)]"
+                >
+                  <RefreshCw size={16} aria-hidden />
+                  Retry
+                </button>
+              ) : null}
             </div>
           ) : (
             <CountryHubFolderGrid countries={items} />
           )}
 
-          {!loading && !empty ? (
+          {!loading && !empty && !errored ? (
             <div className="mt-10 flex justify-center md:mt-12">
               <Link
                 href="/gallery"

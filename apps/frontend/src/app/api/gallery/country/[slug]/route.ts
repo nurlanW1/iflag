@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import { getCountryCode } from '@/lib/country-mapping';
 import { getDb } from '@/lib/server/db';
+import { buildCountryHubDescription } from '@/lib/gallery/country-hub-copy';
+import { fetchCountryGalleryFromBackendApi } from '@/lib/server/gallery-country-detail-fallback';
 import { fetchCountryGalleryFromDb } from '@/lib/server/gallery-from-db';
 
 export const dynamic = 'force-dynamic';
@@ -145,12 +147,29 @@ function loadFromFlagStock(countrySlug: string) {
 
   const countryCode = getCountryCode(countryName);
 
+  const designCount = variants.length;
+  const fileCount = variants.reduce((n, v) => n + v.formats.length, 0);
+
   return {
     country: {
       name: countryName,
       slug: countrySlug,
       code: countryCode,
+      region: null,
+      description: buildCountryHubDescription({
+        name: countryName,
+        slug: countrySlug,
+        isoCode: countryCode,
+        region: null,
+        dbDescription: null,
+        designCount,
+        fileCount,
+      }),
       cover_image_url: variants[0]?.thumbnail ?? null,
+      has_webp_cover: false,
+      webp_cover_url: null,
+      file_count: fileCount,
+      design_count: designCount,
     },
     variants,
   };
@@ -169,6 +188,12 @@ export async function GET(
     const fromDb = await loadFromDatabase(slug);
     if (fromDb && fromDb.variants.length > 0) {
       return NextResponse.json(fromDb, { headers: { 'Cache-Control': 'no-store' } });
+    }
+
+    const fromBackend = await fetchCountryGalleryFromBackendApi(slug);
+    if (fromBackend && fromBackend.variants.length > 0) {
+      console.info(`[gallery/country] served ${slug} from backend API fallback`);
+      return NextResponse.json(fromBackend, { headers: { 'Cache-Control': 'no-store' } });
     }
 
     const fromDisk = loadFromFlagStock(slug);

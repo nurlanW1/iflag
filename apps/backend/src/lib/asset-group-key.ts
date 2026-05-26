@@ -103,6 +103,11 @@ export function deriveAssetGroupKeyFromParts(parts: {
   }
 
   if (design.length === 0) {
+    /** Keep distinct R2 filenames visible — avoid collapsing every file into `${c}-flag`. */
+    const stemSlug = slugifySegment(parts.fileStemNoExt.replace(/[^\p{L}\p{N}\s\-_/]+/gu, ' '), 96);
+    if (stemSlug && stemSlug !== c && !cmp(stemSlug)) {
+      return `${c}-${stemSlug}`.replace(/-+/g, '-');
+    }
     return `${c}-flag`;
   }
 
