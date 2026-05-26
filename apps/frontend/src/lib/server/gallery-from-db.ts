@@ -14,6 +14,7 @@ import {
 } from '@/lib/server/flag-asset-url';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
 import { PUBLISHED_FLAG_HAS_MEDIA_SQL } from '@/lib/server/gallery-published-media';
+import { galleryOptionalColumns } from '@/lib/server/gallery-schema';
 
 /** Gallery/country tiles — canonical API fields (`id`, `thumbnail_url`, `flag_count`) plus legacy `thumbnail`/`count` for browsers. */
 export type GalleryCountrySummary = {
@@ -181,6 +182,20 @@ export async function fetchGalleryCountriesFromDb(
 ): Promise<GalleryCountrySummary[]> {
   const regionParam = filters?.region?.trim() || null;
   const catParam = filters?.dbCategory?.trim().toLowerCase() || null;
+  const schema = await galleryOptionalColumns(pool);
+
+  const countryCoverExpr = schema.countryCoverImageUrl
+    ? `NULLIF(trim(c.cover_image_url::text), '')`
+    : `NULLIF(trim(c.thumbnail_url::text), '')`;
+  const lateralCoverOrder = schema.fileIsCountryCover
+    ? `CASE WHEN COALESCE(fx.is_country_cover, FALSE) THEN 0 ELSE 1 END ASC,`
+    : '';
+  const lateralDesignOrder = schema.fileDesignType
+    ? `CASE WHEN lower(trim(COALESCE(fx.design_type::text, ''))) = 'official_flat' THEN 0 ELSE 1 END ASC,`
+    : '';
+  const countriesOrder = schema.countrySortName
+    ? `COALESCE(NULLIF(lower(trim(coalesce(c.sort_name::text, ''))), ''), lower(trim(c.name::text))), c.name ASC`
+    : `lower(trim(c.name::text)), c.name ASC`;
 
   const result = await pool.query<{
     cid: string;
@@ -215,7 +230,7 @@ export async function fetchGalleryCountriesFromDb(
          NULLIF(trim(fx0.file_url::text), '')
        ) AS hub_cover_hint,
        NULLIF(trim(c.thumbnail_url::text), '') AS country_thumb,
-       NULLIF(trim(c.cover_image_url::text), '') AS country_cover_column
+       ${countryCoverExpr} AS country_cover_column
      FROM countries c
      INNER JOIN (
        SELECT
@@ -241,8 +256,8 @@ export async function fetchGalleryCountriesFromDb(
            NULLIF(trim(fx.file_url::text), '')
          ) IS NOT NULL
        ORDER BY
-         CASE WHEN COALESCE(fx.is_country_cover, FALSE) THEN 0 ELSE 1 END ASC,
-         CASE WHEN lower(trim(COALESCE(fx.design_type::text, ''))) = 'official_flat' THEN 0 ELSE 1 END ASC,
+         ${lateralCoverOrder}
+         ${lateralDesignOrder}
          CASE lower(trim(fx.format::text))
            WHEN 'webp' THEN 0
            WHEN 'jpg' THEN 1
@@ -267,7 +282,7 @@ export async function fetchGalleryCountriesFromDb(
          $2::text IS NULL
          OR lower(trim(coalesce(c.category::text, 'country'))) = lower(trim($2))
        )
-     ORDER BY COALESCE(NULLIF(lower(trim(coalesce(c.sort_name::text, ''))), ''), lower(trim(c.name::text))), c.name ASC`,
+     ORDER BY ${countriesOrder}`,
     [regionParam, catParam],
   );
 
@@ -374,6 +389,21 @@ function truncateDisplayPath(name: string, max = 80): string {
 }
 
 export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promise<CountryGalleryPayload | null> {
+  const schema = await galleryOptionalColumns(pool);
+  const countryCoverSelect = schema.countryCoverImageUrl
+    ? `NULLIF(trim(cover_image_url::text), '') AS cover_image_url,`
+    : `NULL::text AS cover_image_url,`;
+  const fileExtraSelect = [
+    schema.fileSortTitle ? 'sort_title' : null,
+    schema.fileDesignType ? 'design_type' : null,
+  ]
+    .filter(Boolean)
+    .join(', ');
+  const fileExtraComma = fileExtraSelect ? `, ${fileExtraSelect}` : '';
+  const fileOrderBy = schema.fileSortTitle
+    ? `COALESCE(NULLIF(trim(sort_title::text), ''), NULLIF(trim(display_title::text), ''), variant_name::text)`
+    : `COALESCE(NULLIF(trim(display_title::text), ''), NULLIF(trim(variant_name::text), ''), file_name::text)`;
+
   const cRes = await pool.query<{
     id: string;
     name: string;
@@ -383,7 +413,7 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
     thumbnail_url: string | null;
   }>(
     `SELECT id, name, slug, iso_alpha_2,
-            NULLIF(trim(cover_image_url::text), '') AS cover_image_url,
+            ${countryCoverSelect}
             NULLIF(trim(thumbnail_url::text), '') AS thumbnail_url
      FROM countries WHERE lower(slug) = lower($1) LIMIT 1`,
     [slug],
@@ -394,10 +424,10 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
   const fRes = await pool.query<FlagFileRow>(
     `SELECT id, file_url, file_name, file_size_bytes::text, format, variant_name, width, height,
             premium_tier, thumbnail_url, preview_url, file_key, storage_provider,
-            asset_group_key, display_title, sort_title, design_type
+            asset_group_key, display_title${fileExtraComma}
      FROM country_flag_files
      WHERE country_id = $1 AND status = 'published'
-     ORDER BY COALESCE(NULLIF(trim(sort_title::text), ''), NULLIF(trim(display_title::text), ''), variant_name::text),
+     ORDER BY ${fileOrderBy},
               format NULLS LAST, created_at ASC`,
     [countryRow.id],
   );
