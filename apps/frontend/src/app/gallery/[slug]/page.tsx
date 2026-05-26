@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft, ImageOff } from 'lucide-react';
 import Link from 'next/link';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
+import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCover';
 import {
   FLAG_THUMB_PLACEHOLDER_DATA_URL,
   flagThumbPlaceholderForFileId,
@@ -26,6 +27,8 @@ interface CountryData {
     slug: string;
     code?: string | null;
     cover_image_url?: string | null;
+    has_webp_cover?: boolean;
+    webp_cover_url?: string | null;
   };
   variants: Variant[];
 }
@@ -96,9 +99,8 @@ export default function CountryHubPage() {
     data.country.slug,
   );
 
-  const heroSrc =
-    (data.country.cover_image_url?.trim() || data.variants[0]?.thumbnail || '').trim() ||
-    FLAG_THUMB_PLACEHOLDER_DATA_URL;
+  const hasWebpCover = Boolean(data.country.has_webp_cover);
+  const webpCover = data.country.webp_cover_url?.trim() || data.country.cover_image_url?.trim() || '';
 
   return (
     <main className="marketplace-shell min-h-screen bg-[#fafaf9] pb-16 pt-8 sm:pb-20 sm:pt-10 lg:pb-24">
@@ -135,20 +137,12 @@ export default function CountryHubPage() {
         <div className="mx-auto w-full max-w-[min(100%,20rem)] shrink-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_2px_12px_-6px_rgba(15,23,42,0.1)] sm:max-w-[min(100%,24rem)] sm:rounded-2xl lg:mx-0">
           <div className="relative aspect-[4/3] bg-slate-100">
             <ProductPreviewImage className="absolute inset-0" watermarkEnabled protectEnabled>
-              {/* eslint-disable-next-line @next/next/no-img-element -- dynamic CDN */}
-              <img
-                src={heroSrc}
-                alt={`${pageTitle} — official cover`}
-                className="h-full w-full object-contain p-4"
-                loading="eager"
-                decoding="async"
-                referrerPolicy="no-referrer"
-                draggable={false}
-                onError={(e) => {
-                  const el = e.currentTarget;
-                  el.onerror = null;
-                  el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
-                }}
+              <CountryHubFolderCover
+                countryName={pageTitle}
+                coverUrl={webpCover}
+                hasWebpCover={hasWebpCover}
+                className="absolute inset-0"
+                imageClassName="h-full w-full object-contain p-4"
               />
             </ProductPreviewImage>
           </div>

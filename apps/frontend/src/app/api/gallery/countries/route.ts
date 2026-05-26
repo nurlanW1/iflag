@@ -120,6 +120,8 @@ function loadFromFlagStock(): GalleryCountrySummary[] {
         flag_count: 1,
         design_count: 1,
         count: 1,
+        has_webp_cover: false,
+        webp_cover_url: null,
         thumbnail_url: thumbnail,
         thumbnail,
       });

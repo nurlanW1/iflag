@@ -9,8 +9,9 @@ import { joinBackendApiPath, resolveBackendApiBase } from '@/lib/auth/backend-ur
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
 import { previewDisplayUrlCandidates, resolvedFlagPublicHref } from '@/lib/server/flag-asset-url';
-import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
-import { isPackFallbackFlagThumbnail, type GalleryCountrySummary } from '@/lib/server/gallery-from-db';
+import { urlLooksLikeWebpAsset } from '@/lib/gallery/country-hub-cover';
+import { isPackFallbackFlagThumbnail } from '@/lib/server/gallery-from-db';
+import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
 
 type BackendFlagRow = {
@@ -46,15 +47,6 @@ function thumbForRow(row: BackendFlagRow): string {
   return '';
 }
 
-function coverRank(format: string): number {
-  const f = format.toLowerCase();
-  if (f === 'webp') return 0;
-  if (f === 'jpg' || f === 'jpeg') return 1;
-  if (f === 'png') return 2;
-  if (f === 'svg') return 3;
-  return 9;
-}
-
 export async function fetchGalleryCountriesFromBackendApi(): Promise<GalleryCountrySummary[]> {
   const resolved = resolveBackendApiBase();
   if (!resolved.ok) return [];
@@ -82,8 +74,7 @@ export async function fetchGalleryCountriesFromBackendApi(): Promise<GalleryCoun
     code: string | null;
     files: number;
     designKeys: Set<string>;
-    bestThumb: string;
-    bestRank: number;
+    webpCover: string;
   };
 
   const hubs = new Map<string, Hub>();
@@ -107,8 +98,7 @@ export async function fetchGalleryCountriesFromBackendApi(): Promise<GalleryCoun
         code: row.iso_alpha_2?.trim()?.toUpperCase() || getCountryCode(name)?.toUpperCase() || null,
         files: 0,
         designKeys: new Set<string>(),
-        bestThumb: '',
-        bestRank: 99,
+        webpCover: '',
       };
       hubs.set(slug, hub);
     }
@@ -119,27 +109,28 @@ export async function fetchGalleryCountriesFromBackendApi(): Promise<GalleryCoun
       hub.designKeys.add(gk);
     }
 
-    const thumb = thumbForRow(row);
-    if (!thumb || isPackFallbackFlagThumbnail(thumb)) continue;
-    const rank = coverRank(row.format);
-    if (rank < hub.bestRank || (rank === hub.bestRank && !hub.bestThumb)) {
-      hub.bestRank = rank;
-      hub.bestThumb = thumb;
+    if (row.format.toLowerCase() === 'webp') {
+      const thumb = thumbForRow(row);
+      if (thumb && !isPackFallbackFlagThumbnail(thumb)) {
+        hub.webpCover = thumb;
+      }
     }
   }
 
   const out: GalleryCountrySummary[] = [];
   for (const hub of hubs.values()) {
-    const thumb = hub.bestThumb || FLAG_THUMB_PLACEHOLDER_DATA_URL;
     const displayName = resolveGalleryDisplayName(hub.name, hub.code, hub.slug);
     const designs = hub.designKeys.size || hub.files;
+    const hasWebp = Boolean(hub.webpCover?.trim());
     out.push({
       id: `backend-hub:${hub.slug}`,
       name: displayName,
       slug: hub.slug,
       code: hub.code,
-      thumbnail_url: thumb,
-      thumbnail: thumb,
+      has_webp_cover: hasWebp,
+      webp_cover_url: hasWebp ? hub.webpCover : null,
+      thumbnail_url: hasWebp ? hub.webpCover : '',
+      thumbnail: hasWebp ? hub.webpCover : '',
       flag_count: hub.files,
       design_count: designs,
       count: hub.files,

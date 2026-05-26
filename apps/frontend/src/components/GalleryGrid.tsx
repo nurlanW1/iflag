@@ -3,26 +3,17 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useRevealInView } from '@/hooks/useRevealInView';
-import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
+import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCover';
+import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 import { galleryCompactTileGridClasses, galleryHomeLargeTileGridClasses } from '@/lib/ui/marketplace-layout';
 
-interface Country {
-  name: string;
-  slug: string;
-  code: string | null;
-  count: number;
-  thumbnail: string;
-}
+type Country = GalleryCountrySummary;
 
 interface GalleryGridProps {
   countries: Country[];
-  /** Skip scroll-triggered reveal — avoids empty-looking grid when IntersectionObserver never fires. */
   disableScrollReveal?: boolean;
-  /** Kept for backward compatibility — uploaded thumbnails are now always used. */
   preferImageThumbnails?: boolean;
-  /** Fewer columns per row so each flag tile is larger (home landing). */
   largeTiles?: boolean;
-  /** Each tile links to `/gallery/[slug]` (e.g. landing “folder” → gallery country page). */
   linkToCountryGallery?: boolean;
 }
 
@@ -41,40 +32,22 @@ function GalleryCell({
 }) {
   const { ref, isRevealed } = useRevealInView<HTMLDivElement>();
   const visible = disableScrollReveal || isRevealed;
-  const src = country.thumbnail?.trim() || FLAG_THUMB_PLACEHOLDER_DATA_URL;
 
   const tile = (
     <>
       <div
         className={
           largeTiles
-            ? 'relative aspect-square min-h-0 rounded-xl sm:rounded-2xl bg-[#1e40af]/5 overflow-hidden border-2 border-[#1e40af]/15 hover:border-[#2563eb] hover:shadow-lg transition-all duration-300 flex items-center justify-center p-1.5 sm:p-2.5 md:p-3'
-            : 'relative aspect-square bg-[#1e40af]/5 rounded-lg overflow-hidden border border-[#1e40af]/10 hover:border-[#2563eb] hover:shadow-md transition-all duration-300 flex items-center justify-center p-2'
+            ? 'relative aspect-square min-h-0 rounded-xl sm:rounded-2xl bg-[#1e40af]/5 overflow-hidden border-2 border-[#1e40af]/15 hover:border-[#2563eb] hover:shadow-lg transition-all duration-300'
+            : 'relative aspect-square bg-[#1e40af]/5 rounded-lg overflow-hidden border border-[#1e40af]/10 hover:border-[#2563eb] hover:shadow-md transition-all duration-300'
         }
       >
-        <div
-          className={
-            largeTiles
-              ? 'relative min-h-0 flex-1 w-full rounded-lg sm:rounded-xl overflow-hidden'
-              : 'relative h-full w-full overflow-hidden rounded-md'
-          }
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element -- country hub navigation thumbnail (no product watermark) */}
-          <img
-            key={src}
-            src={src}
-            alt={`${country.name} flag`}
-            className="relative z-0 h-full w-full object-contain group-hover:scale-110 transition-transform duration-300"
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            decoding="async"
-            onError={(e) => {
-              const el = e.target as HTMLImageElement;
-              el.onerror = null;
-              el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
-            }}
-          />
-        </div>
+        <CountryHubFolderCover
+          countryName={country.name}
+          coverUrl={country.webp_cover_url ?? country.thumbnail}
+          hasWebpCover={country.has_webp_cover}
+          imageClassName="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
+        />
       </div>
       <p
         className={

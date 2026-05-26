@@ -13,26 +13,13 @@ import {
   resolvedFlagPublicHref,
 } from '@/lib/server/flag-asset-url';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
-import { PUBLISHED_FLAG_HAS_MEDIA_SQL } from '@/lib/server/gallery-published-media';
+import { publishedFlagHasMediaSql } from '@/lib/server/gallery-published-media';
 import { galleryOptionalColumns } from '@/lib/server/gallery-schema';
+import { urlLooksLikeWebpAsset } from '@/lib/gallery/country-hub-cover';
 
-/** Gallery/country tiles — canonical API fields (`id`, `thumbnail_url`, `flag_count`) plus legacy `thumbnail`/`count` for browsers. */
-export type GalleryCountrySummary = {
-  id: string;
-  name: string;
-  slug: string;
-  code: string | null;
-  /** Resolved URL for `<img>` (proxied when needed). */
-  thumbnail_url: string;
-  /** Canonical count label for `/api/gallery/countries`. */
-  flag_count: number;
-  /** Distinct designs (asset groups) for hub cards. */
-  design_count: number;
-  /** Alias of `thumbnail_url`; kept for existing components. */
-  thumbnail: string;
-  /** Alias of `flag_count`; kept for existing components. */
-  count: number;
-};
+import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
+
+export type { GalleryCountrySummary };
 
 /** Narrow gallery list — matches `countries.region` / `countries.category` in Postgres. */
 export type GalleryCountryListFilters = {
@@ -138,14 +125,14 @@ export async function logGalleryCountriesStats(pool: Pool): Promise<void> {
     const totalPublishedFiles = await read(
       `SELECT COUNT(*)::int AS n FROM country_flag_files
        WHERE lower(trim(coalesce(status::text, ''))) = 'published'
-         AND ${PUBLISHED_FLAG_HAS_MEDIA_SQL}`,
+         AND ${publishedFlagHasMediaSql()}`,
     );
     const joinedCount = await read(
       `SELECT COUNT(DISTINCT c.id)::int AS n
        FROM countries c
        INNER JOIN country_flag_files f ON f.country_id = c.id
        WHERE lower(trim(coalesce(f.status::text, ''))) = 'published'
-         AND ${PUBLISHED_FLAG_HAS_MEDIA_SQL}`,
+         AND ${publishedFlagHasMediaSql()}`,
     );
     console.log('[gallery/countries] total countries', totalCountries);
     console.log('[gallery/countries] total country_flag_files', totalFlagFiles);
@@ -210,6 +197,10 @@ export async function fetchGalleryCountriesFromDb(
     hub_cover_hint: string | null;
     country_thumb: string | null;
     country_cover_column: string | null;
+    raw_webp_url: string | null;
+    raw_webp_preview: string | null;
+    raw_webp_thumb: string | null;
+    raw_webp_key: string | null;
   }>(
     `SELECT
        c.id::text AS cid,
@@ -230,7 +221,11 @@ export async function fetchGalleryCountriesFromDb(
          NULLIF(trim(fx0.file_url::text), '')
        ) AS hub_cover_hint,
        NULLIF(trim(c.thumbnail_url::text), '') AS country_thumb,
-       ${countryCoverExpr} AS country_cover_column
+       ${countryCoverExpr} AS country_cover_column,
+       NULLIF(trim(fw.file_url::text), '') AS raw_webp_url,
+       NULLIF(trim(fw.preview_url::text), '') AS raw_webp_preview,
+       NULLIF(trim(fw.thumbnail_url::text), '') AS raw_webp_thumb,
+       NULLIF(trim(fw.file_key::text), '') AS raw_webp_key
      FROM countries c
      INNER JOIN (
        SELECT
@@ -241,7 +236,7 @@ export async function fetchGalleryCountriesFromDb(
          )::int AS design_cnt
        FROM country_flag_files
        WHERE lower(trim(coalesce(status::text, ''))) = 'published'
-         AND ${PUBLISHED_FLAG_HAS_MEDIA_SQL}
+         AND ${publishedFlagHasMediaSql()}
        GROUP BY country_id
      ) agg ON agg.country_id = c.id
      LEFT JOIN LATERAL (
@@ -271,6 +266,16 @@ export async function fetchGalleryCountriesFromDb(
      ) f ON TRUE
      LEFT JOIN LATERAL (
        SELECT thumbnail_url, preview_url, file_url, file_key
+       FROM country_flag_files fw
+       WHERE fw.country_id = c.id
+         AND lower(trim(coalesce(fw.status::text, ''))) = 'published'
+         AND lower(trim(coalesce(fw.format::text, ''))) = 'webp'
+         AND ${publishedFlagHasMediaSql('fw')}
+       ORDER BY COALESCE(fw.updated_at, fw.created_at) DESC NULLS LAST
+       LIMIT 1
+     ) fw ON TRUE
+     LEFT JOIN LATERAL (
+       SELECT thumbnail_url, preview_url, file_url, file_key
        FROM country_flag_files fy
        WHERE fy.country_id = c.id
          AND lower(trim(coalesce(fy.status::text, ''))) = 'published'
@@ -296,43 +301,28 @@ export async function fetchGalleryCountriesFromDb(
     const designs =
       typeof designRaw === 'string' ? Number.parseInt(String(designRaw), 10) : Number(designRaw);
 
-    const coverPick =
-      row.country_cover_column?.trim() ||
-      row.hub_cover_hint?.trim() ||
-      row.country_thumb?.trim() ||
-      '';
-
-    const fileUrlForRow = row.raw_file_url?.trim() || '';
-    const thumbStored = row.raw_thumbnail_url?.trim() || '';
-
-    /** Prefer persisted hub cover (`countries.cover_image_url`) then weighted row from lateral join */
-    const effectiveThumbnailUrl =
-      coverPick || thumbStored || fileUrlForRow || null;
-    const effectivePreviewUrl =
-      row.hub_cover_hint?.trim() || fileUrlForRow || null;
+    const coverPick = row.country_cover_column?.trim() || '';
 
     const code =
       row.iso_alpha_2?.trim()?.toUpperCase() || getCountryCode(row.name)?.toUpperCase() || null;
-    let thumb = resolvedFlagPublicHref({
-      fileKey: row.raw_file_key,
-      fallbackRawUrls: fallbackUrlsForGalleryListThumb({
-        premiumTierRaw: 'free',
-        fileUrl: fileUrlForRow || null,
-        previewUrl: effectivePreviewUrl || coverPick || null,
-        thumbnailUrl: effectiveThumbnailUrl || coverPick || null,
-      }),
-    });
-    /** DB may store only object key in `file_url` / cover — build public R2 URL when possible. */
-    const primaryPath = (coverPick || fileUrlForRow || row.raw_file_key || '').trim();
-    if (!thumb && primaryPath && !/^https?:\/\//i.test(primaryPath)) {
-      const built = getPublicR2FileUrl(primaryPath.replace(/^\/+/, ''));
-      if (built) thumb = built;
-    }
-    if (!thumb || isPackFallbackFlagThumbnail(thumb)) {
-      thumb = FLAG_THUMB_PLACEHOLDER_DATA_URL;
-    }
 
-    const resolvedThumb = resolveGalleryAssetUrl(thumb);
+    let webpHref = resolvedFlagPublicHref({
+      fileKey: row.raw_webp_key,
+      fallbackRawUrls: [
+        row.raw_webp_preview,
+        row.raw_webp_thumb,
+        row.raw_webp_url,
+      ],
+    });
+    if (!webpHref && coverPick && urlLooksLikeWebpAsset(coverPick)) {
+      webpHref = resolveGalleryAssetUrl(coverPick);
+    }
+    if (webpHref && isPackFallbackFlagThumbnail(webpHref)) {
+      webpHref = '';
+    }
+    const hasWebp = Boolean(webpHref?.trim());
+    const webpCover = hasWebp ? resolveGalleryAssetUrl(webpHref) : null;
+
     const n = Number.isFinite(count) ? count : 0;
     const d = Number.isFinite(designs) ? designs : 0;
 
@@ -341,10 +331,12 @@ export async function fetchGalleryCountriesFromDb(
       name: row.name,
       slug: row.slug,
       code,
-      thumbnail_url: resolvedThumb,
+      has_webp_cover: hasWebp,
+      webp_cover_url: webpCover,
+      thumbnail_url: webpCover ?? '',
+      thumbnail: webpCover ?? '',
       flag_count: n,
       design_count: d || n,
-      thumbnail: resolvedThumb,
       count: n,
     });
   }
@@ -352,7 +344,14 @@ export async function fetchGalleryCountriesFromDb(
 }
 
 export type CountryGalleryPayload = {
-  country: { name: string; slug: string; code: string | null; cover_image_url: string | null };
+  country: {
+    name: string;
+    slug: string;
+    code: string | null;
+    cover_image_url: string | null;
+    has_webp_cover: boolean;
+    webp_cover_url: string | null;
+  };
   variants: {
     id: string;
     /** Canonical marketplace detail slug (`/assets/[slug]`). */
@@ -603,12 +602,24 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
   }
   const coverPayload = resolvedHub ? resolveGalleryAssetUrl(resolvedHub) : null;
 
+  const webpRow = fRes.rows.find((r) => r.format?.trim().toLowerCase() === 'webp');
+  let webpCoverUrl = webpRow ? previewUrlForFlagRow(webpRow) : '';
+  if (webpCoverUrl && isPackFallbackFlagThumbnail(webpCoverUrl)) {
+    webpCoverUrl = '';
+  }
+  if (!webpCoverUrl && coverPayload && urlLooksLikeWebpAsset(coverPayload)) {
+    webpCoverUrl = coverPayload;
+  }
+  const hasWebp = Boolean(webpCoverUrl?.trim());
+
   return {
     country: {
       name: countryRow.name,
       slug: countryRow.slug,
       code: mappedCode,
-      cover_image_url: coverPayload,
+      cover_image_url: hasWebp ? webpCoverUrl : coverPayload,
+      has_webp_cover: hasWebp,
+      webp_cover_url: hasWebp ? webpCoverUrl : null,
     },
     variants,
   };

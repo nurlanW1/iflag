@@ -20,17 +20,12 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { FLAG_THUMB_PLACEHOLDER_DATA_URL } from '@/lib/flag-thumbnail-fallback';
+import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCover';
+import { CountryHubFolderGrid } from '@/components/gallery/CountryHubFolderGrid';
+import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 
-interface Country {
-  name: string;
-  slug: string;
-  code: string | null;
-  count: number;
-  design_count?: number;
-  thumbnail: string;
-}
+type Country = GalleryCountrySummary;
 
 type ViewMode = 'grid' | 'list';
 type SortKey = 'name-asc' | 'name-desc' | 'files-desc' | 'files-asc';
@@ -362,74 +357,12 @@ function GalleryContent() {
             onClearFilter={() => router.push('/gallery')}
           />
         ) : view === 'grid' ? (
-          <CardGrid countries={filteredCountries} />
+          <CountryHubFolderGrid countries={filteredCountries} variant="compact" />
         ) : (
           <CardList countries={filteredCountries} />
         )}
       </div>
     </main>
-  );
-}
-
-function CardGrid({ countries }: { countries: Country[] }) {
-  return (
-    <div className={marketplaceProductCardGridClasses}>
-      {countries.map((country, idx) => (
-        <motion.div
-          key={`${country.code ?? 'x'}-${country.slug}`}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, delay: Math.min(idx, 14) * 0.015 }}
-        >
-          <Link
-            href={`/countries/${country.slug}`}
-            className="group block overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#2563eb]/50 hover:shadow-[0_12px_30px_-14px_rgba(37,99,235,0.45)]"
-          >
-            <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
-              {/* eslint-disable-next-line @next/next/no-img-element -- country hub navigation thumbnail */}
-              <img
-                src={country.thumbnail?.trim() || FLAG_THUMB_PLACEHOLDER_DATA_URL}
-                alt={`${country.name} flag`}
-                loading="lazy"
-                decoding="async"
-                referrerPolicy="no-referrer"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                onError={(e) => {
-                  const el = e.currentTarget;
-                  el.onerror = null;
-                  el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
-                }}
-              />
-              {country.code ? (
-                <span className="absolute left-2 top-2 z-10 rounded-md bg-black/40 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
-                  {country.code}
-                </span>
-              ) : null}
-              <span className="absolute right-2 top-2 z-10 rounded-md bg-white/85 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-stone-700 shadow-sm ring-1 ring-stone-200 backdrop-blur">
-                {country.design_count ?? country.count}
-              </span>
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex translate-y-2 items-center justify-center gap-1.5 bg-gradient-to-t from-black/55 to-transparent px-2 py-2 text-xs font-semibold text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                View files <ArrowRight size={13} />
-              </div>
-            </div>
-            <div className="flex items-center justify-between gap-2 px-3 py-2.5 sm:px-3.5 sm:py-3">
-              <div className="min-w-0">
-                <h3 className="truncate text-sm font-semibold text-stone-900">{country.name}</h3>
-                <p className="mt-0.5 text-[11px] text-stone-500">
-                  {country.design_count ?? country.count} designs · {country.count}{' '}
-                  {country.count === 1 ? 'file' : 'files'}
-                </p>
-              </div>
-              <ArrowRight
-                size={15}
-                className="shrink-0 text-stone-300 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-[#2563eb]"
-                aria-hidden
-              />
-            </div>
-          </Link>
-        </motion.div>
-      ))}
-    </div>
   );
 }
 
@@ -439,23 +372,15 @@ function CardList({ countries }: { countries: Country[] }) {
       {countries.map((country) => (
         <li key={`${country.code ?? 'x'}-${country.slug}-row`}>
           <Link
-            href={`/countries/${country.slug}`}
+            href={`/gallery/${country.slug}`}
             className="group flex items-center gap-3 px-3 py-3 transition-colors hover:bg-stone-50 sm:gap-4 sm:px-4 sm:py-3.5"
           >
-            <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-stone-100 ring-1 ring-stone-200 sm:h-16 sm:w-24">
-              {/* eslint-disable-next-line @next/next/no-img-element -- country hub navigation thumbnail */}
-              <img
-                src={country.thumbnail?.trim() || FLAG_THUMB_PLACEHOLDER_DATA_URL}
-                alt={`${country.name} flag`}
-                loading="lazy"
-                decoding="async"
-                referrerPolicy="no-referrer"
-                className="h-full w-full object-cover"
-                onError={(e) => {
-                  const el = e.currentTarget;
-                  el.onerror = null;
-                  el.src = FLAG_THUMB_PLACEHOLDER_DATA_URL;
-                }}
+            <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-stone-50 ring-1 ring-stone-200 sm:h-16 sm:w-24">
+              <CountryHubFolderCover
+                countryName={country.name}
+                coverUrl={country.webp_cover_url ?? country.thumbnail}
+                hasWebpCover={country.has_webp_cover}
+                imageClassName="object-contain p-1"
               />
             </div>
             <div className="min-w-0 flex-1">

@@ -5,7 +5,7 @@
 import { neonLikeRowGroupKey, type NeonLikeFlagRow } from '@/lib/marketplace/group-flag-products';
 import { buildCatalogProductFromFlagBundle, NEON_SELECT_FIELDS } from '@/lib/server/neon-catalog';
 import { getDb } from '@/lib/server/db';
-import { PUBLISHED_FLAG_HAS_MEDIA_SQL } from '@/lib/server/gallery-published-media';
+import { publishedFlagHasMediaSql } from '@/lib/server/gallery-published-media';
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
 import {
@@ -115,7 +115,7 @@ export async function fetchRandomGalleryPreviewItems(opts: {
      FROM country_flag_files cff
      LEFT JOIN countries c ON c.id = cff.country_id
      WHERE cff.status = 'published'
-       AND ${PUBLISHED_FLAG_HAS_MEDIA_SQL}
+       AND ${publishedFlagHasMediaSql('cff')}
      ${orderSql}
      LIMIT $1`,
     [sample]

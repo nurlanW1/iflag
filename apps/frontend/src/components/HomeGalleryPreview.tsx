@@ -4,19 +4,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import GalleryGrid from './GalleryGrid';
-
-interface Country {
-  name: string;
-  slug: string;
-  code: string | null;
-  count: number;
-  thumbnail: string;
-}
+import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 
 const PREVIEW_COUNT = 24;
 
 export default function HomeGalleryPreview() {
-  const [allCountries, setAllCountries] = useState<Country[]>([]);
+  const [allCountries, setAllCountries] = useState<GalleryCountrySummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
 

@@ -4,6 +4,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ProductBrowseSection } from '@/components/marketplace/ProductBrowseSection';
+import { CountryHubBrowseSection } from '@/components/gallery/CountryHubBrowseSection';
+import {
+  categoryUsesCountryHubGrid,
+  galleryApiPathForCategory,
+} from '@/lib/marketplace/category-country-hub-api';
 import { visualsForCategoryKind } from '@/lib/marketplace/category-visuals';
 import { getCategoryBySlug, listPublishedProducts } from '@/services/marketplace';
 import { PRIMARY_HUB_LINKS } from '@/lib/seo/internal-links';
@@ -53,7 +58,8 @@ export default async function CategoryPage({ params }: Props) {
     notFound();
   }
 
-  const products = listPublishedProducts({ categoryId: category.id });
+  const useCountryHubs = categoryUsesCountryHubGrid(category);
+  const products = useCountryHubs ? [] : listPublishedProducts({ categoryId: category.id });
   const vis = visualsForCategoryKind(category.kind);
   const Icon = vis.Icon;
 
@@ -86,9 +92,13 @@ export default async function CategoryPage({ params }: Props) {
               </div>
             </div>
           </header>
-          <Suspense fallback={<p className="text-black/60">Loading catalog…</p>}>
-            <ProductBrowseSection fixedCategorySlug={category.slug} syncUrl={false} />
-          </Suspense>
+          {useCountryHubs ? (
+            <CountryHubBrowseSection fetchPath={galleryApiPathForCategory(category)} />
+          ) : (
+            <Suspense fallback={<p className="text-black/60">Loading catalog…</p>}>
+              <ProductBrowseSection fixedCategorySlug={category.slug} syncUrl={false} />
+            </Suspense>
+          )}
           <section className="mt-12 border-t border-gray-200 pt-8" aria-labelledby="related-hubs-heading">
             <h2 id="related-hubs-heading" className="text-lg font-bold text-black mb-3">
               Explore more

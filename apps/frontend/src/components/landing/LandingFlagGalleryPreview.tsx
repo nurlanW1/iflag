@@ -1,22 +1,12 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import { SectionReveal } from '@/components/motion/SectionReveal';
-import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
+import { CountryHubFolderGrid } from '@/components/gallery/CountryHubFolderGrid';
+import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 
 const GRID_LIMIT = 12;
-
-type CountryHubTile = {
-  id: string;
-  name: string;
-  slug: string;
-  image_url: string;
-  design_count: number;
-  file_count: number;
-};
 
 function shufflePick<T>(items: T[], n: number): T[] {
   const copy = [...items];
@@ -27,43 +17,15 @@ function shufflePick<T>(items: T[], n: number): T[] {
   return copy.slice(0, Math.min(n, copy.length));
 }
 
-async function fetchRandomCountryCovers(limit: number): Promise<CountryHubTile[]> {
+async function fetchCountryHubs(limit: number): Promise<GalleryCountrySummary[]> {
   const res = await fetch('/api/gallery/countries', { cache: 'no-store' });
   if (!res.ok) return [];
-  const j = (await res.json()) as {
-    countries?: Array<{
-      id: string;
-      name: string;
-      slug: string;
-      thumbnail?: string | null;
-      thumbnail_url?: string | null;
-      count?: number;
-      flag_count?: number;
-      design_count?: number;
-    }>;
-  };
+  const j = (await res.json()) as { countries?: GalleryCountrySummary[] };
   const list = j.countries ?? [];
-  const withThumb = list.filter((c) => String(c.thumbnail || c.thumbnail_url || '').trim());
-  const picked = shufflePick(withThumb, limit);
-  return picked.map((co) => {
-    const imageUrl = (co.thumbnail || co.thumbnail_url)!.trim();
-    const files = typeof co.flag_count === 'number' ? co.flag_count : Number(co.count ?? 0);
-    const designs =
-      typeof co.design_count === 'number' && Number.isFinite(co.design_count)
-        ? co.design_count
-        : files;
-    return {
-      id: co.id || `hub:${co.slug}`,
-      name: co.name,
-      slug: co.slug,
-      image_url: imageUrl,
-      design_count: designs,
-      file_count: Number.isFinite(files) ? files : 0,
-    };
-  });
+  return shufflePick(list, limit);
 }
 
-type ExplorePhase = 'loading' | { items: CountryHubTile[] } | 'empty';
+type ExplorePhase = 'loading' | { items: GalleryCountrySummary[] } | 'empty';
 
 export function LandingFlagGalleryPreview() {
   const [phase, setPhase] = useState<ExplorePhase>('loading');
@@ -72,7 +34,7 @@ export function LandingFlagGalleryPreview() {
     let cancelled = false;
     (async () => {
       try {
-        const rows = await fetchRandomCountryCovers(GRID_LIMIT);
+        const rows = await fetchCountryHubs(GRID_LIMIT);
         if (cancelled) return;
         if (rows.length > 0) {
           setPhase({ items: rows });
@@ -104,11 +66,11 @@ export function LandingFlagGalleryPreview() {
               className="flex max-w-3xl flex-col"
             >
               <h2 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]">
-                Explore Flag Assets
+                Explore by country
               </h2>
               <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
-                Twelve random country folders — each hub groups every format into clean designs instead of noisy
-                duplicates.
+                Each tile is a country folder — open Belgium, Uzbekistan, or any hub to browse every design inside.
+                WebP covers appear when uploaded; others show a star until the cover is ready.
               </p>
             </SectionReveal>
           </div>
@@ -134,52 +96,11 @@ export function LandingFlagGalleryPreview() {
             </ul>
           ) : empty ? (
             <div className="rounded-2xl border border-dashed border-neutral-200 bg-white px-6 py-14 text-center text-neutral-600 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-              <p className="text-base font-medium text-neutral-800">No flag assets available yet.</p>
+              <p className="text-base font-medium text-neutral-800">No country folders yet.</p>
+              <p className="mt-2 text-sm text-neutral-500">Import flags from R2 to populate country hubs.</p>
             </div>
           ) : (
-            <ul
-              className="grid grid-cols-1 gap-3.5 min-[360px]:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-5"
-              role="list"
-              aria-label="Random country folders"
-            >
-              {items.map((item) => {
-                const href = `/countries/${encodeURIComponent(item.slug)}`;
-                const svg = shouldUnoptimizeFlagImageHref(item.image_url, []);
-
-                return (
-                  <li key={item.id}>
-                    <Link
-                      href={href}
-                      className="group flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] duration-300 hover:border-neutral-300 hover:shadow-md"
-                    >
-                      <div className="relative aspect-[5/4] bg-neutral-100 sm:aspect-[4/3]">
-                        <ProductPreviewImage className="absolute inset-0" watermarkEnabled protectEnabled>
-                          <Image
-                            src={item.image_url}
-                            alt={`${item.name} — country folder`}
-                            fill
-                            loading="lazy"
-                            unoptimized={svg}
-                            draggable={false}
-                            className="relative z-0 object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
-                            sizes="(max-width: 379px) 100vw, (max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw"
-                          />
-                        </ProductPreviewImage>
-                      </div>
-                      <div className="flex flex-1 flex-col gap-1 p-4">
-                        <p className="text-[0.95rem] font-semibold leading-snug text-[#2a2a2a] md:text-base">
-                          {item.name}
-                        </p>
-                        <p className="text-[0.75rem] font-medium uppercase tracking-wide text-neutral-500">
-                          {item.design_count} design{item.design_count === 1 ? '' : 's'} ·{' '}
-                          {item.file_count} file{item.file_count === 1 ? '' : 's'}
-                        </p>
-                      </div>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+            <CountryHubFolderGrid countries={items} />
           )}
 
           {!loading && !empty ? (
@@ -188,7 +109,7 @@ export function LandingFlagGalleryPreview() {
                 href="/gallery"
                 className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-10 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)]"
               >
-                Browse Gallery
+                Browse all countries
               </Link>
             </div>
           ) : null}
