@@ -14,7 +14,7 @@ import {
 } from '@/lib/server/flag-asset-url';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
 import { publishedFlagHasMediaSql } from '@/lib/server/gallery-published-media';
-import { galleryOptionalColumns } from '@/lib/server/gallery-schema';
+import { galleryOptionalColumns, resetGallerySchemaCache } from '@/lib/server/gallery-schema';
 import { buildCountryHubDescription } from '@/lib/gallery/country-hub-copy';
 import { urlLooksLikeWebpAsset } from '@/lib/gallery/country-hub-cover';
 
@@ -124,16 +124,16 @@ export async function logGalleryCountriesStats(pool: Pool): Promise<void> {
     const totalCountries = await read(`SELECT COUNT(*)::int AS n FROM countries`);
     const totalFlagFiles = await read(`SELECT COUNT(*)::int AS n FROM country_flag_files`);
     const totalPublishedFiles = await read(
-      `SELECT COUNT(*)::int AS n FROM country_flag_files
-       WHERE lower(trim(coalesce(status::text, ''))) = 'published'
-         AND ${publishedFlagHasMediaSql()}`,
+      `SELECT COUNT(*)::int AS n FROM country_flag_files f
+       WHERE lower(trim(coalesce(f.status::text, ''))) = 'published'
+         AND ${publishedFlagHasMediaSql('f')}`,
     );
     const joinedCount = await read(
       `SELECT COUNT(DISTINCT c.id)::int AS n
        FROM countries c
        INNER JOIN country_flag_files f ON f.country_id = c.id
        WHERE lower(trim(coalesce(f.status::text, ''))) = 'published'
-         AND ${publishedFlagHasMediaSql()}`,
+         AND ${publishedFlagHasMediaSql('f')}`,
     );
     console.log('[gallery/countries] total countries', totalCountries);
     console.log('[gallery/countries] total country_flag_files', totalFlagFiles);
@@ -164,9 +164,18 @@ export function isPackFallbackFlagThumbnail(url: string | null | undefined): boo
  * `thumbnail_url` — in that case we still list the country and use an inline SVG placeholder so
  * the grid is not silently empty while detail pages resolve previews per-row.
  */
-export async function fetchGalleryCountriesFromDb(
+function isMissingColumnPgError(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    String((err as { code: string }).code) === '42703'
+  );
+}
+
+async function fetchGalleryCountriesFromDbOnce(
   pool: Pool,
-  filters: GalleryCountryListFilters | null = null,
+  filters: GalleryCountryListFilters | null,
 ): Promise<GalleryCountrySummary[]> {
   const regionParam = filters?.region?.trim() || null;
   const catParam = filters?.dbCategory?.trim().toLowerCase() || null;
@@ -238,7 +247,7 @@ export async function fetchGalleryCountriesFromDb(
          ))::int AS design_cnt
        FROM country_flag_files
        WHERE lower(trim(coalesce(status::text, ''))) = 'published'
-         AND ${publishedFlagHasMediaSql()}
+         AND ${publishedFlagHasMediaSql('country_flag_files')}
        GROUP BY country_id
      ) agg ON agg.country_id = c.id
      LEFT JOIN LATERAL (
@@ -345,6 +354,23 @@ export async function fetchGalleryCountriesFromDb(
   return out;
 }
 
+export async function fetchGalleryCountriesFromDb(
+  pool: Pool,
+  filters: GalleryCountryListFilters | null = null,
+): Promise<GalleryCountrySummary[]> {
+  try {
+    return await fetchGalleryCountriesFromDbOnce(pool, filters);
+  } catch (err) {
+    if (!isMissingColumnPgError(err)) throw err;
+    console.warn(
+      '[gallery/countries] optional column missing — retrying with legacy SQL',
+      err instanceof Error ? err.message : err,
+    );
+    resetGallerySchemaCache();
+    return fetchGalleryCountriesFromDbOnce(pool, filters);
+  }
+}
+
 export type CountryGalleryPayload = {
   country: {
     name: string;
@@ -394,6 +420,20 @@ function truncateDisplayPath(name: string, max = 80): string {
 }
 
 export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promise<CountryGalleryPayload | null> {
+  try {
+    return await fetchCountryGalleryFromDbOnce(pool, slug);
+  } catch (err) {
+    if (!isMissingColumnPgError(err)) throw err;
+    console.warn(
+      '[gallery/country] optional column missing — retrying with legacy SQL',
+      err instanceof Error ? err.message : err,
+    );
+    resetGallerySchemaCache();
+    return fetchCountryGalleryFromDbOnce(pool, slug);
+  }
+}
+
+async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<CountryGalleryPayload | null> {
   const schema = await galleryOptionalColumns(pool);
   const countryCoverSelect = schema.countryCoverImageUrl
     ? `NULLIF(trim(cover_image_url::text), '') AS cover_image_url,`

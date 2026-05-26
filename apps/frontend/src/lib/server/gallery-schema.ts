@@ -23,6 +23,19 @@ const DEFAULT_COLS: GalleryOptionalColumns = {
   countrySortName: false,
 };
 
+/** True only when Postgres can resolve the column (guards stale information_schema). */
+async function columnQueryable(pool: Pool, table: string, column: string): Promise<boolean> {
+  try {
+    await pool.query(`SELECT ${column} FROM ${table} WHERE false LIMIT 0`);
+    return true;
+  } catch (e) {
+    const code =
+      typeof e === 'object' && e !== null && 'code' in e ? String((e as { code: string }).code) : '';
+    if (code === '42703') return false;
+    throw e;
+  }
+}
+
 export async function galleryOptionalColumns(pool: Pool): Promise<GalleryOptionalColumns> {
   if (cache && Date.now() - cache.at < TTL_MS) return cache.cols;
 
@@ -37,13 +50,31 @@ export async function galleryOptionalColumns(pool: Pool): Promise<GalleryOptiona
          )`,
     );
     const set = new Set(res.rows.map((r) => `${r.table_name}.${r.column_name}`));
+
     const cols: GalleryOptionalColumns = {
-      countryCoverImageUrl: set.has('countries.cover_image_url'),
-      fileIsCountryCover: set.has('country_flag_files.is_country_cover'),
-      fileDesignType: set.has('country_flag_files.design_type'),
-      fileSortTitle: set.has('country_flag_files.sort_title'),
-      countrySortName: set.has('countries.sort_name'),
+      countryCoverImageUrl: false,
+      fileIsCountryCover: false,
+      fileDesignType: false,
+      fileSortTitle: false,
+      countrySortName: false,
     };
+
+    if (set.has('countries.cover_image_url')) {
+      cols.countryCoverImageUrl = await columnQueryable(pool, 'countries', 'cover_image_url');
+    }
+    if (set.has('countries.sort_name')) {
+      cols.countrySortName = await columnQueryable(pool, 'countries', 'sort_name');
+    }
+    if (set.has('country_flag_files.is_country_cover')) {
+      cols.fileIsCountryCover = await columnQueryable(pool, 'country_flag_files', 'is_country_cover');
+    }
+    if (set.has('country_flag_files.design_type')) {
+      cols.fileDesignType = await columnQueryable(pool, 'country_flag_files', 'design_type');
+    }
+    if (set.has('country_flag_files.sort_title')) {
+      cols.fileSortTitle = await columnQueryable(pool, 'country_flag_files', 'sort_title');
+    }
+
     cache = { at: Date.now(), cols };
     return cols;
   } catch (e) {
