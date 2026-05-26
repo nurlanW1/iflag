@@ -24,6 +24,8 @@ type FileRow = {
   file_key: string | null;
   file_path: string | null;
   country_id: string;
+  format: string | null;
+  country_slug: string | null;
 };
 
 function stemFromFileName(fn: string): string {
@@ -37,13 +39,20 @@ function r2LikeKey(row: FileRow): string {
 
 async function classifyAllRows(pool: pg.Pool): Promise<number> {
   const res = await pool.query<FileRow>(
-    `SELECT id, file_name, file_key, file_path, country_id
-     FROM country_flag_files`,
+    `SELECT f.id, f.file_name, f.file_key, f.file_path, f.country_id, f.format,
+            COALESCE(NULLIF(trim(c.slug), ''), NULLIF(trim(f.country_slug), '')) AS country_slug
+     FROM country_flag_files f
+     LEFT JOIN countries c ON c.id = f.country_id`,
   );
   let n = 0;
   for (const row of res.rows) {
     const stem = stemFromFileName(String(row.file_name || 'asset'));
-    const parsed = classifyFlagDesign({ r2Key: r2LikeKey(row), fileStem: stem });
+    const parsed = classifyFlagDesign({
+      r2Key: r2LikeKey(row),
+      fileStem: stem,
+      countrySlug: row.country_slug?.trim() ?? '',
+      format: row.format?.trim() ?? '',
+    });
     const premium = parsed.premium_tier === 'free' ? 'free' : 'paid';
     await pool.query(
       `UPDATE country_flag_files SET
@@ -82,7 +91,10 @@ async function syncAvailableFormats(pool: pg.Pool): Promise<void> {
       SELECT
         f2.country_id AS cid,
         COALESCE(NULLIF(trim(f2.asset_group_key::text), ''), ('solo:' || f2.id::text)) AS gk,
-        ARRAY_AGG(DISTINCT lower(trim(f2.format))) FILTER (WHERE NULLIF(trim(f2.format::text), '') IS NOT NULL) AS fmts
+        ARRAY_AGG(DISTINCT lower(trim(f2.format))) FILTER (
+          WHERE NULLIF(trim(f2.format::text), '') IS NOT NULL
+            AND lower(trim(f2.format)) NOT IN ('webp')
+        ) AS fmts
       FROM country_flag_files f2
       WHERE lower(trim(coalesce(f2.status::text, ''))) = 'published'
       GROUP BY f2.country_id, COALESCE(NULLIF(trim(f2.asset_group_key::text), ''), ('solo:' || f2.id::text))
@@ -175,7 +187,9 @@ async function syncCountryAggregates(pool: pg.Pool): Promise<void> {
   await pool.query(`
     WITH dc AS (
       SELECT country_id::uuid AS cid,
-             COUNT(DISTINCT COALESCE(NULLIF(lower(trim(asset_group_key)), ''), ('solo:' || id::text)))::int AS design_n
+             COUNT(DISTINCT COALESCE(NULLIF(lower(trim(asset_group_key)), ''), ('solo:' || id::text))) FILTER (
+               WHERE lower(trim(coalesce(format::text, ''))) NOT IN ('webp')
+             )::int AS design_n
       FROM country_flag_files
       WHERE lower(trim(coalesce(status::text, ''))) = 'published'
       GROUP BY country_id

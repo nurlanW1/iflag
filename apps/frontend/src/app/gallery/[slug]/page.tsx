@@ -128,7 +128,8 @@ export default function CountryHubPage() {
           </h1>
           <p className="max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">
             {data.variants.length} design{data.variants.length === 1 ? '' : 's'} — open a tile to choose
-            formats and download. Official flat layouts are free; creative variants stay in the catalog.
+            formats and download. Files named only with the country name (e.g. Algeria) are free official flags;
+            other designs require a plan.
           </p>
         </div>
         <div className="mx-auto w-full max-w-[min(100%,20rem)] shrink-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_2px_12px_-6px_rgba(15,23,42,0.1)] sm:max-w-[min(100%,24rem)] sm:rounded-2xl lg:mx-0">

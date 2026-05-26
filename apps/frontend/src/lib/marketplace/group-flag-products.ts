@@ -6,6 +6,7 @@
 import { createHash } from 'crypto';
 import type { Product, ProductFile, ProductLicenseInfo, ProductSeo } from '@/types/marketplace';
 import { ONE_TIME_STOCK } from '@/lib/marketing/pricing-config';
+import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
 
 export type NeonLikeFlagRow = {
   id: string;
@@ -211,10 +212,13 @@ export function productsFromNeonLikeRows(
   const out: Product[] = [];
 
   for (const r of solo) {
+    if (isPreviewOnlyFormat(r.format)) continue;
     out.push(soloRowToProduct(r, deps));
   }
 
   for (const bundle of groups.values()) {
+    const hasDownloadable = bundle.some((r) => !isPreviewOnlyFormat(r.format));
+    if (!hasDownloadable) continue;
     out.push(groupedRowsToProduct(bundle, deps));
   }
 
@@ -315,6 +319,8 @@ function groupedRowsToProduct(
   let anyPaid = false;
   const files: ProductFile[] = [];
   rows.forEach((row, idx) => {
+    if (isPreviewOnlyFormat(row.format)) return;
+
     const tierRaw = (row.premium_tier ?? 'free').toLowerCase();
     const isFree = tierRaw === 'free';
     const fmt = row.format.toLowerCase();

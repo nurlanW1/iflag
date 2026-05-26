@@ -12,6 +12,7 @@ import {
   fallbackUrlsForGalleryListThumb,
   resolvedFlagPublicHref,
 } from '@/lib/server/flag-asset-url';
+import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
 
 /** Gallery/country tiles — canonical API fields (`id`, `thumbnail_url`, `flag_count`) plus legacy `thumbnail`/`count` for browsers. */
 export type GalleryCountrySummary = {
@@ -219,7 +220,9 @@ export async function fetchGalleryCountriesFromDb(
        SELECT
          country_id,
          COUNT(*)::int AS file_cnt,
-         COUNT(DISTINCT COALESCE(NULLIF(trim(asset_group_key::text), ''), ('solo:' || id::text)))::int AS design_cnt
+         COUNT(DISTINCT COALESCE(NULLIF(trim(asset_group_key::text), ''), ('solo:' || id::text))) FILTER (
+           WHERE lower(trim(coalesce(format::text, ''))) NOT IN ('webp')
+         )::int AS design_cnt
        FROM country_flag_files
        WHERE lower(trim(coalesce(status::text, ''))) = 'published'
          AND COALESCE(NULLIF(trim(file_url::text), ''), '') <> ''
@@ -464,6 +467,8 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
   }
 
   for (const r of fRes.rows) {
+    if (isPreviewOnlyFormat(r.format)) continue;
+
     const nbytes = Number.parseInt(String(r.file_size_bytes), 10);
     const sz = Number.isFinite(nbytes) ? nbytes : 0;
     const ext = formatExtension(r.format);

@@ -15,6 +15,7 @@ import {
   requestWantsAttachmentStream,
   streamAttachmentFromUrl,
 } from '@/lib/server/attachment-download-stream';
+import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
 
 export const runtime = 'nodejs';
 
@@ -110,6 +111,13 @@ export async function GET(
   const row = fileRes.rows[0];
   if (!row || (row.status && row.status.toLowerCase() !== 'published')) {
     return NextResponse.json({ error: 'File not found', code: 'NOT_FOUND' }, { status: 404 });
+  }
+
+  if (isPreviewOnlyFormat(row.format)) {
+    return NextResponse.json(
+      { error: 'Preview-only format is not downloadable', code: 'PREVIEW_ONLY' },
+      { status: 403 },
+    );
   }
 
   const fileUrl = row.file_url?.trim();

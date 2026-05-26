@@ -381,7 +381,12 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
       }
 
       const fileKey = obj.key.replace(/^\/+/, '');
-      const classify = classifyFlagDesign({ r2Key: fileKey, fileStem: parsed.baseStem });
+      const classify = classifyFlagDesign({
+        r2Key: fileKey,
+        fileStem: parsed.baseStem,
+        countrySlug,
+        format,
+      });
       const premiumTier = classify.premium_tier === 'free' ? 'free' : 'paid';
       const designTypeStr = classify.design_type;
       const regionSnap = await cachedCountryRegion(countryId);
