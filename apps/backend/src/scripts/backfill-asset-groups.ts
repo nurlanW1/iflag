@@ -6,19 +6,17 @@
  *   npm run backfill:asset-groups --prefix apps/backend
  */
 import dotenv from 'dotenv';
-import pg from 'pg';
 import { basename, dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deriveAssetGroupKeyFromParts, deriveDisplayTitle } from '../lib/asset-group-key.js';
+import { createScriptPool, verifyScriptDbConnection } from '../lib/script-db-pool.js';
 
 const __scriptDir = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__scriptDir, '../../.env') });
 
 async function main() {
-  const url = process.env.DATABASE_URL?.trim();
-  if (!url) throw new Error('DATABASE_URL is required');
-
-  const pool = new pg.Pool({ connectionString: url });
+  const pool = await createScriptPool();
+  await verifyScriptDbConnection(pool);
   try {
     const res = await pool.query<{
       id: string;

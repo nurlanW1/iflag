@@ -11,7 +11,7 @@
 
 import 'dotenv/config';
 import fs from 'fs';
-import pg from 'pg';
+import { createScriptPool, verifyScriptDbConnection } from '../lib/script-db-pool.js';
 
 type RowIn = {
   country_slug: string;
@@ -35,8 +35,7 @@ async function main() {
     console.error('Usage: node dist/scripts/import-r2-existing-files.js <json-file>');
     process.exit(1);
   }
-  const url = process.env.DATABASE_URL?.trim();
-  if (!url) {
+  if (!process.env.DATABASE_URL?.trim() && !process.env.DATABASE_POOL_URL?.trim()) {
     console.error('DATABASE_URL is required');
     process.exit(1);
   }
@@ -48,7 +47,8 @@ async function main() {
     process.exit(1);
   }
 
-  const pool = new pg.Pool({ connectionString: url });
+  const pool = await createScriptPool();
+  await verifyScriptDbConnection(pool);
 
   try {
     for (const r of rows) {

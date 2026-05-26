@@ -18,7 +18,12 @@ import type { R2Config } from '../storage/r2.js';
 import { listR2ObjectSummaries, requireR2Config, slugifySegment } from '../storage/r2.js';
 import { deriveAssetGroupKeyFromParts, deriveDisplayTitle } from '../lib/asset-group-key.js';
 import { classifyFlagDesign } from '../lib/flag-design-classify.js';
-import { resolveCanonicalCountrySlug } from '../lib/resolve-canonical-country-slug.js';
+import {
+  loadCountrySlugIndex,
+  resolveCanonicalCountrySlugWithIndex,
+  type CountrySlugIndex,
+} from '../lib/resolve-canonical-country-slug.js';
+import { createScriptPool, verifyScriptDbConnection } from '../lib/script-db-pool.js';
 /** Always load apps/backend/.env (not cwd). Never log env contents. */
 const __scriptDir = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__scriptDir, '../../.env') });
@@ -313,25 +318,37 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
   };
 
   const cfg = requireR2Config();
-  const url = process.env.DATABASE_URL?.trim();
-  if (!url && !opts.pool) {
+  if (!opts.pool && !process.env.DATABASE_URL?.trim() && !process.env.DATABASE_POOL_URL?.trim()) {
     throw new Error('DATABASE_URL is required');
   }
 
   const ownPool = !opts.pool;
-  const pool = opts.pool ?? new pg.Pool({ connectionString: url });
+  const pool = opts.pool ?? (await createScriptPool());
+  if (ownPool) {
+    await verifyScriptDbConnection(pool);
+  }
 
-  const countryRegionCache = new Map<string, string | null>();
+  const slugIndex: CountrySlugIndex = await loadCountrySlugIndex(pool);
 
-  async function cachedCountryRegion(countryUuid: string): Promise<string | null> {
-    if (countryRegionCache.has(countryUuid)) return countryRegionCache.get(countryUuid) ?? null;
-    const q = await pool.query<{ region: string | null }>(
-      `SELECT region::text AS region FROM countries WHERE id = $1::uuid LIMIT 1`,
+  type CountryMeta = { region: string | null; iso: string | null; name: string | null };
+  const countryMetaCache = new Map<string, CountryMeta>();
+
+  async function cachedCountryMeta(countryUuid: string): Promise<CountryMeta> {
+    if (countryMetaCache.has(countryUuid)) return countryMetaCache.get(countryUuid)!;
+    const q = await pool.query<{ region: string | null; iso_alpha_2: string | null; name: string | null }>(
+      `SELECT region::text AS region,
+              NULLIF(trim(iso_alpha_2::text), '') AS iso_alpha_2,
+              NULLIF(trim(name::text), '') AS name
+       FROM countries WHERE id = $1::uuid LIMIT 1`,
       [countryUuid],
     );
-    const v = q.rows[0]?.region?.trim() || null;
-    countryRegionCache.set(countryUuid, v);
-    return v;
+    const meta: CountryMeta = {
+      region: q.rows[0]?.region?.trim() || null,
+      iso: q.rows[0]?.iso_alpha_2?.trim()?.toUpperCase() || null,
+      name: q.rows[0]?.name?.trim() || null,
+    };
+    countryMetaCache.set(countryUuid, meta);
+    return meta;
   }
 
   try {
@@ -350,7 +367,7 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
         continue;
       }
 
-      const countrySlug = await resolveCanonicalCountrySlug(pool, parsed.countrySlug);
+      const countrySlug = resolveCanonicalCountrySlugWithIndex(parsed.countrySlug, slugIndex);
       const countryNameDisp = humanizeSlug(countrySlug);
       const assetGroupKey = deriveAssetGroupKeyFromParts({
         countrySlug,
@@ -384,15 +401,18 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
       }
 
       const fileKey = obj.key.replace(/^\/+/, '');
+      const countryMeta = await cachedCountryMeta(countryId);
       const classify = classifyFlagDesign({
         r2Key: fileKey,
         fileStem: parsed.baseStem,
         countrySlug,
+        isoAlpha2: countryMeta.iso,
+        countryName: countryMeta.name,
         format,
       });
       const premiumTier = classify.premium_tier === 'free' ? 'free' : 'paid';
       const designTypeStr = classify.design_type;
-      const regionSnap = await cachedCountryRegion(countryId);
+      const regionSnap = countryMeta.region;
       const sortTitleValue = displayTitle.slice(0, 250);
 
       const fileUrl = publicUrlFromR2Key(cfg, fileKey);

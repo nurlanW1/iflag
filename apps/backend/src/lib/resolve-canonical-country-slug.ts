@@ -35,6 +35,12 @@ const ISO_TO_SLUG: Record<string, string> = {
   pk: 'pakistan',
 };
 
+export type CountrySlugIndex = {
+  bySlug: Map<string, string>;
+  byIso: Map<string, string>;
+  byName: Map<string, string>;
+};
+
 function normSlug(s: string): string {
   return s.trim().toLowerCase().replace(/^\-+|\-+$/g, '');
 }
@@ -54,10 +60,46 @@ function stripNationalPrefix(slug: string): string | null {
   return tail.length >= 2 ? tail : null;
 }
 
-export async function resolveCanonicalCountrySlug(
-  pool: Pool,
+export async function loadCountrySlugIndex(pool: Pool): Promise<CountrySlugIndex> {
+  const res = await pool.query<{
+    slug: string;
+    iso_alpha_2: string | null;
+    name: string | null;
+  }>(
+    `SELECT lower(trim(slug)) AS slug,
+            NULLIF(trim(iso_alpha_2::text), '') AS iso_alpha_2,
+            NULLIF(trim(name::text), '') AS name
+     FROM countries`,
+  );
+
+  const bySlug = new Map<string, string>();
+  const byIso = new Map<string, string>();
+  const byName = new Map<string, string>();
+
+  for (const row of res.rows) {
+    const slug = normSlug(row.slug);
+    if (!slug) continue;
+    bySlug.set(slug, slug);
+
+    const iso = row.iso_alpha_2?.trim().toLowerCase();
+    if (iso && iso.length === 2 && !byIso.has(iso)) byIso.set(iso, slug);
+
+    const name = row.name?.trim();
+    if (name) {
+      const nameKey = name.toLowerCase();
+      if (!byName.has(nameKey)) byName.set(nameKey, slug);
+      const hyphenName = nameKey.replace(/\s+/g, '-');
+      if (!byName.has(hyphenName)) byName.set(hyphenName, slug);
+    }
+  }
+
+  return { bySlug, byIso, byName };
+}
+
+export function resolveCanonicalCountrySlugWithIndex(
   inferredSlug: string,
-): Promise<string> {
+  index: CountrySlugIndex,
+): string {
   const raw = normSlug(inferredSlug);
   if (!raw) return inferredSlug;
 
@@ -67,50 +109,39 @@ export async function resolveCanonicalCountrySlug(
   const nationalTail = stripNationalPrefix(raw);
   if (nationalTail) {
     const aliased = SLUG_ALIASES[nationalTail] ?? nationalTail;
-    const hit = await pool.query<{ slug: string }>(
-      `SELECT slug FROM countries WHERE lower(trim(slug)) = lower(trim($1)) LIMIT 1`,
-      [aliased],
-    );
-    if (hit.rows[0]?.slug) return hit.rows[0].slug.toLowerCase();
+    const hit = index.bySlug.get(aliased);
+    if (hit) return hit;
   }
 
-  const existing = await pool.query<{ slug: string }>(
-    `SELECT slug FROM countries WHERE lower(trim(slug)) = lower(trim($1)) LIMIT 1`,
-    [raw],
-  );
-  if (existing.rows[0]?.slug) return existing.rows[0].slug.toLowerCase();
+  const existing = index.bySlug.get(raw);
+  if (existing) return existing;
 
   if (raw.length === 2) {
+    const fromDb = index.byIso.get(raw);
+    if (fromDb) return fromDb;
     const isoSlug = ISO_TO_SLUG[raw];
-    const isoQ = await pool.query<{ slug: string }>(
-      `SELECT slug FROM countries
-       WHERE upper(trim(coalesce(iso_alpha_2::text, ''))) = upper($1)
-       ORDER BY (lower(trim(slug)) = lower($2)) DESC, slug ASC
-       LIMIT 1`,
-      [raw, isoSlug ?? raw],
-    );
-    if (isoQ.rows[0]?.slug) return isoQ.rows[0].slug.toLowerCase();
+    if (isoSlug && index.bySlug.has(isoSlug)) return isoSlug;
     if (isoSlug) return isoSlug;
   }
 
   const humanized = raw.replace(/-/g, ' ');
-  const byName = await pool.query<{ slug: string }>(
-    `SELECT slug FROM countries
-     WHERE lower(trim(name::text)) = lower(trim($1))
-        OR lower(replace(trim(name::text), ' ', '-')) = lower($2)
-     LIMIT 1`,
-    [humanized, raw],
-  );
-  if (byName.rows[0]?.slug) return byName.rows[0].slug.toLowerCase();
+  const byName = index.byName.get(humanized) ?? index.byName.get(raw);
+  if (byName) return byName;
 
   const slugified = slugifySegment(humanized, 96);
   if (slugified && slugified !== raw) {
-    const again = await pool.query<{ slug: string }>(
-      `SELECT slug FROM countries WHERE lower(trim(slug)) = lower(trim($1)) LIMIT 1`,
-      [slugified],
-    );
-    if (again.rows[0]?.slug) return again.rows[0].slug.toLowerCase();
+    const again = index.bySlug.get(slugified);
+    if (again) return again;
   }
 
   return raw;
+}
+
+export async function resolveCanonicalCountrySlug(
+  pool: Pool,
+  inferredSlug: string,
+  index?: CountrySlugIndex,
+): Promise<string> {
+  const idx = index ?? (await loadCountrySlugIndex(pool));
+  return resolveCanonicalCountrySlugWithIndex(inferredSlug, idx);
 }

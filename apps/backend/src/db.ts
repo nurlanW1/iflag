@@ -1,29 +1,6 @@
 import { Pool, PoolConfig } from 'pg';
 import { runMigrations } from './db/migrations.js';
-
-/**
- * Neon and other hosts often use `sslmode=require`. Node `pg` treats require/prefer/verify-ca
- * like verify-full today but will align with libpq in pg v9 — explicit verify-full keeps strict
- * TLS and avoids the migration warning. Localhost strings are unchanged.
- */
-function normalizeDatabaseUrlForPg(connectionString: string): string {
-  let parsed: URL;
-  try {
-    parsed = new URL(connectionString);
-  } catch {
-    return connectionString;
-  }
-  const host = parsed.hostname.toLowerCase();
-  const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
-  if (isLocal) return connectionString;
-
-  const mode = parsed.searchParams.get('sslmode')?.toLowerCase() ?? '';
-  if (mode === 'require' || mode === 'prefer' || mode === 'verify-ca') {
-    parsed.searchParams.set('sslmode', 'verify-full');
-    return parsed.href;
-  }
-  return connectionString;
-}
+import { normalizeDatabaseUrlForPg } from './lib/database-url.js';
 
 const rawConnectionString =
   process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/flagstock';

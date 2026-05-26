@@ -100,8 +100,9 @@ export function StockDownloadPanel({
 
   const isPreviewSlot =
     previewFile != null && active?.id === previewFile.id && active.tier === 'preview_free';
-  const needsEntitlement =
-    requiresEntitlement ?? (active?.tier === 'pro' || Boolean(previewFile && !isPreviewSlot));
+  /** `preview_free` tier = country-name-only official files in Neon catalog. */
+  const isFreeOfficialFile = active?.tier === 'preview_free';
+  const needsEntitlement = requiresEntitlement ?? active?.tier === 'pro';
   const showPurchaseOffers =
     authLoaded &&
     planLoaded &&
@@ -143,6 +144,22 @@ export function StockDownloadPanel({
       productSlug={productSlug}
       compact={compactLayout}
     />
+  ) : isFreeOfficialFile ? (
+    <div className="flex min-h-12 items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50/80 px-3 py-2">
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-800">Free official flag</p>
+        <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)} · no subscription required</p>
+      </div>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => void onProtectedDownload()}
+        className={`${btnCompact} bg-slate-950 text-white hover:bg-slate-900`}
+      >
+        <Download className="h-4 w-4" aria-hidden strokeWidth={2.25} />
+        {busy ? '…' : 'Download'}
+      </button>
+    </div>
   ) : onDirectDownload ? (
     <div className="flex min-h-12 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
       <div className="min-w-0 flex-1">

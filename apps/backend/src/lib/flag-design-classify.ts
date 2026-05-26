@@ -1,11 +1,10 @@
 /**
  * Classify uploaded / imported flag files into design types & pricing tier.
- * Used by `import:r2`, `backfill:country-folders`.
  *
  * Product rules:
- * - Filename stem is **only** the country name (e.g. `uzbekistan`, `algeria`) → free official flag
- * - Any extra tokens (e.g. `flag uzbekistan`, `uzbekistan wave`) → paid creative catalog
- * - WebP masters are preview/cover assets only (not downloadable catalog formats)
+ * - Filename stem is **only** the country name (e.g. `USA`, `uzbekistan`, `algeria`) → free official
+ * - Any extra token (`USA_flag`, `USA_vector_file`, `flag uzbekistan`) → paid
+ * - WebP = preview/cover only (not a downloadable master)
  */
 
 export type FlagDesignType =
@@ -49,66 +48,84 @@ const CREATIVE_SUBSTRINGS = [
   'video',
 ];
 
-const OFFICIAL_SUBSTRINGS = [
-  'official',
-  'national_flag',
-  'national-flag',
-  'nationalflag',
-  '/flat/',
-  '-flat-',
-  '_flat_',
-  'standard',
-];
+/** ISO-2 → common filename stems users upload (e.g. `USA.png` for United States). */
+const ISO_COLLOQUIAL: Record<string, string[]> = {
+  us: ['usa', 'america', 'unitedstates'],
+  gb: ['uk', 'gbr', 'britain', 'greatbritain', 'unitedkingdom'],
+  ae: ['uae', 'emirates'],
+  kr: ['korea', 'southkorea'],
+  kp: ['northkorea', 'dprk'],
+  cz: ['czechia', 'czech'],
+};
 
 function norm(s: string): string {
   return s.toLowerCase().replace(/_/g, ' ');
 }
 
-function tokensFromStem(stem: string): string[] {
-  const s = norm(stem).replace(/[^\p{L}\p{N}\s\-]+/gu, ' ');
-  const parts = s.split(/[\s/_\-.]+/).map((w) => w.trim()).filter(Boolean);
-  const out: string[] = [];
-  const seen = new Set<string>();
-  for (const p of parts) {
-    if (!p || seen.has(p)) continue;
-    seen.add(p);
-    out.push(p);
-  }
-  return out;
-}
-
-function countrySlugTokens(countrySlug: string): string[] {
-  return countrySlug
-    .trim()
-    .toLowerCase()
-    .split(/[-_]+/)
-    .map((w) => w.trim())
-    .filter(Boolean);
-}
-
-function tokenMatchesCountry(token: string, countryToken: string): boolean {
-  const t = token.replace(/-/g, '');
-  const c = countryToken.replace(/-/g, '');
-  return t === c || t.includes(c) || c.includes(t);
+function compactAlphanumeric(value: string): string {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
 
 /**
- * True when the filename stem is only the country name (any separators), e.g. `algeria`, `uzbekistan`.
- * Stems like `flag uzbekistan` or `uzbekistan wave` return false.
+ * True when the stem contains separators or multiple words (`USA_flag`, `USA-vector`, `flag algeria`).
  */
-export function isCountryOnlyOfficialStem(fileStem: string, countrySlug: string): boolean {
-  const stemTokens = tokensFromStem(fileStem);
-  const countryTokens = countrySlugTokens(countrySlug);
-  if (!stemTokens.length || !countryTokens.length) return false;
+export function stemHasExtraWords(fileStem: string): boolean {
+  const raw = fileStem.trim();
+  if (!raw) return true;
+  return /[\s_\-./]+/.test(raw);
+}
 
-  const remaining = [...stemTokens];
-  for (const ct of countryTokens) {
-    const idx = remaining.findIndex((t) => tokenMatchesCountry(t, ct));
-    if (idx < 0) return false;
-    remaining.splice(idx, 1);
+export function buildCountryStemAliases(
+  countrySlug: string,
+  isoAlpha2?: string | null,
+  countryName?: string | null,
+): Set<string> {
+  const aliases = new Set<string>();
+  const add = (value: string) => {
+    const c = compactAlphanumeric(value);
+    if (c.length >= 2) aliases.add(c);
+  };
+
+  const slug = countrySlug.trim().toLowerCase();
+  if (slug) {
+    add(slug);
+    for (const part of slug.split(/[-_]+/)) add(part);
   }
 
-  return remaining.length === 0;
+  const iso = isoAlpha2?.trim().toLowerCase();
+  if (iso) {
+    add(iso);
+    for (const alt of ISO_COLLOQUIAL[iso] ?? []) add(alt);
+  }
+
+  const name = countryName?.trim();
+  if (name) {
+    add(name);
+    for (const word of name.split(/\s+/)) {
+      if (word.length >= 3) add(word);
+    }
+  }
+
+  return aliases;
+}
+
+/**
+ * Free official flag: stem is exactly the country name (no spaces, underscores, or extra labels).
+ * Examples: `USA.png` ✓ · `USA_flag.png` ✗ · `USA_vector_file.eps` ✗
+ */
+export function isCountryOnlyOfficialStem(
+  fileStem: string,
+  countrySlug: string,
+  isoAlpha2?: string | null,
+  countryName?: string | null,
+): boolean {
+  if (stemHasExtraWords(fileStem)) return false;
+
+  const stem = compactAlphanumeric(fileStem);
+  if (!stem) return false;
+
+  const aliases = buildCountryStemAliases(countrySlug, isoAlpha2, countryName);
+  return aliases.has(stem);
 }
 
 function matchCreative(pathAndStem: string): FlagDesignType | null {
@@ -128,17 +145,12 @@ function hasGenericCreativeNoise(s: string): boolean {
   return CREATIVE_SUBSTRINGS.some((k) => s.includes(k));
 }
 
-/**
- * Prefer folder segment `official` as strong signal for official-flat layouts.
- */
 export function classifyFlagDesign(params: {
-  /** Full object key incl. slashes */
   r2Key: string;
-  /** Filename stem without extension */
   fileStem: string;
-  /** Resolved country slug for stem-only free detection */
   countrySlug?: string;
-  /** File extension / normalized format */
+  isoAlpha2?: string | null;
+  countryName?: string | null;
   format?: string;
 }): {
   design_type: FlagDesignType;
@@ -151,8 +163,6 @@ export function classifyFlagDesign(params: {
   const combined = `${key} ${stem}`;
   const countrySlug = (params.countrySlug ?? '').trim().toLowerCase();
   const previewOnly = isPreviewOnlyFormat(params.format);
-
-  const inOfficialFolder = /(^|\/)official(\/|$)/.test(key);
 
   const explicitCreative = matchCreative(combined);
   if (explicitCreative) {
@@ -173,15 +183,11 @@ export function classifyFlagDesign(params: {
     };
   }
 
-  const countryOnlyStem =
-    countrySlug.length > 0 && isCountryOnlyOfficialStem(params.fileStem, countrySlug);
+  const countryOnly =
+    countrySlug.length > 0 &&
+    isCountryOnlyOfficialStem(params.fileStem, countrySlug, params.isoAlpha2, params.countryName);
 
-  const officialSignals =
-    inOfficialFolder ||
-    OFFICIAL_SUBSTRINGS.some((k) => combined.includes(k)) ||
-    countryOnlyStem;
-
-  if (officialSignals) {
+  if (countryOnly) {
     return {
       design_type: 'official_flat',
       premium_tier: previewOnly ? 'paid' : 'free',
@@ -198,7 +204,7 @@ export function classifyFlagDesign(params: {
   };
 }
 
-/** Cover-format priority rank for official_flat rows (lower = better). EPS/AI/PDF excluded upstream. */
+/** Cover-format priority rank for official_flat rows (lower = better). */
 export function coverFormatRank(format: string): number {
   const f = format.toLowerCase();
   if (f === 'webp') return 0;

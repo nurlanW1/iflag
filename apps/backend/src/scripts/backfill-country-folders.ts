@@ -15,7 +15,11 @@ import { basename, dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deriveAssetGroupKeyFromParts } from '../lib/asset-group-key.js';
 import { classifyFlagDesign } from '../lib/flag-design-classify.js';
-import { resolveCanonicalCountrySlug } from '../lib/resolve-canonical-country-slug.js';
+import {
+  loadCountrySlugIndex,
+  resolveCanonicalCountrySlugWithIndex,
+} from '../lib/resolve-canonical-country-slug.js';
+import { createScriptPool, verifyScriptDbConnection } from '../lib/script-db-pool.js';
 
 const __scriptDir = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__scriptDir, '../../.env') });
@@ -52,6 +56,12 @@ async function publishAllImportedRows(pool: pg.Pool): Promise<number> {
 }
 
 async function reconcileCanonicalCountryAssignments(pool: pg.Pool): Promise<number> {
+  const slugIndex = await loadCountrySlugIndex(pool);
+  const countryRows = await pool.query<{ id: string; slug: string }>(
+    `SELECT id, lower(trim(slug)) AS slug FROM countries`,
+  );
+  const countryIdBySlug = new Map(countryRows.rows.map((r) => [r.slug, r.id]));
+
   const res = await pool.query<FileRow & { inferred_slug: string }>(
     `SELECT f.id, f.file_name, f.file_key, f.file_path, f.country_id, f.format,
             COALESCE(NULLIF(trim(f.country_slug), ''), NULLIF(trim(c.slug), '')) AS inferred_slug
@@ -62,12 +72,8 @@ async function reconcileCanonicalCountryAssignments(pool: pg.Pool): Promise<numb
   for (const row of res.rows) {
     const inferred = row.inferred_slug?.trim();
     if (!inferred) continue;
-    const canonical = await resolveCanonicalCountrySlug(pool, inferred);
-    const countryQ = await pool.query<{ id: string }>(
-      `SELECT id FROM countries WHERE lower(trim(slug)) = lower(trim($1)) LIMIT 1`,
-      [canonical],
-    );
-    const countryId = countryQ.rows[0]?.id;
+    const canonical = resolveCanonicalCountrySlugWithIndex(inferred, slugIndex);
+    const countryId = countryIdBySlug.get(canonical.toLowerCase());
     if (!countryId) continue;
 
     const stem = stemFromFileName(String(row.file_name || 'asset'));
@@ -99,9 +105,11 @@ async function reconcileCanonicalCountryAssignments(pool: pg.Pool): Promise<numb
 }
 
 async function classifyAllRows(pool: pg.Pool): Promise<number> {
-  const res = await pool.query<FileRow>(
+  const res = await pool.query<FileRow & { iso_alpha_2: string | null; country_name: string | null }>(
     `SELECT f.id, f.file_name, f.file_key, f.file_path, f.country_id, f.format,
-            COALESCE(NULLIF(trim(c.slug), ''), NULLIF(trim(f.country_slug), '')) AS country_slug
+            COALESCE(NULLIF(trim(c.slug), ''), NULLIF(trim(f.country_slug), '')) AS country_slug,
+            NULLIF(trim(c.iso_alpha_2::text), '') AS iso_alpha_2,
+            NULLIF(trim(c.name::text), '') AS country_name
      FROM country_flag_files f
      LEFT JOIN countries c ON c.id = f.country_id`,
   );
@@ -112,6 +120,8 @@ async function classifyAllRows(pool: pg.Pool): Promise<number> {
       r2Key: r2LikeKey(row),
       fileStem: stem,
       countrySlug: row.country_slug?.trim() ?? '',
+      isoAlpha2: row.iso_alpha_2,
+      countryName: row.country_name,
       format: row.format?.trim() ?? '',
     });
     const premium = parsed.premium_tier === 'free' ? 'free' : 'paid';
@@ -279,10 +289,8 @@ async function syncCountryAggregates(pool: pg.Pool): Promise<void> {
 }
 
 async function main() {
-  const url = process.env.DATABASE_URL?.trim();
-  if (!url) throw new Error('DATABASE_URL is required');
-
-  const pool = new pg.Pool({ connectionString: url });
+  const pool = await createScriptPool();
+  await verifyScriptDbConnection(pool);
   try {
     const nPub = await publishAllImportedRows(pool);
     console.log(`[backfill:country-folders] published rows: ${nPub}`);
