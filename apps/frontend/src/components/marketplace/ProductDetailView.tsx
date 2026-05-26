@@ -7,7 +7,9 @@ import type { AssetSeoPayload } from '@/lib/seo/asset-metadata';
 import { marketplaceProductCanonicalPath } from '@/lib/seo/marketplace-product-metadata';
 import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/structured-data';
 import { toPublicProduct } from '@/lib/marketplace/product-mapper';
+import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 import { dedupePublicProductFiles, isPaidCatalogProduct } from '@/lib/marketplace/catalog-utils';
+import { productShareImageUrl } from '@/lib/seo/product-share-image';
 import { NeonAssetDownloads } from '@/components/marketplace/NeonAssetDownloads';
 import type { Product } from '@/types/marketplace';
 
@@ -79,7 +81,7 @@ export function ProductDetailView({ slug, product }: Props) {
   const seoPayload: AssetSeoPayload = {
     title: product.seo.metaTitle || product.title,
     description: product.seo.metaDescription || product.description,
-    image: product.seo.ogImageUrl || product.previewUrl || product.thumbnailUrl,
+    image: productShareImageUrl(product) || product.previewUrl || product.thumbnailUrl,
     canonicalPath,
     priceCents: product.priceCents,
     currency: product.currency,
@@ -211,7 +213,7 @@ export function ProductDetailView({ slug, product }: Props) {
                 density="compact"
                 caption={undefined}
                 formatCount={undefined}
-                watermarkEnabled={false}
+                watermarkEnabled={shouldWatermarkFlagPreview({ isPremiumDesign: paid })}
               />
 
               {siblingPublic.length > 0 ? (

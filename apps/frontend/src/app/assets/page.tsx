@@ -266,15 +266,15 @@ export default function AssetsPage() {
                     <div className="flex items-center gap-4">
                       <div
                         className={`relative h-16 w-24 shrink-0 overflow-hidden rounded ${
-                          asset.thumbnail_url && !shouldWatermarkFlagPreview(asset.thumbnail_url)
-                            ? ''
-                            : 'bg-black/5'
+                          asset.is_premium ? 'bg-black/5' : asset.thumbnail_url?.includes('.webp') ? '' : 'bg-black/5'
                         }`}
                       >
                         {asset.thumbnail_url && (
                           <ProductPreviewImage
                             className="absolute inset-0"
-                            watermarkEnabled={shouldWatermarkFlagPreview(asset.thumbnail_url)}
+                            watermarkEnabled={shouldWatermarkFlagPreview({
+                              isPremiumDesign: Boolean(asset.is_premium),
+                            })}
                             protectEnabled
                           >
                             <img

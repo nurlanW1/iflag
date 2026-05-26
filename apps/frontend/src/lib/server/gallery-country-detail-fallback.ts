@@ -4,6 +4,7 @@
 
 import { getCountryCode } from '@/lib/country-mapping';
 import { buildCountryHubDescription } from '@/lib/gallery/country-hub-copy';
+import { variantFormatsArePremium } from '@/lib/gallery/flag-preview-watermark';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
 import { slugFromAssetGroupKey } from '@/lib/marketplace/group-flag-products';
 import { joinBackendApiPath, resolveBackendApiBase } from '@/lib/auth/backend-url';
@@ -112,12 +113,14 @@ export async function fetchCountryGalleryFromBackendApi(
           'Design',
         type: (row.design_type ?? 'design').replace(/_/g, ' '),
         thumbnail: '',
+        isPremiumDesign: false,
         formats: [],
         _formats: [],
       };
       groups.set(key, v);
     }
 
+    const bucket = groups.get(key)!;
     const preview = previewForRow(row);
     const sz =
       row.file_size_bytes != null
@@ -126,7 +129,7 @@ export async function fetchCountryGalleryFromBackendApi(
     const previewOnly = isPreviewOnlyFormat(row.format);
     const tier = (row.premium_tier ?? 'free').toLowerCase() === 'free' ? 'free' : 'paid';
 
-    v._formats.push({
+    bucket._formats.push({
       id: row.id,
       format: row.format.toUpperCase(),
       formatCode: row.format.toLowerCase() === 'jpeg' ? 'jpg' : row.format.toLowerCase(),
@@ -141,17 +144,21 @@ export async function fetchCountryGalleryFromBackendApi(
       dimensions: 'Original',
     });
 
-    if (preview && (!v.thumbnail || row.format.toLowerCase() === 'png')) {
-      v.thumbnail = preview;
+    if (preview && (!bucket.thumbnail || row.format.toLowerCase() === 'png')) {
+      bucket.thumbnail = preview;
     }
   }
 
   const variants = [...groups.values()]
     .filter((v) => v._formats.length > 0)
-    .map(({ _formats, ...rest }) => ({
-      ...rest,
-      formats: _formats,
-    }));
+    .map(({ _formats, ...rest }) => {
+      const formats = _formats;
+      return {
+        ...rest,
+        formats,
+        isPremiumDesign: variantFormatsArePremium(formats),
+      };
+    });
 
   if (!variants.length) return null;
 

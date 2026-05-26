@@ -22,7 +22,9 @@ interface AssetCardProps {
 
 export default function AssetCard({ asset, index = 0 }: AssetCardProps) {
   const thumb = asset.thumbnail_url?.trim() || '';
-  const isWebpThumb = Boolean(thumb && !shouldWatermarkFlagPreview(thumb));
+  const isPremium = Boolean(asset.is_premium);
+  const showWatermark = shouldWatermarkFlagPreview({ isPremiumDesign: isPremium });
+  const isWebpThumb = Boolean(thumb?.includes('.webp'));
 
   return (
     <motion.div
@@ -41,7 +43,7 @@ export default function AssetCard({ asset, index = 0 }: AssetCardProps) {
             {thumb ? (
               <ProductPreviewImage
                 className="absolute inset-0"
-                watermarkEnabled={shouldWatermarkFlagPreview(thumb)}
+                watermarkEnabled={showWatermark}
                 protectEnabled
               >
                 <img

@@ -17,6 +17,7 @@ import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
 import { publishedFlagHasMediaSql } from '@/lib/server/gallery-published-media';
 import { galleryOptionalColumns, resetGallerySchemaCache } from '@/lib/server/gallery-schema';
 import { buildCountryHubDescription } from '@/lib/gallery/country-hub-copy';
+import { variantFormatsArePremium } from '@/lib/gallery/flag-preview-watermark';
 import { urlLooksLikeWebpAsset } from '@/lib/gallery/country-hub-cover';
 
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
@@ -392,6 +393,7 @@ export type CountryGalleryPayload = {
     name: string;
     type: string;
     thumbnail: string;
+    isPremiumDesign: boolean;
     formats: {
       id: string;
       format: string;
@@ -648,6 +650,7 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
       name: b.name,
       type: b.type.replace(/_/g, ' ') || 'design',
       thumbnail: cover,
+      isPremiumDesign: variantFormatsArePremium(sortedFormats),
       formats: sortedFormats,
     };
   });

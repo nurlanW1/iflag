@@ -5,6 +5,7 @@ import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
 import { collectFormatLabels, formatProductListPrice } from '@/lib/marketplace/catalog-utils';
 import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
+import { isPaidCatalogProduct } from '@/lib/marketplace/catalog-utils';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
 function countryLabelFromSlug(slug: string) {
@@ -27,7 +28,9 @@ export function MarketplaceProductCard({
   const formatHints = product.files.map((f) => f.format);
   const thumb = product.thumbnailUrl ?? product.previewUrl;
   const svgThumb = thumb ? shouldUnoptimizeFlagImageHref(thumb, formatHints) : false;
-  const isWebpThumb = Boolean(thumb && !shouldWatermarkFlagPreview(thumb));
+  const isPremium = isPaidCatalogProduct(product);
+  const showWatermark = shouldWatermarkFlagPreview({ isPremiumDesign: isPremium });
+  const isWebpThumb = Boolean(thumb?.includes('.webp'));
 
   return (
     <article className="group flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-[0_10px_34px_-26px_rgba(42,52,65,0.14)] transition-[box-shadow,border-color] duration-300 hover:border-neutral-300 hover:shadow-[0_18px_46px_-28px_rgba(42,52,65,0.18)]">
@@ -38,7 +41,7 @@ export function MarketplaceProductCard({
         {thumb ? (
           <ProductPreviewImage
             className="absolute inset-0"
-            watermarkEnabled={shouldWatermarkFlagPreview(thumb)}
+            watermarkEnabled={showWatermark}
             protectEnabled
           >
             <Image

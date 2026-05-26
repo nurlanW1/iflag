@@ -3,7 +3,6 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
-import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
 type Props = {
@@ -44,8 +43,7 @@ export function PremiumAssetPreview({
 }: Props) {
   const uniq = [...new Set(previewUrls.filter((u) => typeof u === 'string' && u.trim()))];
   const src = uniq[0] ?? '';
-  const watermarkEnabled =
-    watermarkEnabledProp !== false && shouldWatermarkFlagPreview(src);
+  const watermarkEnabled = watermarkEnabledProp === true;
   const compact = density === 'compact';
   const showFooter =
     !compact && Boolean(caption?.trim() || (formatCount != null && formatCount > 0));

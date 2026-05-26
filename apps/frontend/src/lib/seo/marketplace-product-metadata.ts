@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { Product } from '@/types/marketplace';
+import { productShareImageUrl } from '@/lib/seo/product-share-image';
 import { getSiteOrigin, SITE_NAME } from '@/lib/seo/site-config';
 
 /** Canonical public URL path for catalog products (SEO / AdSense friendly). */
@@ -12,7 +13,7 @@ export function buildMarketplaceProductMetadata(product: Product): Metadata {
     product.description ||
     `View and download ${product.title} on ${SITE_NAME}.`;
   const canonical = product.seo.canonicalPath?.trim() || marketplaceProductCanonicalPath(product.slug);
-  const ogImage = product.seo.ogImageUrl || product.previewUrl || product.thumbnailUrl;
+  const ogImage = productShareImageUrl(product);
   const ogTitle = `${titleSegment} | ${SITE_NAME}`;
   return {
     title: titleSegment,

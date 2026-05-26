@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, ImageOff, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCover';
+import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 import {
   FLAG_THUMB_PLACEHOLDER_DATA_URL,
   flagThumbPlaceholderForFileId,
@@ -18,7 +20,8 @@ interface Variant {
   name: string;
   type: string;
   thumbnail: string;
-  formats: Array<{ format: string; formatCode?: string }>;
+  isPremiumDesign?: boolean;
+  formats: Array<{ format: string; formatCode?: string; premiumTier?: string }>;
 }
 
 interface CountryData {
@@ -212,6 +215,13 @@ export default function CountryHubPage() {
           <ul className="grid grid-cols-1 gap-3.5 min-[380px]:grid-cols-2 sm:gap-4 md:grid-cols-3 md:gap-5 xl:grid-cols-4">
             {data.variants.map((v) => {
               const href = `/assets/${encodeURIComponent(v.productSlug)}`;
+              const isPremium =
+                v.isPremiumDesign ??
+                v.formats.some((f) => {
+                  const t = (f.premiumTier ?? 'free').toLowerCase();
+                  return t === 'paid' || t === 'freemium';
+                });
+              const showWatermark = shouldWatermarkFlagPreview({ isPremiumDesign: isPremium });
               const fmtLabel = v.formats
                 .map((f) => f.format)
                 .filter(Boolean)
@@ -224,25 +234,31 @@ export default function CountryHubPage() {
                     className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
                   >
                     <div className="relative aspect-[4/3] bg-[#fafaf9]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={v.thumbnail || FLAG_THUMB_PLACEHOLDER_DATA_URL}
-                        alt={v.name}
-                        loading="lazy"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
-                        draggable={false}
-                        className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-[1.02]"
-                        onError={(e) => {
-                          const el = e.currentTarget;
-                          el.onerror = null;
-                          if (hasWebpCover && webpCover && el.src !== webpCover) {
-                            el.src = webpCover;
-                            return;
-                          }
-                          el.src = flagThumbPlaceholderForFileId(v.id);
-                        }}
-                      />
+                      <ProductPreviewImage
+                        className="absolute inset-0"
+                        watermarkEnabled={showWatermark}
+                        protectEnabled={false}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={v.thumbnail || FLAG_THUMB_PLACEHOLDER_DATA_URL}
+                          alt={v.name}
+                          loading="lazy"
+                          decoding="async"
+                          referrerPolicy="no-referrer"
+                          draggable={false}
+                          className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-[1.02]"
+                          onError={(e) => {
+                            const el = e.currentTarget;
+                            el.onerror = null;
+                            if (!isPremium && hasWebpCover && webpCover && el.src !== webpCover) {
+                              el.src = webpCover;
+                              return;
+                            }
+                            el.src = flagThumbPlaceholderForFileId(v.id);
+                          }}
+                        />
+                      </ProductPreviewImage>
                       <span className="absolute right-2 top-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
                         {v.formats.length} formats
                       </span>

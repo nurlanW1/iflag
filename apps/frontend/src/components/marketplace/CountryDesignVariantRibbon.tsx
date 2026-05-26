@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Crown } from 'lucide-react';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
+import { isPaidCatalogProduct } from '@/lib/marketplace/catalog-utils';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
@@ -50,6 +51,7 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
           const formatHints = p.files.map((f) => f.format);
           const svgThumb = thumb ? shouldUnoptimizeFlagImageHref(thumb, formatHints) : false;
           const formatCount = p.files.length;
+          const isPremium = isPaidCatalogProduct(p);
 
           return (
             <Link
@@ -64,7 +66,7 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
                 {thumb ? (
                   <ProductPreviewImage
                     className="absolute inset-0"
-                    watermarkEnabled={shouldWatermarkFlagPreview(thumb)}
+                    watermarkEnabled={shouldWatermarkFlagPreview({ isPremiumDesign: isPremium })}
                     protectEnabled
                   >
                     <Image
