@@ -129,10 +129,15 @@ export function getPublicR2PublicBaseUrl(): string | null {
   return pub ? pub.replace(/\/+$/, '') : null;
 }
 
-/** `publicBase + '/' + normalizedKey` — works when only public R2 URL is configured. */
+/** `publicBase + '/' + encoded key path — works when only public R2 URL is configured. */
 export function getPublicR2FileUrl(fileKey: string): string | null {
   const base = getPublicR2PublicBaseUrl();
   if (!base) return null;
   const k = fileKey.replace(/^\/+/, '');
-  return `${base}/${k}`;
+  const path = k
+    .split('/')
+    .filter(Boolean)
+    .map((seg) => encodeURIComponent(seg))
+    .join('/');
+  return path ? `${base}/${path}` : null;
 }

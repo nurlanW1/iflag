@@ -6,11 +6,13 @@ import { getDb } from '@/lib/server/db';
 import {
   applyGalleryDisplayNames,
   fetchGalleryCountriesFromDb,
+  galleryDbTargetForLogs,
   isPackFallbackFlagThumbnail,
   logGalleryCountriesStats,
   type GalleryCountrySummary,
   type GalleryCountryListFilters,
 } from '@/lib/server/gallery-from-db';
+import { fetchGalleryCountriesFromBackendApi } from '@/lib/server/gallery-backend-fallback';
 
 export const dynamic = 'force-dynamic';
 
@@ -163,8 +165,37 @@ export async function GET(request: Request) {
             { headers: { 'Cache-Control': 'no-store' } },
           );
         }
+
+        const fromBackend = await fetchGalleryCountriesFromBackendApi();
+        if (fromBackend.length > 0) {
+          console.info(
+            `[gallery/countries] Neon empty (${galleryDbTargetForLogs(process.env.DATABASE_URL)}); served ${fromBackend.length} hubs from backend API`,
+          );
+          const merged =
+            mergeLegacyFlagStock ? mergeStockOnlyIntoDb(fromBackend, stockCountries) : fromBackend;
+          return NextResponse.json(
+            { countries: applyGalleryDisplayNames(merged) },
+            { headers: { 'Cache-Control': 'no-store' } },
+          );
+        }
       } catch (err) {
         console.error('[gallery/countries] database gallery failed, falling back to flag_stock only:', err);
+      }
+    } else {
+      const fromBackend = await fetchGalleryCountriesFromBackendApi();
+      if (fromBackend.length > 0) {
+        console.info(
+          `[gallery/countries] DATABASE_URL unset; served ${fromBackend.length} hubs from backend API`,
+        );
+        const merged =
+          process.env.FLAG_STOCK_MERGE_WITH_DB === 'true' ||
+          process.env.NEXT_PUBLIC_FLAG_STOCK_MERGE_WITH_DB === 'true'
+            ? mergeStockOnlyIntoDb(fromBackend, stockCountries)
+            : fromBackend;
+        return NextResponse.json(
+          { countries: applyGalleryDisplayNames(merged) },
+          { headers: { 'Cache-Control': 'no-store' } },
+        );
       }
     }
 

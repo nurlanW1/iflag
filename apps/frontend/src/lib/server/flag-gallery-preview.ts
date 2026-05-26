@@ -5,9 +5,13 @@
 import { neonLikeRowGroupKey, type NeonLikeFlagRow } from '@/lib/marketplace/group-flag-products';
 import { buildCatalogProductFromFlagBundle, NEON_SELECT_FIELDS } from '@/lib/server/neon-catalog';
 import { getDb } from '@/lib/server/db';
+import { PUBLISHED_FLAG_HAS_MEDIA_SQL } from '@/lib/server/gallery-published-media';
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
-import { previewDisplayUrlCandidates } from '@/lib/server/flag-asset-url';
+import {
+  fallbackUrlsForGalleryListThumb,
+  previewDisplayUrlCandidates,
+} from '@/lib/server/flag-asset-url';
 
 /** Fisher–Yates shuffle */
 function shuffle<T>(items: T[]): T[] {
@@ -50,19 +54,17 @@ function pickMetadataRow(bundle: NeonLikeFlagRow[]): NeonLikeFlagRow {
  * so grid slots never inflate with premium originals when previews exist on the CDN.
  */
 function landingCardImageHref(row: NeonLikeFlagRow): string {
-  const tierRaw = (row.premium_tier ?? 'free').toLowerCase();
-  const free = tierRaw === 'free';
-  for (const raw of previewDisplayUrlCandidates({
+  for (const raw of fallbackUrlsForGalleryListThumb({
     premiumTierRaw: row.premium_tier,
     previewUrl: row.preview_url,
     thumbnailUrl: row.thumbnail_url,
-    fileUrl: free ? row.file_url : null,
+    fileUrl: row.file_url,
   })) {
     const out = resolveGalleryAssetUrl(raw);
     if (out) return out;
   }
   const key = row.file_key?.trim();
-  if (key && free) {
+  if (key) {
     const href = getPublicR2FileUrl(key);
     if (href) return resolveGalleryAssetUrl(href);
   }
@@ -113,12 +115,7 @@ export async function fetchRandomGalleryPreviewItems(opts: {
      FROM country_flag_files cff
      LEFT JOIN countries c ON c.id = cff.country_id
      WHERE cff.status = 'published'
-       AND (
-         (cff.file_url IS NOT NULL AND trim(cff.file_url) <> '')
-         OR (cff.file_key IS NOT NULL AND trim(cff.file_key) <> '')
-         OR (cff.preview_url IS NOT NULL AND trim(cff.preview_url) <> '')
-         OR (cff.thumbnail_url IS NOT NULL AND trim(cff.thumbnail_url) <> '')
-       )
+       AND ${PUBLISHED_FLAG_HAS_MEDIA_SQL}
      ${orderSql}
      LIMIT $1`,
     [sample]

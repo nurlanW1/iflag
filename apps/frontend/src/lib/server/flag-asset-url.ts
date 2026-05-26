@@ -39,7 +39,8 @@ export function previewDisplayUrlCandidates(input: {
 }
 
 /**
- * Country list thumbnails — same cascade as product cards; never exposes paid `file_url`.
+ * Country hub / list thumbnails — always allow preview + thumbnail URLs (covers WebP masters).
+ * `file_url` is only appended when tier is free so paid originals stay gated.
  */
 export function fallbackUrlsForGalleryListThumb(input: {
   premiumTierRaw?: string | null;
@@ -47,7 +48,12 @@ export function fallbackUrlsForGalleryListThumb(input: {
   previewUrl?: string | null | undefined;
   thumbnailUrl?: string | null | undefined;
 }): string[] {
-  return previewDisplayUrlCandidates(input);
+  const safe = uniqStrings([input.previewUrl, input.thumbnailUrl]);
+  const free = (input.premiumTierRaw ?? 'free').toLowerCase() === 'free';
+  if (free) {
+    return uniqStrings([...safe, input.fileUrl]);
+  }
+  return safe.length > 0 ? safe : uniqStrings([input.fileUrl]);
 }
 
 /**

@@ -13,6 +13,7 @@ import {
   resolvedFlagPublicHref,
 } from '@/lib/server/flag-asset-url';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
+import { PUBLISHED_FLAG_HAS_MEDIA_SQL } from '@/lib/server/gallery-published-media';
 
 /** Gallery/country tiles — canonical API fields (`id`, `thumbnail_url`, `flag_count`) plus legacy `thumbnail`/`count` for browsers. */
 export type GalleryCountrySummary = {
@@ -136,14 +137,14 @@ export async function logGalleryCountriesStats(pool: Pool): Promise<void> {
     const totalPublishedFiles = await read(
       `SELECT COUNT(*)::int AS n FROM country_flag_files
        WHERE lower(trim(coalesce(status::text, ''))) = 'published'
-         AND NULLIF(trim(file_url::text), '') IS NOT NULL`,
+         AND ${PUBLISHED_FLAG_HAS_MEDIA_SQL}`,
     );
     const joinedCount = await read(
       `SELECT COUNT(DISTINCT c.id)::int AS n
        FROM countries c
        INNER JOIN country_flag_files f ON f.country_id = c.id
        WHERE lower(trim(coalesce(f.status::text, ''))) = 'published'
-         AND NULLIF(trim(f.file_url::text), '') IS NOT NULL`,
+         AND ${PUBLISHED_FLAG_HAS_MEDIA_SQL}`,
     );
     console.log('[gallery/countries] total countries', totalCountries);
     console.log('[gallery/countries] total country_flag_files', totalFlagFiles);
@@ -225,7 +226,7 @@ export async function fetchGalleryCountriesFromDb(
          )::int AS design_cnt
        FROM country_flag_files
        WHERE lower(trim(coalesce(status::text, ''))) = 'published'
-         AND COALESCE(NULLIF(trim(file_url::text), ''), '') <> ''
+         AND ${PUBLISHED_FLAG_HAS_MEDIA_SQL}
        GROUP BY country_id
      ) agg ON agg.country_id = c.id
      LEFT JOIN LATERAL (
@@ -302,18 +303,15 @@ export async function fetchGalleryCountriesFromDb(
       fallbackRawUrls: fallbackUrlsForGalleryListThumb({
         premiumTierRaw: 'free',
         fileUrl: fileUrlForRow || null,
-        previewUrl: effectivePreviewUrl,
-        thumbnailUrl: effectiveThumbnailUrl,
+        previewUrl: effectivePreviewUrl || coverPick || null,
+        thumbnailUrl: effectiveThumbnailUrl || coverPick || null,
       }),
     });
-    /** DB sometimes stores only object key in `file_url` (no scheme) — build public R2 URL when possible. */
-    const primaryPath = (coverPick || fileUrlForRow).trim();
+    /** DB may store only object key in `file_url` / cover — build public R2 URL when possible. */
+    const primaryPath = (coverPick || fileUrlForRow || row.raw_file_key || '').trim();
     if (!thumb && primaryPath && !/^https?:\/\//i.test(primaryPath)) {
-      const normalizedKey = primaryPath.replace(/^\/+/, '');
-      if (isSafePublicFlagObjectPath(normalizedKey)) {
-        const built = getPublicR2FileUrl(normalizedKey);
-        if (built) thumb = built;
-      }
+      const built = getPublicR2FileUrl(primaryPath.replace(/^\/+/, ''));
+      if (built) thumb = built;
     }
     if (!thumb || isPackFallbackFlagThumbnail(thumb)) {
       thumb = FLAG_THUMB_PLACEHOLDER_DATA_URL;
@@ -466,57 +464,22 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
     );
   }
 
-  for (const r of fRes.rows) {
-    if (isPreviewOnlyFormat(r.format)) continue;
-
-    const nbytes = Number.parseInt(String(r.file_size_bytes), 10);
-    const sz = Number.isFinite(nbytes) ? nbytes : 0;
-    const ext = formatExtension(r.format);
-    const tier = normalizePremiumTier(r.premium_tier);
-
-    const dim =
-      r.width && r.height && r.width > 0 && r.height > 0
-        ? `${r.width}×${r.height} px`
-        : 'Original';
-
-    const thumbStored = r.thumbnail_url?.trim() || '';
-    const previewStored = r.preview_url?.trim() || '';
-    const fileUrl = r.file_url?.trim() || '';
-    const cascade: string[] = [];
-    if (previewStored) {
-      cascade.push(previewStored);
-    }
-    if (thumbStored) {
-      cascade.push(thumbStored);
-    }
-    if (tier === 'free' && isImgPreviewableFormat(r.format) && fileUrl) {
-      cascade.push(fileUrl);
-    }
-
-    let previewUrl = resolvedFlagPublicHref({
+  function previewUrlForFlagRow(r: FlagFileRow): string {
+    const href = resolvedFlagPublicHref({
       fileKey: r.file_key,
-      fallbackRawUrls: cascade,
+      fallbackRawUrls: fallbackUrlsForGalleryListThumb({
+        premiumTierRaw: r.premium_tier,
+        previewUrl: r.preview_url,
+        thumbnailUrl: r.thumbnail_url,
+        fileUrl: r.file_url,
+      }),
     });
-    if (!previewUrl) {
-      previewUrl = flagThumbPlaceholderForFileId(String(r.id));
-    }
+    return href || flagThumbPlaceholderForFileId(String(r.id));
+  }
 
-    const downloadProtected =
-      String(r.premium_tier ?? 'free').trim().toLowerCase() !== 'free';
-
-    const formatRow: FormatRow = {
-      id: String(r.id),
-      format: formatDisplayName(r.format),
-      formatCode: ext,
-      category: formatToCategory(r.format),
-      file: r.file_name,
-      url: undefined,
-      previewUrl,
-      premiumTier: tier,
-      downloadProtected,
-      size: formatFileSize(sz),
-      dimensions: dim,
-    };
+  for (const r of fRes.rows) {
+    const previewOnly = isPreviewOnlyFormat(r.format);
+    const previewUrl = previewUrlForFlagRow(r);
 
     const key = designBucketKey(r);
     let builder = builders.get(key);
@@ -535,7 +498,34 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
       builders.set(key, builder);
     }
 
-    builder.formats.push(formatRow);
+    if (!previewOnly) {
+      const nbytes = Number.parseInt(String(r.file_size_bytes), 10);
+      const sz = Number.isFinite(nbytes) ? nbytes : 0;
+      const ext = formatExtension(r.format);
+      const tier = normalizePremiumTier(r.premium_tier);
+
+      const dim =
+        r.width && r.height && r.width > 0 && r.height > 0
+          ? `${r.width}×${r.height} px`
+          : 'Original';
+
+      const downloadProtected =
+        String(r.premium_tier ?? 'free').trim().toLowerCase() !== 'free';
+
+      builder.formats.push({
+        id: String(r.id),
+        format: formatDisplayName(r.format),
+        formatCode: ext,
+        category: formatToCategory(r.format),
+        file: r.file_name,
+        url: undefined,
+        previewUrl,
+        premiumTier: tier,
+        downloadProtected,
+        size: formatFileSize(sz),
+        dimensions: dim,
+      });
+    }
 
     const score = thumbScoreForFormat(r.format);
     if (score > builder.thumbScore) {
@@ -544,7 +534,9 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
     }
   }
 
-  const variants: CountryGalleryPayload['variants'] = Array.from(builders.values()).map((b) => {
+  const variants: CountryGalleryPayload['variants'] = Array.from(builders.values())
+    .filter((b) => b.formats.length > 0)
+    .map((b) => {
     const sortedFormats = [...b.formats].sort((a, c) => {
       const ai = FORMAT_DISPLAY_ORDER[a.formatCode] ?? 9;
       const ci = FORMAT_DISPLAY_ORDER[c.formatCode] ?? 9;
