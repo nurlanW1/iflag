@@ -56,6 +56,27 @@ export function fallbackUrlsForGalleryListThumb(input: {
   return safe.length > 0 ? safe : uniqStrings([input.fileUrl]);
 }
 
+const RASTER_THUMB_FORMATS = new Set(['webp', 'png', 'jpg', 'jpeg', 'svg']);
+
+/**
+ * Gallery design tiles — show raster/WebP masters in `<img>` even when tier is paid
+ * (download stays gated; preview bytes are already public on R2).
+ */
+export function galleryVariantThumbCandidates(input: {
+  format?: string | null;
+  premiumTierRaw?: string | null;
+  fileUrl?: string | null | undefined;
+  previewUrl?: string | null | undefined;
+  thumbnailUrl?: string | null | undefined;
+}): string[] {
+  const fmt = (input.format ?? '').trim().toLowerCase();
+  const safe = uniqStrings([input.previewUrl, input.thumbnailUrl]);
+  if (RASTER_THUMB_FORMATS.has(fmt)) {
+    return uniqStrings([...safe, input.fileUrl]);
+  }
+  return fallbackUrlsForGalleryListThumb(input);
+}
+
 /**
  * Pick the best HTTPS/data URL for a published `country_flag_files` row.
  * Order: R2 derived from `file_key` → preview_url → image file_url chain (handled by callers) …

@@ -10,6 +10,7 @@ import { isSafePublicFlagObjectPath, resolveGalleryAssetUrl } from '@/lib/server
 import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
 import {
   fallbackUrlsForGalleryListThumb,
+  galleryVariantThumbCandidates,
   resolvedFlagPublicHref,
 } from '@/lib/server/flag-asset-url';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
@@ -499,10 +500,16 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
 
   function thumbScoreForFormat(fmt: string): number {
     const f = fmt.toLowerCase();
+    if (f === 'webp') return 6;
     if (f === 'png') return 5;
-    if (f === 'jpg' || f === 'jpeg' || f === 'webp') return 4;
+    if (f === 'jpg' || f === 'jpeg') return 4;
     if (f === 'svg') return 3;
     return 0;
+  }
+
+  function isUnresolvedThumb(url: string): boolean {
+    const u = url.trim();
+    return !u || u.startsWith('data:image/svg+xml') || isPackFallbackFlagThumbnail(u);
   }
 
   function variantGroupKey(row: FlagFileRow): string {
@@ -543,16 +550,26 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
   }
 
   function previewUrlForFlagRow(r: FlagFileRow): string {
-    const href = resolvedFlagPublicHref({
+    return resolvedFlagPublicHref({
       fileKey: r.file_key,
-      fallbackRawUrls: fallbackUrlsForGalleryListThumb({
+      fallbackRawUrls: galleryVariantThumbCandidates({
+        format: r.format,
         premiumTierRaw: r.premium_tier,
         previewUrl: r.preview_url,
         thumbnailUrl: r.thumbnail_url,
         fileUrl: r.file_url,
       }),
     });
-    return href || flagThumbPlaceholderForFileId(String(r.id));
+  }
+
+  let folderWebpThumb = '';
+  for (const r of fRes.rows) {
+    if (r.format?.trim().toLowerCase() !== 'webp') continue;
+    const u = previewUrlForFlagRow(r);
+    if (u && !isUnresolvedThumb(u)) {
+      folderWebpThumb = u;
+      break;
+    }
   }
 
   for (const r of fRes.rows) {
@@ -619,8 +636,12 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
       if (ai !== ci) return ai - ci;
       return a.file.localeCompare(c.file);
     });
-    const cover =
-      b.thumbnail || sortedFormats[0]?.previewUrl || flagThumbPlaceholderForFileId(b.id);
+    const fromFormats = sortedFormats
+      .map((f) => f.previewUrl)
+      .find((u) => u && !isUnresolvedThumb(u));
+    const cover = !isUnresolvedThumb(b.thumbnail)
+      ? b.thumbnail
+      : fromFormats || folderWebpThumb || flagThumbPlaceholderForFileId(b.id);
     return {
       id: b.id,
       productSlug: b.productSlug,

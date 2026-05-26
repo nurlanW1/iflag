@@ -1,17 +1,34 @@
 /**
- * Country folder hub copy — DB `countries.description` first, then curated / template fallbacks.
+ * Country folder hub copy — DB `countries.description` first, then curated / generated fallbacks.
  */
 
-const FLAG_FACTS: Record<string, string> = {
-  DZ: 'The Algerian flag uses green and white bands with a red crescent and star — symbols referenced in the national emblem since independence. Green stands for Islam and the land, white for purity, and red for the sacrifices of the struggle for freedom.',
-  UZ: 'The flag of Uzbekistan features horizontal blue, white, and green stripes with thin red borders, a white crescent, and twelve stars. Blue reflects the sky and water, white peace, green nature, and the stars the months of the year.',
-  BE: 'The Belgian flag is a vertical tricolour of black, yellow, and red — one of the few national flags using vertical bands. The colours come from the Duchy of Brabant coat of arms.',
-  US: 'The United States flag bears thirteen stripes and fifty stars, representing the original colonies and current states. It is one of the most widely recognized national symbols in the world.',
-  TR: 'The Turkish flag is red with a white crescent and star. The design derives from Ottoman tradition and was adopted for the Republic of Turkey.',
-  FR: 'The French tricolour — blue, white, and red — dates to the Revolution. It remains a standard reference for vertical three-band national flags.',
-  DE: 'Germany’s flag is a horizontal tricolour of black, red, and gold (yellow). The modern arrangement was readopted after reunification in 1990.',
-  GB: 'The Union Jack combines the crosses of England, Scotland, and Ireland. It is flown as the national flag of the United Kingdom.',
-  PK: 'Pakistan’s flag is green with a white vertical stripe, crescent, and star. Green represents Islam and the majority Muslim population; white religious minorities and peace.',
+const FLAG_PROFILES: Record<
+  string,
+  { paragraphs: string[]; regionHint?: string }
+> = {
+  UZ: {
+    regionHint: 'Central Asia',
+    paragraphs: [
+      'Uzbekistan is a landlocked country in Central Asia, bordered by Kazakhstan, Kyrgyzstan, Tajikistan, Afghanistan, and Turkmenistan. With a population of more than 35 million, it is one of the most populous states in the region. Its history spans ancient Silk Road cities such as Samarkand, Bukhara, and Khiva, Timurid heritage, and membership in the Soviet Union before independence in 1991.',
+      'The national flag of Uzbekistan was adopted on 18 November 1991, shortly after independence. It consists of three horizontal stripes: azure blue on top, white in the centre, and green at the bottom, separated by thin red lines. In the upper hoist corner are a white crescent and twelve white five-pointed stars arranged in rows.',
+      'Blue symbolises the sky and water, as well as cultural and spiritual values associated with Turkic tradition. White stands for peace and moral purity. Green represents nature, fertility, and Islam. The red bands recall the life force connecting people and the strength of the nation. The crescent reflects the historical Muslim heritage of the country, while the twelve stars refer to the months of the year and to the constellations of the Uzbek calendar tradition.',
+      'The flag replaced the Soviet-era Uzbek SSR flag and became a unifying symbol of the Republic of Uzbekistan. It is flown on public buildings, at diplomatic missions, and during national holidays such as Independence Day (1 September). Designers and publishers worldwide use Uzbekistan flag artwork for maps, presentations, sports coverage, education, and branding — our catalog collects official flat files and creative variants in vector and raster formats.',
+    ],
+  },
+  DZ: {
+    paragraphs: [
+      'Algeria is the largest country in Africa by area, with a long Mediterranean coastline and vast Saharan territory. Modern Algeria emerged from French colonial rule and a war of independence (1954–1962), and today it is a republic with Arabic and Berber (Tamazight) as national languages.',
+      'The Algerian flag uses green and white vertical bands with a red crescent and star at the centre. Green represents Islam and the land, white purity and peace, and red the blood of martyrs who fought for independence. The crescent and star are traditional Islamic symbols and appear on the national emblem.',
+      'Adopted in 1962, the design is among the clearest examples of a two-colour field with central emblematic devices. The flag is widely used in civic life, sport, and diaspora communities, and remains a strong marker of Algerian identity abroad.',
+    ],
+  },
+  BE: {
+    paragraphs: [
+      'Belgium is a federal constitutional monarchy in Western Europe, bordered by France, Germany, Luxembourg, and the Netherlands. Brussels serves as the capital of Belgium and as a major seat of European Union institutions.',
+      'The national flag is a vertical tricolour of black, yellow, and red. The colours are taken from the coat of arms of the Duchy of Brabant and were popularised during the Belgian Revolution of 1830. The flag was officially adopted in 1831 and is one of the few sovereign flags arranged in vertical bands.',
+      'Belgium’s linguistic communities (Dutch, French, and a German-speaking minority) share the same national flag, which appears at royal ceremonies, sporting events, and public buildings throughout the country.',
+    ],
+  },
 };
 
 function humanizeRegion(region: string | null | undefined): string | null {
@@ -34,31 +51,38 @@ export function buildCountryHubDescription(input: {
   const code = input.isoCode?.trim().toUpperCase() || null;
   const name = input.name.trim();
   const region = humanizeRegion(input.region);
+  const profile = code ? FLAG_PROFILES[code] : null;
 
-  const fact = code ? FLAG_FACTS[code] : null;
   const parts: string[] = [];
 
-  if (fact) {
-    parts.push(fact);
+  if (profile) {
+    parts.push(...profile.paragraphs);
+    if (region && profile.regionHint && region.toLowerCase() !== profile.regionHint.toLowerCase()) {
+      parts.push(`In our catalog this country is grouped under the ${region} region.`);
+    }
   } else {
     parts.push(
-      `${name} is listed in our catalog with downloadable flag artwork for print, web, and design projects.`,
+      `${name} is a sovereign state represented in the Flagswing catalog with downloadable flag artwork for print, web, education, and design workflows.`,
     );
     if (code) {
-      parts.push(`ISO country code: ${code}.`);
+      parts.push(`ISO 3166-1 alpha-2 code: ${code}.`);
     }
-  }
-
-  if (region) {
-    parts.push(`Geographic hub: ${region}.`);
+    if (region) {
+      parts.push(
+        `${name} is listed in the ${region} regional collection alongside neighbouring countries and territories.`,
+      );
+    }
+    parts.push(
+      `National flags carry legal and cultural significance; colours and symbols often reflect history, faith, political movements, or geographic features. When using flag graphics commercially, check licence terms for your project and prefer vector masters (SVG, EPS, AI) for large-format output.`,
+    );
   }
 
   const designs = Math.max(0, input.designCount);
   const files = Math.max(0, input.fileCount);
   const slugLabel = input.slug.trim() || name.toLowerCase().replace(/\s+/g, '-');
   parts.push(
-    `This folder groups ${designs} design${designs === 1 ? '' : 's'} across ${files} published file${files === 1 ? '' : 's'}. Open a tile below to pick formats (vector and raster). Files named only with the country name (for example “${slugLabel}”) are free official flat flags; creative layouts such as sphere, wave, or mockup styles are premium catalog designs.`,
+    `This folder contains ${designs} design${designs === 1 ? '' : 's'} and ${files} published file${files === 1 ? '' : 's'}. Open a tile to choose formats. Files named only with the country name (for example “${slugLabel}”) are free official flat flags; creative styles such as sphere, wave, heart, or mockup layouts are premium catalog designs.`,
   );
 
-  return parts.join(' ');
+  return parts.join('\n\n');
 }

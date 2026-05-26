@@ -9,7 +9,10 @@ import { slugFromAssetGroupKey } from '@/lib/marketplace/group-flag-products';
 import { joinBackendApiPath, resolveBackendApiBase } from '@/lib/auth/backend-url';
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
-import { previewDisplayUrlCandidates, resolvedFlagPublicHref } from '@/lib/server/flag-asset-url';
+import {
+  galleryVariantThumbCandidates,
+  resolvedFlagPublicHref,
+} from '@/lib/server/flag-asset-url';
 import type { CountryGalleryPayload } from '@/lib/server/gallery-from-db';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
 import { isPackFallbackFlagThumbnail } from '@/lib/server/gallery-from-db';
@@ -39,7 +42,8 @@ type BackendFlagRow = {
 function previewForRow(row: BackendFlagRow): string {
   const href = resolvedFlagPublicHref({
     fileKey: row.file_key,
-    fallbackRawUrls: previewDisplayUrlCandidates({
+    fallbackRawUrls: galleryVariantThumbCandidates({
+      format: row.format,
       premiumTierRaw: row.premium_tier,
       previewUrl: row.preview_url,
       thumbnailUrl: row.thumbnail_url,
