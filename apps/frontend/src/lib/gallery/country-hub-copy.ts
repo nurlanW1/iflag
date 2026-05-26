@@ -1,27 +1,14 @@
 /**
- * Country folder hub copy — DB `countries.description` first, then country + flag facts only.
+ * Country folder hub copy — short country + flag summary only.
  */
 
-const FLAG_PROFILES: Record<string, { paragraphs: string[] }> = {
-  UZ: {
-    paragraphs: [
-      'Uzbekistan is a landlocked country in Central Asia, bordered by Kazakhstan, Kyrgyzstan, Tajikistan, Afghanistan, and Turkmenistan. Ancient Silk Road cities such as Samarkand and Bukhara, Timurid heritage, and Soviet-era history shape its modern identity; the republic became independent in 1991.',
-      'The national flag was adopted on 18 November 1991. It has three horizontal stripes — azure blue, white, and green — separated by thin red lines, with a white crescent and twelve stars in the canton.',
-      'Blue represents the sky and Turkic cultural traditions, white peace and purity, and green nature and Islam. The red bands symbolise the vitality of the nation. The crescent reflects Muslim heritage; the twelve stars are linked to the months of the year in Uzbek tradition.',
-    ],
-  },
-  DZ: {
-    paragraphs: [
-      'Algeria is the largest country in Africa by land area, with a Mediterranean coast and extensive Sahara territory. It gained independence from France in 1962 after a long liberation struggle.',
-      'The Algerian flag consists of green and white vertical halves with a red crescent and star at the centre. Green stands for Islam and the land, white for purity and peace, and red for the sacrifice of martyrs. The crescent and star are emblematic devices drawn from Islamic tradition.',
-    ],
-  },
-  BE: {
-    paragraphs: [
-      'Belgium is a federal monarchy in Western Europe, bordered by France, Germany, Luxembourg, and the Netherlands. Brussels is both the national capital and a centre of European governance.',
-      'The Belgian flag is a vertical tricolour of black, yellow, and red, derived from the heraldic colours of the Duchy of Brabant and adopted after the revolution of 1830. It remains one of the few national flags in vertical band arrangement.',
-    ],
-  },
+/** Cap DB/admin text so hub headers stay scannable. */
+const MAX_DESCRIPTION_CHARS = 380;
+
+const FLAG_PROFILES: Record<string, string> = {
+  UZ: 'Uzbekistan lies in Central Asia and has been independent since 1991. The flag has blue, white, and green stripes with a crescent and twelve stars; the colours stand for sky, peace, nature, and national life.',
+  DZ: 'Algeria is the largest African country by area, independent since 1962. Its flag is green and white with a red crescent and star — symbols of Islam, peace, and the struggle for freedom.',
+  BE: 'Belgium is a federal monarchy in Western Europe; Brussels is its capital. The flag is a vertical black, yellow, and red tricolour from the Brabant heraldic tradition (since 1831).',
 };
 
 function humanizeRegion(region: string | null | undefined): string | null {
@@ -29,32 +16,30 @@ function humanizeRegion(region: string | null | undefined): string | null {
   return r && r.length > 0 ? r : null;
 }
 
-function buildUniversalCountryParagraphs(
-  name: string,
-  code: string | null,
-  region: string | null,
-): string[] {
+function truncateAtSentence(text: string, maxChars: number): string {
+  const t = text.trim().replace(/\s+/g, ' ');
+  if (t.length <= maxChars) return t;
+  const slice = t.slice(0, maxChars);
+  const dot = slice.lastIndexOf('.');
+  if (dot >= 120) return slice.slice(0, dot + 1).trim();
+  const space = slice.lastIndexOf(' ');
+  if (space >= 120) return `${slice.slice(0, space).trim()}…`;
+  return `${slice.trim()}…`;
+}
+
+function buildShortDescription(name: string, code: string | null, region: string | null): string {
+  const profile = code ? FLAG_PROFILES[code] : null;
+  if (profile) return profile;
+
   const regionHuman = humanizeRegion(region);
-  const intro = regionHuman
-    ? `${name} is a country in ${regionHuman}.`
-    : `${name} is an internationally recognised sovereign state.`;
+  const where = regionHuman ? ` in ${regionHuman}` : '';
+  const iso = code ? ` (${code})` : '';
 
-  const parts = [intro];
-
-  if (code) {
-    parts.push(`Its ISO 3166-1 alpha-2 country code is ${code}.`);
-  }
-
-  parts.push(
-    `The national flag of ${name} is the principal symbol of the state in diplomacy, public ceremony, sport, and civic life. Like most national flags, it uses colours, geometry, and emblems whose meaning is defined by law, heraldic tradition, or historical convention — often referencing independence, cultural identity, faith, or geography.`,
-    `When the flag is raised on official buildings or displayed at international events, proportions and colours should follow the authorised design so the state is represented accurately.`,
-  );
-
-  return parts;
+  return `${name}${where}${iso} is a sovereign state. Its national flag uses colours and symbols defined by national tradition — often tied to independence, culture, or faith.`;
 }
 
 /**
- * Description for country hub header — country and flag only (no catalog / format marketing copy).
+ * Brief description for country hub header (country + flag only).
  */
 export function buildCountryHubDescription(input: {
   name: string;
@@ -66,14 +51,13 @@ export function buildCountryHubDescription(input: {
   fileCount: number;
 }): string {
   const db = input.dbDescription?.trim();
-  if (db) return db;
+  if (db) return truncateAtSentence(db, MAX_DESCRIPTION_CHARS);
 
-  const code = input.isoCode?.trim().toUpperCase() || null;
-  const name = input.name.trim();
-  const region = humanizeRegion(input.region);
-  const profile = code ? FLAG_PROFILES[code] : null;
+  const text = buildShortDescription(
+    input.name.trim(),
+    input.isoCode?.trim().toUpperCase() || null,
+    humanizeRegion(input.region),
+  );
 
-  const parts = profile ? [...profile.paragraphs] : buildUniversalCountryParagraphs(name, code, region);
-
-  return parts.join('\n\n');
+  return truncateAtSentence(text, MAX_DESCRIPTION_CHARS);
 }

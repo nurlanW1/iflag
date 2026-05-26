@@ -185,7 +185,7 @@ export default function CountryHubPage() {
           <h1 className="text-balance text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
             {pageTitle}
           </h1>
-          <p className="max-w-2xl whitespace-pre-line text-sm leading-relaxed text-slate-600 sm:text-base">
+          <p className="max-w-2xl line-clamp-5 text-sm leading-relaxed text-slate-600 sm:text-base">
             {description}
           </p>
         </div>
