@@ -208,7 +208,11 @@ export function StockDownloadPanel({
   );
 
   const renderPanel = (formatsHeadingId: string) => (
-    <div className={clsx(compactLayout ? 'flex flex-col gap-2.5' : 'flex flex-col gap-4')}>
+    <div
+      className={clsx(
+        compactLayout ? 'flex h-full min-h-0 flex-col justify-between gap-3' : 'flex flex-col gap-4',
+      )}
+    >
       <CanonicalFormatSlots
         headingId={formatsHeadingId}
         files={sorted}
@@ -233,7 +237,7 @@ export function StockDownloadPanel({
 
   return (
     <>
-      <div className="hidden lg:block">{renderPanel(headingId)}</div>
+      <div className={clsx('hidden lg:flex lg:min-h-0 lg:flex-1 lg:flex-col')}>{renderPanel(headingId)}</div>
       <div className="pointer-events-none fixed inset-x-0 bottom-[var(--cookie-banner-h,0px)] z-[110] pb-[max(8px,env(safe-area-inset-bottom))] lg:hidden">
         <div className="pointer-events-auto mx-auto max-w-lg rounded-t-[1.25rem] border border-b-0 border-slate-200/80 bg-white/95 px-4 pb-[max(1rem,calc(env(safe-area-inset-bottom)+12px))] pt-4 shadow-[0_-6px_22px_-10px_rgba(15,23,42,0.14)] backdrop-blur-md backdrop-saturate-150 sm:px-5 sm:pt-5">
           <div className="mx-auto mb-2.5 h-1 w-10 rounded-full bg-slate-200/90 sm:mb-3 sm:w-[2.875rem]" aria-hidden />

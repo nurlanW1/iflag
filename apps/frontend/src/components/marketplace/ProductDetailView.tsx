@@ -199,9 +199,10 @@ export function ProductDetailView({ slug, product }: Props) {
             </div>
           </header>
 
-          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_21.5rem] lg:items-start lg:gap-x-5 xl:grid-cols-[minmax(0,1fr)_22.5rem]">
-            <div className="flex min-h-0 min-w-0 flex-col space-y-4 lg:space-y-5">
+          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-stretch lg:gap-5 xl:grid-cols-[minmax(0,1fr)_23rem]">
+            <div className="flex min-h-0 min-w-0 flex-col space-y-4 lg:min-h-[min(28rem,58vh)] lg:space-y-5">
               <PremiumAssetPreview
+                className="min-h-[min(20rem,52vh)] lg:min-h-0 lg:flex-1"
                 productTitle={product.title}
                 previewUrls={uniquePreview}
                 formatHints={formatHints}
@@ -219,8 +220,9 @@ export function ProductDetailView({ slug, product }: Props) {
               {tagTrail}
             </div>
 
-            <aside className="w-full max-w-xl shrink-0 justify-self-start lg:sticky lg:top-[calc(4.75rem+env(safe-area-inset-top))] lg:z-[20] lg:h-auto lg:max-w-none">
-              <div className="flex h-full min-h-0 flex-col overflow-hidden max-lg:border-0 max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none lg:max-h-[min(92vh,52rem)] lg:overflow-y-auto lg:rounded-xl lg:border lg:border-slate-200/80 lg:bg-white lg:p-3.5 lg:shadow-sm">
+            <aside className="flex min-h-0 w-full max-w-xl flex-col justify-self-stretch lg:max-w-none">
+              <div className="flex min-h-[min(20rem,52vh)] flex-1 flex-col overflow-hidden max-lg:border-0 max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none lg:min-h-[min(28rem,58vh)] lg:rounded-xl lg:border lg:border-slate-200/80 lg:bg-white lg:shadow-sm">
+                <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3.5 sm:p-4">
                 <NeonAssetDownloads
                   cartProduct={cartProduct}
                   files={dedupedFiles}
@@ -232,6 +234,7 @@ export function ProductDetailView({ slug, product }: Props) {
                   requiresEntitlement={neonDownloads ? undefined : paid}
                   compactLayout
                 />
+                </div>
               </div>
             </aside>
           </div>

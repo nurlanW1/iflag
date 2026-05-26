@@ -19,6 +19,8 @@ type Props = {
   /** Footer line under preview (gallery country pages). */
   caption?: string;
   formatCount?: number;
+  /** Stretch card to fill parent (PDP equal-height columns). */
+  className?: string;
 };
 
 const checkerBg =
@@ -34,6 +36,7 @@ export function PremiumAssetPreview({
   density = 'default',
   caption,
   formatCount,
+  className,
 }: Props) {
   const uniq = [...new Set(previewUrls.filter((u) => typeof u === 'string' && u.trim()))];
   const src = uniq[0] ?? '';
@@ -44,8 +47,7 @@ export function PremiumAssetPreview({
   if (variant === 'gallery') {
     const frame = compact
       ? clsx(
-          'relative flex min-h-[11rem] items-center justify-center px-3 py-4 sm:min-h-[13rem] sm:px-4 sm:py-5',
-          'lg:max-h-[min(40vh,15.5rem)] lg:min-h-0',
+          'relative flex min-h-[12rem] flex-1 items-center justify-center px-4 py-5 sm:px-5 sm:py-6',
           useTransparencyBackdrop ? checkerBg : 'bg-[linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)]',
         )
       : clsx(
@@ -54,14 +56,15 @@ export function PremiumAssetPreview({
         );
 
     const imgClamp = compact
-      ? 'max-h-[min(40vh,15rem)] w-auto max-w-full object-contain lg:max-h-[min(38vh,14rem)]'
+      ? 'max-h-[min(42vh,18rem)] w-auto max-w-full object-contain lg:max-h-full lg:max-w-[92%]'
       : 'max-h-[min(62vh,40rem)] w-auto max-w-full object-contain';
 
     return (
       <div
         className={clsx(
-          'overflow-hidden border border-slate-200/80 bg-white',
-          compact ? 'rounded-xl' : 'rounded-[1.375rem]',
+          'overflow-hidden border border-slate-200/80 bg-white shadow-sm',
+          compact ? 'flex h-full min-h-0 flex-col rounded-xl' : 'rounded-[1.375rem]',
+          className,
         )}
       >
         <div className={frame}>
@@ -69,7 +72,7 @@ export function PremiumAssetPreview({
             <ProductPreviewImage
               className={clsx(
                 'relative mx-auto inline-flex max-w-full items-center justify-center',
-                compact ? 'max-h-[min(40vh,15rem)] lg:max-h-[min(38vh,14rem)]' : 'max-h-[min(62vh,40rem)]',
+                compact ? 'max-h-[min(42vh,18rem)] lg:h-full lg:max-h-full' : 'max-h-[min(62vh,40rem)]',
               )}
               watermarkEnabled
               protectEnabled
