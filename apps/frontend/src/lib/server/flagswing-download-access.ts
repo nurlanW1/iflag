@@ -22,7 +22,7 @@ export async function userHasFlagswingPaidDownloadAccess(
   if (emails.some((e) => isMarketplaceOwnerDownloadBypass(e))) return true;
 
   try {
-    if (await hasActiveClerkSubscription(pool, clerkUser.id)) return true;
+    if (await hasActiveClerkSubscription(pool, clerkUser.id, emails)) return true;
   } catch {
     /* hasActiveClerkSubscription logs missing table already */
   }
