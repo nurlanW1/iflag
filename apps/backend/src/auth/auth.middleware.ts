@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 import {
   getUserById,
-  resolveOrProvisionUserForClerkBridge,
+  resolveUserForVerifiedClerkBilling,
 } from './auth.service.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -128,74 +128,13 @@ export async function optionalAuth(
  * Billing checkout: accepts our HS256 JWT (Next proxy + cookies) OR a Clerk session JWT from
  * `getToken()` (Authorization Bearer). Clerk path mirrors `/auth/bridge/clerk-session` resolution.
  */
-export async function authenticateAppJwtOrClerkBilling(
+async function attachVerifiedClerkBillingUser(
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
+  clerkUserId: string,
+  secretKey: string,
 ): Promise<void> {
-  const token = extractToken(req);
-
-  if (!token) {
-    res.status(401).json({ error: 'Authentication required' });
-    return;
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as {
-      userId: string;
-      email: string;
-      role: string;
-    };
-
-    const user = await getUserById(decoded.userId);
-    if (!user) {
-      res.status(401).json({ error: 'User not found or inactive' });
-      return;
-    }
-
-    req.user = {
-      userId: decoded.userId,
-      email: decoded.email,
-      role: decoded.role,
-    };
-
-    next();
-    return;
-  } catch (err) {
-    if (err instanceof jwt.TokenExpiredError) {
-      res.status(401).json({ error: 'Token expired', code: 'TOKEN_EXPIRED' });
-      return;
-    }
-    if (!(err instanceof jwt.JsonWebTokenError)) {
-      console.error('[auth] Unexpected JWT verification error (billing path):', err);
-      res.status(500).json({ error: 'Authentication error' });
-      return;
-    }
-  }
-
-  const secretKey = process.env.CLERK_SECRET_KEY?.trim();
-  if (!secretKey) {
-    res.status(503).json({
-      error: 'Clerk is not configured on the billing API',
-      code: 'CLERK_AUTH_UNAVAILABLE',
-    });
-    return;
-  }
-
-  let clerkUserId: string;
-  try {
-    const payload = await verifyToken(token, { secretKey });
-    if (!payload?.sub) {
-      res.status(401).json({ error: 'Invalid token', code: 'INVALID_CLERK_TOKEN' });
-      return;
-    }
-    clerkUserId = payload.sub;
-  } catch (e) {
-    console.error('[auth] Clerk verifyToken failed (billing path):', e);
-    res.status(401).json({ error: 'Invalid token', code: 'INVALID_CLERK_TOKEN' });
-    return;
-  }
-
   try {
     const clerk = createClerkClient({ secretKey });
     const cUser = await clerk.users.getUser(clerkUserId);
@@ -224,26 +163,16 @@ export async function authenticateAppJwtOrClerkBilling(
       [cUser.firstName, cUser.lastName].filter(Boolean).join(' ').trim() ||
       null;
 
-    const resolved = await resolveOrProvisionUserForClerkBridge({
+    const user = await resolveUserForVerifiedClerkBilling({
       email,
       full_name,
       email_verified: verified,
-      clerkIdentityVerified: true,
     });
 
-    if (!resolved.ok) {
-      res.status(403).json({
-        error:
-          'This account has MFA enabled. Sign in with email and password (and MFA) to use Paddle billing.',
-        code: resolved.code,
-      });
-      return;
-    }
-
     req.user = {
-      userId: resolved.user.id,
-      email: resolved.user.email,
-      role: resolved.user.role,
+      userId: user.id,
+      email: user.email,
+      role: user.role,
     };
 
     next();
@@ -255,5 +184,65 @@ export async function authenticateAppJwtOrClerkBilling(
       code: 'CLERK_USER_RESOLUTION_FAILED',
       detail: process.env.NODE_ENV === 'production' ? undefined : message,
     });
+  }
+}
+
+export async function authenticateAppJwtOrClerkBilling(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const token = extractToken(req);
+
+  if (!token) {
+    res.status(401).json({ error: 'Authentication required' });
+    return;
+  }
+
+  const secretKey = process.env.CLERK_SECRET_KEY?.trim();
+  if (secretKey) {
+    try {
+      const payload = await verifyToken(token, { secretKey });
+      if (payload?.sub) {
+        await attachVerifiedClerkBillingUser(req, res, next, payload.sub, secretKey);
+        return;
+      }
+    } catch {
+      /* Not a Clerk session token — fall through to app JWT. */
+    }
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      userId: string;
+      email: string;
+      role: string;
+    };
+
+    const user = await getUserById(decoded.userId);
+    if (!user) {
+      res.status(401).json({ error: 'User not found or inactive' });
+      return;
+    }
+
+    req.user = {
+      userId: decoded.userId,
+      email: decoded.email,
+      role: decoded.role,
+    };
+
+    next();
+    return;
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) {
+      res.status(401).json({ error: 'Token expired', code: 'TOKEN_EXPIRED' });
+      return;
+    }
+    if (err instanceof jwt.JsonWebTokenError) {
+      res.status(401).json({ error: 'Invalid token', code: 'INVALID_TOKEN' });
+      return;
+    }
+    console.error('[auth] Unexpected JWT verification error (billing path):', err);
+    res.status(500).json({ error: 'Authentication error' });
   }
 }

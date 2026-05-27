@@ -225,6 +225,70 @@ export type SessionIssuanceUser = {
 };
 
 /**
+ * Map a Clerk-verified email to a Postgres user for Paddle checkout (never blocks legacy MFA).
+ */
+export async function resolveUserForVerifiedClerkBilling(params: {
+  email: string;
+  full_name: string | null;
+  email_verified: boolean;
+}): Promise<SessionIssuanceUser> {
+  const email = params.email.trim().toLowerCase();
+  const existing = await pool.query<{
+    id: string;
+    email: string;
+    full_name: string | null;
+    role: string;
+    email_verified: boolean;
+    created_at: Date;
+  }>(
+    `SELECT id, email, full_name, role, email_verified, created_at
+       FROM users
+      WHERE lower(email) = $1
+      ORDER BY is_active DESC NULLS LAST, created_at ASC
+      LIMIT 1`,
+    [email],
+  );
+
+  if (existing.rows.length > 0) {
+    const row = existing.rows[0]!;
+    await pool.query(
+      `UPDATE users
+       SET is_active = TRUE,
+           last_login = CURRENT_TIMESTAMP,
+           full_name = COALESCE(NULLIF(trim($2::text), ''), full_name)
+       WHERE id = $1`,
+      [row.id, params.full_name],
+    );
+    return {
+      id: row.id,
+      email: row.email,
+      full_name: row.full_name,
+      role: row.role,
+      email_verified: row.email_verified,
+      created_at: row.created_at,
+    };
+  }
+
+  const passwordHash = await hashPassword(randomBytes(48).toString('hex'));
+  const ins = await pool.query(
+    `INSERT INTO users (email, password_hash, full_name, role, email_verified)
+     VALUES ($1, $2, $3, 'user', $4)
+     RETURNING id, email, full_name, role, email_verified, created_at`,
+    [email, passwordHash, params.full_name, params.email_verified],
+  );
+  const row = ins.rows[0]!;
+  await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [row.id]);
+  return {
+    id: row.id,
+    email: row.email,
+    full_name: row.full_name,
+    role: row.role,
+    email_verified: row.email_verified,
+    created_at: row.created_at,
+  };
+}
+
+/**
  * Clerk dashboard bridge: find user by email or provision a password-unknown account.
  * Legacy MFA blocks only untrusted callers; Clerk-verified billing may proceed.
  */

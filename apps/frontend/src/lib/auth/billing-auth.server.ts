@@ -29,22 +29,21 @@ function parseBearer(header: string | null | undefined): string | null {
 
 /**
  * Resolve Authorization for Paddle/billing proxies to Railway.
- * Prefer backend JWT cookies, then any `Authorization: Bearer` from the client (Clerk session
- * JWT or legacy HS256 — Railway verifies both). Only if that is missing but Clerk is signed in
- * on this host, fall back to `/auth/bridge/clerk-session` (shared secret + Postgres user).
+ * Prefer the client `Authorization: Bearer` (Clerk session from checkout buttons), then backend
+ * JWT cookies, then server-side Clerk bridge. Railway verifies Clerk tokens before app JWT.
  */
 export async function resolveBillingAuthorization(
   request: Request,
 ): Promise<BillingAuthResolution> {
+  const incomingBearer = parseBearer(request.headers.get('authorization'));
+  if (incomingBearer) {
+    return { ok: true, authorization: incomingBearer, source: 'incoming_bearer' };
+  }
+
   const backendUser = await getSessionUserFromCookies();
   const access = await getAccessTokenFromCookies();
   if (backendUser && access) {
     return { ok: true, authorization: `Bearer ${access}`, source: 'backend_cookie' };
-  }
-
-  const incomingBearer = parseBearer(request.headers.get('authorization'));
-  if (incomingBearer) {
-    return { ok: true, authorization: incomingBearer, source: 'incoming_bearer' };
   }
 
   if (isClerkConfigured()) {

@@ -78,17 +78,6 @@ export async function exchangeClerkUserForBackendAccessToken(
       code?: string;
     };
 
-    if (res.status === 403 && data.code === 'MFA_REQUIRED') {
-      return {
-        ok: false,
-        status: 403,
-        error:
-          data.error ||
-          'This account has MFA enabled. Sign in with email and password to use Paddle billing.',
-        code: 'MFA_REQUIRED',
-      };
-    }
-
     if (!res.ok || !data.accessToken) {
       return {
         ok: false,

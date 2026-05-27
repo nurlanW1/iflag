@@ -29,6 +29,7 @@ import {
   updateUserProfile,
   issueSessionTokens,
   resolveOrProvisionUserForClerkBridge,
+  resolveUserForVerifiedClerkBilling,
 } from './auth.service.js';
 import {
   authenticateToken,
@@ -133,22 +134,13 @@ router.post('/bridge/clerk-session', async (req: AuthRequest, res: Response) => 
       return res.status(400).json({ error: 'Valid email is required' });
     }
 
-    const resolved = await resolveOrProvisionUserForClerkBridge({
+    const user = await resolveUserForVerifiedClerkBilling({
       email,
       full_name,
       email_verified: Boolean(email_verified),
-      clerkIdentityVerified: true,
     });
 
-    if (!resolved.ok) {
-      return res.status(403).json({
-        error:
-          'This account has MFA enabled. Sign in with email and password (and MFA) to use Paddle billing.',
-        code: resolved.code,
-      });
-    }
-
-    const tokens = await issueSessionTokens(resolved.user);
+    const tokens = await issueSessionTokens(user);
     res.json(tokens);
   } catch (error: unknown) {
     console.error('[auth] clerk bridge error:', error);
