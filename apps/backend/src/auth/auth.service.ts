@@ -226,12 +226,14 @@ export type SessionIssuanceUser = {
 
 /**
  * Clerk dashboard bridge: find user by email or provision a password-unknown account.
- * MFA-enabled accounts cannot use this path (must use password + MFA).
+ * Legacy MFA blocks only untrusted callers; Clerk-verified billing may proceed.
  */
 export async function resolveOrProvisionUserForClerkBridge(params: {
   email: string;
   full_name: string | null;
   email_verified: boolean;
+  /** When true, map the user even if legacy email/password MFA is enabled (Clerk already authenticated). */
+  clerkIdentityVerified?: boolean;
 }): Promise<
   | { ok: true; user: SessionIssuanceUser }
   | { ok: false; code: 'MFA_REQUIRED' }
@@ -246,7 +248,7 @@ export async function resolveOrProvisionUserForClerkBridge(params: {
 
   if (existing.rows.length > 0) {
     const row = existing.rows[0];
-    if (row.mfa_enabled === true) {
+    if (row.mfa_enabled === true && !params.clerkIdentityVerified) {
       return { ok: false, code: 'MFA_REQUIRED' };
     }
     await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [row.id]);

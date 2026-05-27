@@ -137,6 +137,7 @@ router.post('/bridge/clerk-session', async (req: AuthRequest, res: Response) => 
       email,
       full_name,
       email_verified: Boolean(email_verified),
+      clerkIdentityVerified: true,
     });
 
     if (!resolved.ok) {

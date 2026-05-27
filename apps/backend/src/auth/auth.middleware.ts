@@ -228,6 +228,7 @@ export async function authenticateAppJwtOrClerkBilling(
       email,
       full_name,
       email_verified: verified,
+      clerkIdentityVerified: true,
     });
 
     if (!resolved.ok) {

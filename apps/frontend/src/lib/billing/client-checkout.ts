@@ -59,12 +59,14 @@ export async function postPaddleCheckout(
   }
 
   if (!res.ok) {
-    if (res.status === 403 && data.code === 'MFA_REQUIRED') {
+    if (res.status === 403) {
       return {
         ok: false,
         error:
           data.error ||
-          'This account has MFA enabled. Sign in with email and password to subscribe.',
+          (data.code === 'MFA_REQUIRED'
+            ? 'This account has MFA enabled. Sign in with email and password to subscribe.'
+            : 'Checkout was denied. Sign in again or contact support.'),
       };
     }
     if (res.status === 503 && data.code === 'BRIDGE_SECRET_MISSING') {
