@@ -3,16 +3,13 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import {
-  Search,
   Download,
   Crown,
   Star,
-  ShieldCheck,
   Flag,
   Globe2,
   ChevronRight,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { EditorialHero } from '@/components/landing/EditorialHero';
 import { LandingCategoryStrip } from '@/components/landing/LandingCategoryStrip';
@@ -125,38 +122,6 @@ function PricingPlanCard({ plan, idx }: { plan: PricingPlan; idx: number }) {
   );
 }
 
-type StepItem = {
-  icon: LucideIcon;
-  title: string;
-  desc: string;
-  step: string;
-};
-
-function HowItWorksStepCard({ step, idx }: { step: StepItem; idx: number }) {
-  const { ref, isRevealed } = useRevealInView<HTMLDivElement>();
-  return (
-    <motion.div
-      ref={ref}
-      initial={false}
-      animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
-      transition={{ duration: 0.45, delay: idx * 0.08 }}
-      className="relative pt-8 text-center"
-    >
-      <div className="absolute left-1/2 top-0 z-10 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white text-sm font-semibold text-[var(--brand-blue)] shadow-sm">
-        {step.step}
-      </div>
-
-      <div className="rounded-2xl border border-neutral-200/95 bg-white p-8 pt-14 shadow-sm transition-shadow duration-300 hover:shadow-md md:p-10 md:pt-16">
-        <div className="mx-auto mb-6 flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-2xl bg-neutral-100 text-[var(--brand-blue)] ring-1 ring-neutral-200/90">
-          <step.icon size={36} strokeWidth={1.5} aria-hidden />
-        </div>
-        <h3 className="mb-3 text-xl font-semibold tracking-tight text-[#2a2a2a] md:text-2xl">{step.title}</h3>
-        <p className="text-base leading-relaxed text-neutral-600 md:text-[1.0625rem]">{step.desc}</p>
-      </div>
-    </motion.div>
-  );
-}
-
 export default function HomePageClient() {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -175,25 +140,21 @@ export default function HomePageClient() {
       />
 
       {/* Browse by region */}
-      <section className="shrink-0 border-t border-neutral-200/80 bg-white py-16 md:py-24 lg:py-28">
+      <section className="shrink-0 border-t border-neutral-200/80 bg-white py-8 md:py-10 lg:py-12">
         <div className="marketplace-shell">
           <SectionReveal
             hidden={{ opacity: 0, y: 10 }}
             visible={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="mb-12 flex max-w-3xl flex-col sm:mb-14"
+            className="mb-4 sm:mb-5"
           >
-            <h2 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]">
+            <h2 className="text-lg font-semibold tracking-tight text-[#2a2a2a] sm:text-xl">
               Explore the gallery by region
             </h2>
-            <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
-              Jump into continents, autonomy sets, diplomacy rails, or historical ribbons—balanced grids that mirror how our gallery is indexed.
-              For licensed catalog picks, browse the taxonomy strip below after this rail.
-            </p>
           </SectionReveal>
 
-          <div className="rounded-2xl border border-neutral-200/90 bg-[#fafaf9] p-4 sm:p-6 lg:rounded-[1.35rem]">
-            <div className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-4 lg:gap-5">
+          <div className="rounded-xl border border-neutral-200/90 bg-[#fafaf9] p-3 sm:p-4">
+            <div className="flex gap-2 overflow-x-auto overscroll-x-contain pb-0.5 [scrollbar-width:thin] sm:gap-2.5 lg:grid lg:grid-cols-8 lg:overflow-visible lg:pb-0">
               {[
                 { name: 'Europe', icon: Globe2 },
                 { name: 'Asia', icon: Globe2 },
@@ -219,20 +180,20 @@ export default function HomePageClient() {
                     hidden={{ opacity: 0, y: 6 }}
                     visible={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25, delay: idx * 0.02 }}
-                    className="min-w-0"
+                    className="min-w-[8.75rem] shrink-0 lg:min-w-0"
                   >
                     <Link
                       href={galleryHref}
-                      className="group flex min-h-[3.875rem] w-full items-center gap-3 rounded-xl border border-neutral-200/95 bg-white px-3 py-3 shadow-[0_1px_4px_-1px_rgba(30,41,59,0.08)] transition-[border-color,box-shadow,background-color] duration-200 hover:border-neutral-400 hover:bg-neutral-50 hover:shadow-sm sm:min-h-[4.25rem] sm:gap-4 sm:rounded-xl sm:px-4 sm:py-4 md:min-h-[4.75rem]"
+                      className="group flex min-h-[3.25rem] w-full items-center gap-2 rounded-lg border border-neutral-200/95 bg-white px-2.5 py-2 shadow-sm transition-[border-color,box-shadow,background-color] duration-200 hover:border-neutral-400 hover:bg-neutral-50 sm:min-h-[3.5rem] sm:gap-2.5 sm:px-3"
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-[var(--brand-blue)] ring-1 ring-neutral-200/80 sm:h-11 sm:w-11 md:h-12 md:w-12">
-                        <CatIcon size={21} strokeWidth={1.75} aria-hidden />
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-neutral-100 text-[var(--brand-blue)] ring-1 ring-neutral-200/80 sm:h-9 sm:w-9">
+                        <CatIcon size={17} strokeWidth={1.75} aria-hidden />
                       </div>
-                      <span className="min-w-0 flex-1 text-left text-base font-medium leading-snug text-[#2a2a2a] transition-colors group-hover:text-neutral-800 sm:text-[1.0625rem]">
-                        <span className="line-clamp-2 sm:line-clamp-none sm:truncate">{cat.name}</span>
+                      <span className="min-w-0 flex-1 truncate text-left text-xs font-medium text-[#2a2a2a] sm:text-[0.8125rem]">
+                        {cat.name}
                       </span>
                       <ChevronRight
-                        className="h-4 w-4 shrink-0 text-neutral-400 transition-colors group-hover:text-neutral-600 sm:h-5 sm:w-5"
+                        className="h-3.5 w-3.5 shrink-0 text-neutral-400 transition-colors group-hover:text-neutral-600"
                         aria-hidden
                       />
                     </Link>
@@ -310,52 +271,6 @@ export default function HomePageClient() {
             </Link>
             .
           </p>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="border-t border-neutral-200/80 bg-[#fafaf9] py-16 md:py-24 lg:py-28">
-        <div className="marketplace-shell">
-          <SectionReveal
-            hidden={{ opacity: 0, y: 12 }}
-            visible={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-            className="mb-14 max-w-3xl md:mb-16"
-          >
-            <h2 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]">
-              How it works
-            </h2>
-            <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
-              Three calm steps from discovery to licensed use — consistent across vectors and raster bundles.
-            </p>
-          </SectionReveal>
-
-          <div className="relative grid gap-12 md:grid-cols-3 md:gap-10 lg:gap-14">
-            <div className="pointer-events-none absolute left-[12%] right-[12%] top-[4.25rem] hidden h-px bg-neutral-200 md:block lg:left-[14%] lg:right-[14%]" />
-
-            {[
-              {
-                icon: Search,
-                title: 'Search',
-                desc: 'Find the flag you need by country, region, or organization.',
-                step: '01',
-              },
-              {
-                icon: Download,
-                title: 'Download',
-                desc: 'Instant access to high-resolution files in multiple formats.',
-                step: '02',
-              },
-              {
-                icon: ShieldCheck,
-                title: 'Use',
-                desc: 'Deploy with clear licensing aligned to your subscription tier.',
-                step: '03',
-              },
-            ].map((step, idx) => (
-              <HowItWorksStepCard key={idx} step={step} idx={idx} />
-            ))}
-          </div>
         </div>
       </section>
 

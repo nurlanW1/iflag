@@ -42,7 +42,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   const clerkUiEnabled = Boolean(clerkPublishableKey);
 
   const inner = (
-    <>
+    <div className="flex min-h-dvh flex-col">
       <AdSenseScriptPlaceholder />
       <JsonLd data={[websiteJsonLd(), organizationJsonLd()]} />
       <a
@@ -56,9 +56,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <CartProvider clerkUiEnabled={clerkUiEnabled}>
             <AuthModalProvider>
               <Navbar clerkUiEnabled={clerkUiEnabled} />
-              <div id="site-content" tabIndex={-1} className="min-w-0 w-full outline-none">
+              <div id="site-content" tabIndex={-1} className="min-w-0 w-full flex-1 outline-none">
                 {children}
               </div>
+              {/* Single site footer — same minimal layout on every route (gallery, legal, admin, dashboard, …). */}
               <Footer />
               <CookieNotice />
               <AuthModalWrapper />
@@ -67,7 +68,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </CartProvider>
         </AuthProvider>
       </ClerkUiProvider>
-    </>
+    </div>
   );
 
   return (
