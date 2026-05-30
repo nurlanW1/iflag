@@ -51,6 +51,26 @@ export function ProductDetailPreviewColumn({
   videoPlayback,
 }: Props) {
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
+  const [ownsProduct, setOwnsProduct] = useState(false);
+
+  useEffect(() => {
+    const slug = cartProduct.slug?.trim();
+    if (!slug) return;
+    let cancelled = false;
+    void fetch(`/api/account/flagswing-plan?productSlug=${encodeURIComponent(slug)}`, {
+      credentials: 'include',
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { ownsProduct?: boolean } | null) => {
+        if (!cancelled) setOwnsProduct(Boolean(j?.ownsProduct));
+      })
+      .catch(() => {
+        if (!cancelled) setOwnsProduct(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [cartProduct.slug]);
 
   const defaultFileId = useMemo(() => firstSelectableStockFileId(dedupedFiles), [dedupedFiles]);
 
@@ -128,6 +148,7 @@ export function ProductDetailPreviewColumn({
               requiresEntitlement={neonDownloads ? undefined : paid}
               compactLayout
               narrowDesktopSidebar
+              ownsProduct={ownsProduct}
               selectedId={selectedFileId}
               onSelectId={setSelectedFileId}
             />

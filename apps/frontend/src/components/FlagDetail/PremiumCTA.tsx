@@ -26,14 +26,13 @@ export default function PremiumCTA({
   if (dismissed && (variant === 'banner' || variant === 'modal')) return null;
 
   const benefits = [
-    `Catalog Pro downloads from ${PRICING_MARKETING.monthlyPerMonth}`,
-    `Or own this asset for ${PRICING_MARKETING.oneTimeShort}`,
-    `Weekly option: ${PRICING_MARKETING.weeklyPerWeek}`,
-    'No watermarks on Pro files',
-    'Cancel anytime in Paddle portal',
+    PRICING_MARKETING.oneTimePerAsset,
+    'One checkout — all formats for this design',
+    'Official flat flags stay free',
+    'Receipts and billing via Paddle',
   ];
 
-  const ctaLabel = `View plans — ${PRICING_MARKETING.monthlyShort}/mo`;
+  const ctaLabel = `Buy — ${PRICING_MARKETING.oneTimeShort}`;
 
   if (variant === 'modal') {
     return (
@@ -60,7 +59,7 @@ export default function PremiumCTA({
           <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
               <Crown size={24} style={{ color: 'var(--color-warning)' }} />
-              <h3 style={{ margin: 0 }}>Premium Required</h3>
+              <h3 style={{ margin: 0 }}>Purchase required</h3>
             </div>
             <button
               onClick={handleDismiss}
@@ -81,13 +80,13 @@ export default function PremiumCTA({
           </div>
           <div className="card-body">
             <p style={{ marginBottom: 'var(--spacing-lg)' }}>
-              This asset has {premiumFormatsCount} premium format{premiumFormatsCount > 1 ? 's' : ''} available.
-              Subscribe or buy once — {PRICING_MARKETING.plansLine}.
+              This asset has {premiumFormatsCount} paid format{premiumFormatsCount > 1 ? 's' : ''}.{' '}
+              {PRICING_MARKETING.plansLine}.
             </p>
 
             <div style={{ marginBottom: 'var(--spacing-lg)' }}>
               <strong style={{ fontSize: '0.875rem', display: 'block', marginBottom: 'var(--spacing-sm)' }}>
-                Your options:
+                How it works:
               </strong>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {benefits.map((benefit, index) => (
@@ -131,7 +130,7 @@ export default function PremiumCTA({
       >
         <Crown size={20} style={{ marginBottom: 'var(--spacing-xs)' }} />
         <p style={{ fontSize: '0.875rem', marginBottom: 'var(--spacing-sm)' }}>
-          Pro access from {PRICING_MARKETING.monthlyPerMonth} or {PRICING_MARKETING.oneTimePerAsset}
+          {PRICING_MARKETING.oneTimePerAsset}
         </p>
         <Link href="/pricing" className="btn btn-sm" style={{ backgroundColor: 'white', color: 'var(--color-warning)' }}>
           {ctaLabel}
@@ -157,10 +156,10 @@ export default function PremiumCTA({
         <Crown size={24} />
         <div>
           <strong style={{ display: 'block', marginBottom: '2px' }}>
-            Unlock {premiumFormatsCount} Premium Format{premiumFormatsCount > 1 ? 's' : ''}
+            Unlock {premiumFormatsCount} paid format{premiumFormatsCount > 1 ? 's' : ''}
           </strong>
           <p style={{ fontSize: '0.875rem', margin: 0, opacity: 0.9 }}>
-            {PRICING_MARKETING.monthlyPerMonth} · {PRICING_MARKETING.weeklyPerWeek} · {PRICING_MARKETING.oneTimePerAsset}
+            {PRICING_MARKETING.oneTimePerAsset}
           </p>
         </div>
       </div>

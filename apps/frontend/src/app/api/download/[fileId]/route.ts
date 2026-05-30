@@ -4,7 +4,10 @@ import { isClerkConfigured } from '@/lib/auth/clerk-env';
 import { sanitizeCallbackUrl } from '@/lib/auth/callback-url';
 import { getAccessTokenFromCookies } from '@/lib/auth/session.server';
 import { getDb } from '@/lib/server/db';
-import { userHasFlagswingPaidDownloadAccess } from '@/lib/server/flagswing-download-access';
+import {
+  marketplaceSlugForFlagFile,
+  userOwnsPaidFlagFile,
+} from '@/lib/server/flag-file-purchase-access';
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 import {
   getPublicR2FileUrl,
@@ -32,6 +35,7 @@ function redirectLocation(req: Request, href: string): string {
 }
 
 type FileRow = {
+  id: string;
   file_url: string | null;
   file_key: string | null;
   storage_provider: string | null;
@@ -41,6 +45,7 @@ type FileRow = {
   file_name: string | null;
   country_slug: string | null;
   variant_name: string | null;
+  asset_group_key: string | null;
 };
 
 /** Safe single-segment-ish filename inside Content-Disposition. */
@@ -66,8 +71,7 @@ function suggestDownloadBasename(row: FileRow): string {
  *
  * - Legacy Blob `file_url`: rewritten to **`CLOUDFLARE_R2_PUBLIC_URL`** when the same `flags/…` key exists on R2.
  * - Rows with **`file_key`**: use R2 public or short-lived signed GET when SDK credentials exist (even if `storage_provider` is stale).
- * - Requires an active Paddle-backed entitlement: Neon `user_subscriptions`, backend `check-premium`
- *   (JWT cookie), or optional owner bypass emails (`MARKETPLACE_OWNER_DOWNLOAD_EMAILS` — default single owner).
+ * - Paid rows: signed-in user with a one-time Paddle order for this design slug, or owner bypass email.
  */
 export async function GET(
   request: Request,
@@ -100,8 +104,8 @@ export async function GET(
   }
 
   const fileRes = await pool.query<FileRow>(
-    `SELECT file_url, file_key, storage_provider, premium_tier, status,
-            format, file_name, country_slug, variant_name
+    `SELECT id, file_url, file_key, storage_provider, premium_tier, status,
+            format, file_name, country_slug, variant_name, asset_group_key
      FROM country_flag_files
      WHERE id = $1::uuid
      LIMIT 1`,
@@ -155,7 +159,7 @@ export async function GET(
     return legacy ?? null;
   }
 
-  const paidAllowed = await userHasFlagswingPaidDownloadAccess(pool, user, accessToken);
+  const paidAllowed = await userOwnsPaidFlagFile(user, accessToken, row);
   const allowed = freeCatalogDownload ? Boolean(user?.id) : paidAllowed;
 
   if (!allowed) {
@@ -173,12 +177,12 @@ export async function GET(
     }
 
     if (isBrowserDocumentNavigation(request)) {
-      const pricing = new URL('/pricing', request.url);
-      pricing.searchParams.set('callbackUrl', returnPath);
-      return NextResponse.redirect(pricing, 302);
+      const slug = marketplaceSlugForFlagFile(row);
+      const asset = new URL(`/assets/${encodeURIComponent(slug)}`, request.url);
+      return NextResponse.redirect(asset, 302);
     }
     return NextResponse.json(
-      { error: 'Subscription required', code: 'SUBSCRIPTION_REQUIRED' },
+      { error: 'Purchase required', code: 'PURCHASE_REQUIRED' },
       { status: 403 },
     );
   }

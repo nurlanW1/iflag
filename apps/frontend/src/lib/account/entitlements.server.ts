@@ -1,10 +1,7 @@
 import { getMarketplaceStore } from '@/services/marketplace/memory-store';
 import { getProductById } from '@/services/marketplace/product-service';
 import type { ProductEntitlementSnapshot } from '@/lib/storage/download-access';
-import {
-  fetchBackendHasPremium,
-  fetchBackendPaidProductGrantDates,
-} from '@/lib/account/billing-access.server';
+import { fetchBackendPaidProductGrantDates } from '@/lib/account/billing-access.server';
 
 const DEFAULT_OWNER_DOWNLOAD_EMAIL = 'nurlanrahmonqulov@gmail.com';
 
@@ -79,7 +76,7 @@ export function getUserEntitlementSnapshot(
 
 export type ResolvedFileDownload =
   | { kind: 'public_preview'; publicUrl: string }
-  | { kind: 'pro_entitled'; via: 'purchase' | 'subscription' | 'owner' }
+  | { kind: 'pro_entitled'; via: 'purchase' | 'owner' }
   | {
       kind: 'denied';
       reason: 'NOT_FOUND' | 'NOT_AUTHENTICATED' | 'NOT_ENTITLED' | 'NOT_PUBLISHED';
@@ -87,7 +84,7 @@ export type ResolvedFileDownload =
 
 /**
  * Authoritative server-side gate for file downloads (preview redirect vs pro entitlement).
- * When `accessToken` is set (backend JWT cookie), merges Paddle subscription + paid orders from the API.
+ * When `accessToken` is set (backend JWT cookie), merges one-time paid orders from the API.
  */
 export async function resolveAuthenticatedFileDownload(
   userId: string | null,
@@ -105,17 +102,10 @@ export async function resolveAuthenticatedFileDownload(
     return { kind: 'denied', reason: 'NOT_FOUND' };
   }
 
-  let billingPremium = false;
   let billingPaidSlugs: Map<string, string> | null = null;
 
   if (userId && accessToken?.trim()) {
-    const tok = accessToken.trim();
-    const [premium, slugDates] = await Promise.all([
-      fetchBackendHasPremium(tok),
-      fetchBackendPaidProductGrantDates(tok),
-    ]);
-    if (premium !== null) billingPremium = premium;
-    billingPaidSlugs = slugDates;
+    billingPaidSlugs = await fetchBackendPaidProductGrantDates(accessToken.trim());
   }
 
   const mem = userId ? getUserEntitlementSnapshot(userId, productId, fileId) : null;
@@ -125,7 +115,6 @@ export async function resolveAuthenticatedFileDownload(
   const billingOwnsProduct =
     Boolean(slug && billingPaidSlugs?.has(slug));
 
-  const hasActiveSubscription = Boolean(mem?.hasActiveSubscription || billingPremium);
   const hasPurchasedFile = Boolean(mem?.hasPurchasedProduct || billingOwnsProduct);
 
   if (file.tier === 'preview_free') {
@@ -147,9 +136,6 @@ export async function resolveAuthenticatedFileDownload(
     }
     if (isMarketplaceOwnerDownloadBypass(userEmail)) {
       return { kind: 'pro_entitled', via: 'owner' };
-    }
-    if (hasActiveSubscription) {
-      return { kind: 'pro_entitled', via: 'subscription' };
     }
     if (hasPurchasedFile) {
       return { kind: 'pro_entitled', via: 'purchase' };

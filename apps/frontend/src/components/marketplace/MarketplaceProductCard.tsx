@@ -66,7 +66,7 @@ export function MarketplaceProductCard({
           {isPremium ? (
             <span
               className="inline-flex items-center gap-1 rounded-md bg-amber-400/95 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-950 ring-1 ring-amber-600/35 backdrop-blur-[2px]"
-              title="Paid stock — subscription or one-time purchase"
+              title="Paid design — one-time purchase"
             >
               <Crown size={10} className="shrink-0" aria-hidden strokeWidth={2.5} />
               Paid

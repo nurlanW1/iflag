@@ -15,7 +15,7 @@ export default function HelpPage() {
     },
     {
       title: 'Account & Billing',
-      description: 'Manage your account and subscription',
+      description: 'Manage your account and purchases',
       icon: Mail,
     },
     {

@@ -20,109 +20,7 @@ import { SITE_NAME } from '@/lib/seo/site-config';
 import { buildHeroDestination } from '@/lib/landing/hero-categories';
 import { navigateGalleryCountrySearch } from '@/lib/gallery/gallery-search-navigation';
 import { HOME_REGION_HUB_TILES } from '@/lib/gallery/region-hub-tiles';
-import { HOMEPAGE_PLAN_CARDS, ONE_TIME_STOCK, PRICING_MARKETING, formatPricingMoney } from '@/lib/marketing/pricing-config';
-
-type PricingPlan = {
-  name: string;
-  priceCents: number;
-  period: string;
-  features: readonly string[];
-  popular: boolean;
-  savingsBadge?: string;
-};
-
-function PlanFeatureRow({
-  feature,
-  planIdx,
-  fIdx,
-}: {
-  feature: string;
-  planIdx: number;
-  fIdx: number;
-}) {
-  const { ref, isRevealed } = useRevealInView<HTMLLIElement>();
-  return (
-    <motion.li
-      ref={ref}
-      initial={false}
-      animate={isRevealed ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
-      transition={{ delay: planIdx * 0.08 + fIdx * 0.05, duration: 0.35 }}
-      className="flex items-start gap-3 text-neutral-700"
-    >
-      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--brand-blue)]">
-        <motion.svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="white"
-          strokeWidth="3"
-          initial={false}
-          animate={isRevealed ? { pathLength: 1 } : { pathLength: 0 }}
-          transition={{ delay: planIdx * 0.08 + fIdx * 0.05 + 0.08, duration: 0.35 }}
-        >
-          <path d="M20 6L9 17l-5-5" />
-        </motion.svg>
-      </div>
-      <span className="text-base leading-relaxed">{feature}</span>
-    </motion.li>
-  );
-}
-
-function PricingPlanCard({ plan, idx }: { plan: PricingPlan; idx: number }) {
-  const { ref, isRevealed } = useRevealInView<HTMLDivElement>();
-  return (
-    <motion.div
-      ref={ref}
-      initial={false}
-      animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-      transition={{ duration: 0.45, delay: idx * 0.08 }}
-      className={`rounded-2xl border bg-white p-8 shadow-sm transition-[box-shadow,border-color] duration-300 hover:shadow-md md:p-10 ${
-        plan.popular
-          ? 'border-[#9a7d45]/35 ring-1 ring-[#9a7d45]/25'
-          : 'border-neutral-200/95 hover:border-neutral-300'
-      }`}
-    >
-      <div className="relative">
-        <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h3 className="text-2xl font-semibold tracking-tight text-[#2a2a2a] md:text-3xl">{plan.name}</h3>
-            {plan.popular ? (
-              <p className="mt-2 text-sm font-medium uppercase tracking-[0.14em] text-[#9a7d45]">Recommended</p>
-            ) : null}
-          </div>
-          <div className="text-left sm:text-right">
-            <div className="text-4xl font-semibold tabular-nums leading-none text-[var(--brand-blue)] md:text-5xl">
-              {formatPricingMoney(plan.priceCents)}
-            </div>
-            <div className="mt-2 text-base text-neutral-600">{plan.period}</div>
-            {plan.savingsBadge ? (
-              <p className="mt-1 text-sm font-medium text-emerald-700">{plan.savingsBadge}</p>
-            ) : null}
-          </div>
-        </div>
-
-        <ul className="mb-10 space-y-3">
-          {plan.features.map((feature, fIdx) => (
-            <PlanFeatureRow key={fIdx} feature={feature} planIdx={idx} fIdx={fIdx} />
-          ))}
-        </ul>
-
-        <Link
-          href="/pricing"
-          title="Paddle checkout"
-          className={`block min-h-[3.25rem] w-full rounded-xl px-8 py-3.5 text-center text-base font-semibold transition-colors duration-200 ${
-            plan.popular
-              ? 'bg-[var(--brand-blue)] text-[#fafaf9] hover:bg-[var(--brand-blue-hover)]'
-              : 'border border-neutral-300 bg-white text-[#2a2a2a] hover:border-neutral-400 hover:bg-neutral-50'
-          }`}
-        >
-          Go to Paddle checkout
-        </Link>
-      </div>
-    </motion.div>
-  );
-}
+import { ONE_TIME_STOCK, PRICING_MARKETING, formatPricingMoney } from '@/lib/marketing/pricing-config';
 
 export default function HomePageClient() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -131,6 +29,8 @@ export default function HomePageClient() {
     e.preventDefault();
     void navigateGalleryCountrySearch(searchQuery);
   };
+
+  const oneTimePrice = formatPricingMoney(ONE_TIME_STOCK.displayCents);
 
   return (
     <main className="min-h-screen bg-[#fafaf9]">
@@ -225,7 +125,7 @@ export default function HomePageClient() {
         </div>
       </section>
 
-      {/* Premium Plans */}
+      {/* Simple pricing */}
       <section className="border-t border-neutral-200/80 bg-white py-16 md:py-24 lg:py-28">
         <div className="marketplace-shell">
           <SectionReveal
@@ -236,29 +136,55 @@ export default function HomePageClient() {
           >
             <div className="mb-5 inline-flex items-center gap-2.5 rounded-full border border-neutral-200 bg-[#fafaf9] px-4 py-2">
               <Crown size={19} className="text-amber-500" strokeWidth={1.75} aria-hidden />
-              <span className="text-sm font-medium uppercase tracking-[0.14em] text-neutral-600">Premium plans</span>
+              <span className="text-sm font-medium uppercase tracking-[0.14em] text-neutral-600">Simple pricing</span>
             </div>
             <h2 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]">
-              Licenses without friction
+              Free official flats · {oneTimePrice} for everything else
             </h2>
             <p className="mt-4 max-w-3xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
-              {PRICING_MARKETING.homepageBlurb} Paid checkout routes through Paddle as Merchant of Record.
+              {PRICING_MARKETING.homepageBlurb}
             </p>
           </SectionReveal>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:gap-12 xl:gap-14">
-            {HOMEPAGE_PLAN_CARDS.map((plan, idx) => (
-              <PricingPlanCard key={plan.name} plan={plan} idx={idx} />
-            ))}
-          </div>
+          <div className="grid gap-8 md:grid-cols-2 lg:gap-12">
+            <SectionReveal
+              hidden={{ opacity: 0, y: 14 }}
+              visible={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45 }}
+              className="rounded-2xl border border-emerald-200/90 bg-emerald-50/50 p-8 md:p-10"
+            >
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-800">Free</p>
+              <h3 className="mt-3 text-2xl font-semibold text-[#2a2a2a]">Official flat country flags</h3>
+              <p className="mt-4 text-base leading-relaxed text-neutral-600">
+                Classic official designs stay free with your account — all published formats, no purchase.
+              </p>
+              <Link
+                href="/gallery"
+                className="mt-8 inline-flex min-h-[3rem] items-center justify-center rounded-xl bg-emerald-700 px-8 text-base font-semibold text-white transition-colors hover:bg-emerald-800"
+              >
+                Browse free flags
+              </Link>
+            </SectionReveal>
 
-          <p className="mx-auto mt-12 max-w-2xl text-center text-pretty text-base text-neutral-600">
-            Single assets from {formatPricingMoney(ONE_TIME_STOCK.displayCents)} — full checkout details on the{' '}
-            <Link href="/pricing" className="font-semibold text-[var(--brand-blue)] underline-offset-4 hover:underline">
-              pricing page
-            </Link>
-            .
-          </p>
+            <SectionReveal
+              hidden={{ opacity: 0, y: 14 }}
+              visible={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.06 }}
+              className="rounded-2xl border border-neutral-200/95 bg-white p-8 shadow-sm md:p-10"
+            >
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-neutral-500">Paid designs</p>
+              <h3 className="mt-3 text-2xl font-semibold text-[var(--brand-blue)]">{oneTimePrice} per design</h3>
+              <p className="mt-4 text-base leading-relaxed text-neutral-600">
+                Sphere, wave, mockup, and other variants — one Paddle checkout, all formats included.
+              </p>
+              <Link
+                href="/pricing"
+                className="mt-8 inline-flex min-h-[3rem] items-center justify-center rounded-xl bg-[var(--brand-blue)] px-8 text-base font-semibold text-[#fafaf9] transition-colors hover:bg-[var(--brand-blue-hover)]"
+              >
+                How pricing works
+              </Link>
+            </SectionReveal>
+          </div>
         </div>
       </section>
 
@@ -292,9 +218,9 @@ export default function HomePageClient() {
                 <Link
                   href="/pricing"
                   className="inline-flex min-h-[3rem] items-center justify-center rounded-xl border border-white/28 bg-transparent px-10 py-3 text-base font-semibold text-[#fafaf9] transition-colors hover:border-white/45 hover:bg-white/[0.06]"
-                  title={`Compare plans — ${PRICING_MARKETING.plansLine}`}
+                  title={PRICING_MARKETING.plansLine}
                 >
-                  Plans from {PRICING_MARKETING.monthlyShort}/mo
+                  {PRICING_MARKETING.oneTimePerAsset}
                 </Link>
               </div>
             </SectionReveal>

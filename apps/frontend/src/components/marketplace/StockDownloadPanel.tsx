@@ -17,7 +17,6 @@ import { firstSelectableStockFileId } from '@/lib/marketplace/canonical-stock-fo
 import { NeonTrustFoot } from '@/components/marketplace/NeonDownloadKit';
 import { DownloadPurchaseOffers } from '@/components/billing/DownloadPurchaseOffers';
 import { ONE_TIME_STOCK } from '@/lib/marketing/pricing-config';
-import { useFlagswingPlan } from '@/hooks/useFlagswingPlan';
 
 const btnCompact =
   'inline-flex min-h-11 min-w-[2.75rem] shrink-0 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition disabled:opacity-50';
@@ -48,6 +47,8 @@ type Props = {
   roomyDesktopSidebar?: boolean;
   /** Desktop PDP — fixed narrow column; compact format + purchase rails. */
   narrowDesktopSidebar?: boolean;
+  /** User completed one-time checkout for this product slug. */
+  ownsProduct?: boolean;
 };
 
 function downloadPath(productId: string | undefined, fileId: string): string {
@@ -77,13 +78,13 @@ export function StockDownloadPanel({
   compactLayout = false,
   roomyDesktopSidebar = false,
   narrowDesktopSidebar = false,
+  ownsProduct = false,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const back = pathname || '/gallery';
   const clerkUiEnabled = useClerkUiEnabled();
   const { isLoaded: userLoaded, isSignedIn } = useUser();
-  const { authLoaded, hasActivePlan, planLoaded } = useFlagswingPlan();
 
   const sorted = useMemo(
     () =>
@@ -125,12 +126,11 @@ export function StockDownloadPanel({
   const isFreeOfficialFile = active?.tier === 'preview_free';
   const needsEntitlement = requiresEntitlement ?? active?.tier === 'pro';
   const showPurchaseOffers =
-    authLoaded &&
-    planLoaded &&
-    !hasActivePlan &&
     Boolean(active) &&
     needsEntitlement &&
+    !ownsProduct &&
     !isPreviewSlot &&
+    !isFreeOfficialFile &&
     !onDirectDownload;
 
   const onProtectedDownload = () => {
@@ -143,7 +143,7 @@ export function StockDownloadPanel({
         toast.message('Sign in required');
         router.push(`/sign-in?redirect_url=${encodeURIComponent(back)}`);
       },
-      onForbidden: () => toast.message('Choose a purchase option below'),
+      onForbidden: () => toast.message('Buy this design for $1 to download'),
       onNotFound: () => toast.error('File unavailable'),
       onError: () => toast.error('Download failed'),
     }).finally(() => setBusy(false));
@@ -223,19 +223,11 @@ export function StockDownloadPanel({
         {busy ? '…' : 'Get'}
       </button>
     </div>
-  ) : !authLoaded || !planLoaded || (clerkUiEnabled && !userLoaded) ? (
-    <button
-      type="button"
-      disabled
-      className={`${btnCompact} w-full bg-slate-200 text-slate-500`}
-    >
-      Loading…
-    </button>
-  ) : hasActivePlan ? (
+  ) : ownsProduct && needsEntitlement ? (
     <div className="flex min-h-12 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">Pro access</p>
-        <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)}</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">Purchased</p>
+        <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)} · download ready</p>
       </div>
       <button
         type="button"
@@ -247,6 +239,14 @@ export function StockDownloadPanel({
         {busy ? '…' : 'Download'}
       </button>
     </div>
+  ) : clerkUiEnabled && !userLoaded ? (
+    <button
+      type="button"
+      disabled
+      className={`${btnCompact} w-full bg-slate-200 text-slate-500`}
+    >
+      Loading…
+    </button>
   ) : (
     <DownloadPurchaseOffers
       assetLabel={assetLabel ?? cartProduct.title}
@@ -271,7 +271,11 @@ export function StockDownloadPanel({
           bytesLabel={bytesToHuman(active.bytes)}
           kind={activeKind}
           summary={licenseSummary}
-          eligibilityLineSuffix={isPreviewSlot ? 'Free preview download' : 'Included with your plan'}
+          eligibilityLineSuffix={
+            isPreviewSlot || isFreeOfficialFile
+              ? 'Free official download'
+              : 'Included after purchase'
+          }
         />
       ) : null}
       <div className={clsx('border-t border-slate-100', panelCompact ? 'pt-3' : 'pt-5')}>

@@ -19,6 +19,7 @@ type Props = {
   roomyDesktopSidebar?: boolean;
   /** PDP desktop: narrower column + denser format/offer rails. */
   narrowDesktopSidebar?: boolean;
+  ownsProduct?: boolean;
   selectedId?: string | null;
   onSelectId?: (fileId: string) => void;
 };

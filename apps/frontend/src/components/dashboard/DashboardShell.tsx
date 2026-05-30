@@ -23,7 +23,7 @@ const navItems: { href: string; label: string; icon: typeof User }[] = [
   { href: '/dashboard/profile', label: 'Profile', icon: User },
   { href: '/dashboard/purchases', label: 'Purchased files', icon: Package },
   { href: '/dashboard/downloads', label: 'Downloads', icon: Download },
-  { href: '/dashboard/subscription', label: 'Subscription', icon: CreditCard },
+  { href: '/dashboard/subscription', label: 'Billing', icon: CreditCard },
 ];
 
 export function DashboardShell({

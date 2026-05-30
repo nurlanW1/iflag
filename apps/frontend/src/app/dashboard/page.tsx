@@ -22,8 +22,8 @@ const cards = [
   },
   {
     href: '/dashboard/subscription',
-    title: 'Subscription',
-    description: 'Plan status and renewal window when a subscription is active.',
+    title: 'Billing',
+    description: 'One-time purchases and Paddle receipts — no subscription plans.',
     icon: CreditCard,
   },
 ] as const;
@@ -38,7 +38,7 @@ export default function DashboardOverviewPage() {
         <div>
           <h1 className="text-2xl font-black text-gray-900 md:text-3xl">Dashboard home</h1>
           <p className="mt-1 text-sm text-gray-600">
-            Manage your profile, purchases, downloads, and subscription in one place.
+            Manage your profile, purchases, and downloads in one place.
           </p>
         </div>
       </div>
