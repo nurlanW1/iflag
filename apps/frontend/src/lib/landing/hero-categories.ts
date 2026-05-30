@@ -19,7 +19,7 @@ export function buildHeroDestination(tab: HeroCategoryTab, qRaw: string): string
   const q = qRaw.trim();
   switch (tab) {
     case 'all':
-      return q ? `/browse?q=${encodeURIComponent(q)}` : '/browse';
+      return q ? `/gallery?q=${encodeURIComponent(q)}` : '/gallery';
     case 'countries':
       return q ? `/browse?q=${encodeURIComponent(q)}` : '/gallery';
     case 'circular':

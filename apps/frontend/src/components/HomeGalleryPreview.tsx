@@ -31,7 +31,7 @@ export default function HomeGalleryPreview() {
         }
       }
 
-      const stockRes = await fetch('/api/gallery/countries', { cache: 'no-store' });
+      const stockRes = await fetch('/api/gallery/landing-preview?full=1', { cache: 'no-store' });
       if (stockRes.ok) {
         const data = await stockRes.json();
         setAllCountries(data.countries || []);

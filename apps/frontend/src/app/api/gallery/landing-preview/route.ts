@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/server/db';
+import { filterLandingCountryFolders } from '@/lib/gallery/canonical-country-hubs';
 import {
   applyGalleryDisplayNames,
   fetchGalleryCountriesFromDb,
-  isPackFallbackFlagThumbnail,
 } from '@/lib/server/gallery-from-db';
 
 /** Fisher–Yates shuffle (random preview order each request). */
@@ -31,11 +31,7 @@ export async function GET(request: Request) {
         await fetchGalleryCountriesFromDb(getDb(), null)
       : [];
 
-    const rows = applyGalleryDisplayNames(rowsBuilt).filter((c) => {
-      const t = c.thumbnail?.trim();
-      if (!t) return false;
-      return !isPackFallbackFlagThumbnail(t);
-    });
+    const rows = filterLandingCountryFolders(applyGalleryDisplayNames(rowsBuilt));
 
     const sorted = [...rows].sort((a, b) => a.name.localeCompare(b.name));
 

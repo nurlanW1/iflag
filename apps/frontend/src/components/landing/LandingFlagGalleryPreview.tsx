@@ -28,7 +28,7 @@ export function LandingFlagGalleryPreview() {
     setPhase('loading');
     try {
       const { ok, data } = await fetchJsonWithRetry<{ countries?: GalleryCountrySummary[] }>(
-        '/api/gallery/countries',
+        '/api/gallery/landing-preview',
         { retries: 2, delayMs: 500 },
       );
       const list = ok && data?.countries ? data.countries : [];

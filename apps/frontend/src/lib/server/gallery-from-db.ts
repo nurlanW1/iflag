@@ -521,8 +521,10 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
     return `f:${base.toLowerCase()}`;
   }
 
-  /** Group by filename stem so every distinct R2 name becomes its own gallery tile. */
+  /** Group by asset design key; fall back to filename stem. */
   function designBucketKey(row: FlagFileRow): string {
+    const ag = row.asset_group_key?.trim();
+    if (ag) return `ag:${ag.toLowerCase()}`;
     return variantGroupKey(row);
   }
 
@@ -576,6 +578,8 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
 
   for (const r of fRes.rows) {
     const previewOnly = isPreviewOnlyFormat(r.format);
+    if (previewOnly) continue;
+
     const previewUrl = previewUrlForFlagRow(r);
 
     const key = designBucketKey(r);
