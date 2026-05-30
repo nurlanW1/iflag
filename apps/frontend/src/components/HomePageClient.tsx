@@ -19,6 +19,7 @@ import { useRevealInView } from '@/hooks/useRevealInView';
 import { SITE_NAME } from '@/lib/seo/site-config';
 import { buildHeroDestination } from '@/lib/landing/hero-categories';
 import { navigateGalleryCountrySearch } from '@/lib/gallery/gallery-search-navigation';
+import { HOME_REGION_HUB_TILES } from '@/lib/gallery/region-hub-tiles';
 import { HOMEPAGE_PLAN_CARDS, ONE_TIME_STOCK, PRICING_MARKETING, formatPricingMoney } from '@/lib/marketing/pricing-config';
 
 type PricingPlan = {
@@ -156,45 +157,32 @@ export default function HomePageClient() {
 
           <div className="rounded-xl border border-neutral-200/90 bg-[#fafaf9] p-3 sm:p-4">
             <div className="flex gap-2 overflow-x-auto overscroll-x-contain pb-0.5 [scrollbar-width:thin] sm:gap-2.5 lg:grid lg:grid-cols-8 lg:overflow-visible lg:pb-0">
-              {[
-                { name: 'Europe', icon: Globe2 },
-                { name: 'Asia', icon: Globe2 },
-                { name: 'Africa', icon: Globe2 },
-                { name: 'Americas', icon: Globe2 },
-                { name: 'Oceania', icon: Globe2 },
-                { name: 'Organizations', icon: Flag },
-                { name: 'Autonomy', icon: Globe2 },
-                { name: 'Historical Flag', icon: Flag },
-              ].map((cat, idx) => {
+              {HOME_REGION_HUB_TILES.map((cat, idx) => {
                 const CatIcon = cat.icon;
-                const galleryHref =
-                  cat.name === 'Organizations'
-                    ? '/gallery?kind=organizations'
-                    : cat.name === 'Autonomy'
-                      ? '/gallery?kind=autonomy'
-                      : cat.name === 'Historical Flag'
-                        ? '/gallery?kind=historical'
-                        : `/gallery?region=${encodeURIComponent(cat.name)}`;
                 return (
                   <SectionReveal
-                    key={idx}
+                    key={cat.name}
                     hidden={{ opacity: 0, y: 6 }}
                     visible={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25, delay: idx * 0.02 }}
                     className="min-w-[8.75rem] shrink-0 lg:min-w-0"
                   >
                     <Link
-                      href={galleryHref}
-                      className="group flex min-h-[3.25rem] w-full items-center gap-2 rounded-lg border border-neutral-200/95 bg-white px-2.5 py-2 shadow-sm transition-[border-color,box-shadow,background-color] duration-200 hover:border-neutral-400 hover:bg-neutral-50 sm:min-h-[3.5rem] sm:gap-2.5 sm:px-3"
+                      href={cat.href}
+                      className="group flex min-h-[3.25rem] w-full items-center gap-2 rounded-lg border border-black/10 px-2.5 py-2 shadow-sm transition-[filter,box-shadow,transform] duration-200 hover:brightness-110 hover:shadow-md sm:min-h-[3.5rem] sm:gap-2.5 sm:px-3"
+                      style={{ backgroundColor: cat.bg }}
                     >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-neutral-100 text-[var(--brand-blue)] ring-1 ring-neutral-200/80 sm:h-9 sm:w-9">
-                        <CatIcon size={17} strokeWidth={1.75} aria-hidden />
+                      <div
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white sm:h-9 sm:w-9"
+                        style={{ backgroundColor: cat.iconWell }}
+                      >
+                        <CatIcon size={17} strokeWidth={1.75} className="text-white" aria-hidden />
                       </div>
-                      <span className="min-w-0 flex-1 truncate text-left text-xs font-medium text-[#2a2a2a] sm:text-[0.8125rem]">
+                      <span className="min-w-0 flex-1 truncate text-left text-xs font-semibold text-white sm:text-[0.8125rem]">
                         {cat.name}
                       </span>
                       <ChevronRight
-                        className="h-3.5 w-3.5 shrink-0 text-neutral-400 transition-colors group-hover:text-neutral-600"
+                        className="h-3.5 w-3.5 shrink-0 text-white/75 transition-colors group-hover:text-white"
                         aria-hidden
                       />
                     </Link>
