@@ -133,8 +133,8 @@ export function DownloadPurchaseOffers({
     >
       <p
         className={clsx(
-          'line-clamp-2 font-semibold leading-snug text-slate-900',
-          compact ? 'text-[12px]' : 'text-[13px]',
+          'font-semibold leading-snug text-slate-900',
+          compact ? 'line-clamp-2 text-[11px]' : 'line-clamp-2 text-[13px]',
         )}
       >
         {title}

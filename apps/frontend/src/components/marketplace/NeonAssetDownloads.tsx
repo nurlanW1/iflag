@@ -17,6 +17,8 @@ type Props = {
   compactLayout?: boolean;
   /** PDP desktop: full-size offers + no height clamp (mobile dock stays compact). */
   roomyDesktopSidebar?: boolean;
+  /** PDP desktop: narrower column + denser format/offer rails. */
+  narrowDesktopSidebar?: boolean;
   selectedId?: string | null;
   onSelectId?: (fileId: string) => void;
 };

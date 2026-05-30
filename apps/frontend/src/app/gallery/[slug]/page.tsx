@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import { FlagVideoPreview } from '@/components/media/FlagVideoPreview';
 import { hrefLooksLikeFlagVideo, isFlagVideoFormat } from '@/lib/flag-video-formats';
+import { CountryDesignTierCrown } from '@/components/gallery/CountryDesignTierCrown';
 import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCover';
 import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 import {
@@ -271,6 +272,7 @@ export default function CountryHubPage() {
                         showVideo ? 'aspect-video bg-stone-900' : 'aspect-[4/3]',
                       )}
                     >
+                      <CountryDesignTierCrown premium={isPremium} />
                       {showVideo && videoSrc ? (
                         <FlagVideoPreview
                           src={videoSrc}

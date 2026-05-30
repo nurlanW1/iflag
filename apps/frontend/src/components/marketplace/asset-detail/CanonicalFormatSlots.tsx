@@ -20,15 +20,19 @@ type Props = {
   /** id of adjacent <h2> (radiogroup label) */
   headingId: string;
   compact?: boolean;
+  /** Tighter slot width for narrow PDP download column */
+  narrowRail?: boolean;
 };
 
 /** Always shows EPS · SVG · PNG · JPG slots; missing files are disabled at 50% opacity. Rare non-canonical files render after these. */
-export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId, compact }: Props) {
+export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId, compact, narrowRail }: Props) {
   const extras = extraStockFilesBeyondCanonical(files);
   const availableCanon = countAvailableCanonicalSlots(files);
 
   const slotBtnBase = compact
-    ? 'flex min-h-[2.75rem] min-w-[4.35rem] shrink-0 snap-start flex-col items-center justify-center rounded-md px-2.5 py-2 sm:min-w-[4.65rem]'
+    ? narrowRail
+      ? 'flex min-h-[2.5rem] min-w-[3.35rem] shrink-0 snap-start flex-col items-center justify-center rounded-md px-1.5 py-1.5 sm:min-w-[3.5rem]'
+      : 'flex min-h-[2.75rem] min-w-[4.35rem] shrink-0 snap-start flex-col items-center justify-center rounded-md px-2.5 py-2 sm:min-w-[4.65rem]'
     : 'flex min-h-[2.875rem] min-w-[5rem] shrink-0 snap-start flex-col items-center justify-center rounded-[0.6875rem] px-4 py-2.5 sm:min-w-[5.75rem]';
   const slotLabelCls =
     'font-bold leading-none tracking-[0.04em] text-slate-900 ' +

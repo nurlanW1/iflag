@@ -87,7 +87,7 @@ export function ProductDetailPreviewColumn({
   return (
     <div
       className={clsx(
-        'grid gap-4 lg:grid-cols-2 lg:items-stretch lg:gap-5',
+        'grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(17.5rem,21rem)] lg:items-stretch lg:gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]',
         PDP_ROW_HEIGHT_CLASS,
       )}
     >
@@ -116,7 +116,7 @@ export function ProductDetailPreviewColumn({
 
       <aside className="flex min-h-0 min-w-0 flex-col lg:h-full">
         <div className="flex min-h-0 flex-1 flex-col max-lg:border-0 max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none lg:rounded-xl lg:border lg:border-slate-200/80 lg:bg-white lg:shadow-sm">
-          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 sm:gap-5 sm:p-5 lg:overscroll-contain">
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 sm:gap-4 sm:p-4 lg:overscroll-contain">
             <NeonAssetDownloads
               cartProduct={cartProduct}
               files={dedupedFiles}
@@ -127,7 +127,7 @@ export function ProductDetailPreviewColumn({
               previewFile={neonDownloads ? undefined : previewFilePublic}
               requiresEntitlement={neonDownloads ? undefined : paid}
               compactLayout
-              roomyDesktopSidebar
+              narrowDesktopSidebar
               selectedId={selectedFileId}
               onSelectId={setSelectedFileId}
             />
