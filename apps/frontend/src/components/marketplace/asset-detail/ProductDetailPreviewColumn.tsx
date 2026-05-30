@@ -13,8 +13,9 @@ import type { CartProductRef } from '@/components/marketplace/asset-detail/CopyL
 import type { ProductFile } from '@/types/marketplace';
 import type { PublicProductFile } from '@/lib/marketplace/product-mapper';
 
-/** Preview column only — download sidebar grows with content (no inner scroll on desktop). */
-const PDP_PREVIEW_HEIGHT_CLASS = 'lg:h-[min(28rem,58vh)] lg:max-h-[min(28rem,58vh)] lg:min-h-0';
+/** Equal-height PDP row on desktop — fits viewport below nav + title. */
+const PDP_ROW_HEIGHT_CLASS =
+  'lg:h-[min(40rem,calc(100dvh-10.5rem))] lg:max-h-[min(40rem,calc(100dvh-10.5rem))]';
 
 type Props = {
   productTitle: string;
@@ -84,13 +85,13 @@ export function ProductDetailPreviewColumn({
   }, [selectedFileId, catalogFiles, defaultPreviewUrls]);
 
   return (
-    <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-start lg:gap-6 xl:grid-cols-[minmax(0,1fr)_28rem]">
-      <div
-        className={clsx(
-          'max-h-[min(52vh,28rem)] min-h-[min(20rem,52vh)] shrink-0 overflow-hidden',
-          PDP_PREVIEW_HEIGHT_CLASS,
-        )}
-      >
+    <div
+      className={clsx(
+        'grid gap-4 lg:grid-cols-2 lg:items-stretch lg:gap-5',
+        PDP_ROW_HEIGHT_CLASS,
+      )}
+    >
+      <div className="flex min-h-[min(20rem,48vh)] max-h-[min(52vh,28rem)] min-w-0 flex-col overflow-hidden lg:h-full lg:max-h-none lg:min-h-0">
         {videoPlayback ? (
           <VideoAssetPreview
             className="h-full min-h-0"
@@ -113,9 +114,9 @@ export function ProductDetailPreviewColumn({
         )}
       </div>
 
-      <aside className="flex w-full flex-col justify-self-stretch lg:max-w-none lg:self-start">
-        <div className="flex flex-col max-lg:min-h-0 max-lg:border-0 max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none lg:rounded-xl lg:border lg:border-slate-200/80 lg:bg-white lg:p-1 lg:shadow-sm">
-          <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-5 lg:overflow-visible">
+      <aside className="flex min-h-0 min-w-0 flex-col lg:h-full">
+        <div className="flex min-h-0 flex-1 flex-col max-lg:border-0 max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none lg:rounded-xl lg:border lg:border-slate-200/80 lg:bg-white lg:shadow-sm">
+          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 sm:gap-5 sm:p-5 lg:overscroll-contain">
             <NeonAssetDownloads
               cartProduct={cartProduct}
               files={dedupedFiles}

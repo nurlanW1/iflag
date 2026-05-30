@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import Link from 'next/link';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ProductDetailPreviewColumn } from '@/components/marketplace/asset-detail/ProductDetailPreviewColumn';
 import { productVideoPlayback } from '@/lib/marketplace/product-video-playback';
@@ -14,20 +14,12 @@ import { productShareImageUrl } from '@/lib/seo/product-share-image';
 import type { Product } from '@/types/marketplace';
 
 import { CountryDesignVariantRibbon } from '@/components/marketplace/CountryDesignVariantRibbon';
-import { getCategoryById, listPublishedProducts } from '@/services/marketplace';
+import { listPublishedProducts } from '@/services/marketplace';
 
 type Props = {
   slug: string;
   product: Product;
 };
-
-function humanizeCountry(slug: string): string {
-  return slug
-    .split('-')
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(' ');
-}
 
 /** Other published designs for this country — prefer different bundle keys for variety. */
 function listCountryVariants(current: Product, limit = 14): Product[] {
@@ -90,8 +82,6 @@ export function ProductDetailView({ slug, product }: Props) {
   const formatHints = dedupedFiles.map((f) => f.format);
   const videoPlayback = productVideoPlayback(product);
 
-  const categoryName = getCategoryById(product.categoryId)?.name ?? 'Flags';
-
   const siblingProducts = listCountryVariants(product);
   const siblingPublic = siblingProducts.map(toPublicProduct);
   const variantGalleryHref = product.countrySlug?.trim()
@@ -99,7 +89,6 @@ export function ProductDetailView({ slug, product }: Props) {
     : null;
 
   const licenseSummary = product.license?.summary?.trim() || null;
-  const countryLine = product.countrySlug?.trim() ? humanizeCountry(product.countrySlug.trim()) : null;
 
   const tagTrail =
     product.tags.length > 0 ? (
@@ -157,45 +146,10 @@ export function ProductDetailView({ slug, product }: Props) {
             <span className="truncate text-slate-700">{product.title}</span>
           </nav>
 
-          <header className="mt-3 flex flex-wrap items-end justify-between gap-3 border-b border-slate-200/80 pb-3 lg:mt-4 lg:gap-4 lg:pb-4">
-            <div>
-              <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                <Sparkles size={11} className="text-[var(--brand-blue)]" aria-hidden />
-                {categoryName}
-                {countryLine ? (
-                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold normal-case tracking-normal text-slate-600">
-                    {countryLine}
-                  </span>
-                ) : null}
-              </div>
-              <h1 className="mt-1.5 text-balance text-[1.35rem] font-semibold leading-snug tracking-tight text-slate-900 sm:text-2xl lg:max-w-[min(100%,42rem)] xl:text-[1.65rem]">
-                {product.title}
-              </h1>
-              <p className="mt-1 hidden text-xs text-slate-500 lg:block">
-                <span className="font-semibold text-slate-700">{dedupedFiles.length}</span>{' '}
-                {dedupedFiles.length === 1 ? 'format' : 'formats'} available
-                {siblingProducts.length > 0 ? (
-                  <>
-                    {' '}
-                    ·{' '}
-                    <span className="font-semibold text-slate-700">{siblingProducts.length + 1}</span> designs for
-                    this country
-                  </>
-                ) : null}
-              </p>
-              <p className="mt-1 text-xs text-slate-500 lg:hidden">
-                <span className="font-semibold text-slate-700">{dedupedFiles.length}</span>{' '}
-                {dedupedFiles.length === 1 ? 'format' : 'formats'}
-                {siblingProducts.length > 0 ? (
-                  <>
-                    {' '}
-                    ·{' '}
-                    <span className="font-semibold text-slate-700">{siblingProducts.length + 1}</span> designs in
-                    this country
-                  </>
-                ) : null}
-              </p>
-            </div>
+          <header className="mt-3 border-b border-slate-200/80 pb-3 lg:mt-4 lg:pb-4">
+            <h1 className="text-balance text-[1.35rem] font-semibold leading-snug tracking-tight text-slate-900 sm:text-2xl lg:max-w-[min(100%,42rem)] xl:text-[1.65rem]">
+              {product.title}
+            </h1>
           </header>
 
           <div className="mt-4 space-y-4 lg:space-y-5">
