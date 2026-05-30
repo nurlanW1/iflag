@@ -22,6 +22,8 @@ import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCover';
 import { CountryHubFolderGrid } from '@/components/gallery/CountryHubFolderGrid';
+import { GalleryContinentSections } from '@/components/gallery/GalleryContinentSections';
+import { groupCountryHubsByContinent } from '@/lib/gallery/country-continent';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 
@@ -167,6 +169,13 @@ function GalleryContent() {
   );
 
   const activeKind = kind?.trim() || null;
+
+  const useContinentSections = !region?.trim() && !kind?.trim() && !searchQuery.trim();
+
+  const continentSections = useMemo(
+    () => (useContinentSections ? groupCountryHubsByContinent(filteredCountries) : []),
+    [useContinentSections, filteredCountries],
+  );
 
   return (
     <main className="min-h-screen bg-stone-50">
@@ -391,6 +400,8 @@ function GalleryContent() {
             onClearSearch={() => setSearchQuery('')}
             onClearFilter={() => router.push('/gallery')}
           />
+        ) : useContinentSections && continentSections.length > 0 ? (
+          <GalleryContinentSections sections={continentSections} view={view} />
         ) : view === 'grid' ? (
           <CountryHubFolderGrid countries={filteredCountries} variant="compact" />
         ) : (

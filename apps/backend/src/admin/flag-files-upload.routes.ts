@@ -17,7 +17,7 @@ import {
 } from '../storage/r2.js';
 import { runR2Import } from '../scripts/import-r2-files.js';
 
-const FORMATS = ['svg', 'png', 'jpg', 'jpeg', 'webp', 'pdf', 'eps'] as const;
+const FORMATS = ['svg', 'png', 'jpg', 'jpeg', 'webp', 'pdf', 'eps', 'ai', 'psd'] as const;
 const PREMIUM = ['free', 'freemium', 'paid'] as const;
 const COUNTRY_CATEGORIES = ['country', 'autonomy', 'organization', 'historical'] as const;
 

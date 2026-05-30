@@ -7,7 +7,7 @@ import {
   type CatalogSort,
 } from '@/services/marketplace';
 import { fetchNeonCatalogProducts } from '@/lib/server/neon-catalog';
-import { isVideoCatalogProduct } from '@/lib/marketplace/catalog-video';
+import { isMockupCatalogProduct, isVideoCatalogProduct } from '@/lib/marketplace/catalog-video';
 import { SEED_IDS } from '@/services/marketplace/seed';
 
 export const dynamic = 'force-dynamic';
@@ -58,9 +58,12 @@ export async function GET(request: Request) {
   }
 
   const flagVideosOnly = categoryId === SEED_IDS.catFlagVideos;
-  combined = combined.filter((p) =>
-    flagVideosOnly ? isVideoCatalogProduct(p) : !isVideoCatalogProduct(p),
-  );
+  const flagMockupsOnly = categoryId === SEED_IDS.catFlagMockups;
+  combined = combined.filter((p) => {
+    if (flagVideosOnly) return isVideoCatalogProduct(p);
+    if (flagMockupsOnly) return isMockupCatalogProduct(p);
+    return !isVideoCatalogProduct(p) && !isMockupCatalogProduct(p);
+  });
 
   const { products, total } = filterSortPaginateCatalog(combined, {
     categoryId,

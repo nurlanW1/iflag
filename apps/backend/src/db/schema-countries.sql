@@ -98,7 +98,9 @@ CREATE TABLE IF NOT EXISTS country_flag_files (
   mime_type VARCHAR(100) NOT NULL,
   
   -- Format & Variant
-  format VARCHAR(20) NOT NULL CHECK (format IN ('png', 'svg', 'jpg', 'jpeg', 'webp', 'eps', 'pdf')),
+  format VARCHAR(20) NOT NULL CHECK (format IN (
+    'png', 'svg', 'jpg', 'jpeg', 'webp', 'eps', 'pdf', 'ai', 'psd', 'mp4', 'webm', 'mov'
+  )),
   variant_name VARCHAR(100), -- e.g., 'flat', 'waving', 'round', 'square', 'vertical', 'banner'
   ratio VARCHAR(20), -- e.g., '1:1', '3:2', '16:9', '4:3', '21:9'
   

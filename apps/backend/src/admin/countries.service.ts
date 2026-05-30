@@ -64,7 +64,7 @@ export interface CountryFlagFile {
   file_url: string;
   file_size_bytes: number;
   mime_type: string;
-  format: 'png' | 'svg' | 'jpg' | 'jpeg' | 'webp' | 'eps' | 'pdf';
+  format: 'png' | 'svg' | 'jpg' | 'jpeg' | 'webp' | 'eps' | 'pdf' | 'ai' | 'psd';
   variant_name: string | null;
   ratio: string | null;
   width: number | null;
@@ -92,7 +92,7 @@ export interface CreateFlagFileData {
   file_url: string;
   file_size_bytes: number;
   mime_type: string;
-  format: 'png' | 'svg' | 'jpg' | 'jpeg' | 'webp' | 'eps' | 'pdf';
+  format: 'png' | 'svg' | 'jpg' | 'jpeg' | 'webp' | 'eps' | 'pdf' | 'ai' | 'psd';
   variant_name?: string;
   ratio?: string;
   width?: number;

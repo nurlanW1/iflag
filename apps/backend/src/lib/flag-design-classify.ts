@@ -168,6 +168,16 @@ export function classifyFlagDesign(params: {
   const countrySlug = (params.countrySlug ?? '').trim().toLowerCase();
   const previewOnly = isPreviewOnlyFormat(params.format);
   const videoFormat = isFlagVideoFormat(params.format);
+  const fmt = (params.format ?? '').trim().toLowerCase();
+
+  if (fmt === 'psd') {
+    return {
+      design_type: 'mockup',
+      premium_tier: 'paid',
+      is_country_cover_candidate: false,
+      is_preview_only: false,
+    };
+  }
 
   if (videoFormat) {
     return {

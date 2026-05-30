@@ -24,7 +24,7 @@ function shuffle<T>(items: T[]): T[] {
 }
 
 /** Preview-safe formats only (landing / cards). JPG → PNG → WEBP → SVG. No EPS/PDF/AI previews. */
-const NON_BROWSER_PREVIEW_FMT = new Set(['eps', 'pdf', 'ai']);
+const NON_BROWSER_PREVIEW_FMT = new Set(['eps', 'pdf', 'ai', 'psd']);
 
 function previewRankForPick(format: string): number {
   const f = format.toLowerCase();

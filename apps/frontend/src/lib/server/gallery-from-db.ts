@@ -4,6 +4,10 @@ import {
   FLAG_THUMB_PLACEHOLDER_DATA_URL,
   flagThumbPlaceholderForFileId,
 } from '@/lib/flag-thumbnail-fallback';
+import {
+  assignContinentToCountryHub,
+  normalizeGalleryRegionParam,
+} from '@/lib/gallery/country-continent';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
 import { slugFromAssetGroupKey } from '@/lib/marketplace/group-flag-products';
 import { isSafePublicFlagObjectPath, resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
@@ -58,6 +62,7 @@ export function formatToCategory(fmt: string): 'vector' | 'raster' | 'video' {
   const f = fmt.toLowerCase();
   if (isFlagVideoFormat(f)) return 'video';
   if (f === 'svg' || f === 'eps' || f === 'pdf' || f === 'ai') return 'vector';
+  if (f === 'psd') return 'raster';
   if (f === 'png' || f === 'jpg' || f === 'jpeg' || f === 'webp') return 'raster';
   return 'raster';
 }
@@ -183,6 +188,7 @@ async function fetchGalleryCountriesFromDbOnce(
   filters: GalleryCountryListFilters | null,
 ): Promise<GalleryCountrySummary[]> {
   const regionParam = filters?.region?.trim() || null;
+  const regionNorm = normalizeGalleryRegionParam(regionParam);
   const catParam = filters?.dbCategory?.trim().toLowerCase() || null;
   const schema = await galleryOptionalColumns(pool);
 
@@ -204,6 +210,7 @@ async function fetchGalleryCountriesFromDbOnce(
     name: string;
     slug: string;
     iso_alpha_2: string | null;
+    stored_region: string | null;
     flag_count: number | string;
     design_count: number | string;
     raw_thumbnail_url: string | null;
@@ -222,6 +229,7 @@ async function fetchGalleryCountriesFromDbOnce(
        c.name,
        c.slug,
        c.iso_alpha_2,
+       NULLIF(trim(c.region::text), '') AS stored_region,
        agg.file_cnt AS flag_count,
        agg.design_cnt AS design_count,
        NULLIF(trim(f.thumbnail_url::text), '') AS raw_thumbnail_url,
@@ -298,13 +306,12 @@ async function fetchGalleryCountriesFromDbOnce(
        ORDER BY COALESCE(fy.updated_at, fy.created_at) DESC NULLS LAST
        LIMIT 1
      ) fx0 ON TRUE
-     WHERE ($1::text IS NULL OR lower(trim(coalesce(c.region::text, ''))) = lower(trim($1)))
-       AND (
+     WHERE (
          $2::text IS NULL
          OR lower(trim(coalesce(c.category::text, 'country'))) = lower(trim($2))
        )
      ORDER BY ${countriesOrder}`,
-    [regionParam, catParam],
+    [catParam],
   );
 
   const out: GalleryCountrySummary[] = [];
@@ -342,21 +349,29 @@ async function fetchGalleryCountriesFromDbOnce(
     const n = Number.isFinite(count) ? count : 0;
     const d = Number.isFinite(designs) ? designs : 0;
 
-    out.push({
-      id: row.cid,
-      name: row.name,
-      slug: row.slug,
-      code,
-      has_webp_cover: hasWebp,
-      webp_cover_url: webpCover,
-      thumbnail_url: webpCover ?? '',
-      thumbnail: webpCover ?? '',
-      flag_count: n,
-      design_count: d || n,
-      count: n,
-    });
+    out.push(
+      assignContinentToCountryHub(
+        {
+          id: row.cid,
+          name: row.name,
+          slug: row.slug,
+          code,
+          has_webp_cover: hasWebp,
+          webp_cover_url: webpCover,
+          thumbnail_url: webpCover ?? '',
+          thumbnail: webpCover ?? '',
+          flag_count: n,
+          design_count: d || n,
+          count: n,
+        },
+        row.stored_region,
+      ),
+    );
   }
-  return out;
+
+  if (!regionNorm) return out;
+
+  return out.filter((c) => c.continent === regionNorm);
 }
 
 export async function fetchGalleryCountriesFromDb(

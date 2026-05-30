@@ -17,6 +17,7 @@ import {
   filterGalleryCountryFolders,
   mergeCanonicalCountryHubs,
 } from '@/lib/gallery/canonical-country-hubs';
+import { filterCountryHubsByGalleryRegion } from '@/lib/gallery/country-continent';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,8 +42,16 @@ function mergeStockOnlyIntoDb(dbList: GalleryCountrySummary[], stockList: Galler
   return mergeCanonicalCountryHubs([...dbList, ...extra]);
 }
 
-function finalizeCountryHubList(list: GalleryCountrySummary[]): GalleryCountrySummary[] {
-  return applyGalleryDisplayNames(filterGalleryCountryFolders(list));
+function finalizeCountryHubList(
+  list: GalleryCountrySummary[],
+  filters: GalleryCountryListFilters | null,
+): GalleryCountrySummary[] {
+  const folders = filterGalleryCountryFolders(list);
+  const named = applyGalleryDisplayNames(folders);
+  if (filters?.region?.trim()) {
+    return filterCountryHubsByGalleryRegion(named, filters.region);
+  }
+  return named;
 }
 
 /**
@@ -163,7 +172,7 @@ export async function GET(request: Request) {
         // Region / taxonomy filters: DB only (flag_stock rows have no region metadata).
         if (filters != null) {
           return NextResponse.json(
-            { countries: finalizeCountryHubList(fromDb) },
+            { countries: finalizeCountryHubList(fromDb, filters) },
             { headers: { 'Cache-Control': 'no-store' } },
           );
         }
@@ -171,7 +180,7 @@ export async function GET(request: Request) {
           const merged =
             mergeLegacyFlagStock ? mergeStockOnlyIntoDb(fromDb, stockCountries) : fromDb;
           return NextResponse.json(
-            { countries: finalizeCountryHubList(merged) },
+            { countries: finalizeCountryHubList(merged, filters) },
             { headers: { 'Cache-Control': 'no-store' } },
           );
         }
@@ -184,7 +193,7 @@ export async function GET(request: Request) {
           const merged =
             mergeLegacyFlagStock ? mergeStockOnlyIntoDb(fromBackend, stockCountries) : fromBackend;
           return NextResponse.json(
-            { countries: finalizeCountryHubList(merged) },
+            { countries: finalizeCountryHubList(merged, filters) },
             { headers: { 'Cache-Control': 'no-store' } },
           );
         }
@@ -203,7 +212,7 @@ export async function GET(request: Request) {
             ? mergeStockOnlyIntoDb(fromBackend, stockCountries)
             : fromBackend;
         return NextResponse.json(
-          { countries: finalizeCountryHubList(merged) },
+          { countries: finalizeCountryHubList(merged, filters) },
           { headers: { 'Cache-Control': 'no-store' } },
         );
       }
@@ -218,7 +227,7 @@ export async function GET(request: Request) {
     }
 
     const stockOnlyReal = stockCountries.filter((c) => !isPackFallbackFlagThumbnail(c.thumbnail));
-    return NextResponse.json({ countries: finalizeCountryHubList(stockOnlyReal) });
+    return NextResponse.json({ countries: finalizeCountryHubList(stockOnlyReal, null) });
   } catch (error) {
     console.error('Error loading countries:', error);
     return NextResponse.json({ countries: [] }, { status: 500 });

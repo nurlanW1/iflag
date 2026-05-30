@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "import:r2": "node dist/scripts/import-r2-files.js",
+    "prune:r2": "node dist/scripts/prune-r2-orphans.js",
     "backfill:asset-groups": "node dist/scripts/backfill-asset-groups.js",
     "backfill:country-folders": "node dist/scripts/backfill-country-folders.js"
   },

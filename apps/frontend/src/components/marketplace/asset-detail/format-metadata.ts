@@ -24,6 +24,10 @@ const PITCH: Record<string, FormatPitch> = {
     headline: 'Adobe Illustrator source',
     bestFor: 'Native vector edits in Creative Cloud or compatible tools.',
   },
+  psd: {
+    headline: 'Photoshop layered mockup',
+    bestFor: 'Smart-object mockups and presentation comps in Adobe Photoshop.',
+  },
   pdf: {
     headline: 'Vector / print PDF',
     bestFor: 'Archival handoff, proofs, prepress pipelines, mixed vector + raster bundles.',
@@ -59,6 +63,7 @@ const ICON_HINT: Record<string, LucideIcon> = {
   svg: Layers,
   eps: Palette,
   ai: Palette,
+  psd: Palette,
   pdf: Sheet,
   png: ImageIcon,
   jpg: ImageIcon,
@@ -82,6 +87,7 @@ export function shortMimeFamily(mime: string | undefined | null): string | null 
   if (m.includes('pdf')) return 'PDF';
   if (m.includes('postscript') || m.includes('eps')) return 'EPS';
   if (m.includes('illustrator') || m.includes('ai')) return 'AI';
+  if (m.includes('photoshop') || m.includes('psd')) return 'PSD';
   return null;
 }
 
@@ -101,6 +107,7 @@ export function formatKindLabel(extRaw: string): 'Vector' | 'Raster' | 'Print' |
   const k = extRaw.trim().replace(/^\./, '').toLowerCase();
   if (['svg', 'eps', 'ai'].includes(k)) return 'Vector';
   if (['pdf'].includes(k)) return 'Print';
+  if (['psd'].includes(k)) return 'Raster';
   if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(k)) return 'Raster';
   return 'Other';
 }

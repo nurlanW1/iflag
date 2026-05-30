@@ -38,6 +38,7 @@ const ALLOWED_FORMATS = new Set([
   'eps',
   'pdf',
   'ai',
+  'psd',
   ...FLAG_VIDEO_FORMATS,
 ]);
 
@@ -49,7 +50,8 @@ const MIME_BY_EXT: Record<string, string> = {
   webp: 'image/webp',
   pdf: 'application/pdf',
   eps: 'application/postscript',
-  ai: 'application/octet-stream',
+  ai: 'application/vnd.adobe.illustrator',
+  psd: 'image/vnd.adobe.photoshop',
   mp4: 'video/mp4',
   webm: 'video/webm',
   mov: 'video/quicktime',

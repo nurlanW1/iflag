@@ -50,6 +50,7 @@ const catalogBuildDeps = {
   publicPreviewUrlForRow,
   categoryId: SEED_IDS.catCountry,
   videoCategoryId: SEED_IDS.catFlagVideos,
+  mockupCategoryId: SEED_IDS.catFlagMockups,
 };
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

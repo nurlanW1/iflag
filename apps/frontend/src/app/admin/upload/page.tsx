@@ -28,7 +28,7 @@ import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
 /** Same-origin only — never use NEXT_PUBLIC_API_URL or an external host (cookies won’t attach). */
 const UPLOAD_RELATIVE_PATH = '/api/admin/upload';
 
-const FORMATS = ['svg', 'png', 'jpg', 'jpeg', 'webp', 'pdf', 'eps'] as const;
+const FORMATS = ['svg', 'png', 'jpg', 'jpeg', 'webp', 'pdf', 'eps', 'ai', 'psd'] as const;
 const PREMIUM = ['free', 'freemium', 'paid'] as const;
 /** Maps to Postgres `countries.category` CHECK constraint */
 const COUNTRY_CATEGORIES = [
@@ -636,7 +636,7 @@ function AdminUploadFormContent({
             <input
               type="file"
               disabled={submitting}
-              accept=".svg,.png,.jpg,.jpeg,.webp,.pdf,.eps"
+              accept=".svg,.png,.jpg,.jpeg,.webp,.pdf,.eps,.ai,.psd"
               className="mt-4 text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-[#2563eb] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white"
               onChange={(e) => {
                 const f = e.target.files?.[0];

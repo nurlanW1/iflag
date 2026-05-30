@@ -13,4 +13,6 @@ export type GalleryCountrySummary = {
   has_webp_cover: boolean;
   /** Resolved WebP URL for folder cover; null when `has_webp_cover` is false. */
   webp_cover_url: string | null;
+  /** Gallery continent hub (Europe, Asia, …) — from ISO / `countries.region`. */
+  continent?: string | null;
 };

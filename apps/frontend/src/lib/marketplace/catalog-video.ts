@@ -10,10 +10,21 @@ export function isVideoCatalogProduct(product: Product): boolean {
   return false;
 }
 
+export function isMockupCatalogProduct(product: Product): boolean {
+  if (product.categoryId === SEED_IDS.catFlagMockups) return true;
+  return false;
+}
+
 export function categoryIdForFlagFileFormat(
   format: string,
   countryCategoryId: string = SEED_IDS.catCountry,
   videoCategoryId: string = SEED_IDS.catFlagVideos,
+  mockupCategoryId: string = SEED_IDS.catFlagMockups,
+  designType?: string | null,
 ): string {
-  return isFlagVideoFormat(format) ? videoCategoryId : countryCategoryId;
+  if (isFlagVideoFormat(format)) return videoCategoryId;
+  const dt = (designType ?? '').trim().toLowerCase();
+  if (dt === 'mockup') return mockupCategoryId;
+  if (format.trim().toLowerCase() === 'psd') return mockupCategoryId;
+  return countryCategoryId;
 }

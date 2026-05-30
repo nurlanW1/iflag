@@ -237,7 +237,7 @@ async function applyCoverWinners(pool: pg.Pool): Promise<number> {
                  NULLIF(trim(f.file_url::text), '')) AS cover_url
       FROM country_flag_files AS f
       WHERE lower(trim(coalesce(f.status::text, ''))) = 'published'
-        AND lower(trim(coalesce(f.format::text, ''))) NOT IN ('eps', 'pdf', 'ai')
+        AND lower(trim(coalesce(f.format::text, ''))) NOT IN ('eps', 'pdf', 'ai', 'psd')
         AND COALESCE(
           NULLIF(trim(f.thumbnail_url::text), ''),
           NULLIF(trim(f.preview_url::text), ''),

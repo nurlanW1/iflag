@@ -9,6 +9,7 @@ import { joinBackendApiPath, resolveBackendApiBase } from '@/lib/auth/backend-ur
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
 import { previewDisplayUrlCandidates, resolvedFlagPublicHref } from '@/lib/server/flag-asset-url';
+import { assignContinentToCountryHub } from '@/lib/gallery/country-continent';
 import { slugLooksLikeFileAsset } from '@/lib/gallery/canonical-country-hubs';
 import { isPackFallbackFlagThumbnail } from '@/lib/server/gallery-from-db';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
@@ -125,19 +126,21 @@ export async function fetchGalleryCountriesFromBackendApi(): Promise<GalleryCoun
 
     const displayName = resolveGalleryDisplayName(hub.name, hub.code, hub.slug);
     const designs = hub.designKeys.size || hub.files;
-    out.push({
-      id: `backend-hub:${hub.slug}`,
-      name: displayName,
-      slug: hub.slug,
-      code: hub.code,
-      has_webp_cover: hasWebp,
-      webp_cover_url: hasWebp ? hub.webpCover : null,
-      thumbnail_url: hasWebp ? hub.webpCover : '',
-      thumbnail: hasWebp ? hub.webpCover : '',
-      flag_count: hub.files,
-      design_count: designs,
-      count: hub.files,
-    });
+    out.push(
+      assignContinentToCountryHub({
+        id: `backend-hub:${hub.slug}`,
+        name: displayName,
+        slug: hub.slug,
+        code: hub.code,
+        has_webp_cover: hasWebp,
+        webp_cover_url: hasWebp ? hub.webpCover : null,
+        thumbnail_url: hasWebp ? hub.webpCover : '',
+        thumbnail: hasWebp ? hub.webpCover : '',
+        flag_count: hub.files,
+        design_count: designs,
+        count: hub.files,
+      }),
+    );
   }
 
   return out.sort((a, b) => a.name.localeCompare(b.name));

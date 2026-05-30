@@ -194,9 +194,10 @@ export function productsFromNeonLikeRows(
   deps: {
     thumbForRow: (r: NeonLikeFlagRow) => string | null;
     publicPreviewUrlForRow: (r: NeonLikeFlagRow, thumb: string | null) => string | null;
-    /** Default when row is not a video format. */
+    /** Default when row is not a video or mockup. */
     categoryId: string;
     videoCategoryId?: string;
+    mockupCategoryId?: string;
   }
 ): Product[] {
   const solo: NeonLikeFlagRow[] = [];
@@ -234,9 +235,16 @@ function rowCategoryId(
   deps: {
     categoryId: string;
     videoCategoryId?: string;
+    mockupCategoryId?: string;
   },
 ): string {
-  return categoryIdForFlagFileFormat(row.format, deps.categoryId, deps.videoCategoryId);
+  return categoryIdForFlagFileFormat(
+    row.format,
+    deps.categoryId,
+    deps.videoCategoryId,
+    deps.mockupCategoryId,
+    row.design_type,
+  );
 }
 
 function soloRowToProduct(
@@ -246,6 +254,7 @@ function soloRowToProduct(
     publicPreviewUrlForRow: (r: NeonLikeFlagRow, thumb: string | null) => string | null;
     categoryId: string;
     videoCategoryId?: string;
+    mockupCategoryId?: string;
   }
 ): Product {
   const countrySlug = rowCountrySlug(row);
@@ -312,6 +321,7 @@ function groupedRowsToProduct(
     publicPreviewUrlForRow: (r: NeonLikeFlagRow, thumb: string | null) => string | null;
     categoryId: string;
     videoCategoryId?: string;
+    mockupCategoryId?: string;
   }
 ): Product {
   const rows = dedupeRowsByFormat(rowsIn);
