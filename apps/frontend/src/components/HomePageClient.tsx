@@ -169,20 +169,19 @@ export default function HomePageClient() {
                   >
                     <Link
                       href={cat.href}
-                      className="group flex min-h-[3.25rem] w-full items-center gap-2 rounded-lg border border-black/10 px-2.5 py-2 shadow-sm transition-[filter,box-shadow,transform] duration-200 hover:brightness-110 hover:shadow-md sm:min-h-[3.5rem] sm:gap-2.5 sm:px-3"
-                      style={{ backgroundColor: cat.bg }}
+                      className="group flex min-h-[3.25rem] w-full items-center gap-2 rounded-lg border border-neutral-200/90 bg-white px-2.5 py-2 shadow-sm transition-[box-shadow,background-color] duration-200 hover:bg-neutral-50 hover:shadow-md sm:min-h-[3.5rem] sm:gap-2.5 sm:px-3"
                     >
                       <div
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white sm:h-9 sm:w-9"
-                        style={{ backgroundColor: cat.iconWell }}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md sm:h-9 sm:w-9"
+                        style={{ backgroundColor: cat.accent }}
                       >
                         <CatIcon size={17} strokeWidth={1.75} className="text-white" aria-hidden />
                       </div>
-                      <span className="min-w-0 flex-1 truncate text-left text-xs font-semibold text-white sm:text-[0.8125rem]">
+                      <span className="min-w-0 flex-1 truncate text-left text-xs font-semibold text-neutral-900 sm:text-[0.8125rem]">
                         {cat.name}
                       </span>
                       <ChevronRight
-                        className="h-3.5 w-3.5 shrink-0 text-white/75 transition-colors group-hover:text-white"
+                        className="h-3.5 w-3.5 shrink-0 text-neutral-400 transition-colors group-hover:text-neutral-700"
                         aria-hidden
                       />
                     </Link>

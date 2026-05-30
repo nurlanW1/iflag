@@ -42,7 +42,7 @@ function ContinentBlock({
     section.continent === 'Other'
       ? '/gallery'
       : `/gallery?region=${encodeURIComponent(section.continent)}`;
-  const accent = tile?.bg ?? '#475569';
+  const accent = tile?.accent ?? '#475569';
 
   return (
     <section aria-labelledby={`continent-${section.continent}`}>

@@ -307,8 +307,8 @@ async function fetchGalleryCountriesFromDbOnce(
        LIMIT 1
      ) fx0 ON TRUE
      WHERE (
-         $2::text IS NULL
-         OR lower(trim(coalesce(c.category::text, 'country'))) = lower(trim($2))
+         $1::text IS NULL
+         OR lower(trim(coalesce(c.category::text, 'country'))) = lower(trim($1))
        )
      ORDER BY ${countriesOrder}`,
     [catParam],
