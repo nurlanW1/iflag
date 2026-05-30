@@ -28,7 +28,7 @@ import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 type Country = GalleryCountrySummary;
 
 type ViewMode = 'grid' | 'list';
-type SortKey = 'name-asc' | 'name-desc' | 'files-desc' | 'files-asc';
+type SortKey = 'name-asc' | 'name-desc' | 'designs-desc' | 'designs-asc';
 
 const KIND_TABS: ReadonlyArray<{ id: string | null; label: string; Icon: LucideIcon }> = [
   { id: null, label: 'All', Icon: Compass },
@@ -40,8 +40,8 @@ const KIND_TABS: ReadonlyArray<{ id: string | null; label: string; Icon: LucideI
 const SORT_OPTIONS: ReadonlyArray<{ id: SortKey; label: string }> = [
   { id: 'name-asc', label: 'Name · A → Z' },
   { id: 'name-desc', label: 'Name · Z → A' },
-  { id: 'files-desc', label: 'Most files' },
-  { id: 'files-asc', label: 'Fewest files' },
+  { id: 'designs-desc', label: 'Most designs' },
+  { id: 'designs-asc', label: 'Fewest designs' },
 ];
 
 function GalleryContent() {
@@ -114,10 +114,10 @@ function GalleryContent() {
       switch (sortKey) {
         case 'name-desc':
           return b.name.localeCompare(a.name);
-        case 'files-desc':
-          return b.count - a.count || a.name.localeCompare(b.name);
-        case 'files-asc':
-          return a.count - b.count || a.name.localeCompare(b.name);
+        case 'designs-desc':
+          return (b.design_count ?? b.count) - (a.design_count ?? a.count) || a.name.localeCompare(b.name);
+        case 'designs-asc':
+          return (a.design_count ?? a.count) - (b.design_count ?? b.count) || a.name.localeCompare(b.name);
         case 'name-asc':
         default:
           return a.name.localeCompare(b.name);
@@ -126,8 +126,8 @@ function GalleryContent() {
     return list;
   }, [countries, searchQuery, sortKey]);
 
-  const totalFiles = useMemo(
-    () => countries.reduce((acc, c) => acc + (c.count || 0), 0),
+  const totalDesigns = useMemo(
+    () => countries.reduce((acc, c) => acc + (c.design_count ?? c.count ?? 0), 0),
     [countries],
   );
 
@@ -153,15 +153,15 @@ function GalleryContent() {
             Browse high-quality flag collections by country
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/80 sm:mt-5 sm:text-lg md:max-w-3xl xl:text-xl">
-            Curated raster &amp; vector previews — tap a hub to browse designs and downloads.
+            Country folders with WebP previews — open a hub to see designs and download files inside.
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-3 text-xs text-white/75 sm:mt-8 sm:text-sm">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 font-medium text-white ring-1 ring-white/15 backdrop-blur">
-              <Globe2 size={13} aria-hidden /> {countries.length} countries
+              <Globe2 size={13} aria-hidden /> {countries.length} country folders
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 font-medium text-white ring-1 ring-white/15 backdrop-blur">
-              <FileImage size={13} aria-hidden /> {totalFiles.toLocaleString()} files
+              <FileImage size={13} aria-hidden /> {totalDesigns.toLocaleString()} designs inside
             </span>
             {filterLabel ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2563eb] px-3 py-1 font-semibold text-white shadow-sm">
@@ -405,8 +405,7 @@ function CardList({ countries }: { countries: Country[] }) {
                 {country.design_count === 1 || (!country.design_count && country.count === 1)
                   ? 'design'
                   : 'designs'}{' '}
-                · {country.count}{' '}
-                {country.count === 1 ? 'flag file' : 'flag files'} available
+                in folder
               </p>
             </div>
             <div className="flex items-center gap-1 text-xs font-semibold text-[#2563eb] opacity-0 transition-opacity group-hover:opacity-100">

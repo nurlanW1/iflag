@@ -9,7 +9,7 @@ import { joinBackendApiPath, resolveBackendApiBase } from '@/lib/auth/backend-ur
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
 import { previewDisplayUrlCandidates, resolvedFlagPublicHref } from '@/lib/server/flag-asset-url';
-import { urlLooksLikeWebpAsset } from '@/lib/gallery/country-hub-cover';
+import { slugLooksLikeFileAsset } from '@/lib/gallery/canonical-country-hubs';
 import { isPackFallbackFlagThumbnail } from '@/lib/server/gallery-from-db';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
@@ -81,7 +81,7 @@ export async function fetchGalleryCountriesFromBackendApi(): Promise<GalleryCoun
 
   for (const row of rows) {
     const slug = row.country_slug?.trim().toLowerCase();
-    if (!slug) continue;
+    if (!slug || slugLooksLikeFileAsset(slug)) continue;
 
     const name =
       row.country_name?.trim() ||
@@ -119,9 +119,12 @@ export async function fetchGalleryCountriesFromBackendApi(): Promise<GalleryCoun
 
   const out: GalleryCountrySummary[] = [];
   for (const hub of hubs.values()) {
+    if (slugLooksLikeFileAsset(hub.slug)) continue;
+    const hasWebp = Boolean(hub.webpCover?.trim());
+    if (!hasWebp) continue;
+
     const displayName = resolveGalleryDisplayName(hub.name, hub.code, hub.slug);
     const designs = hub.designKeys.size || hub.files;
-    const hasWebp = Boolean(hub.webpCover?.trim());
     out.push({
       id: `backend-hub:${hub.slug}`,
       name: displayName,

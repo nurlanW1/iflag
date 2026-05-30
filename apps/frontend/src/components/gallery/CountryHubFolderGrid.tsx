@@ -68,8 +68,7 @@ export function CountryHubFolderGrid({
               <div className="px-3 py-2.5">
                 <h3 className="truncate text-sm font-semibold text-stone-900">{country.name}</h3>
                 <p className="mt-0.5 text-[11px] text-stone-500">
-                  {country.design_count} design{country.design_count === 1 ? '' : 's'} · {country.flag_count} file
-                  {country.flag_count === 1 ? '' : 's'}
+                  {country.design_count} design{country.design_count === 1 ? '' : 's'} in folder
                 </p>
               </div>
             </Link>
@@ -104,8 +103,7 @@ export function CountryHubFolderGrid({
             <div className="flex flex-1 flex-col gap-1 p-4">
               <p className="text-[0.95rem] font-semibold leading-snug text-[#2a2a2a]">{country.name}</p>
               <p className="text-[0.75rem] font-medium uppercase tracking-wide text-neutral-500">
-                {country.design_count} design{country.design_count === 1 ? '' : 's'} · {country.flag_count} file
-                {country.flag_count === 1 ? '' : 's'}
+                {country.design_count} design{country.design_count === 1 ? '' : 's'} in folder
               </p>
               <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-[#2563eb] opacity-0 transition-opacity group-hover:opacity-100">
                 Open folder <ArrowRight size={12} aria-hidden />

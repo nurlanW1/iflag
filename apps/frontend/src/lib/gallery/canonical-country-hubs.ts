@@ -128,3 +128,20 @@ export function filterLandingCountryFolders(
     return true;
   });
 }
+
+/**
+ * `/gallery` index: one tile per country hub with a WebP folder cover only.
+ * Drops file-stem slugs, pack placeholders, and hubs without a preview cover.
+ */
+export function filterGalleryCountryFolders(
+  countries: GalleryCountrySummary[],
+): GalleryCountrySummary[] {
+  return mergeCanonicalCountryHubs(countries).filter((c) => {
+    if ((c.flag_count ?? 0) < 1) return false;
+    if (!c.has_webp_cover) return false;
+    const webp = c.webp_cover_url?.trim() ?? '';
+    if (!webp) return false;
+    if (isPackFallbackFlagThumbnail(webp)) return false;
+    return true;
+  });
+}

@@ -13,7 +13,10 @@ import {
   type GalleryCountryListFilters,
 } from '@/lib/server/gallery-from-db';
 import { fetchGalleryCountriesFromBackendApi } from '@/lib/server/gallery-backend-fallback';
-import { mergeCanonicalCountryHubs } from '@/lib/gallery/canonical-country-hubs';
+import {
+  filterGalleryCountryFolders,
+  mergeCanonicalCountryHubs,
+} from '@/lib/gallery/canonical-country-hubs';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +42,7 @@ function mergeStockOnlyIntoDb(dbList: GalleryCountrySummary[], stockList: Galler
 }
 
 function finalizeCountryHubList(list: GalleryCountrySummary[]): GalleryCountrySummary[] {
-  return applyGalleryDisplayNames(mergeCanonicalCountryHubs(list));
+  return applyGalleryDisplayNames(filterGalleryCountryFolders(list));
 }
 
 /**
