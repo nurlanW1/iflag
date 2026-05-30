@@ -221,7 +221,7 @@ export function LandingProductRails({ gallerySlot }: { gallerySlot?: ReactNode }
         subtitle="Curated rails editors revisit — steady sellers and seasonal picks."
         products={popular}
         loading={loadingRails}
-        viewAllHref="/browse?sort=popular"
+        viewAllHref="/gallery"
         viewAllLabel="View featured"
         categoryNames={categoryMap}
         surface="white"
@@ -247,8 +247,8 @@ export function LandingProductRails({ gallerySlot }: { gallerySlot?: ReactNode }
         subtitle="SVG-forward bundles suited for interfaces, motion, and large-format reproduction."
         products={vectors}
         loading={loadingRails}
-        viewAllHref="/browse?q=vector"
-        viewAllLabel="Browse vectors"
+        viewAllHref="/categories/country-flags"
+        viewAllLabel="Country flags"
         categoryNames={categoryMap}
         surface="white"
       />
@@ -259,7 +259,7 @@ export function LandingProductRails({ gallerySlot }: { gallerySlot?: ReactNode }
         subtitle={PRICING_MARKETING.catalogRailSubtitle}
         products={premium}
         loading={loadingRails}
-        viewAllHref="/browse?tier=pro"
+        viewAllHref="/pricing"
         viewAllLabel="Explore premium"
         categoryNames={categoryMap}
         surface="mist"
@@ -271,7 +271,7 @@ export function LandingProductRails({ gallerySlot }: { gallerySlot?: ReactNode }
         subtitle="Fresh uploads across formats — newest arrivals to the merged catalog."
         products={newest}
         loading={loadingRails}
-        viewAllHref="/browse?sort=newest"
+        viewAllHref="/gallery"
         viewAllLabel={"See what's new"}
         categoryNames={categoryMap}
         surface="white"

@@ -115,7 +115,7 @@ export function ProductDetailView({ slug, product }: Props) {
             <span key={t} className="inline whitespace-nowrap">
               {i > 0 ? <span className="text-slate-300"> · </span> : null}
               <Link
-                href={`/browse?q=${encodeURIComponent(t)}`}
+                href={`/gallery?q=${encodeURIComponent(t)}`}
                 className="font-medium text-slate-600 underline-offset-2 transition-colors hover:text-[var(--brand-blue)] hover:underline"
               >
                 {t}
@@ -126,7 +126,7 @@ export function ProductDetailView({ slug, product }: Props) {
       </section>
     ) : null;
 
-  const browseBackHref = neonDownloads ? '/assets' : '/browse';
+  const browseBackHref = neonDownloads ? '/assets' : '/gallery';
 
   return (
     <>
@@ -135,7 +135,7 @@ export function ProductDetailView({ slug, product }: Props) {
           productJsonLd(slug, seoPayload, publicProduct),
           breadcrumbJsonLd([
             { name: 'Home', path: '/' },
-            { name: neonDownloads ? 'Assets' : 'Browse', path: browseBackHref },
+            { name: neonDownloads ? 'Assets' : 'Gallery', path: browseBackHref },
             { name: product.title, path: canonicalPath },
           ]),
         ]}
@@ -157,7 +157,7 @@ export function ProductDetailView({ slug, product }: Props) {
                 strokeWidth={2}
                 className="transition-transform group-hover:-translate-x-0.5"
               />
-              {neonDownloads ? 'Assets' : 'Browse'}
+              {neonDownloads ? 'Assets' : 'Gallery'}
             </Link>
             <span className="text-slate-300">/</span>
             <span className="truncate text-slate-700">{product.title}</span>

@@ -20,10 +20,10 @@ export default function CartPage() {
         <div className="mt-14 rounded-[1.125rem] border border-slate-200/95 bg-white/90 p-8 text-center shadow-sm ring-1 ring-slate-100">
           <p className="text-[15px] font-medium text-slate-700">Your cart is empty.</p>
           <Link
-            href="/browse"
+            href="/gallery"
             className="mt-6 inline-flex min-h-[2.75rem] items-center justify-center rounded-xl bg-[var(--brand-blue)] px-6 text-[15px] font-semibold text-white shadow-md transition hover:bg-[var(--brand-blue-hover)]"
           >
-            Browse catalog
+            Open gallery
           </Link>
         </div>
       ) : (
@@ -79,7 +79,7 @@ export default function CartPage() {
             Checkout flows can be wired to Paddle or invoicing separately; this cart is persisted locally until you integrate a server cart.
           </p>
           <Link
-            href="/browse"
+            href="/gallery"
             className="mt-6 inline-flex min-h-[2.75rem] items-center justify-center rounded-xl border border-slate-200/95 bg-white px-6 text-[15px] font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
           >
             Continue shopping

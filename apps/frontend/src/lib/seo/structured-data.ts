@@ -17,7 +17,7 @@ export function websiteJsonLd(): Record<string, unknown> {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: `${origin}/browse?q={search_term_string}`,
+        urlTemplate: `${origin}/gallery?q={search_term_string}`,
       },
       'query-input': 'required name=search_term_string',
     },

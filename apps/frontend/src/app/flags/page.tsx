@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-/** Legacy hub URL; catalog browsing lives at `/browse`. */
+/** Legacy hub URL; country catalog lives at `/gallery`. */
 export default function FlagsIndexPage() {
-  redirect('/browse');
+  redirect('/gallery');
 }

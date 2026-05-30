@@ -297,10 +297,10 @@ export default function HomePageClient() {
               </p>
               <div className="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <Link
-                  href="/browse"
+                  href="/gallery"
                   className="inline-flex min-h-[3rem] items-center justify-center rounded-xl bg-[#fafaf9] px-10 py-3 text-base font-semibold text-[var(--brand-blue)] shadow-sm transition-colors hover:bg-white"
                 >
-                  Open browse
+                  Open gallery
                 </Link>
                 <Link
                   href="/pricing"

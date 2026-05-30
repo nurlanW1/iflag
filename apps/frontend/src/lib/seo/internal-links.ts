@@ -4,7 +4,7 @@
  */
 export const PRIMARY_HUB_LINKS = [
   { href: '/pricing', label: 'Pricing' },
-  { href: '/browse', label: 'Browse catalog' },
+  { href: '/gallery', label: 'Country gallery' },
   { href: '/assets', label: 'All assets' },
   { href: '/gallery', label: 'Gallery' },
   { href: '/categories/country-flags', label: 'Country flags category' },

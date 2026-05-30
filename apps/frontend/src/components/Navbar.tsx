@@ -249,9 +249,9 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
           </Link>
           <div className="flex shrink-0 items-center gap-0.5">
             <Link
-              href="/browse"
-              aria-label="Search catalog"
-              title="Browse catalog"
+              href="/gallery"
+              aria-label="Search gallery"
+              title="Country gallery"
               className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-[var(--nav-link-text)] transition-colors hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
             >
               <Search size={22} aria-hidden strokeWidth={2} />
@@ -281,9 +281,6 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-x-4 gap-y-1 lg:flex-none lg:justify-start lg:gap-x-8 xl:gap-x-9"
             aria-label="Main navigation"
           >
-            <Link href="/browse" className={navTextMd}>
-              Browse
-            </Link>
             <Link href="/#catalog-categories" className={navTextMd}>
               Categories
             </Link>
@@ -339,12 +336,12 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain py-3">
                   <Link
-                    href="/browse"
+                    href="/gallery"
                     className="flex min-h-[3rem] items-center gap-3 px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Search size={20} aria-hidden />
-                    Browse &amp; search
+                    Gallery
                   </Link>
                   <Link
                     href="/#catalog-categories"

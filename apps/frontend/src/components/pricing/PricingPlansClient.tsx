@@ -155,7 +155,7 @@ export function PricingPlansClient() {
                 <div className="mt-8">
                   {isFree ? (
                     <Link
-                      href="/browse"
+                      href="/gallery"
                       className="flex min-h-[2.875rem] w-full items-center justify-center rounded-xl border-2 border-gray-900 bg-white py-3.5 text-base font-semibold text-gray-900 transition hover:border-[#2563eb] hover:text-[#2563eb]"
                     >
                       Browse catalog

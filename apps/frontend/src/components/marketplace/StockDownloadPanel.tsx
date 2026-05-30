@@ -74,7 +74,7 @@ export function StockDownloadPanel({
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
-  const back = pathname || '/browse';
+  const back = pathname || '/gallery';
   const clerkUiEnabled = useClerkUiEnabled();
   const { isLoaded: userLoaded, isSignedIn } = useUser();
   const { authLoaded, hasActivePlan, planLoaded } = useFlagswingPlan();

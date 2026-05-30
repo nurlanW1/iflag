@@ -101,13 +101,13 @@ export default function Footer() {
 
           <LinkColumn title="Products">
             <li>
-              <Link href="/browse" className={linkMuted}>
-                Browse catalog
+              <Link href="/categories/country-flags" className={linkMuted}>
+                Country flags
               </Link>
             </li>
             <li>
-              <Link href="/browse?q=vector" className={linkMuted}>
-                Vector assets
+              <Link href="/categories/flag-videos" className={linkMuted}>
+                Flag videos
               </Link>
             </li>
             <li>

@@ -170,7 +170,7 @@ export function ProductBrowseSection({
           window.location.replace(`/gallery/${encodeURIComponent(slug)}`);
         }
       } catch {
-        /* stay on browse catalog */
+        /* stay on category catalog */
       }
     })();
 
@@ -303,8 +303,8 @@ export function ProductBrowseSection({
           )}
         </p>
         {fixedCategorySlug ? (
-          <Link href="/browse" className="font-semibold text-[#2563eb] hover:underline">
-            Browse all
+          <Link href="/gallery" className="font-semibold text-[#2563eb] hover:underline">
+            View gallery
           </Link>
         ) : null}
       </div>

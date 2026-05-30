@@ -14,7 +14,7 @@ export function MarketplacePreviewDownloadButton({ apiPath }: { apiPath: string 
   const pathname = usePathname();
   const [busy, setBusy] = useState(false);
 
-  const returnTo = pathname || '/browse';
+  const returnTo = pathname || '/gallery';
 
   return (
     <button

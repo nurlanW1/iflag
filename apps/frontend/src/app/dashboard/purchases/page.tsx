@@ -127,7 +127,7 @@ export default async function DashboardPurchasesPage() {
               icon={Package}
               title="No purchases yet"
               description="When you buy a product, the files you are entitled to will be listed here."
-              action={{ label: 'Browse catalog', href: '/browse' }}
+              action={{ label: 'Open gallery', href: '/gallery' }}
             />
           </div>
         ) : (

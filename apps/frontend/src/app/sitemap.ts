@@ -6,7 +6,6 @@ const STATIC_PATHS = [
   '/',
   '/about',
   '/flags',
-  '/browse',
   '/assets',
   '/gallery',
   '/subscriptions',

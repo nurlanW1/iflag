@@ -55,10 +55,10 @@ export function LandingCategoryStrip() {
 
         <div className="mb-8 flex snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain pb-2 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] sm:mb-10 sm:snap-none sm:flex-wrap sm:justify-center sm:overflow-visible sm:pb-0 md:gap-3.5">
           <Link
-            href="/browse"
+            href="/gallery"
             className="inline-flex min-h-12 shrink-0 snap-start items-center justify-center rounded-xl bg-[var(--brand-blue)] px-5 py-3 text-center text-sm font-semibold text-[#fafaf9] shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)] sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 sm:text-base md:flex-initial md:min-w-[10.5rem]"
           >
-            Full catalog search
+            Country gallery
           </Link>
           <Link
             href="/gallery"

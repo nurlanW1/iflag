@@ -25,7 +25,7 @@ export function BillingSidebarAuthGate({
   hideCheckoutNote = false,
 }: Props) {
   const pathname = usePathname();
-  const returnTo = pathname?.startsWith('/') ? pathname : '/browse';
+  const returnTo = pathname?.startsWith('/') ? pathname : '/gallery';
   const clerkUiEnabled = useClerkUiEnabled();
 
   if (!clerkUiEnabled) {

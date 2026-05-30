@@ -18,10 +18,10 @@ export default function NotFound() {
           Home
         </Link>
         <Link
-          href="/browse"
+          href="/gallery"
           className="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-50"
         >
-          Browse catalog
+          Country gallery
         </Link>
       </div>
     </main>

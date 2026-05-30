@@ -161,7 +161,7 @@ export async function GET(
   if (!allowed) {
     const returnPath = sanitizeCallbackUrl(
       new URL(request.url).pathname + new URL(request.url).search,
-      '/browse',
+      '/gallery',
     );
     if (!user?.id) {
       if (isBrowserDocumentNavigation(request)) {
