@@ -6,17 +6,19 @@ import { getCountryCode } from '@/lib/country-mapping';
 import { buildCountryHubDescription } from '@/lib/gallery/country-hub-copy';
 import { variantFormatsArePremium } from '@/lib/gallery/flag-preview-watermark';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
+import { hrefLooksLikeFlagVideo, isFlagVideoFormat, isFlagVideoDesignType } from '@/lib/flag-video-formats';
 import { slugFromAssetGroupKey } from '@/lib/marketplace/group-flag-products';
 import { joinBackendApiPath, resolveBackendApiBase } from '@/lib/auth/backend-url';
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
 import {
+  galleryVariantPlaybackCandidates,
   galleryVariantThumbCandidates,
   resolvedFlagPublicHref,
 } from '@/lib/server/flag-asset-url';
 import type { CountryGalleryPayload } from '@/lib/server/gallery-from-db';
+import { formatToCategory, isPackFallbackFlagThumbnail } from '@/lib/server/gallery-from-db';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
-import { isPackFallbackFlagThumbnail } from '@/lib/server/gallery-from-db';
 
 type BackendFlagRow = {
   id: string;
@@ -40,16 +42,21 @@ type BackendFlagRow = {
   height?: number | null;
 };
 
+type FormatRow = CountryGalleryPayload['variants'][number]['formats'][number];
+
 function previewForRow(row: BackendFlagRow): string {
+  const mediaInput = {
+    format: row.format,
+    premiumTierRaw: row.premium_tier,
+    previewUrl: row.preview_url,
+    thumbnailUrl: row.thumbnail_url,
+    fileUrl: row.file_url,
+  };
   const href = resolvedFlagPublicHref({
     fileKey: row.file_key,
-    fallbackRawUrls: galleryVariantThumbCandidates({
-      format: row.format,
-      premiumTierRaw: row.premium_tier,
-      previewUrl: row.preview_url,
-      thumbnailUrl: row.thumbnail_url,
-      fileUrl: row.file_url,
-    }),
+    fallbackRawUrls: isFlagVideoFormat(row.format)
+      ? galleryVariantPlaybackCandidates(mediaInput)
+      : galleryVariantThumbCandidates(mediaInput),
   });
   if (href) return resolveGalleryAssetUrl(href);
   const key = row.file_key?.trim();
@@ -58,6 +65,32 @@ function previewForRow(row: BackendFlagRow): string {
     if (built) return resolveGalleryAssetUrl(built);
   }
   return '';
+}
+
+function designBucketKey(row: BackendFlagRow): string {
+  const ag = row.asset_group_key?.trim();
+  if (ag) return `ag:${ag.toLowerCase()}`;
+  const named = row.variant_name?.trim();
+  if (named) return `n:${named.toLowerCase()}`;
+  const base = row.file_name.replace(/\.[^.]+$/, '').trim();
+  return `f:${base.toLowerCase()}`;
+}
+
+function pickVariantCover(
+  formats: FormatRow[],
+  builderThumb: string,
+  folderWebp: string,
+  variantId: string,
+): string {
+  const raster = formats
+    .map((f) => f.previewUrl)
+    .find((u) => u && !hrefLooksLikeFlagVideo(u) && !isPackFallbackFlagThumbnail(u));
+  if (raster) return raster;
+  if (builderThumb && !isPackFallbackFlagThumbnail(builderThumb)) return builderThumb;
+  const video = formats.map((f) => f.previewUrl).find((u) => u && hrefLooksLikeFlagVideo(u));
+  if (video) return video;
+  const any = formats.map((f) => f.previewUrl).find((u) => u && u.trim());
+  return any || folderWebp || '';
 }
 
 export async function fetchCountryGalleryFromBackendApi(
@@ -87,25 +120,30 @@ export async function fetchCountryGalleryFromBackendApi(
     getCountryCode(name)?.toUpperCase() ||
     null;
 
-  type VariantAcc = CountryGalleryPayload['variants'][number] & {
-    _formats: CountryGalleryPayload['variants'][number]['formats'];
+  type VariantBuilder = {
+    id: string;
+    productSlug: string;
+    name: string;
+    type: string;
+    thumbnail: string;
+    formats: FormatRow[];
   };
 
-  const groups = new Map<string, VariantAcc>();
+  const builders = new Map<string, VariantBuilder>();
+  let variantIdx = 0;
 
   for (const row of rows) {
-    const stem =
-      row.variant_name?.trim() ||
-      row.file_name.replace(/\.[^.]+$/, '').trim() ||
-      row.id;
-    const key = `stem:${stem.toLowerCase()}`;
+    if (isPreviewOnlyFormat(row.format)) continue;
 
-    const ag = row.asset_group_key?.trim() || `solo:${row.id}`;
-    let v = groups.get(key);
-    if (!v) {
-      v = {
-        id: `${slug}-design-${groups.size}`,
-        productSlug: slugFromAssetGroupKey(ag) || `nf-${row.id}`,
+    const preview = previewForRow(row);
+    const key = designBucketKey(row);
+    const agTrim = row.asset_group_key?.trim();
+    let builder = builders.get(key);
+
+    if (!builder) {
+      builder = {
+        id: `${slug}-design-${variantIdx++}`,
+        productSlug: agTrim ? slugFromAssetGroupKey(agTrim) : `nf-${row.id}`,
         name:
           row.display_title?.trim() ||
           row.variant_name?.trim() ||
@@ -113,54 +151,45 @@ export async function fetchCountryGalleryFromBackendApi(
           'Design',
         type: (row.design_type ?? 'design').replace(/_/g, ' '),
         thumbnail: '',
-        isPremiumDesign: false,
         formats: [],
-        _formats: [],
       };
-      groups.set(key, v);
+      builders.set(key, builder);
     }
 
-    const bucket = groups.get(key)!;
-    const preview = previewForRow(row);
     const sz =
       row.file_size_bytes != null
         ? Number.parseInt(String(row.file_size_bytes), 10)
         : NaN;
     const previewOnly = isPreviewOnlyFormat(row.format);
     const tier = (row.premium_tier ?? 'free').toLowerCase() === 'free' ? 'free' : 'paid';
+    const fmt = row.format.toLowerCase();
+    const ext = fmt === 'jpeg' ? 'jpg' : fmt;
 
-    bucket._formats.push({
+    builder.formats.push({
       id: row.id,
       format: row.format.toUpperCase(),
-      formatCode: row.format.toLowerCase() === 'jpeg' ? 'jpg' : row.format.toLowerCase(),
-      category: ['svg', 'eps', 'pdf', 'ai'].includes(row.format.toLowerCase())
-        ? 'vector'
-        : 'raster',
+      formatCode: ext,
+      category: formatToCategory(row.format),
       file: row.file_name,
       previewUrl: preview,
       premiumTier: previewOnly ? 'paid' : tier === 'free' ? 'free' : 'paid',
       downloadProtected: previewOnly || tier !== 'free',
       size: Number.isFinite(sz) ? `${sz} B` : 'Unknown',
-      dimensions: 'Original',
+      dimensions: isFlagVideoFormat(row.format) ? 'Video' : 'Original',
     });
 
-    if (preview && (!bucket.thumbnail || row.format.toLowerCase() === 'png')) {
-      bucket.thumbnail = preview;
+    if (preview) {
+      const isVideo = isFlagVideoFormat(row.format);
+      const hasStill = builder.formats.some(
+        (f) => f.category === 'raster' || f.category === 'vector',
+      );
+      if (!isVideo || !hasStill) {
+        builder.thumbnail = preview;
+      } else if (!builder.thumbnail || row.format.toLowerCase() === 'png') {
+        builder.thumbnail = preview;
+      }
     }
   }
-
-  const variants = [...groups.values()]
-    .filter((v) => v._formats.length > 0)
-    .map(({ _formats, ...rest }) => {
-      const formats = _formats;
-      return {
-        ...rest,
-        formats,
-        isPremiumDesign: variantFormatsArePremium(formats),
-      };
-    });
-
-  if (!variants.length) return null;
 
   let webpCover = '';
   for (const row of rows) {
@@ -172,7 +201,33 @@ export async function fetchCountryGalleryFromBackendApi(
     }
   }
 
-  const fileCount = rows.length;
+  const variants = [...builders.values()]
+    .filter((b) => b.formats.length > 0)
+    .map((b) => {
+      const sortedFormats = [...b.formats].sort((a, c) => a.format.localeCompare(c.format));
+      const cover = pickVariantCover(sortedFormats, b.thumbnail, webpCover, b.id);
+      const hasVideo = sortedFormats.some((f) => f.category === 'video');
+      const hasStill = sortedFormats.some(
+        (f) => f.category === 'raster' || f.category === 'vector',
+      );
+      const type =
+        isFlagVideoDesignType(b.type) || (hasVideo && !hasStill)
+          ? 'video'
+          : b.type.replace(/_/g, ' ') || 'design';
+      return {
+        id: b.id,
+        productSlug: b.productSlug,
+        name: b.name,
+        type,
+        thumbnail: cover,
+        isPremiumDesign: variantFormatsArePremium(sortedFormats),
+        formats: sortedFormats,
+      };
+    });
+
+  if (!variants.length) return null;
+
+  const fileCount = rows.filter((r) => !isPreviewOnlyFormat(r.format)).length;
   const designCount = variants.length;
 
   return {

@@ -294,8 +294,15 @@ export default function CountryHubPage() {
                           />
                         </ProductPreviewImage>
                       )}
-                      <span className="absolute right-2 top-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
-                        {v.formats.length} formats
+                      <span className="absolute right-2 top-2 flex flex-col items-end gap-1">
+                        {showVideo ? (
+                          <span className="rounded-md bg-[#DF0024]/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                            Video
+                          </span>
+                        ) : null}
+                        <span className="rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                          {v.formats.length} formats
+                        </span>
                       </span>
                     </div>
                     <div className="flex flex-1 flex-col gap-1.5 p-4">

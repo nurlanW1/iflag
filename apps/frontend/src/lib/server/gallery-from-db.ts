@@ -15,7 +15,7 @@ import {
   resolvedFlagPublicHref,
 } from '@/lib/server/flag-asset-url';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
-import { isFlagVideoFormat } from '@/lib/flag-video-formats';
+import { hrefLooksLikeFlagVideo, isFlagVideoFormat, isFlagVideoDesignType } from '@/lib/flag-video-formats';
 import { publishedFlagHasMediaSql } from '@/lib/server/gallery-published-media';
 import { galleryOptionalColumns, resetGallerySchemaCache } from '@/lib/server/gallery-schema';
 import { buildCountryHubDescription } from '@/lib/gallery/country-hub-copy';
@@ -480,11 +480,15 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
     `SELECT id, file_url, file_name, file_size_bytes::text, format, variant_name, width, height,
             premium_tier, thumbnail_url, preview_url, file_key, storage_provider,
             asset_group_key, display_title${fileExtraComma}
-     FROM country_flag_files
-     WHERE country_id = $1 AND lower(trim(coalesce(status::text, ''))) = 'published'
+     FROM country_flag_files cff
+     WHERE lower(trim(coalesce(cff.status::text, ''))) = 'published'
+       AND (
+         cff.country_id = $1::uuid
+         OR lower(trim(coalesce(cff.country_slug, ''))) = lower(trim($2))
+       )
      ORDER BY ${fileOrderBy},
               format NULLS LAST, created_at ASC`,
-    [countryRow.id],
+    [countryRow.id, countryRow.slug],
   );
 
   if (fRes.rows.length === 0) return null;
@@ -519,6 +523,35 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
   function isUnresolvedThumb(url: string): boolean {
     const u = url.trim();
     return !u || u.startsWith('data:image/svg+xml') || isPackFallbackFlagThumbnail(u);
+  }
+
+  function pickCountryVariantCover(
+    sortedFormats: FormatRow[],
+    builderThumb: string,
+    folderWebp: string,
+    variantId: string,
+  ): string {
+    const raster = sortedFormats
+      .map((f) => f.previewUrl)
+      .find((u) => u && !isUnresolvedThumb(u) && !hrefLooksLikeFlagVideo(u));
+    if (raster) return raster;
+    if (!isUnresolvedThumb(builderThumb)) return builderThumb;
+    const video = sortedFormats
+      .map((f) => f.previewUrl)
+      .find((u) => u && hrefLooksLikeFlagVideo(u));
+    if (video) return video;
+    const any = sortedFormats.map((f) => f.previewUrl).find((u) => u && !isUnresolvedThumb(u));
+    return any || folderWebp || flagThumbPlaceholderForFileId(variantId);
+  }
+
+  function variantDisplayType(builderType: string, sortedFormats: FormatRow[]): string {
+    if (isFlagVideoDesignType(builderType)) return 'video';
+    const hasVideo = sortedFormats.some((f) => f.category === 'video');
+    const hasStill =
+      sortedFormats.some((f) => f.category === 'raster' || f.category === 'vector') ||
+      sortedFormats.some((f) => !hrefLooksLikeFlagVideo(f.previewUrl));
+    if (hasVideo && !hasStill) return 'video';
+    return builderType.replace(/_/g, ' ') || 'design';
   }
 
   function variantGroupKey(row: FlagFileRow): string {
@@ -615,9 +648,11 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
     const tier = normalizePremiumTier(r.premium_tier);
 
     const dim =
-      r.width && r.height && r.width > 0 && r.height > 0
-        ? `${r.width}×${r.height} px`
-        : 'Original';
+      isFlagVideoFormat(r.format)
+        ? 'Video'
+        : r.width && r.height && r.width > 0 && r.height > 0
+          ? `${r.width}×${r.height} px`
+          : 'Original';
 
     const downloadProtected =
       previewOnly || String(r.premium_tier ?? 'free').trim().toLowerCase() !== 'free';
@@ -640,6 +675,12 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
     if (score > builder.thumbScore) {
       builder.thumbScore = score;
       builder.thumbnail = previewUrl;
+    } else if (
+      isFlagVideoFormat(r.format) &&
+      previewUrl &&
+      !builder.formats.some((f) => f.category === 'raster' || f.category === 'vector')
+    ) {
+      builder.thumbnail = previewUrl;
     }
   }
 
@@ -652,17 +693,12 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
       if (ai !== ci) return ai - ci;
       return a.file.localeCompare(c.file);
     });
-    const fromFormats = sortedFormats
-      .map((f) => f.previewUrl)
-      .find((u) => u && !isUnresolvedThumb(u));
-    const cover = !isUnresolvedThumb(b.thumbnail)
-      ? b.thumbnail
-      : fromFormats || folderWebpThumb || flagThumbPlaceholderForFileId(b.id);
+    const cover = pickCountryVariantCover(sortedFormats, b.thumbnail, folderWebpThumb, b.id);
     return {
       id: b.id,
       productSlug: b.productSlug,
       name: b.name,
-      type: b.type.replace(/_/g, ' ') || 'design',
+      type: variantDisplayType(b.type, sortedFormats),
       thumbnail: cover,
       isPremiumDesign: variantFormatsArePremium(sortedFormats),
       formats: sortedFormats,

@@ -161,7 +161,7 @@ export async function getNeonGalleryRedirectForProductSlug(
   const p = await getNeonCatalogProductBySlug(slug);
   if (!p) return null;
   return {
-    gallerySlug: (p.countrySlug ?? 'browse').trim() || 'browse',
+    gallerySlug: (p.countrySlug ?? 'gallery').trim() || 'gallery',
     title: p.title,
   };
 }
