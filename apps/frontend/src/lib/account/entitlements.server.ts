@@ -138,13 +138,7 @@ export async function resolveAuthenticatedFileDownload(
     if (isMarketplaceOwnerDownloadBypass(userEmail)) {
       return { kind: 'public_preview', publicUrl: file.publicUrl };
     }
-    if (hasActiveSubscription) {
-      return { kind: 'public_preview', publicUrl: file.publicUrl };
-    }
-    if (memProductGrant || billingOwnsProduct) {
-      return { kind: 'public_preview', publicUrl: file.publicUrl };
-    }
-    return { kind: 'denied', reason: 'NOT_ENTITLED' };
+    return { kind: 'public_preview', publicUrl: file.publicUrl };
   }
 
   if (file.tier === 'pro') {

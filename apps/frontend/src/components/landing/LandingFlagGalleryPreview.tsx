@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
-import { SectionReveal } from '@/components/motion/SectionReveal';
 import { CountryHubFolderGrid } from '@/components/gallery/CountryHubFolderGrid';
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
+import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 
 const GRID_LIMIT = 12;
 
@@ -20,6 +20,9 @@ function shufflePick<T>(items: T[], n: number): T[] {
 }
 
 type ExplorePhase = 'loading' | { items: GalleryCountrySummary[] } | 'empty' | 'error';
+
+const tileShadow =
+  'shadow-[0_4px_14px_-8px_rgba(15,23,42,0.14)] hover:shadow-[0_8px_22px_-10px_rgba(15,23,42,0.18)]';
 
 export function LandingFlagGalleryPreview() {
   const [phase, setPhase] = useState<ExplorePhase>('loading');
@@ -55,81 +58,62 @@ export function LandingFlagGalleryPreview() {
   const items = phase !== 'loading' && phase !== 'empty' && phase !== 'error' ? phase.items : [];
 
   return (
-    <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-14 md:py-20 lg:py-24">
+    <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-10 md:py-14 lg:py-16">
       <div className="marketplace-shell">
-        <div className="overflow-hidden rounded-2xl border border-neutral-200/90 bg-gradient-to-br from-white via-[#fafaf9] to-neutral-100/90 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:p-6 md:p-8 lg:rounded-[1.35rem]">
-          <div className="mb-8 rounded-xl bg-white/95 px-4 py-5 ring-1 ring-neutral-200/70 sm:mb-10 sm:px-6 sm:py-6">
-            <SectionReveal
-              hidden={{ opacity: 0, y: 10 }}
-              visible={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="flex max-w-3xl flex-col"
-            >
-              <h2 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-[2rem] lg:text-[2.125rem]">
-                Explore by country
-              </h2>
-              <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-neutral-600 lg:text-[1.0625rem]">
-                Each tile is a country folder — open Belgium, Uzbekistan, or any hub to browse every design inside.
-                WebP covers appear when uploaded; others show a star until the cover is ready.
-              </p>
-            </SectionReveal>
-          </div>
-
-          {loading ? (
-            <ul
-              className="grid grid-cols-1 gap-3.5 min-[360px]:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-5"
-              aria-busy="true"
-              aria-label="Loading country folders"
-            >
-              {Array.from({ length: GRID_LIMIT }).map((_, i) => (
-                <li
-                  key={i}
-                  className="flex flex-col overflow-hidden rounded-xl border border-neutral-200/95 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
-                >
-                  <div className="aspect-[5/4] animate-pulse bg-neutral-200/90 sm:aspect-[4/3]" />
-                  <div className="space-y-2 p-4">
-                    <div className="h-4 w-[88%] max-w-[12rem] animate-pulse rounded bg-neutral-200/90" />
-                    <div className="h-3 w-[62%] max-w-[9rem] animate-pulse rounded bg-neutral-100" />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : empty || errored ? (
-            <div className="rounded-2xl border border-dashed border-neutral-200 bg-white px-6 py-14 text-center text-neutral-600 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-              <p className="text-base font-medium text-neutral-800">
-                {errored ? 'Could not load country folders.' : 'No country folders yet.'}
-              </p>
-              <p className="mt-2 text-sm text-neutral-500">
-                {errored
-                  ? 'Check your connection and try again.'
-                  : 'Import flags from R2 to populate country hubs.'}
-              </p>
-              {errored ? (
-                <button
-                  type="button"
-                  onClick={() => void load()}
-                  className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[var(--brand-blue)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--brand-blue-hover)]"
-                >
-                  <RefreshCw size={16} aria-hidden />
-                  Retry
-                </button>
-              ) : null}
-            </div>
-          ) : (
-            <CountryHubFolderGrid countries={items} />
-          )}
-
-          {!loading && !empty && !errored ? (
-            <div className="mt-10 flex justify-center md:mt-12">
-              <Link
-                href="/gallery"
-                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-10 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)]"
+        {loading ? (
+          <ul
+            className={marketplaceProductCardGridClasses}
+            aria-busy="true"
+            aria-label="Loading country folders"
+          >
+            {Array.from({ length: GRID_LIMIT }).map((_, i) => (
+              <li
+                key={i}
+                className={`overflow-hidden rounded-2xl border border-stone-200/80 bg-white ${tileShadow}`}
               >
-                Browse all countries
-              </Link>
-            </div>
-          ) : null}
-        </div>
+                <div className="aspect-[4/3] animate-pulse bg-stone-100" />
+                <div className="space-y-2 px-3 py-2.5">
+                  <div className="h-3.5 w-[70%] animate-pulse rounded bg-stone-100" />
+                  <div className="h-2.5 w-[45%] animate-pulse rounded bg-stone-50" />
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : empty || errored ? (
+          <div className="rounded-2xl border border-dashed border-neutral-200 bg-white px-6 py-14 text-center text-neutral-600">
+            <p className="text-base font-medium text-neutral-800">
+              {errored ? 'Could not load country folders.' : 'No country folders yet.'}
+            </p>
+            <p className="mt-2 text-sm text-neutral-500">
+              {errored
+                ? 'Check your connection and try again.'
+                : 'Import flags from R2 to populate country hubs.'}
+            </p>
+            {errored ? (
+              <button
+                type="button"
+                onClick={() => void load()}
+                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[var(--brand-blue)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--brand-blue-hover)]"
+              >
+                <RefreshCw size={16} aria-hidden />
+                Retry
+              </button>
+            ) : null}
+          </div>
+        ) : (
+          <CountryHubFolderGrid countries={items} variant="compact" tileClassName={tileShadow} />
+        )}
+
+        {!loading && !empty && !errored ? (
+          <div className="mt-8 flex justify-center md:mt-10">
+            <Link
+              href="/gallery"
+              className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-10 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)]"
+            >
+              Browse all countries
+            </Link>
+          </div>
+        ) : null}
       </div>
     </section>
   );

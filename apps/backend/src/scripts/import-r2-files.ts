@@ -18,6 +18,7 @@ import type { R2Config } from '../storage/r2.js';
 import { listR2ObjectSummaries, requireR2Config, slugifySegment } from '../storage/r2.js';
 import { deriveAssetGroupKeyFromParts, deriveDisplayTitle } from '../lib/asset-group-key.js';
 import { classifyFlagDesign } from '../lib/flag-design-classify.js';
+import { FLAG_VIDEO_FORMATS } from '../lib/flag-video-formats.js';
 import {
   loadCountrySlugIndex,
   resolveCanonicalCountrySlugWithIndex,
@@ -28,7 +29,17 @@ import { createScriptPool, verifyScriptDbConnection } from '../lib/script-db-poo
 const __scriptDir = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__scriptDir, '../../.env') });
 
-const ALLOWED_FORMATS = new Set(['png', 'svg', 'jpg', 'jpeg', 'webp', 'eps', 'pdf', 'ai']);
+const ALLOWED_FORMATS = new Set([
+  'png',
+  'svg',
+  'jpg',
+  'jpeg',
+  'webp',
+  'eps',
+  'pdf',
+  'ai',
+  ...FLAG_VIDEO_FORMATS,
+]);
 
 const MIME_BY_EXT: Record<string, string> = {
   png: 'image/png',
@@ -39,6 +50,9 @@ const MIME_BY_EXT: Record<string, string> = {
   pdf: 'application/pdf',
   eps: 'application/postscript',
   ai: 'application/octet-stream',
+  mp4: 'video/mp4',
+  webm: 'video/webm',
+  mov: 'video/quicktime',
 };
 
 /** Normalized slug tokens stripped when inferring country from folder/filename text. */

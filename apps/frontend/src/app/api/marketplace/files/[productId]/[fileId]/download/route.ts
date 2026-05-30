@@ -44,8 +44,8 @@ export async function GET(request: Request, { params }: RouteParams) {
   if (resolution.kind === 'denied') {
     const returnPath = sanitizeCallbackUrl(new URL(request.url).pathname + new URL(request.url).search, '/browse');
     if (resolution.reason === 'NOT_AUTHENTICATED' && isBrowserDocumentNavigation(request)) {
-      const login = new URL('/login', request.url);
-      login.searchParams.set('callbackUrl', returnPath);
+      const login = new URL('/sign-in', request.url);
+      login.searchParams.set('redirect_url', returnPath);
       return NextResponse.redirect(login);
     }
     if (resolution.reason === 'NOT_ENTITLED' && isBrowserDocumentNavigation(request)) {

@@ -7,6 +7,8 @@ import { createHash } from 'crypto';
 import type { Product, ProductFile, ProductLicenseInfo, ProductSeo } from '@/types/marketplace';
 import { ONE_TIME_STOCK } from '@/lib/marketing/pricing-config';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
+import { categoryIdForFlagFileFormat } from '@/lib/marketplace/catalog-video';
+import { isFlagVideoFormat } from '@/lib/flag-video-formats';
 
 export type NeonLikeFlagRow = {
   id: string;
@@ -192,7 +194,9 @@ export function productsFromNeonLikeRows(
   deps: {
     thumbForRow: (r: NeonLikeFlagRow) => string | null;
     publicPreviewUrlForRow: (r: NeonLikeFlagRow, thumb: string | null) => string | null;
+    /** Default when row is not a video format. */
     categoryId: string;
+    videoCategoryId?: string;
   }
 ): Product[] {
   const solo: NeonLikeFlagRow[] = [];
@@ -225,19 +229,31 @@ export function productsFromNeonLikeRows(
   return out;
 }
 
+function rowCategoryId(
+  row: NeonLikeFlagRow,
+  deps: {
+    categoryId: string;
+    videoCategoryId?: string;
+  },
+): string {
+  return categoryIdForFlagFileFormat(row.format, deps.categoryId, deps.videoCategoryId);
+}
+
 function soloRowToProduct(
   row: NeonLikeFlagRow,
   deps: {
     thumbForRow: (r: NeonLikeFlagRow) => string | null;
     publicPreviewUrlForRow: (r: NeonLikeFlagRow, thumb: string | null) => string | null;
     categoryId: string;
+    videoCategoryId?: string;
   }
 ): Product {
   const countrySlug = rowCountrySlug(row);
   const countryNameDisplay = row.country_name?.trim() || humanizeSlugForTitle(countrySlug);
   const thumb = deps.thumbForRow(row);
   const tierRaw = (row.premium_tier ?? 'free').toLowerCase();
-  const isFree = tierRaw === 'free';
+  const isVideo = isFlagVideoFormat(row.format);
+  const isFree = !isVideo && tierRaw === 'free';
   const fmt = row.format.toLowerCase();
   const imgLike = ['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(fmt);
   const publicUrlForPreview = deps.publicPreviewUrlForRow(row, thumb);
@@ -266,13 +282,13 @@ function soloRowToProduct(
     description: null,
     countryCode: row.iso_alpha_2?.trim()?.toUpperCase() ?? null,
     region: row.region,
-    categoryId: deps.categoryId,
+    categoryId: rowCategoryId(row, deps),
     tags: tagsFromRow(row),
     thumbnailUrl: thumb,
     previewUrl: thumb,
     freeDownloadUrl: isFree ? previewForFile : null,
     proFileKeys:
-      !isFree && fk
+      (!isFree || isVideo) && fk
         ? [{ fileId: row.id, format: row.format, qualityLabel: 'Master', storageKey: fk }]
         : [],
     files: [file],
@@ -295,6 +311,7 @@ function groupedRowsToProduct(
     thumbForRow: (r: NeonLikeFlagRow) => string | null;
     publicPreviewUrlForRow: (r: NeonLikeFlagRow, thumb: string | null) => string | null;
     categoryId: string;
+    videoCategoryId?: string;
   }
 ): Product {
   const rows = dedupeRowsByFormat(rowsIn);
@@ -322,7 +339,8 @@ function groupedRowsToProduct(
     if (isPreviewOnlyFormat(row.format)) return;
 
     const tierRaw = (row.premium_tier ?? 'free').toLowerCase();
-    const isFree = tierRaw === 'free';
+    const isVideo = isFlagVideoFormat(row.format);
+    const isFree = !isVideo && tierRaw === 'free';
     const fmt = row.format.toLowerCase();
     const imgLike = ['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(fmt);
     const rowThumb = deps.thumbForRow(row);
@@ -335,11 +353,11 @@ function groupedRowsToProduct(
     const rawPc = row.price_cents ?? (isFree ? 0 : ONE_TIME_STOCK.displayCents);
     const pc = isFree ? Math.max(0, rawPc) : Math.max(ONE_TIME_STOCK.displayCents, rawPc);
     maxPrice = Math.max(maxPrice, pc);
-    if (!isFree || pc > 0) anyPaid = true;
+    if (!isFree || isVideo || pc > 0) anyPaid = true;
   });
 
   const fkList = rows
-    .filter((r) => (r.premium_tier ?? 'free').toLowerCase() !== 'free')
+    .filter((r) => isFlagVideoFormat(r.format) || (r.premium_tier ?? 'free').toLowerCase() !== 'free')
     .map((r) => ({
       fileId: r.id,
       format: r.format,
@@ -367,7 +385,9 @@ function groupedRowsToProduct(
     description: null,
     countryCode: first.iso_alpha_2?.trim()?.toUpperCase() ?? null,
     region: first.region,
-    categoryId: deps.categoryId,
+    categoryId: rows.some((r) => isFlagVideoFormat(r.format))
+      ? rowCategoryId(rows.find((r) => isFlagVideoFormat(r.format))!, deps)
+      : deps.categoryId,
     tags: tagUnion,
     thumbnailUrl: thumb,
     previewUrl: thumb,

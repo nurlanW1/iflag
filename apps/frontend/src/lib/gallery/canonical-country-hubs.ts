@@ -2,7 +2,7 @@ import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 import { isPackFallbackFlagThumbnail } from '@/lib/server/gallery-from-db';
 
 /** Slug aliases → canonical country hub slug (lowercase). */
-const SLUG_ALIASES: Record<string, string> = {
+export const COUNTRY_SLUG_SEARCH_ALIASES: Record<string, string> = {
   algerie: 'algeria',
   dz: 'algeria',
   'national-algeria': 'algeria',
@@ -17,7 +17,7 @@ const SLUG_ALIASES: Record<string, string> = {
   'cote-divoire': 'ivory-coast',
 };
 
-const ISO_TO_CANONICAL_SLUG: Record<string, string> = {
+export const ISO_TO_COUNTRY_HUB_SLUG: Record<string, string> = {
   DZ: 'algeria',
   US: 'united-states',
   GB: 'united-kingdom',
@@ -39,19 +39,19 @@ export function slugLooksLikeFileAsset(slug: string): boolean {
   return false;
 }
 
-function canonicalSlug(row: GalleryCountrySummary): string {
+export function canonicalHubSlug(row: Pick<GalleryCountrySummary, 'slug' | 'code'>): string {
   const raw = row.slug.trim().toLowerCase();
-  const aliased = SLUG_ALIASES[raw];
+  const aliased = COUNTRY_SLUG_SEARCH_ALIASES[raw];
   if (aliased) return aliased;
   const iso = row.code?.trim().toUpperCase();
-  if (iso && ISO_TO_CANONICAL_SLUG[iso]) return ISO_TO_CANONICAL_SLUG[iso];
+  if (iso && ISO_TO_COUNTRY_HUB_SLUG[iso]) return ISO_TO_COUNTRY_HUB_SLUG[iso];
   return raw;
 }
 
 function mergeKey(row: GalleryCountrySummary): string {
   const iso = row.code?.trim().toUpperCase();
   if (iso) return `iso:${iso}`;
-  return `slug:${canonicalSlug(row)}`;
+  return `slug:${canonicalHubSlug(row)}`;
 }
 
 function pickBetterHub(a: GalleryCountrySummary, b: GalleryCountrySummary): GalleryCountrySummary {
@@ -74,7 +74,7 @@ export function mergeCanonicalCountryHubs(
   for (const row of countries) {
     if (slugLooksLikeFileAsset(row.slug)) continue;
 
-    const canon = canonicalSlug(row);
+    const canon = canonicalHubSlug(row);
     const key = mergeKey(row);
     const normalized: GalleryCountrySummary = {
       ...row,

@@ -25,6 +25,7 @@ const { categories: loadedCategories, products: loadedProducts } = loadCatalogFr
 /** ——— Fixed IDs for reproducible mocks ——— */
 export const SEED_IDS = {
   catCountry: '11111111-1111-4111-8111-111111111101',
+  catFlagVideos: '11111111-1111-4111-8111-111111111108',
   catHistorical: '11111111-1111-4111-8111-111111111102',
   catOrg: '11111111-1111-4111-8111-111111111103',
   catOther: '11111111-1111-4111-8111-111111111104',

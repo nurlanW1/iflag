@@ -7,6 +7,8 @@
  * - WebP = preview/cover only (not a downloadable master)
  */
 
+import { isFlagVideoFormat } from './flag-video-formats.js';
+
 export type FlagDesignType =
   | 'official_flat'
   | 'wave'
@@ -17,6 +19,7 @@ export type FlagDesignType =
   | 'mockup'
   | 'banner'
   | 'icon_pack'
+  | 'video'
   | 'other';
 
 /** Raster optimized for hub covers & gallery thumbnails — never sold/downloaded as master. */
@@ -130,6 +133,7 @@ export function isCountryOnlyOfficialStem(
 
 function matchCreative(pathAndStem: string): FlagDesignType | null {
   const s = pathAndStem;
+  if (/\bvideo\b|\/videos?\//i.test(s)) return 'video';
   if (/\bwave\b|flag-wave|-wave|\/wave\//i.test(s)) return 'wave';
   if (/\bcircle\b|flag-circle|-circle|\/circle\//i.test(s)) return 'circle';
   if (/\bheart\b|flag-heart|-heart|\/heart\//i.test(s)) return 'heart';
@@ -163,6 +167,16 @@ export function classifyFlagDesign(params: {
   const combined = `${key} ${stem}`;
   const countrySlug = (params.countrySlug ?? '').trim().toLowerCase();
   const previewOnly = isPreviewOnlyFormat(params.format);
+  const videoFormat = isFlagVideoFormat(params.format);
+
+  if (videoFormat) {
+    return {
+      design_type: 'video',
+      premium_tier: 'paid',
+      is_country_cover_candidate: false,
+      is_preview_only: false,
+    };
+  }
 
   const explicitCreative = matchCreative(combined);
   if (explicitCreative) {

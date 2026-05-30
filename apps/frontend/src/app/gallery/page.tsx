@@ -52,7 +52,8 @@ function GalleryContent() {
 
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const initialQ = sp.get('q') ?? '';
+  const [searchQuery, setSearchQuery] = useState(initialQ);
   const [view, setView] = useState<ViewMode>('grid');
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -68,12 +69,46 @@ function GalleryContent() {
   }, [kind, region]);
 
   useEffect(() => {
+    const q = sp.get('q') ?? '';
+    setSearchQuery(q);
+  }, [sp]);
+
+  useEffect(() => {
     const q = new URLSearchParams();
     if (region?.trim()) q.set('region', region.trim());
     if (kind?.trim()) q.set('kind', kind.trim());
     const path = `/api/gallery/countries${q.size > 0 ? `?${q.toString()}` : ''}`;
     void loadCountries(path);
   }, [region, kind]);
+
+  useEffect(() => {
+    const q = sp.get('q')?.trim();
+    if (!q) return;
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/gallery/resolve-country?q=${encodeURIComponent(q)}`, {
+          cache: 'no-store',
+        });
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as { slug?: string | null };
+        const slug = data.slug?.trim();
+        if (!slug || cancelled) return;
+        const params = new URLSearchParams();
+        if (region?.trim()) params.set('region', region.trim());
+        if (kind?.trim()) params.set('kind', kind.trim());
+        const suffix = params.size > 0 ? `?${params.toString()}` : '';
+        router.replace(`/gallery/${encodeURIComponent(slug)}${suffix}`);
+      } catch {
+        /* keep filtered gallery list */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sp, region, kind, router]);
 
   const loadCountries = async (path = '/api/gallery/countries') => {
     setLoading(true);

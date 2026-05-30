@@ -18,6 +18,7 @@ import { SectionReveal } from '@/components/motion/SectionReveal';
 import { useRevealInView } from '@/hooks/useRevealInView';
 import { SITE_NAME } from '@/lib/seo/site-config';
 import { buildHeroDestination } from '@/lib/landing/hero-categories';
+import { navigateGalleryCountrySearch } from '@/lib/gallery/gallery-search-navigation';
 import { HOMEPAGE_PLAN_CARDS, ONE_TIME_STOCK, PRICING_MARKETING, formatPricingMoney } from '@/lib/marketing/pricing-config';
 
 type PricingPlan = {
@@ -127,7 +128,7 @@ export default function HomePageClient() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = buildHeroDestination('all', searchQuery);
+    void navigateGalleryCountrySearch(searchQuery);
   };
 
   return (

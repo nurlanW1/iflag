@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ProductBrowseSection } from '@/components/marketplace/ProductBrowseSection';
 import { CountryHubBrowseSection } from '@/components/gallery/CountryHubBrowseSection';
+import { FlagVideoBrowseSection } from '@/components/gallery/FlagVideoBrowseSection';
 import {
   categoryUsesCountryHubGrid,
+  categoryUsesFlagVideoGallery,
   galleryApiPathForCategory,
 } from '@/lib/marketplace/category-country-hub-api';
 import { visualsForCategoryKind } from '@/lib/marketplace/category-visuals';
@@ -58,8 +60,10 @@ export default async function CategoryPage({ params }: Props) {
     notFound();
   }
 
-  const useCountryHubs = categoryUsesCountryHubGrid(category);
-  const products = useCountryHubs ? [] : listPublishedProducts({ categoryId: category.id });
+  const useFlagVideos = categoryUsesFlagVideoGallery(category);
+  const useCountryHubs = !useFlagVideos && categoryUsesCountryHubGrid(category);
+  const products =
+    useFlagVideos || useCountryHubs ? [] : listPublishedProducts({ categoryId: category.id });
   const vis = visualsForCategoryKind(category.kind);
   const Icon = vis.Icon;
 
@@ -92,7 +96,9 @@ export default async function CategoryPage({ params }: Props) {
               </div>
             </div>
           </header>
-          {useCountryHubs ? (
+          {useFlagVideos ? (
+            <FlagVideoBrowseSection />
+          ) : useCountryHubs ? (
             <CountryHubBrowseSection fetchPath={galleryApiPathForCategory(category)} />
           ) : (
             <Suspense fallback={<p className="text-black/60">Loading catalog…</p>}>

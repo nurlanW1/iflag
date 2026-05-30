@@ -14,6 +14,7 @@ import {
   resolvedFlagPublicHref,
 } from '@/lib/server/flag-asset-url';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
+import { isFlagVideoFormat } from '@/lib/flag-video-formats';
 import { publishedFlagHasMediaSql } from '@/lib/server/gallery-published-media';
 import { galleryOptionalColumns, resetGallerySchemaCache } from '@/lib/server/gallery-schema';
 import { buildCountryHubDescription } from '@/lib/gallery/country-hub-copy';
@@ -54,6 +55,7 @@ type FlagFileRow = {
 
 export function formatToCategory(fmt: string): 'vector' | 'raster' | 'video' {
   const f = fmt.toLowerCase();
+  if (isFlagVideoFormat(f)) return 'video';
   if (f === 'svg' || f === 'eps' || f === 'pdf' || f === 'ai') return 'vector';
   if (f === 'png' || f === 'jpg' || f === 'jpeg' || f === 'webp') return 'raster';
   return 'raster';
@@ -498,6 +500,9 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
     jpeg: 3,
     png: 4,
     webp: 4,
+    mp4: 5,
+    webm: 5,
+    mov: 5,
   };
 
   function thumbScoreForFormat(fmt: string): number {
@@ -506,6 +511,7 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
     if (f === 'png') return 5;
     if (f === 'jpg' || f === 'jpeg') return 4;
     if (f === 'svg') return 3;
+    if (isFlagVideoFormat(f)) return 2;
     return 0;
   }
 

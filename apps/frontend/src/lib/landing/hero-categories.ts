@@ -21,7 +21,7 @@ export function buildHeroDestination(tab: HeroCategoryTab, qRaw: string): string
     case 'all':
       return q ? `/gallery?q=${encodeURIComponent(q)}` : '/gallery';
     case 'countries':
-      return q ? `/browse?q=${encodeURIComponent(q)}` : '/gallery';
+      return q ? `/gallery?q=${encodeURIComponent(q)}` : '/gallery';
     case 'circular':
       return q ? `/browse?q=${encodeURIComponent(`circular ${q}`)}` : '/browse?q=circular';
     case 'historical':

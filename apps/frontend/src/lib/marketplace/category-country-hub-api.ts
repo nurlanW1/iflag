@@ -8,6 +8,11 @@ const KIND_TO_GALLERY_QUERY: Partial<Record<string, string>> = {
   institution_flags: '/api/gallery/countries?kind=organizations',
 };
 
+/** Flag videos hub — flat alphabetical video gallery (not country folders). */
+export function categoryUsesFlagVideoGallery(category: Category): boolean {
+  return category.kind === 'flag_videos';
+}
+
 /** Categories that list country folders (not individual product cards). */
 export function categoryUsesCountryHubGrid(category: Category): boolean {
   return Boolean(category.kind && KIND_TO_GALLERY_QUERY[category.kind]);

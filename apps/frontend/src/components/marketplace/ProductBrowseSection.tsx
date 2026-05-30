@@ -153,10 +153,60 @@ export function ProductBrowseSection({
     runQuery(1, false);
   }, [appliedQ, tier, sort, categorySlug, fixedCategorySlug, runQuery, retryKey]);
 
+  useEffect(() => {
+    const q = searchParams.get('q')?.trim();
+    if (!q) return;
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/gallery/resolve-country?q=${encodeURIComponent(q)}`, {
+          cache: 'no-store',
+        });
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as { slug?: string | null };
+        const slug = data.slug?.trim();
+        if (slug && !cancelled) {
+          window.location.replace(`/gallery/${encodeURIComponent(slug)}`);
+        }
+      } catch {
+        /* stay on browse catalog */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams]);
+
   const onSubmitSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setAppliedQ(draftQ);
-    setPage(1);
+    const q = draftQ.trim();
+    if (!q) {
+      setAppliedQ('');
+      setPage(1);
+      return;
+    }
+
+    void (async () => {
+      try {
+        const res = await fetch(`/api/gallery/resolve-country?q=${encodeURIComponent(q)}`, {
+          cache: 'no-store',
+        });
+        if (res.ok) {
+          const data = (await res.json()) as { slug?: string | null };
+          const slug = data.slug?.trim();
+          if (slug) {
+            window.location.href = `/gallery/${encodeURIComponent(slug)}`;
+            return;
+          }
+        }
+      } catch {
+        /* product catalog search */
+      }
+      setAppliedQ(q);
+      setPage(1);
+    })();
   };
 
   const onLoadMore = () => {

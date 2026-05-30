@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCover';
@@ -12,6 +13,8 @@ export type CountryHubFolderGridProps = {
   /** `/gallery/[slug]` country folder (designs inside). */
   hrefForSlug?: (slug: string) => string;
   variant?: 'gallery' | 'compact';
+  /** Extra classes on each folder tile link (e.g. landing drop shadow). */
+  tileClassName?: string;
 };
 
 function hubHref(slug: string, custom?: (s: string) => string): string {
@@ -22,6 +25,7 @@ export function CountryHubFolderGrid({
   countries,
   hrefForSlug,
   variant = 'gallery',
+  tileClassName = '',
 }: CountryHubFolderGridProps) {
   if (!countries.length) {
     return (
@@ -44,7 +48,10 @@ export function CountryHubFolderGrid({
           >
             <Link
               href={hubHref(country.slug, hrefForSlug)}
-              className="group block overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#2563eb]/40 hover:shadow-md"
+              className={clsx(
+                'group block overflow-hidden rounded-2xl border border-stone-200/80 bg-white transition-all hover:-translate-y-0.5 hover:border-[#2563eb]/40',
+                tileClassName || 'shadow-sm hover:shadow-md',
+              )}
             >
               <div
                 className={

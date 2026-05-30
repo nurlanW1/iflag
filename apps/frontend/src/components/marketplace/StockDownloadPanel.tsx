@@ -3,8 +3,11 @@
 import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { BillingSidebarAuthGate } from '@/components/billing/BillingSidebarAuthGate';
+import { useClerkUiEnabled } from '@/components/providers/ClerkUiProvider';
 import type { PublicProductFile } from '@/lib/marketplace/product-mapper';
 import { triggerApiFileDownload } from '@/lib/client/trigger-api-download';
 import { bytesToHuman, formatBadgeLabel, formatKindLabel } from '@/components/marketplace/asset-detail/format-metadata';
@@ -72,6 +75,8 @@ export function StockDownloadPanel({
   const router = useRouter();
   const pathname = usePathname();
   const back = pathname || '/browse';
+  const clerkUiEnabled = useClerkUiEnabled();
+  const { isLoaded: userLoaded, isSignedIn } = useUser();
   const { authLoaded, hasActivePlan, planLoaded } = useFlagswingPlan();
 
   const sorted = useMemo(
@@ -138,17 +143,26 @@ export function StockDownloadPanel({
 
   const activeKind = active ? formatKindLabel(active.format) : 'Other';
 
+  const needsAccountForFree =
+    userLoaded && !isSignedIn && (isFreeOfficialFile || isPreviewSlot);
+
   const actionBlock = !active ? null : showPurchaseOffers ? (
     <DownloadPurchaseOffers
       assetLabel={assetLabel ?? cartProduct.title}
       productSlug={productSlug}
       compact={compactLayout}
     />
+  ) : needsAccountForFree ? (
+    <BillingSidebarAuthGate
+      compact={compactLayout}
+      hideCheckoutNote
+      message="Create a free account or sign in to download this official flag file."
+    />
   ) : isFreeOfficialFile ? (
     <div className="flex min-h-12 items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50/80 px-3 py-2">
       <div className="min-w-0 flex-1">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-800">Free official flag</p>
-        <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)} · no subscription required</p>
+        <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)} · free with your account</p>
       </div>
       <button
         type="button"
@@ -180,7 +194,7 @@ export function StockDownloadPanel({
     <div className="flex min-h-12 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
       <div className="min-w-0 flex-1">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Preview</p>
-        <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)} · free</p>
+        <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)} · free with account</p>
       </div>
       <button
         type="button"
@@ -192,7 +206,7 @@ export function StockDownloadPanel({
         {busy ? '…' : 'Get'}
       </button>
     </div>
-  ) : !authLoaded || !planLoaded ? (
+  ) : !authLoaded || !planLoaded || (clerkUiEnabled && !userLoaded) ? (
     <button
       type="button"
       disabled

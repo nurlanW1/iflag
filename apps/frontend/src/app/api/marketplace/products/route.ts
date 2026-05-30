@@ -7,6 +7,8 @@ import {
   type CatalogSort,
 } from '@/services/marketplace';
 import { fetchNeonCatalogProducts } from '@/lib/server/neon-catalog';
+import { isVideoCatalogProduct } from '@/lib/marketplace/catalog-video';
+import { SEED_IDS } from '@/services/marketplace/seed';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,6 +56,11 @@ export async function GET(request: Request) {
   } catch (err) {
     console.warn('[marketplace/products] Neon catalog merge skipped:', err);
   }
+
+  const flagVideosOnly = categoryId === SEED_IDS.catFlagVideos;
+  combined = combined.filter((p) =>
+    flagVideosOnly ? isVideoCatalogProduct(p) : !isVideoCatalogProduct(p),
+  );
 
   const { products, total } = filterSortPaginateCatalog(combined, {
     categoryId,

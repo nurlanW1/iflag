@@ -76,6 +76,23 @@ export function CheckoutButtonClerk({
   }
 
   if (!isSignedIn) {
+    if (minimal) {
+      return (
+        <SignInButton mode="redirect" forceRedirectUrl={returnTo}>
+          <button
+            type="button"
+            style={style}
+            className={
+              className ||
+              'inline-flex min-h-[2.25rem] items-center justify-center rounded-lg px-3.5 text-xs font-semibold'
+            }
+          >
+            {children}
+          </button>
+        </SignInButton>
+      );
+    }
+
     return (
       <div>
         <SignInButton mode="redirect" forceRedirectUrl={returnTo}>

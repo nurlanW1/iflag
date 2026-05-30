@@ -155,8 +155,8 @@ export async function GET(
     return legacy ?? null;
   }
 
-  const allowed =
-    freeCatalogDownload || (await userHasFlagswingPaidDownloadAccess(pool, user, accessToken));
+  const paidAllowed = await userHasFlagswingPaidDownloadAccess(pool, user, accessToken);
+  const allowed = freeCatalogDownload ? Boolean(user?.id) : paidAllowed;
 
   if (!allowed) {
     const returnPath = sanitizeCallbackUrl(
