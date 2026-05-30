@@ -15,7 +15,6 @@ import {
   Menu,
   X,
   Globe,
-  Heart,
   ShoppingCart,
   LayoutGrid,
   Search,
@@ -136,14 +135,6 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
 
         {user ? (
           <>
-            <Link
-              href="/gallery"
-              className="rounded-lg p-2.5 text-[var(--nav-link-text)] transition-colors hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
-              aria-label="Collections"
-              title="Collections"
-            >
-              <Heart size={24} aria-hidden />
-            </Link>
             <NavbarCartIcon />
             <div className="flex items-center gap-4 border-l border-neutral-200 pl-6">
               <Link
@@ -189,13 +180,6 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
               </Show>
               <Show when="signed-in">
                 <>
-                  <Link
-                    href="/gallery"
-                    className="rounded-lg p-2.5 text-[var(--nav-link-text)] transition-colors hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
-                    aria-label="Collections"
-                  >
-                    <Heart size={24} aria-hidden />
-                  </Link>
                   <NavbarCartIcon />
                   <Link
                     href="/dashboard"
@@ -371,13 +355,6 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
 
                   {user ? (
                     <>
-                      <Link
-                        href="/gallery"
-                        className="flex min-h-[3rem] items-center px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Saved collections
-                      </Link>
                       <NavbarCartIcon variant="mobile" onNavigate={() => setMobileMenuOpen(false)} />
                       <Link
                         href="/dashboard"
