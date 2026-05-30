@@ -58,7 +58,7 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
               key={p.id}
               href={href}
               role="listitem"
-              aria-label={`${p.title} — Premium stock`}
+              aria-label={`${p.title}${isPremium ? ' — paid stock' : ' — free download'}`}
               title={p.title}
               className="group w-[7.5rem] shrink-0 text-left sm:w-32"
             >
@@ -85,10 +85,16 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
                     —
                   </div>
                 )}
-                <span className="pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-0.5 rounded-md bg-amber-400/95 px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-950 ring-1 ring-amber-600/40">
-                  <Crown size={9} aria-hidden strokeWidth={2.5} />
-                  Premium
-                </span>
+                {isPremium ? (
+                  <span className="pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-0.5 rounded-md bg-amber-400/95 px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-950 ring-1 ring-amber-600/40">
+                    <Crown size={9} aria-hidden strokeWidth={2.5} />
+                    Paid
+                  </span>
+                ) : (
+                  <span className="pointer-events-none absolute left-1.5 top-1.5 z-10 rounded-md bg-emerald-500/90 px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                    Free
+                  </span>
+                )}
                 {formatCount > 0 ? (
                   <span className="pointer-events-none absolute right-1.5 top-1.5 z-10 rounded-md bg-black/55 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
                     {formatCount}

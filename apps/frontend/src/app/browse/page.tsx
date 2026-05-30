@@ -16,18 +16,25 @@ export const metadata: Metadata = {
 
 export default function BrowsePage() {
   return (
-    <main className="marketplace-shell min-h-screen w-full py-8 sm:py-12 lg:py-16 xl:py-20">
-      <header className="mb-8 sm:mb-10 lg:mb-12">
-        <h1 className="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl md:text-4xl xl:text-5xl">
-          Browse catalog
-        </h1>
-        <p className="mt-3 max-w-3xl text-pretty text-sm leading-relaxed text-gray-600 sm:text-base md:text-lg lg:text-xl">
-          Search by name, country, or tag—then narrow by taxonomy hub, paid tier filters, or sort order.
-        </p>
+    <main className="min-h-screen bg-[#fafaf9]">
+      <header className="border-b border-stone-200/80 bg-white">
+        <div className="marketplace-shell py-8 sm:py-10 lg:py-12">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-400">Catalog</p>
+          <h1 className="mt-2 text-2xl font-black tracking-tight text-stone-900 sm:text-3xl md:text-4xl">
+            Browse flags
+          </h1>
+          <p className="mt-3 max-w-2xl text-pretty text-sm leading-relaxed text-stone-600 sm:text-base">
+            Search by country, design name, or tag. Free official files download without a subscription; paid
+            variants require Pro or a one-time purchase.
+          </p>
+        </div>
       </header>
-      <Suspense fallback={<p className="text-base text-gray-500">Loading catalog…</p>}>
-        <ProductBrowseSection />
-      </Suspense>
+
+      <div className="marketplace-shell py-8 sm:py-10 lg:py-12">
+        <Suspense fallback={<p className="text-base text-stone-500">Loading catalog…</p>}>
+          <ProductBrowseSection />
+        </Suspense>
+      </div>
     </main>
   );
 }

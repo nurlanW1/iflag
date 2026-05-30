@@ -10,10 +10,10 @@ import type { Category } from '@/types/marketplace';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 import { MarketplaceProductCard } from './MarketplaceProductCard';
 
-type TierFilter = 'all' | 'pro';
+type TierFilter = 'all' | 'free' | 'pro';
 
 function tierFromSearchParam(raw: string | null): TierFilter {
-  if (raw === 'pro') return 'pro';
+  if (raw === 'pro' || raw === 'free') return raw;
   return 'all';
 }
 
@@ -166,93 +166,98 @@ export function ProductBrowseSection({
 
   return (
     <div className={['min-w-0', className].filter(Boolean).join(' ') || 'min-w-0'}>
-      <div className="mb-8 flex flex-col gap-6 sm:mb-10 lg:flex-row lg:items-stretch lg:justify-between lg:gap-12">
-        <form
-          onSubmit={onSubmitSearch}
-          className="flex min-w-0 w-full flex-1 flex-col gap-3 sm:max-w-none sm:flex-row lg:max-w-4xl xl:max-w-5xl"
-        >
-          <div className="flex min-h-[48px] w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow focus-within:border-[#2563eb] focus-within:ring-2 focus-within:ring-[#2563eb]/25 sm:min-h-[3.5rem] sm:flex-row sm:items-stretch">
-            <div className="relative flex min-h-0 min-w-0 flex-1 items-center">
-              <Search
-                className="pointer-events-none absolute left-3.5 h-5 w-5 shrink-0 text-gray-400 sm:left-5 sm:h-6 sm:w-6"
-                aria-hidden
-              />
+      <div className="mb-6 rounded-2xl border border-stone-200/90 bg-white p-4 shadow-sm sm:p-5">
+        <form onSubmit={onSubmitSearch} className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-end">
+          <label className="flex min-w-0 flex-1 flex-col gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">Search</span>
+            <div className="relative flex min-h-11 items-center">
+              <Search className="pointer-events-none absolute left-3.5 h-4 w-4 shrink-0 text-stone-400" aria-hidden />
               <input
                 type="search"
                 value={draftQ}
                 onChange={(e) => setDraftQ(e.target.value)}
-                placeholder="Search flags, tags, country…"
-                className="min-h-[48px] w-full min-w-0 border-0 bg-transparent py-0 pl-11 pr-4 text-base leading-snug text-gray-900 outline-none placeholder:text-gray-400 sm:min-h-[3.5rem] sm:pl-14 sm:pr-5 sm:text-[1.05rem]"
+                placeholder="Country, design name, tag…"
+                className="min-h-11 w-full rounded-xl border border-stone-200 bg-stone-50/50 py-2 pl-10 pr-4 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-[#2563eb] focus:bg-white focus:ring-2 focus:ring-[#2563eb]/20"
                 aria-label="Search catalog"
               />
             </div>
-            <button
-              type="submit"
-              className="inline-flex min-h-[48px] w-full shrink-0 items-center justify-center self-stretch border-t border-gray-200/95 bg-[#2563eb] px-5 text-base font-bold leading-snug tracking-tight text-white transition hover:bg-[#1d4ed8] focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#2563eb] sm:h-14 sm:w-auto sm:min-h-[3.5rem] sm:border-l sm:border-t-0 sm:px-10 sm:text-[1.05rem]"
-            >
-              Search
-            </button>
-          </div>
-        </form>
+          </label>
 
-        <div className="grid w-full grid-cols-1 gap-4 xs:grid-cols-2 sm:grid-cols-2 xl:flex xl:flex-nowrap xl:justify-end xl:gap-4">
-          {!fixedCategorySlug ? (
-            <label className="flex w-full min-w-0 flex-col gap-2 text-sm font-semibold tracking-tight text-gray-700 xl:max-w-[11rem]">
-              Category
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:flex lg:shrink-0 lg:gap-3">
+            {!fixedCategorySlug ? (
+              <label className="flex min-w-0 flex-col gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+                  Category
+                </span>
+                <select
+                  value={categorySlug}
+                  onChange={(e) => setCategorySlug(e.target.value)}
+                  className="min-h-11 w-full min-w-[8.5rem] rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                >
+                  <option value="">All</option>
+                  {categories
+                    .filter((c) => c.isApproved)
+                    .map((c) => (
+                      <option key={c.id} value={c.slug}>
+                        {c.name}
+                      </option>
+                    ))}
+                </select>
+              </label>
+            ) : null}
+            <label className="flex min-w-0 flex-col gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">Access</span>
               <select
-                value={categorySlug}
-                onChange={(e) => setCategorySlug(e.target.value)}
-                className="min-h-[44px] w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-3 pr-9 text-base text-gray-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                value={tier}
+                onChange={(e) => setTier(e.target.value as TierFilter)}
+                className="min-h-11 w-full min-w-[7.5rem] rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
               >
-                <option value="">All categories</option>
-                {categories
-                  .filter((c) => c.isApproved)
-                  .map((c) => (
-                    <option key={c.id} value={c.slug}>
-                      {c.name}
-                    </option>
-                  ))}
+                <option value="all">All tiers</option>
+                <option value="free">Free only</option>
+                <option value="pro">Paid only</option>
               </select>
             </label>
-          ) : null}
-          <label className="flex w-full min-w-0 flex-col gap-2 text-sm font-semibold tracking-tight text-gray-700 xl:max-w-[9.5rem]">
-            Tier
-            <select
-              value={tier}
-              onChange={(e) => setTier(e.target.value as TierFilter)}
-              className="min-h-[44px] w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-3 pr-9 text-base text-gray-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
-            >
-              <option value="all">All</option>
-              <option value="pro">Paid (Pro)</option>
-            </select>
-          </label>
-          <label className="flex w-full min-w-0 flex-col gap-2 text-sm font-semibold tracking-tight text-gray-700 xl:max-w-[10.25rem]">
-            Sort
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortKey)}
-              className="min-h-[44px] w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-3 pr-9 text-base text-gray-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
-            >
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="title">Title A–Z</option>
-              <option value="popular">Popular</option>
-            </select>
-          </label>
-        </div>
+            <label className="flex min-w-0 flex-col gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">Sort</span>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as SortKey)}
+                className="min-h-11 w-full min-w-[7.5rem] rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+              >
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="title">Title A–Z</option>
+                <option value="popular">Popular</option>
+              </select>
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-[#2563eb] px-6 text-sm font-bold text-white transition hover:bg-[#1d4ed8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb] lg:mb-0"
+          >
+            Search
+          </button>
+        </form>
       </div>
 
-      <p className="mb-4 text-base text-gray-600">
-        {loading && items.length === 0 ? 'Loading…' : `${total} result${total === 1 ? '' : 's'}`}
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-2 text-sm text-stone-600">
+        <p>
+          {loading && items.length === 0 ? (
+            'Loading…'
+          ) : (
+            <>
+              <span className="font-semibold text-stone-900">{total}</span> result{total === 1 ? '' : 's'}
+              {tier === 'free' ? ' · free downloads' : tier === 'pro' ? ' · paid stock' : null}
+            </>
+          )}
+        </p>
         {fixedCategorySlug ? (
-          <>
-            {' · '}
-            <Link href="/browse" className="font-medium text-[#2563eb] hover:underline">
-              Browse all
-            </Link>
-          </>
+          <Link href="/browse" className="font-semibold text-[#2563eb] hover:underline">
+            Browse all
+          </Link>
         ) : null}
-      </p>
+      </div>
 
       {error ? (
         <div
