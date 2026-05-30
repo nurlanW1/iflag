@@ -51,7 +51,7 @@ export function PremiumAssetPreview({
   if (variant === 'gallery') {
     const frame = compact
       ? clsx(
-          'relative flex min-h-[12rem] flex-1 items-center justify-center px-4 py-5 sm:px-5 sm:py-6',
+          'relative flex h-full min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-5 sm:px-5 sm:py-6',
           useTransparencyBackdrop ? checkerBg : 'bg-[linear-gradient(180deg,#ffffff_0%,#f4f6f9_100%)]',
         )
       : clsx(
@@ -60,7 +60,7 @@ export function PremiumAssetPreview({
         );
 
     const imgClamp = compact
-      ? 'max-h-[min(42vh,18rem)] w-auto max-w-full object-contain lg:max-h-full lg:max-w-[92%]'
+      ? 'max-h-full max-w-full w-auto object-contain'
       : 'max-h-[min(62vh,40rem)] w-auto max-w-full object-contain';
 
     return (
@@ -75,8 +75,8 @@ export function PremiumAssetPreview({
           {src ? (
             <ProductPreviewImage
               className={clsx(
-                'relative mx-auto inline-flex max-w-full items-center justify-center',
-                compact ? 'max-h-[min(42vh,18rem)] lg:h-full lg:max-h-full' : 'max-h-[min(62vh,40rem)]',
+                'mx-auto flex max-h-full max-w-full items-center justify-center overflow-hidden',
+                compact ? 'h-full w-full' : 'relative inline-flex max-h-[min(62vh,40rem)]',
               )}
               watermarkEnabled={watermarkEnabled}
               protectEnabled
