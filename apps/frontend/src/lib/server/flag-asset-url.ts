@@ -3,6 +3,7 @@
  * Prefers Cloudflare `file_key` + `CLOUDFLARE_R2_PUBLIC_URL`; rewrites legacy Vercel Blob URLs to R2 when keys match on R2.
  */
 
+import { isFlagVideoFormat } from '@/lib/flag-video-formats';
 import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 
@@ -75,6 +76,25 @@ export function galleryVariantThumbCandidates(input: {
     return uniqStrings([...safe, input.fileUrl]);
   }
   return fallbackUrlsForGalleryListThumb(input);
+}
+
+/**
+ * Browser playback URL for MP4/WebM/MOV — includes public `file_url` / R2 key
+ * (stream preview on site; download stays gated separately).
+ */
+export function galleryVariantPlaybackCandidates(input: {
+  format?: string | null;
+  premiumTierRaw?: string | null;
+  fileUrl?: string | null | undefined;
+  previewUrl?: string | null | undefined;
+  thumbnailUrl?: string | null | undefined;
+}): string[] {
+  const fmt = (input.format ?? '').trim().toLowerCase();
+  if (!isFlagVideoFormat(fmt)) {
+    return galleryVariantThumbCandidates(input);
+  }
+  const safe = uniqStrings([input.previewUrl, input.thumbnailUrl]);
+  return uniqStrings([...safe, input.fileUrl]);
 }
 
 /**

@@ -8,6 +8,7 @@ import {
   flagThumbPlaceholderForFileId,
 } from '@/lib/flag-thumbnail-fallback';
 import {
+  galleryVariantPlaybackCandidates,
   galleryVariantThumbCandidates,
   resolvedFlagPublicHref,
 } from '@/lib/server/flag-asset-url';
@@ -96,16 +97,25 @@ export async function fetchFlagVideosFromDb(pool: Pool): Promise<FlagVideoSummar
     const code =
       r.iso_alpha_2?.trim()?.toUpperCase() || getCountryCode(countryName)?.toUpperCase() || null;
 
-    const thumb = resolvedFlagPublicHref({
+    const mediaInput = {
+      format: r.format,
+      premiumTierRaw: 'paid' as const,
+      previewUrl: r.preview_url,
+      thumbnailUrl: r.thumbnail_url,
+      fileUrl: r.file_url,
+    };
+
+    const videoUrl = resolvedFlagPublicHref({
       fileKey: r.file_key,
-      fallbackRawUrls: galleryVariantThumbCandidates({
-        format: r.format,
-        premiumTierRaw: 'paid',
-        previewUrl: r.preview_url,
-        thumbnailUrl: r.thumbnail_url,
-        fileUrl: r.file_url,
-      }),
+      fallbackRawUrls: galleryVariantPlaybackCandidates(mediaInput),
     });
+
+    const poster = resolvedFlagPublicHref({
+      fileKey: r.file_key,
+      fallbackRawUrls: galleryVariantThumbCandidates(mediaInput),
+    });
+
+    if (!videoUrl) continue;
 
     const ag = r.asset_group_key?.trim();
     const productSlug = ag ? slugFromAssetGroupKey(ag) : `nf-${r.id.toLowerCase()}`;
@@ -118,7 +128,8 @@ export async function fetchFlagVideosFromDb(pool: Pool): Promise<FlagVideoSummar
       countrySlug,
       countryCode: code,
       format: fmt.toUpperCase(),
-      thumbnail: thumb || FLAG_THUMB_PLACEHOLDER_DATA_URL,
+      videoUrl: videoUrl || '',
+      thumbnail: poster && poster !== videoUrl ? poster : FLAG_THUMB_PLACEHOLDER_DATA_URL,
       sortKey: sortKeyForRow(r),
     });
   }

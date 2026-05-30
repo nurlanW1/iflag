@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Play } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { FlagVideoPreview } from '@/components/media/FlagVideoPreview';
 import type { FlagVideoSummary } from '@/types/flag-video-gallery';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
 
@@ -11,7 +11,9 @@ type Props = {
 };
 
 export function FlagVideoGalleryGrid({ videos }: Props) {
-  if (!videos.length) {
+  const playable = videos.filter((v) => v.videoUrl.trim().length > 0);
+
+  if (!playable.length) {
     return (
       <div className="rounded-2xl border border-dashed border-stone-200 bg-white px-6 py-14 text-center text-stone-600">
         <p className="text-base font-medium text-stone-800">No flag videos published yet.</p>
@@ -22,7 +24,7 @@ export function FlagVideoGalleryGrid({ videos }: Props) {
 
   return (
     <div className={marketplaceProductCardGridClasses}>
-      {videos.map((v, idx) => (
+      {playable.map((v, idx) => (
         <motion.div
           key={v.id}
           initial={{ opacity: 0, y: 8 }}
@@ -34,23 +36,19 @@ export function FlagVideoGalleryGrid({ videos }: Props) {
             className="group block overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_4px_14px_-8px_rgba(15,23,42,0.14)] transition-all hover:-translate-y-0.5 hover:border-[#2563eb]/40 hover:shadow-[0_8px_22px_-10px_rgba(15,23,42,0.18)]"
           >
             <div className="relative aspect-video overflow-hidden bg-stone-900">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={v.thumbnail}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                className="h-full w-full object-cover opacity-90 transition duration-300 group-hover:scale-[1.02] group-hover:opacity-100"
+              <FlagVideoPreview
+                src={v.videoUrl}
+                title={v.title}
+                poster={v.thumbnail}
+                format={v.format}
+                playOverlay
+                hoverPreview
+                className="absolute inset-0"
               />
-              <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25 transition group-hover:bg-black/15">
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-[#2563eb] shadow-md">
-                  <Play size={20} className="ml-0.5" fill="currentColor" aria-hidden />
-                </span>
-              </span>
-              <span className="absolute left-2 top-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+              <span className="pointer-events-none absolute left-2 top-2 z-10 rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
                 {v.format}
               </span>
-              <span className="absolute right-2 top-2 rounded-md bg-amber-400/95 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-950">
+              <span className="pointer-events-none absolute right-2 top-2 z-10 rounded-md bg-amber-400/95 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-950">
                 Paid
               </span>
             </div>

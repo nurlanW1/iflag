@@ -10,6 +10,7 @@ import { isSafePublicFlagObjectPath, resolveGalleryAssetUrl } from '@/lib/server
 import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
 import {
   fallbackUrlsForGalleryListThumb,
+  galleryVariantPlaybackCandidates,
   galleryVariantThumbCandidates,
   resolvedFlagPublicHref,
 } from '@/lib/server/flag-asset-url';
@@ -560,15 +561,18 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
   }
 
   function previewUrlForFlagRow(r: FlagFileRow): string {
+    const mediaInput = {
+      format: r.format,
+      premiumTierRaw: r.premium_tier,
+      previewUrl: r.preview_url,
+      thumbnailUrl: r.thumbnail_url,
+      fileUrl: r.file_url,
+    };
     return resolvedFlagPublicHref({
       fileKey: r.file_key,
-      fallbackRawUrls: galleryVariantThumbCandidates({
-        format: r.format,
-        premiumTierRaw: r.premium_tier,
-        previewUrl: r.preview_url,
-        thumbnailUrl: r.thumbnail_url,
-        fileUrl: r.file_url,
-      }),
+      fallbackRawUrls: isFlagVideoFormat(r.format)
+        ? galleryVariantPlaybackCandidates(mediaInput)
+        : galleryVariantThumbCandidates(mediaInput),
     });
   }
 

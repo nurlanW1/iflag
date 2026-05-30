@@ -9,3 +9,23 @@ export function isFlagVideoFormat(format: string | null | undefined): boolean {
 export function isFlagVideoDesignType(designType: string | null | undefined): boolean {
   return (designType ?? '').trim().toLowerCase() === 'video';
 }
+
+/** Public CDN href points at a streamable video master (not a raster poster). */
+export function hrefLooksLikeFlagVideo(href: string | null | undefined): boolean {
+  const s = href?.trim();
+  if (!s) return false;
+  try {
+    const path = new URL(s, 'https://iflag.invalid').pathname;
+    const ext = path.split('.').pop()?.split('?')[0] ?? '';
+    return isFlagVideoFormat(ext);
+  } catch {
+    return /\.(mp4|webm|mov)(\?|#|$)/i.test(s);
+  }
+}
+
+export function mimeForFlagVideoFormat(format: string | null | undefined): string {
+  const f = (format ?? '').trim().toLowerCase();
+  if (f === 'webm') return 'video/webm';
+  if (f === 'mov') return 'video/quicktime';
+  return 'video/mp4';
+}

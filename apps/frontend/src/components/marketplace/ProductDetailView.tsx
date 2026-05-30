@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { PremiumAssetPreview } from '@/components/marketplace/asset-detail/PremiumAssetPreview';
+import { VideoAssetPreview } from '@/components/marketplace/asset-detail/VideoAssetPreview';
+import { productVideoPlayback } from '@/lib/marketplace/product-video-playback';
 import type { AssetSeoPayload } from '@/lib/seo/asset-metadata';
 import { marketplaceProductCanonicalPath } from '@/lib/seo/marketplace-product-metadata';
 import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/structured-data';
@@ -92,6 +94,7 @@ export function ProductDetailView({ slug, product }: Props) {
   );
   const uniquePreview = [...new Set(previewImages)];
   const formatHints = dedupedFiles.map((f) => f.format);
+  const videoPlayback = productVideoPlayback(product);
 
   const categoryName = getCategoryById(product.categoryId)?.name ?? 'Flags';
 
@@ -203,18 +206,28 @@ export function ProductDetailView({ slug, product }: Props) {
 
           <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-stretch lg:gap-5 xl:grid-cols-[minmax(0,1fr)_23rem]">
             <div className="flex min-h-0 min-w-0 flex-col space-y-4 lg:min-h-[min(28rem,58vh)] lg:space-y-5">
-              <PremiumAssetPreview
-                className="min-h-[min(20rem,52vh)] lg:min-h-0 lg:flex-1"
-                productTitle={product.title}
-                previewUrls={uniquePreview}
-                formatHints={formatHints}
-                useTransparencyBackdrop={formatHintsMayHaveAlpha(formatHints)}
-                variant="gallery"
-                density="compact"
-                caption={undefined}
-                formatCount={undefined}
-                watermarkEnabled={shouldWatermarkFlagPreview({ isPremiumDesign: paid })}
-              />
+              {videoPlayback ? (
+                <VideoAssetPreview
+                  className="min-h-[min(20rem,52vh)] lg:min-h-0 lg:flex-1"
+                  productTitle={product.title}
+                  videoUrl={videoPlayback.videoUrl}
+                  posterUrl={videoPlayback.posterUrl}
+                  format={videoPlayback.format}
+                />
+              ) : (
+                <PremiumAssetPreview
+                  className="min-h-[min(20rem,52vh)] lg:min-h-0 lg:flex-1"
+                  productTitle={product.title}
+                  previewUrls={uniquePreview}
+                  formatHints={formatHints}
+                  useTransparencyBackdrop={formatHintsMayHaveAlpha(formatHints)}
+                  variant="gallery"
+                  density="compact"
+                  caption={undefined}
+                  formatCount={undefined}
+                  watermarkEnabled={shouldWatermarkFlagPreview({ isPremiumDesign: paid })}
+                />
+              )}
 
               {siblingPublic.length > 0 ? (
                 <CountryDesignVariantRibbon variants={siblingPublic} galleryHref={variantGalleryHref} />

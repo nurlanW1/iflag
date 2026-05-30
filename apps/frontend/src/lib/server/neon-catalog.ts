@@ -6,8 +6,10 @@
 import { SEED_IDS } from '@/services/marketplace/seed';
 import type { Product } from '@/types/marketplace';
 import { getDb } from '@/lib/server/db';
+import { isFlagVideoFormat } from '@/lib/flag-video-formats';
 import {
   fallbackUrlsForGalleryListThumb,
+  galleryVariantPlaybackCandidates,
   resolvedFlagPublicHref,
 } from '@/lib/server/flag-asset-url';
 import {
@@ -19,14 +21,18 @@ import {
 export type CountryFlagCatalogRow = NeonLikeFlagRow;
 
 function thumbForCatalogRow(row: NeonLikeFlagRow): string | null {
+  const mediaInput = {
+    format: row.format,
+    premiumTierRaw: row.premium_tier,
+    fileUrl: row.file_url,
+    previewUrl: row.preview_url,
+    thumbnailUrl: row.thumbnail_url,
+  };
   const href = resolvedFlagPublicHref({
     fileKey: row.file_key,
-    fallbackRawUrls: fallbackUrlsForGalleryListThumb({
-      premiumTierRaw: row.premium_tier,
-      fileUrl: row.file_url,
-      previewUrl: row.preview_url,
-      thumbnailUrl: row.thumbnail_url,
-    }),
+    fallbackRawUrls: isFlagVideoFormat(row.format)
+      ? galleryVariantPlaybackCandidates(mediaInput)
+      : fallbackUrlsForGalleryListThumb(mediaInput),
   });
   return href?.trim() ? href : null;
 }
