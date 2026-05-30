@@ -11,7 +11,6 @@ import { toPublicProduct } from '@/lib/marketplace/product-mapper';
 import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 import { dedupePublicProductFiles, isPaidCatalogProduct } from '@/lib/marketplace/catalog-utils';
 import { productShareImageUrl } from '@/lib/seo/product-share-image';
-import { NeonAssetDownloads } from '@/components/marketplace/NeonAssetDownloads';
 import type { Product } from '@/types/marketplace';
 
 import { CountryDesignVariantRibbon } from '@/components/marketplace/CountryDesignVariantRibbon';

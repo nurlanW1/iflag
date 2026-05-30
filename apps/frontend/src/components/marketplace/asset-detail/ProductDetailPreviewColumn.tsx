@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { firstSelectableStockFileId } from '@/lib/marketplace/canonical-stock-formats';
 import clsx from 'clsx';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
 import { hrefLooksLikeNonBrowserMaster, pickFormatPreviewUrl } from '@/lib/flag-preview-display';
@@ -48,6 +49,13 @@ export function ProductDetailPreviewColumn({
   videoPlayback,
 }: Props) {
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
+
+  const defaultFileId = useMemo(() => firstSelectableStockFileId(dedupedFiles), [dedupedFiles]);
+
+  useEffect(() => {
+    if (!defaultFileId) return;
+    setSelectedFileId((cur) => (cur && dedupedFiles.some((f) => f.id === cur) ? cur : defaultFileId));
+  }, [defaultFileId, dedupedFiles]);
 
   const defaultPreviewUrls = useMemo(
     () =>
@@ -107,11 +115,11 @@ export function ProductDetailPreviewColumn({
       <aside className="flex min-h-0 w-full max-w-xl flex-col justify-self-stretch lg:max-w-none">
         <div
           className={clsx(
-            'flex min-h-[min(20rem,52vh)] flex-1 flex-col overflow-hidden max-lg:border-0 max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none lg:rounded-xl lg:border lg:border-slate-200/80 lg:bg-white lg:shadow-sm',
+            'flex min-h-[min(20rem,52vh)] flex-1 flex-col max-lg:border-0 max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none lg:max-h-[min(28rem,58vh)] lg:rounded-xl lg:border lg:border-slate-200/80 lg:bg-white lg:shadow-sm',
             PDP_PREVIEW_HEIGHT_CLASS,
           )}
         >
-          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3.5 sm:p-4">
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3.5 sm:gap-4 sm:p-4">
             <NeonAssetDownloads
               cartProduct={cartProduct}
               files={dedupedFiles}

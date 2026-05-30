@@ -100,7 +100,17 @@ export function StockDownloadPanel({
   const sel = controlled ? (selectedId ?? '') : internalSel;
   const setSel = controlled ? onSelectId : setInternalSel;
 
-  const active = sorted.find((f) => f.id === sel);
+  const effectiveSel =
+    sel && sorted.some((f) => f.id === sel) ? sel : (firstId ?? '');
+
+  useEffect(() => {
+    if (!controlled || !onSelectId || !firstId) return;
+    if (!sel || !sorted.some((f) => f.id === sel)) {
+      onSelectId(firstId);
+    }
+  }, [controlled, onSelectId, firstId, sel, sorted]);
+
+  const active = sorted.find((f) => f.id === effectiveSel);
   const [busy, setBusy] = useState(false);
 
   const isPreviewSlot =
@@ -240,15 +250,13 @@ export function StockDownloadPanel({
 
   const renderPanel = (formatsHeadingId: string) => (
     <div
-      className={clsx(
-        compactLayout ? 'flex h-full min-h-0 flex-col justify-between gap-3' : 'flex flex-col gap-4',
-      )}
+      className={clsx(compactLayout ? 'flex min-h-0 flex-col gap-3' : 'flex flex-col gap-4')}
     >
       <CanonicalFormatSlots
         headingId={formatsHeadingId}
         files={sorted}
-        selectedId={sel}
-        onSelect={setSel}
+        selectedId={effectiveSel}
+        onSelect={(id) => setSel?.(id)}
         compact={compactLayout}
       />
       {actionBlock}
