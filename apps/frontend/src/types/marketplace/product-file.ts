@@ -23,6 +23,11 @@ export interface ProductFile {
    * For pro tier this must stay null/undefined in API responses unless authorized.
    */
   publicUrl: string | null;
+  /**
+   * Browser-safe preview for PDP format picker (PNG/JPG/SVG/WebP/video).
+   * May be set for pro tier when preview/thumbnail bytes are already public; never used for download gating.
+   */
+  displayPreviewUrl?: string | null;
   fileName: string;
   mimeType: string;
   bytes: number | null;

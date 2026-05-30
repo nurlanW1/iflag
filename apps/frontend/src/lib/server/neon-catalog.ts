@@ -7,11 +7,7 @@ import { SEED_IDS } from '@/services/marketplace/seed';
 import type { Product } from '@/types/marketplace';
 import { getDb } from '@/lib/server/db';
 import { isFlagVideoFormat } from '@/lib/flag-video-formats';
-import {
-  fallbackUrlsForGalleryListThumb,
-  galleryVariantPlaybackCandidates,
-  resolvedFlagPublicHref,
-} from '@/lib/server/flag-asset-url';
+import { galleryVariantDisplayHref } from '@/lib/server/flag-asset-url';
 import {
   productsFromNeonLikeRows,
   slugFromAssetGroupKey,
@@ -28,11 +24,13 @@ function thumbForCatalogRow(row: NeonLikeFlagRow): string | null {
     previewUrl: row.preview_url,
     thumbnailUrl: row.thumbnail_url,
   };
-  const href = resolvedFlagPublicHref({
+  const href = galleryVariantDisplayHref({
+    format: row.format,
+    premiumTierRaw: row.premium_tier,
     fileKey: row.file_key,
-    fallbackRawUrls: isFlagVideoFormat(row.format)
-      ? galleryVariantPlaybackCandidates(mediaInput)
-      : fallbackUrlsForGalleryListThumb(mediaInput),
+    fileUrl: row.file_url,
+    previewUrl: row.preview_url,
+    thumbnailUrl: row.thumbnail_url,
   });
   return href?.trim() ? href : null;
 }

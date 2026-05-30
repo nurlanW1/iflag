@@ -10,12 +10,9 @@ import { hrefLooksLikeFlagVideo, isFlagVideoFormat, isFlagVideoDesignType } from
 import { slugFromAssetGroupKey } from '@/lib/marketplace/group-flag-products';
 import { joinBackendApiPath, resolveBackendApiBase } from '@/lib/auth/backend-url';
 import { resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
-import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
-import {
-  galleryVariantPlaybackCandidates,
-  galleryVariantThumbCandidates,
-  resolvedFlagPublicHref,
-} from '@/lib/server/flag-asset-url';
+import { flagThumbPlaceholderForFileId } from '@/lib/flag-thumbnail-fallback';
+import { hrefLooksLikeNonBrowserMaster, pickFormatPreviewUrl } from '@/lib/flag-preview-display';
+import { galleryVariantDisplayHref } from '@/lib/server/flag-asset-url';
 import type { CountryGalleryPayload } from '@/lib/server/gallery-from-db';
 import { formatToCategory, isPackFallbackFlagThumbnail } from '@/lib/server/gallery-from-db';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
@@ -45,26 +42,15 @@ type BackendFlagRow = {
 type FormatRow = CountryGalleryPayload['variants'][number]['formats'][number];
 
 function previewForRow(row: BackendFlagRow): string {
-  const mediaInput = {
+  const href = galleryVariantDisplayHref({
     format: row.format,
     premiumTierRaw: row.premium_tier,
+    fileKey: row.file_key,
+    fileUrl: row.file_url,
     previewUrl: row.preview_url,
     thumbnailUrl: row.thumbnail_url,
-    fileUrl: row.file_url,
-  };
-  const href = resolvedFlagPublicHref({
-    fileKey: row.file_key,
-    fallbackRawUrls: isFlagVideoFormat(row.format)
-      ? galleryVariantPlaybackCandidates(mediaInput)
-      : galleryVariantThumbCandidates(mediaInput),
   });
-  if (href) return resolveGalleryAssetUrl(href);
-  const key = row.file_key?.trim();
-  if (key) {
-    const built = getPublicR2FileUrl(key);
-    if (built) return resolveGalleryAssetUrl(built);
-  }
-  return '';
+  return href ? resolveGalleryAssetUrl(href) : '';
 }
 
 function designBucketKey(row: BackendFlagRow): string {
@@ -78,19 +64,28 @@ function designBucketKey(row: BackendFlagRow): string {
 
 function pickVariantCover(
   formats: FormatRow[],
-  builderThumb: string,
+  designWebp: string | undefined,
   folderWebp: string,
   variantId: string,
 ): string {
-  const raster = formats
-    .map((f) => f.previewUrl)
-    .find((u) => u && !hrefLooksLikeFlagVideo(u) && !isPackFallbackFlagThumbnail(u));
-  if (raster) return raster;
-  if (builderThumb && !isPackFallbackFlagThumbnail(builderThumb)) return builderThumb;
+  const fallbacks = [designWebp, folderWebp].filter(
+    (u): u is string =>
+      Boolean(u?.trim()) &&
+      !isPackFallbackFlagThumbnail(u) &&
+      !hrefLooksLikeNonBrowserMaster(u),
+  );
+  const picked = pickFormatPreviewUrl(
+    formats.map((f) => ({
+      format: f.formatCode,
+      formatCode: f.formatCode,
+      previewUrl: f.previewUrl,
+    })),
+    fallbacks,
+  );
+  if (picked) return picked;
   const video = formats.map((f) => f.previewUrl).find((u) => u && hrefLooksLikeFlagVideo(u));
   if (video) return video;
-  const any = formats.map((f) => f.previewUrl).find((u) => u && u.trim());
-  return any || folderWebp || '';
+  return flagThumbPlaceholderForFileId(variantId);
 }
 
 export async function fetchCountryGalleryFromBackendApi(
@@ -130,7 +125,17 @@ export async function fetchCountryGalleryFromBackendApi(
   };
 
   const builders = new Map<string, VariantBuilder>();
+  const webpThumbByDesign = new Map<string, string>();
   let variantIdx = 0;
+
+  for (const row of rows) {
+    if (row.format.toLowerCase() === 'webp') {
+      const p = previewForRow(row);
+      if (p && !isPackFallbackFlagThumbnail(p)) {
+        webpThumbByDesign.set(designBucketKey(row), p);
+      }
+    }
+  }
 
   for (const row of rows) {
     if (isPreviewOnlyFormat(row.format)) continue;
@@ -201,11 +206,11 @@ export async function fetchCountryGalleryFromBackendApi(
     }
   }
 
-  const variants = [...builders.values()]
-    .filter((b) => b.formats.length > 0)
-    .map((b) => {
+  const variants = Array.from(builders.entries())
+    .filter(([, b]) => b.formats.length > 0)
+    .map(([bucketKey, b]) => {
       const sortedFormats = [...b.formats].sort((a, c) => a.format.localeCompare(c.format));
-      const cover = pickVariantCover(sortedFormats, b.thumbnail, webpCover, b.id);
+      const cover = pickVariantCover(sortedFormats, webpThumbByDesign.get(bucketKey), webpCover, b.id);
       const hasVideo = sortedFormats.some((f) => f.category === 'video');
       const hasStill = sortedFormats.some(
         (f) => f.category === 'raster' || f.category === 'vector',

@@ -12,10 +12,11 @@ import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
 import { slugFromAssetGroupKey } from '@/lib/marketplace/group-flag-products';
 import { isSafePublicFlagObjectPath, resolveGalleryAssetUrl } from '@/lib/server/blob-site-proxy';
 import { getPublicR2FileUrl } from '@/lib/server/cloudflare-r2';
+import { hrefLooksLikeNonBrowserMaster, pickFormatPreviewUrl } from '@/lib/flag-preview-display';
 import {
   fallbackUrlsForGalleryListThumb,
   galleryVariantPlaybackCandidates,
-  galleryVariantThumbCandidates,
+  galleryVariantDisplayHref,
   resolvedFlagPublicHref,
 } from '@/lib/server/flag-asset-url';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
@@ -542,21 +543,28 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
 
   function pickCountryVariantCover(
     sortedFormats: FormatRow[],
-    builderThumb: string,
+    designWebp: string | undefined,
     folderWebp: string,
     variantId: string,
   ): string {
-    const raster = sortedFormats
-      .map((f) => f.previewUrl)
-      .find((u) => u && !isUnresolvedThumb(u) && !hrefLooksLikeFlagVideo(u));
-    if (raster) return raster;
-    if (!isUnresolvedThumb(builderThumb)) return builderThumb;
+    const fallbacks = [designWebp, folderWebp].filter((u): u is string => {
+      const s = u?.trim() ?? '';
+      return Boolean(s) && !isUnresolvedThumb(s) && !hrefLooksLikeNonBrowserMaster(s);
+    });
+    const picked = pickFormatPreviewUrl(
+      sortedFormats.map((f) => ({
+        format: f.formatCode,
+        formatCode: f.formatCode,
+        previewUrl: f.previewUrl,
+      })),
+      fallbacks,
+    );
+    if (picked) return picked;
     const video = sortedFormats
       .map((f) => f.previewUrl)
       .find((u) => u && hrefLooksLikeFlagVideo(u));
     if (video) return video;
-    const any = sortedFormats.map((f) => f.previewUrl).find((u) => u && !isUnresolvedThumb(u));
-    return any || folderWebp || flagThumbPlaceholderForFileId(variantId);
+    return flagThumbPlaceholderForFileId(variantId);
   }
 
   function variantDisplayType(builderType: string, sortedFormats: FormatRow[]): string {
@@ -609,29 +617,24 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
   }
 
   function previewUrlForFlagRow(r: FlagFileRow): string {
-    const mediaInput = {
+    return galleryVariantDisplayHref({
       format: r.format,
       premiumTierRaw: r.premium_tier,
+      fileKey: r.file_key,
+      fileUrl: r.file_url,
       previewUrl: r.preview_url,
       thumbnailUrl: r.thumbnail_url,
-      fileUrl: r.file_url,
-    };
-    return resolvedFlagPublicHref({
-      fileKey: r.file_key,
-      fallbackRawUrls: isFlagVideoFormat(r.format)
-        ? galleryVariantPlaybackCandidates(mediaInput)
-        : galleryVariantThumbCandidates(mediaInput),
     });
   }
 
+  const webpThumbByDesign = new Map<string, string>();
   let folderWebpThumb = '';
   for (const r of fRes.rows) {
     if (r.format?.trim().toLowerCase() !== 'webp') continue;
     const u = previewUrlForFlagRow(r);
-    if (u && !isUnresolvedThumb(u)) {
-      folderWebpThumb = u;
-      break;
-    }
+    if (!u || isUnresolvedThumb(u)) continue;
+    webpThumbByDesign.set(designBucketKey(r), u);
+    if (!folderWebpThumb) folderWebpThumb = u;
   }
 
   for (const r of fRes.rows) {
@@ -687,7 +690,11 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
     });
 
     const score = thumbScoreForFormat(r.format);
-    if (score > builder.thumbScore) {
+    const thumbOk =
+      previewUrl &&
+      !isUnresolvedThumb(previewUrl) &&
+      !hrefLooksLikeNonBrowserMaster(previewUrl);
+    if (thumbOk && score > builder.thumbScore) {
       builder.thumbScore = score;
       builder.thumbnail = previewUrl;
     } else if (
@@ -699,16 +706,30 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
     }
   }
 
-  const variants: CountryGalleryPayload['variants'] = Array.from(builders.values())
-    .filter((b) => b.formats.length > 0)
-    .map((b) => {
+  for (const [bucketKey, builder] of builders) {
+    if (builder.thumbnail && !isUnresolvedThumb(builder.thumbnail)) continue;
+    const webp = webpThumbByDesign.get(bucketKey);
+    if (webp) {
+      builder.thumbnail = webp;
+      builder.thumbScore = Math.max(builder.thumbScore, thumbScoreForFormat('webp'));
+    }
+  }
+
+  const variants: CountryGalleryPayload['variants'] = Array.from(builders.entries())
+    .filter(([, b]) => b.formats.length > 0)
+    .map(([bucketKey, b]) => {
     const sortedFormats = [...b.formats].sort((a, c) => {
       const ai = FORMAT_DISPLAY_ORDER[a.formatCode] ?? 9;
       const ci = FORMAT_DISPLAY_ORDER[c.formatCode] ?? 9;
       if (ai !== ci) return ai - ci;
       return a.file.localeCompare(c.file);
     });
-    const cover = pickCountryVariantCover(sortedFormats, b.thumbnail, folderWebpThumb, b.id);
+    const cover = pickCountryVariantCover(
+      sortedFormats,
+      webpThumbByDesign.get(bucketKey),
+      folderWebpThumb,
+      b.id,
+    );
     return {
       id: b.id,
       productSlug: b.productSlug,

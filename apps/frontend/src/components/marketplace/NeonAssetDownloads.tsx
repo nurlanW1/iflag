@@ -15,6 +15,8 @@ type Props = {
   requiresEntitlement?: boolean;
   /** Denser sidebar + format rail for marketplace PDP */
   compactLayout?: boolean;
+  selectedId?: string | null;
+  onSelectId?: (fileId: string) => void;
 };
 
 /** Neon / assets PDP — thin wrapper around unified stock download panel. */

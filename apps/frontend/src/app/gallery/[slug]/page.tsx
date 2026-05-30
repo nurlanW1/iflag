@@ -16,6 +16,7 @@ import {
 } from '@/lib/flag-thumbnail-fallback';
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
+import { hrefLooksLikeNonBrowserMaster, pickFormatPreviewUrl } from '@/lib/flag-preview-display';
 
 interface Variant {
   id: string;
@@ -235,7 +236,19 @@ export default function CountryHubPage() {
                 .filter(Boolean)
                 .slice(0, 4)
                 .join(' · ');
-              const thumb = v.thumbnail || FLAG_THUMB_PLACEHOLDER_DATA_URL;
+              const thumb =
+                pickFormatPreviewUrl(
+                  v.formats.map((f) => ({
+                    format: f.formatCode ?? f.format,
+                    formatCode: f.formatCode,
+                    previewUrl: f.previewUrl,
+                  })),
+                  [v.thumbnail, webpCover].filter(
+                    (u): u is string => Boolean(u?.trim()) && !hrefLooksLikeNonBrowserMaster(u),
+                  ),
+                ) ||
+                v.thumbnail ||
+                FLAG_THUMB_PLACEHOLDER_DATA_URL;
               const videoFromFormat = v.formats
                 .map((f) => f.previewUrl?.trim())
                 .find((u) => u && hrefLooksLikeFlagVideo(u));
@@ -285,6 +298,18 @@ export default function CountryHubPage() {
                             onError={(e) => {
                               const el = e.currentTarget;
                               el.onerror = null;
+                              const rasterFallback = pickFormatPreviewUrl(
+                                v.formats.map((f) => ({
+                                  format: f.formatCode ?? f.format,
+                                  formatCode: f.formatCode,
+                                  previewUrl: f.previewUrl,
+                                })),
+                                [webpCover].filter(Boolean) as string[],
+                              );
+                              if (rasterFallback && el.src !== rasterFallback) {
+                                el.src = rasterFallback;
+                                return;
+                              }
                               if (!isPremium && hasWebpCover && webpCover && el.src !== webpCover) {
                                 el.src = webpCover;
                                 return;

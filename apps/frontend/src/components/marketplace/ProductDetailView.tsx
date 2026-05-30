@@ -2,8 +2,7 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { PremiumAssetPreview } from '@/components/marketplace/asset-detail/PremiumAssetPreview';
-import { VideoAssetPreview } from '@/components/marketplace/asset-detail/VideoAssetPreview';
+import { ProductDetailPreviewColumn } from '@/components/marketplace/asset-detail/ProductDetailPreviewColumn';
 import { productVideoPlayback } from '@/lib/marketplace/product-video-playback';
 import type { AssetSeoPayload } from '@/lib/seo/asset-metadata';
 import { marketplaceProductCanonicalPath } from '@/lib/seo/marketplace-product-metadata';
@@ -56,9 +55,6 @@ function formatHintsMayHaveAlpha(hints: string[]): boolean {
   });
 }
 
-/** Desktop preview + sidebar height (Tailwind arbitrary value — keep in sync). */
-const PDP_PREVIEW_HEIGHT_CLASS = 'lg:h-[min(28rem,58vh)] lg:max-h-[min(28rem,58vh)] lg:min-h-0';
-
 /** PDP — gallery-aligned preview + sticky download panel. */
 export function ProductDetailView({ slug, product }: Props) {
   const publicProduct = toPublicProduct(product);
@@ -92,10 +88,6 @@ export function ProductDetailView({ slug, product }: Props) {
     currency: product.currency,
   };
 
-  const previewImages = [publicProduct.previewUrl, publicProduct.thumbnailUrl].filter(
-    (u): u is string => typeof u === 'string' && u.length > 0,
-  );
-  const uniquePreview = [...new Set(previewImages)];
   const formatHints = dedupedFiles.map((f) => f.format);
   const videoPlayback = productVideoPlayback(product);
 
@@ -207,67 +199,29 @@ export function ProductDetailView({ slug, product }: Props) {
             </div>
           </header>
 
-          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,1fr)_23rem]">
-            <div className="flex min-h-0 min-w-0 flex-col space-y-4 lg:space-y-5">
-              <div
-                className={clsx(
-                  'max-h-[min(52vh,28rem)] min-h-[min(20rem,52vh)] shrink-0 overflow-hidden',
-                  PDP_PREVIEW_HEIGHT_CLASS,
-                )}
-              >
-                {videoPlayback ? (
-                  <VideoAssetPreview
-                    className="h-full min-h-0"
-                    productTitle={product.title}
-                    videoUrl={videoPlayback.videoUrl}
-                    posterUrl={videoPlayback.posterUrl}
-                    format={videoPlayback.format}
-                  />
-                ) : (
-                  <PremiumAssetPreview
-                    className="h-full min-h-0"
-                    productTitle={product.title}
-                    previewUrls={uniquePreview}
-                    formatHints={formatHints}
-                    useTransparencyBackdrop={formatHintsMayHaveAlpha(formatHints)}
-                    variant="gallery"
-                    density="compact"
-                    caption={undefined}
-                    formatCount={undefined}
-                    watermarkEnabled={shouldWatermarkFlagPreview({ isPremiumDesign: paid })}
-                  />
-                )}
-              </div>
+          <div className="mt-4 space-y-4 lg:space-y-5">
+            <ProductDetailPreviewColumn
+              productTitle={product.title}
+              publicProduct={publicProduct}
+              catalogFiles={product.files}
+              dedupedFiles={dedupedFiles}
+              formatHints={formatHints}
+              useTransparencyBackdrop={formatHintsMayHaveAlpha(formatHints)}
+              watermarkEnabled={shouldWatermarkFlagPreview({ isPremiumDesign: paid })}
+              paid={paid}
+              cartProduct={cartProduct}
+              licenseSummary={licenseSummary}
+              neonDownloads={neonDownloads}
+              productId={neonDownloads ? undefined : product.id}
+              previewFilePublic={neonDownloads ? null : previewFilePublic}
+              videoPlayback={videoPlayback}
+            />
 
-              {siblingPublic.length > 0 ? (
-                <CountryDesignVariantRibbon variants={siblingPublic} galleryHref={variantGalleryHref} />
-              ) : null}
+            {siblingPublic.length > 0 ? (
+              <CountryDesignVariantRibbon variants={siblingPublic} galleryHref={variantGalleryHref} />
+            ) : null}
 
-              {tagTrail}
-            </div>
-
-            <aside className="flex min-h-0 w-full max-w-xl flex-col justify-self-stretch lg:max-w-none">
-              <div
-                className={clsx(
-                  'flex min-h-[min(20rem,52vh)] flex-1 flex-col overflow-hidden max-lg:border-0 max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none lg:rounded-xl lg:border lg:border-slate-200/80 lg:bg-white lg:shadow-sm',
-                  PDP_PREVIEW_HEIGHT_CLASS,
-                )}
-              >
-                <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3.5 sm:p-4">
-                <NeonAssetDownloads
-                  cartProduct={cartProduct}
-                  files={dedupedFiles}
-                  licenseSummary={licenseSummary}
-                  assetLabel={product.title}
-                  productSlug={product.slug}
-                  productId={neonDownloads ? undefined : product.id}
-                  previewFile={neonDownloads ? undefined : previewFilePublic}
-                  requiresEntitlement={neonDownloads ? undefined : paid}
-                  compactLayout
-                />
-                </div>
-              </div>
-            </aside>
+            {tagTrail}
           </div>
         </div>
       </main>

@@ -6,6 +6,7 @@
 import { createHash } from 'crypto';
 import type { Product, ProductFile, ProductLicenseInfo, ProductSeo } from '@/types/marketplace';
 import { ONE_TIME_STOCK } from '@/lib/marketing/pricing-config';
+import { hrefLooksLikeNonBrowserMaster, NON_BROWSER_MASTER_FORMATS } from '@/lib/flag-preview-display';
 import { isPreviewOnlyFormat } from '@/lib/server/flag-preview-formats';
 import { categoryIdForFlagFileFormat } from '@/lib/marketplace/catalog-video';
 import { isFlagVideoFormat } from '@/lib/flag-video-formats';
@@ -175,6 +176,16 @@ function pickPreviewRow(rows: NeonLikeFlagRow[], thumbForRow: (r: NeonLikeFlagRo
   return sorted[0]!;
 }
 
+/** Browser `<img>` / PDP preview URL — raster & video only (not EPS/PDF masters). */
+function browserDisplayPreviewUrl(row: NeonLikeFlagRow, thumb: string | null): string | null {
+  const fmt = row.format.toLowerCase();
+  if (NON_BROWSER_MASTER_FORMATS.has(fmt)) return null;
+  if (!['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(fmt) && !isFlagVideoFormat(fmt)) return null;
+  const u = thumb?.trim() ?? '';
+  if (!u || hrefLooksLikeNonBrowserMaster(u)) return null;
+  return u;
+}
+
 function mergeTagSets(rows: NeonLikeFlagRow[]): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
@@ -271,6 +282,7 @@ function soloRowToProduct(
   const file: ProductFile = {
     ...rowToProductFile(row, row.id, 0),
     publicUrl: previewForFile,
+    displayPreviewUrl: browserDisplayPreviewUrl(row, thumb),
   };
 
   const label = (row.title?.trim() || row.variant_name?.trim() || row.file_name).trim();
@@ -344,6 +356,7 @@ function groupedRowsToProduct(
 
   let maxPrice = 0;
   let anyPaid = false;
+  let freeDownloadUrl: string | null = null;
   const files: ProductFile[] = [];
   rows.forEach((row, idx) => {
     if (isPreviewOnlyFormat(row.format)) return;
@@ -356,9 +369,14 @@ function groupedRowsToProduct(
     const rowThumb = deps.thumbForRow(row);
     const publicUrlForPreview = deps.publicPreviewUrlForRow(row, rowThumb);
     const previewForFile = isFree && imgLike ? publicUrlForPreview : null;
+    if (previewForFile && !freeDownloadUrl) freeDownloadUrl = previewForFile;
 
     const base = rowToProductFile(row, productId, idx);
-    files.push({ ...base, publicUrl: previewForFile });
+    files.push({
+      ...base,
+      publicUrl: previewForFile,
+      displayPreviewUrl: browserDisplayPreviewUrl(row, rowThumb),
+    });
 
     const rawPc = row.price_cents ?? (isFree ? 0 : ONE_TIME_STOCK.displayCents);
     const pc = isFree ? Math.max(0, rawPc) : Math.max(ONE_TIME_STOCK.displayCents, rawPc);
@@ -401,9 +419,7 @@ function groupedRowsToProduct(
     tags: tagUnion,
     thumbnailUrl: thumb,
     previewUrl: thumb,
-    freeDownloadUrl: files.some((f) => f.publicUrl != null && String(f.publicUrl).trim() !== '')
-      ? files.find((f) => f.publicUrl != null && String(f.publicUrl).trim() !== '')?.publicUrl ?? null
-      : null,
+    freeDownloadUrl,
     proFileKeys: fkList,
     files,
     license: defaultLicense,
