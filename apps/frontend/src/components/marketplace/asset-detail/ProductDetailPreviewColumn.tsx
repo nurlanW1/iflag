@@ -13,6 +13,7 @@ import type { CartProductRef } from '@/components/marketplace/asset-detail/CopyL
 import type { ProductFile } from '@/types/marketplace';
 import type { PublicProductFile } from '@/lib/marketplace/product-mapper';
 
+/** Preview column only — download sidebar grows with content (no inner scroll on desktop). */
 const PDP_PREVIEW_HEIGHT_CLASS = 'lg:h-[min(28rem,58vh)] lg:max-h-[min(28rem,58vh)] lg:min-h-0';
 
 type Props = {
@@ -83,7 +84,7 @@ export function ProductDetailPreviewColumn({
   }, [selectedFileId, catalogFiles, defaultPreviewUrls]);
 
   return (
-    <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,1fr)_23rem]">
+    <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-start lg:gap-6 xl:grid-cols-[minmax(0,1fr)_28rem]">
       <div
         className={clsx(
           'max-h-[min(52vh,28rem)] min-h-[min(20rem,52vh)] shrink-0 overflow-hidden',
@@ -112,14 +113,9 @@ export function ProductDetailPreviewColumn({
         )}
       </div>
 
-      <aside className="flex min-h-0 w-full max-w-xl flex-col justify-self-stretch lg:max-w-none">
-        <div
-          className={clsx(
-            'flex min-h-[min(20rem,52vh)] flex-1 flex-col max-lg:border-0 max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none lg:max-h-[min(28rem,58vh)] lg:rounded-xl lg:border lg:border-slate-200/80 lg:bg-white lg:shadow-sm',
-            PDP_PREVIEW_HEIGHT_CLASS,
-          )}
-        >
-          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3.5 sm:gap-4 sm:p-4">
+      <aside className="flex w-full flex-col justify-self-stretch lg:max-w-none lg:self-start">
+        <div className="flex flex-col max-lg:min-h-0 max-lg:border-0 max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none lg:rounded-xl lg:border lg:border-slate-200/80 lg:bg-white lg:p-1 lg:shadow-sm">
+          <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-5 lg:overflow-visible">
             <NeonAssetDownloads
               cartProduct={cartProduct}
               files={dedupedFiles}
@@ -130,6 +126,7 @@ export function ProductDetailPreviewColumn({
               previewFile={neonDownloads ? undefined : previewFilePublic}
               requiresEntitlement={neonDownloads ? undefined : paid}
               compactLayout
+              roomyDesktopSidebar
               selectedId={selectedFileId}
               onSelectId={setSelectedFileId}
             />

@@ -15,6 +15,8 @@ type Props = {
   requiresEntitlement?: boolean;
   /** Denser sidebar + format rail for marketplace PDP */
   compactLayout?: boolean;
+  /** PDP desktop: full-size offers + no height clamp (mobile dock stays compact). */
+  roomyDesktopSidebar?: boolean;
   selectedId?: string | null;
   onSelectId?: (fileId: string) => void;
 };

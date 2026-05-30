@@ -44,6 +44,8 @@ type Props = {
   headingId?: string;
   /** Marketplace PDP: tighter spacing to fit preview + buy block in view */
   compactLayout?: boolean;
+  /** Desktop PDP sidebar — use full offer sizing; do not shrink inside preview height. */
+  roomyDesktopSidebar?: boolean;
 };
 
 function downloadPath(productId: string | undefined, fileId: string): string {
@@ -71,6 +73,7 @@ export function StockDownloadPanel({
   onSelectId,
   headingId = 'fmt-heading-stock',
   compactLayout = false,
+  roomyDesktopSidebar = false,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -156,15 +159,16 @@ export function StockDownloadPanel({
   const needsAccountForFree =
     userLoaded && !isSignedIn && (isFreeOfficialFile || isPreviewSlot);
 
-  const actionBlock = !active ? null : showPurchaseOffers ? (
+  const renderActionBlock = (panelCompact: boolean) =>
+    !active ? null : showPurchaseOffers ? (
     <DownloadPurchaseOffers
       assetLabel={assetLabel ?? cartProduct.title}
       productSlug={productSlug}
-      compact={compactLayout}
+      compact={panelCompact}
     />
   ) : needsAccountForFree ? (
     <BillingSidebarAuthGate
-      compact={compactLayout}
+      compact={panelCompact}
       hideCheckoutNote
       message="Create a free account or sign in to download this official flag file."
     />
@@ -244,22 +248,20 @@ export function StockDownloadPanel({
     <DownloadPurchaseOffers
       assetLabel={assetLabel ?? cartProduct.title}
       productSlug={productSlug}
-      compact={compactLayout}
+      compact={panelCompact}
     />
   );
 
-  const renderPanel = (formatsHeadingId: string) => (
-    <div
-      className={clsx(compactLayout ? 'flex min-h-0 flex-col gap-3' : 'flex flex-col gap-4')}
-    >
+  const renderPanel = (formatsHeadingId: string, panelCompact: boolean) => (
+    <div className={clsx(panelCompact ? 'flex min-h-0 flex-col gap-3' : 'flex flex-col gap-4')}>
       <CanonicalFormatSlots
         headingId={formatsHeadingId}
         files={sorted}
         selectedId={effectiveSel}
         onSelect={(id) => setSel?.(id)}
-        compact={compactLayout}
+        compact={panelCompact}
       />
-      {actionBlock}
+      {renderActionBlock(panelCompact)}
       {active && !showPurchaseOffers && !onDirectDownload ? (
         <NeonTrustFoot
           bytesLabel={bytesToHuman(active.bytes)}
@@ -268,19 +270,22 @@ export function StockDownloadPanel({
           eligibilityLineSuffix={isPreviewSlot ? 'Free preview download' : 'Included with your plan'}
         />
       ) : null}
-      <div className={clsx('border-t border-slate-100', compactLayout ? 'pt-3' : 'pt-5')}>
+      <div className={clsx('border-t border-slate-100', panelCompact ? 'pt-3' : 'pt-5')}>
         <CopyLinkCartRow product={cartProduct} />
       </div>
     </div>
   );
 
+  const desktopCompact = roomyDesktopSidebar ? false : compactLayout;
+  const dockCompact = compactLayout;
+
   return (
     <>
-      <div className={clsx('hidden lg:flex lg:min-h-0 lg:flex-1 lg:flex-col')}>{renderPanel(headingId)}</div>
+      <div className="hidden w-full lg:block">{renderPanel(headingId, desktopCompact)}</div>
       <div className="pointer-events-none fixed inset-x-0 bottom-[var(--cookie-banner-h,0px)] z-[110] pb-[max(8px,env(safe-area-inset-bottom))] lg:hidden">
         <div className="pointer-events-auto mx-auto max-w-lg rounded-t-[1.25rem] border border-b-0 border-slate-200/80 bg-white/95 px-4 pb-[max(1rem,calc(env(safe-area-inset-bottom)+12px))] pt-4 shadow-[0_-6px_22px_-10px_rgba(15,23,42,0.14)] backdrop-blur-md backdrop-saturate-150 sm:px-5 sm:pt-5">
           <div className="mx-auto mb-2.5 h-1 w-10 rounded-full bg-slate-200/90 sm:mb-3 sm:w-[2.875rem]" aria-hidden />
-          {renderPanel(`${headingId}-dock`)}
+          {renderPanel(`${headingId}-dock`, dockCompact)}
         </div>
       </div>
     </>
