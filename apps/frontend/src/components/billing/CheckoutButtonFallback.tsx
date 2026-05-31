@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import type { CheckoutKind } from './checkout-button-types';
+import { ONE_TIME_STOCK } from '@/lib/marketing/pricing-config';
 
 type Props = {
   kind: CheckoutKind;
@@ -48,7 +49,7 @@ export function CheckoutButtonFallback({
 
   const checkoutPayload = JSON.stringify({
     kind,
-    productSlug: kind === 'one_time' ? productSlug : undefined,
+    productSlug: kind === 'one_time' ? ONE_TIME_STOCK.productSlug : undefined,
     assetGroupKey: kind === 'one_time' ? assetGroupKey?.trim() || undefined : undefined,
     assetId: kind === 'one_time' ? assetId?.trim() || undefined : undefined,
     fileId: kind === 'one_time' ? fileId?.trim() || undefined : undefined,

@@ -116,9 +116,14 @@ router.post('/checkout', async (req: AuthRequest, res: Response) => {
       const ag = assetGroupKey ? String(assetGroupKey) : null;
       const aid = assetId ? String(assetId) : null;
       const fid = fileId ? String(fileId) : null;
-      const mslug = assetProductSlug ? String(assetProductSlug) : null;
+      let mslug = assetProductSlug ? String(assetProductSlug).trim() : '';
+      const legacySlug = productSlug ? String(productSlug).trim() : '';
+      // Legacy clients sent marketplace slug as productSlug (not flag-stock).
+      if (!mslug && legacySlug && legacySlug !== ONE_TIME_STOCK_SLUG) {
+        mslug = legacySlug;
+      }
 
-      if (!ag?.trim() && !aid?.trim() && !fid?.trim() && !mslug?.trim()) {
+      if (!ag?.trim() && !aid?.trim() && !fid?.trim() && !mslug) {
         return res.status(400).json({
           error:
             'assetGroupKey, assetId, or assetProductSlug is required for one_time checkout.',

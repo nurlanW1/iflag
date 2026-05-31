@@ -125,6 +125,14 @@ export async function postPaddleCheckout(
     if (res.status === 502 && data.code === 'API_UNREACHABLE') {
       return { ok: false, error: data.error || 'Cannot reach the billing API. Try again shortly.' };
     }
+    if (res.status === 400 && data.code === 'PADDLE_FLAG_STOCK_PRICE_MISSING') {
+      return {
+        ok: false,
+        error:
+          data.error ||
+          'Checkout is not configured: set PADDLE_PRICE_MAP_JSON oneTimeByProductSlug.flag-stock on the API server.',
+      };
+    }
     return { ok: false, error: data.error || 'Checkout failed' };
   }
 
