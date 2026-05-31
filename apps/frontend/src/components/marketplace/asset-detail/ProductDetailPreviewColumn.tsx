@@ -137,9 +137,9 @@ export function ProductDetailPreviewColumn({
         )}
       </div>
 
-      <aside className="flex min-h-0 min-w-0 flex-col lg:h-full">
-        <div className="flex min-h-0 flex-1 flex-col max-lg:border-0 max-lg:bg-transparent max-lg:p-0 max-lg:shadow-none lg:rounded-xl lg:border lg:border-slate-200/80 lg:bg-white lg:shadow-sm">
-          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 sm:gap-4 sm:p-4 lg:overscroll-contain">
+      <aside className="flex min-h-0 min-w-0 flex-col max-lg:w-full max-lg:flex-none lg:h-full">
+        <div className="flex min-h-0 flex-col rounded-xl border border-slate-200/80 bg-white shadow-sm max-lg:flex-none lg:h-full lg:flex-1">
+          <div className="flex flex-col gap-3 p-3 sm:gap-4 sm:p-4 max-lg:overflow-visible lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain">
             <NeonAssetDownloads
               cartProduct={cartProduct}
               files={dedupedFiles}
@@ -154,6 +154,7 @@ export function ProductDetailPreviewColumn({
               requiresEntitlement={neonDownloads ? undefined : paid}
               compactLayout
               narrowDesktopSidebar
+              mobileBottomDock={false}
               ownsProduct={ownsProduct}
               onAlreadyPurchased={() => setOwnsProduct(true)}
               selectedId={selectedFileId}

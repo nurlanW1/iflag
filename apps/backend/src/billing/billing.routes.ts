@@ -193,6 +193,15 @@ router.post('/checkout', async (req: AuthRequest, res: Response) => {
       }
     }
 
+    if (process.env.PADDLE_API_DEBUG?.trim().toLowerCase() === 'true') {
+      console.info('[billing] POST /checkout → Paddle createTransaction', {
+        kind,
+        priceId: resolved.priceId,
+        paddleApiBase: cfg.apiBase,
+        checkoutPaymentLinkBase: cfg.checkoutPaymentLinkBase ?? null,
+      });
+    }
+
     const tx = await paddleCreateTransaction(cfg, {
       items: [{ price_id: resolved.priceId, quantity: 1 }],
       customerEmail: user.email,

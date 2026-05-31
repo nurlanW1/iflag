@@ -128,7 +128,7 @@ export function ProductDetailView({ slug, product }: Props) {
       <main
         className={clsx(
           'marketplace-shell min-h-screen bg-slate-50',
-          'max-lg:pb-[calc(18rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]',
+          'max-lg:pb-[calc(2.5rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]',
         )}
       >
         <div className="mx-auto max-w-[min(100%,1392px)] px-4 pb-10 pt-4 sm:px-5 sm:pb-12 sm:pt-5 lg:pb-10 lg:pt-5 xl:px-8">

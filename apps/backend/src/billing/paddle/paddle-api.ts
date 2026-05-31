@@ -53,14 +53,38 @@ async function paddleFetch<T>(
   });
 
   const text = await res.text();
-  const json = (text ? JSON.parse(text) : {}) as PaddleEnvelope<T>;
+  let json: PaddleEnvelope<T> = {};
+  try {
+    json = (text ? JSON.parse(text) : {}) as PaddleEnvelope<T>;
+  } catch {
+    json = {};
+  }
+
+  const method = (init.method || 'GET').toUpperCase();
 
   if (!res.ok) {
+    console.error('[paddle] API request failed', {
+      method,
+      url,
+      status: res.status,
+      statusText: res.statusText,
+      responseBody: text.slice(0, 8000),
+      error: json.error ?? null,
+    });
     const msg =
       json.error?.detail ||
       json.error?.code ||
       `Paddle ${res.status} ${res.statusText}`;
     throw new PaddleApiError(msg, res.status, json.error);
+  }
+
+  if (process.env.PADDLE_API_DEBUG?.trim().toLowerCase() === 'true') {
+    console.info('[paddle] API request ok', {
+      method,
+      url,
+      status: res.status,
+      responseBody: text.slice(0, 4000),
+    });
   }
 
   return json;
@@ -98,15 +122,14 @@ export interface PaddleTransaction {
 }
 
 /**
- * Create a checkout transaction.
+ * Create a checkout transaction via Paddle Billing `POST /transactions`.
  *
- * Paddle's "self-service" checkout flow requires only `items` + collection
- * mode `automatic`. The response includes a `checkout.url` you redirect the
- * customer to, OR you can pass the transaction id to `Paddle.Checkout.open()`
- * on the frontend.
+ * Uses catalog `price_id` items only (not Payment Links API, not legacy Checkout).
+ * Paddle still requires a **Default payment link** on the vendor account; returned
+ * `checkout.url` is that base (or per-request `checkout.url`) plus `?_ptxn=txn_…`.
  *
- * We also pass `customer.email` so Paddle can prefill the email field, and
- * `custom_data.user_id` so webhooks resolve back to our `users.id`.
+ * @see https://developer.paddle.com/api-reference/transactions/create-transaction
+ * @see https://developer.paddle.com/build/transactions/default-payment-link
  */
 export async function createTransaction(
   cfg: PaddleConfig,
@@ -124,12 +147,21 @@ export async function createTransaction(
       ...(input.customerName ? { name: input.customerName } : {}),
     },
     custom_data: input.customData || {},
-    ...(cfg.checkoutSuccessUrl
-      ? { checkout: { url: cfg.checkoutSuccessUrl } }
+    ...(cfg.checkoutPaymentLinkBase
+      ? { checkout: { url: cfg.checkoutPaymentLinkBase } }
       : {}),
   };
 
-  const res = await paddleFetch<PaddleTransaction>(cfg, '/transactions', {
+  const path = '/transactions';
+  if (cfg.apiDebug) {
+    console.info('[paddle] createTransaction request', {
+      endpoint: `${cfg.apiBase}${path}`,
+      priceIds: input.items.map((i) => i.price_id),
+      checkoutPaymentLinkBase: cfg.checkoutPaymentLinkBase ?? null,
+    });
+  }
+
+  const res = await paddleFetch<PaddleTransaction>(cfg, path, {
     method: 'POST',
     body: JSON.stringify(body),
   });

@@ -24,6 +24,8 @@ type Props = {
   roomyDesktopSidebar?: boolean;
   /** PDP desktop: narrower column + denser format/offer rails. */
   narrowDesktopSidebar?: boolean;
+  /** When false, mobile/tablet keeps download UI in page flow (PDP below preview). */
+  mobileBottomDock?: boolean;
   ownsProduct?: boolean;
   onAlreadyPurchased?: () => void;
   selectedId?: string | null;

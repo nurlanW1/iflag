@@ -45,6 +45,11 @@ type Props = {
   roomyDesktopSidebar?: boolean;
   /** Desktop PDP — fixed narrow column; compact format + purchase rails. */
   narrowDesktopSidebar?: boolean;
+  /**
+   * Mobile/tablet: pin formats + purchase to viewport bottom (`fixed`).
+   * PDP passes `false` so the panel stays in document flow below the preview.
+   */
+  mobileBottomDock?: boolean;
   /** User completed one-time checkout for this design group. */
   ownsProduct?: boolean;
   /** After checkout API reports existing ownership — refresh PDP state. */
@@ -78,6 +83,7 @@ export function StockDownloadPanel({
   compactLayout = false,
   roomyDesktopSidebar = false,
   narrowDesktopSidebar = false,
+  mobileBottomDock = true,
   ownsProduct = false,
   onAlreadyPurchased,
 }: Props) {
@@ -304,12 +310,16 @@ export function StockDownloadPanel({
       <div className="hidden w-full lg:flex lg:h-full lg:min-h-0 lg:flex-col">
         {renderPanel(headingId, desktopCompact, desktopNarrow)}
       </div>
-      <div className="pointer-events-none fixed inset-x-0 bottom-[var(--cookie-banner-h,0px)] z-[110] pb-[max(8px,env(safe-area-inset-bottom))] lg:hidden">
-        <div className="pointer-events-auto mx-auto max-w-lg rounded-t-[1.25rem] border border-b-0 border-slate-200/80 bg-white/95 px-4 pb-[max(1rem,calc(env(safe-area-inset-bottom)+12px))] pt-4 shadow-[0_-6px_22px_-10px_rgba(15,23,42,0.14)] backdrop-blur-md backdrop-saturate-150 sm:px-5 sm:pt-5">
-          <div className="mx-auto mb-2.5 h-1 w-10 rounded-full bg-slate-200/90 sm:mb-3 sm:w-[2.875rem]" aria-hidden />
-          {renderPanel(`${headingId}-dock`, dockCompact, false)}
+      {mobileBottomDock ? (
+        <div className="pointer-events-none fixed inset-x-0 bottom-[var(--cookie-banner-h,0px)] z-[110] pb-[max(8px,env(safe-area-inset-bottom))] lg:hidden">
+          <div className="pointer-events-auto mx-auto max-w-lg rounded-t-[1.25rem] border border-b-0 border-slate-200/80 bg-white/95 px-4 pb-[max(1rem,calc(env(safe-area-inset-bottom)+12px))] pt-4 shadow-[0_-6px_22px_-10px_rgba(15,23,42,0.14)] backdrop-blur-md backdrop-saturate-150 sm:px-5 sm:pt-5">
+            <div className="mx-auto mb-2.5 h-1 w-10 rounded-full bg-slate-200/90 sm:mb-3 sm:w-[2.875rem]" aria-hidden />
+            {renderPanel(`${headingId}-dock`, dockCompact, false)}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="w-full lg:hidden">{renderPanel(`${headingId}-inline`, dockCompact, false)}</div>
+      )}
     </>
   );
 }

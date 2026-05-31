@@ -45,9 +45,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           credentials: 'include',
         });
         if (sessionRes.ok) {
-          const data = (await sessionRes.json()) as { user: User };
-          setUser(data.user);
-          return;
+          const data = (await sessionRes.json()) as { user: User | null };
+          if (data.user) {
+            setUser(data.user);
+            return;
+          }
         }
 
         const token = localStorage.getItem('accessToken');
@@ -139,8 +141,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         return;
       }
-      const data = (await sessionRes.json()) as { user: User };
-      setUser(data.user);
+      const data = (await sessionRes.json()) as { user: User | null };
+      setUser(data.user ?? null);
     } catch {
       setUser(null);
     }
