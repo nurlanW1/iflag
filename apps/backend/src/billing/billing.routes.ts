@@ -67,10 +67,23 @@ function isCheckoutKind(v: unknown): v is 'one_time' | 'subscription' {
 function sendApiError(res: Response, err: any, fallbackStatus = 500) {
   if (err instanceof PaddleApiError) {
     console.error('[billing] Paddle API:', err.message, err.providerError?.code ?? '');
+    if (err.rawResponseBody) {
+      console.error('[billing] Paddle raw response:', err.rawResponseBody.slice(0, 8000));
+    }
     res.status(err.status >= 400 && err.status < 600 ? err.status : 502).json({
       error: 'Paddle API error',
       detail: err.message,
       provider_code: err.providerError?.code,
+      provider_error: err.providerError ?? null,
+      paddle_response: err.rawResponseBody
+        ? (() => {
+            try {
+              return JSON.parse(err.rawResponseBody) as unknown;
+            } catch {
+              return err.rawResponseBody;
+            }
+          })()
+        : null,
     });
     return;
   }
@@ -193,14 +206,13 @@ router.post('/checkout', async (req: AuthRequest, res: Response) => {
       }
     }
 
-    if (process.env.PADDLE_API_DEBUG?.trim().toLowerCase() === 'true') {
-      console.info('[billing] POST /checkout → Paddle createTransaction', {
-        kind,
-        priceId: resolved.priceId,
-        paddleApiBase: cfg.apiBase,
-        checkoutPaymentLinkBase: cfg.checkoutPaymentLinkBase ?? null,
-      });
-    }
+    console.info('[billing] POST /checkout → Paddle createTransaction', {
+      kind,
+      priceId: resolved.priceId,
+      paddleEnvironment: cfg.environment,
+      paddleApiBase: cfg.apiBase,
+      checkoutPaymentLinkBase: cfg.checkoutPaymentLinkBase,
+    });
 
     const tx = await paddleCreateTransaction(cfg, {
       items: [{ price_id: resolved.priceId, quantity: 1 }],

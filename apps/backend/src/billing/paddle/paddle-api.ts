@@ -26,7 +26,9 @@ export class PaddleApiError extends Error {
   constructor(
     message: string,
     public readonly status: number,
-    public readonly providerError?: PaddleErrorObject
+    public readonly providerError?: PaddleErrorObject,
+    /** Raw Paddle JSON body (for logging / API error responses). */
+    public readonly rawResponseBody?: string
   ) {
     super(message);
     this.name = 'PaddleApiError';
@@ -75,7 +77,7 @@ async function paddleFetch<T>(
       json.error?.detail ||
       json.error?.code ||
       `Paddle ${res.status} ${res.statusText}`;
-    throw new PaddleApiError(msg, res.status, json.error);
+    throw new PaddleApiError(msg, res.status, json.error, text);
   }
 
   if (process.env.PADDLE_API_DEBUG?.trim().toLowerCase() === 'true') {
@@ -147,24 +149,32 @@ export async function createTransaction(
       ...(input.customerName ? { name: input.customerName } : {}),
     },
     custom_data: input.customData || {},
-    ...(cfg.checkoutPaymentLinkBase
-      ? { checkout: { url: cfg.checkoutPaymentLinkBase } }
-      : {}),
+    checkout: { url: cfg.checkoutPaymentLinkBase },
   };
 
   const path = '/transactions';
-  if (cfg.apiDebug) {
-    console.info('[paddle] createTransaction request', {
-      endpoint: `${cfg.apiBase}${path}`,
-      priceIds: input.items.map((i) => i.price_id),
-      checkoutPaymentLinkBase: cfg.checkoutPaymentLinkBase ?? null,
-    });
-  }
+  const endpoint = `${cfg.apiBase}${path}`;
+  const bodyJson = JSON.stringify(body);
+
+  console.info('[paddle] createTransaction request', {
+    method: 'POST',
+    endpoint,
+    payload: body,
+  });
 
   const res = await paddleFetch<PaddleTransaction>(cfg, path, {
     method: 'POST',
-    body: JSON.stringify(body),
+    body: bodyJson,
   });
+
+  if (cfg.apiDebug) {
+    console.info('[paddle] createTransaction response', {
+      endpoint,
+      transactionId: res.data?.id ?? null,
+      checkoutUrl: res.data?.checkout?.url ?? null,
+      status: res.data?.status ?? null,
+    });
+  }
   if (!res.data) {
     throw new PaddleApiError('Paddle response missing transaction data', 502);
   }

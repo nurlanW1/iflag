@@ -30,20 +30,26 @@ export interface PaddleConfig {
   webhookSecret: string;
   environment: PaddleEnvironment;
   apiBase: string;
-  /** Approved site URL used as checkout payment-link base (`checkout.url` on create transaction). */
-  checkoutPaymentLinkBase?: string;
+  /** Approved site URL sent as `checkout.url` on POST /transactions (required by Paddle). */
+  checkoutPaymentLinkBase: string;
   defaultCurrency: string;
   apiDebug: boolean;
 }
 
+const PRODUCTION_CHECKOUT_BASE = 'https://www.flagswing.com';
+const SANDBOX_CHECKOUT_BASE = 'http://localhost:3000';
+
 /** Base URL Paddle uses to build `checkout.url` (= base + `?_ptxn=txn_…`). */
-export function resolveCheckoutPaymentLinkBase(): string | undefined {
+export function resolveCheckoutPaymentLinkBase(
+  environment: PaddleEnvironment = 'sandbox'
+): string {
   const explicit =
     process.env.PADDLE_DEFAULT_PAYMENT_LINK?.trim() ||
     process.env.PADDLE_CHECKOUT_SUCCESS_URL?.trim();
   if (explicit) return explicit.replace(/\/$/, '');
   const frontend = process.env.FRONTEND_URL?.trim() || process.env.PUBLIC_FRONTEND_URL?.trim();
-  return frontend ? frontend.replace(/\/$/, '') : undefined;
+  if (frontend) return frontend.replace(/\/$/, '');
+  return environment === 'production' ? PRODUCTION_CHECKOUT_BASE : SANDBOX_CHECKOUT_BASE;
 }
 
 const PRODUCTION_BASE = 'https://api.paddle.com';
@@ -68,7 +74,7 @@ export function getPaddleConfig(): PaddleConfig | null {
     webhookSecret,
     environment: env,
     apiBase: env === 'sandbox' ? SANDBOX_BASE : PRODUCTION_BASE,
-    checkoutPaymentLinkBase: resolveCheckoutPaymentLinkBase(),
+    checkoutPaymentLinkBase: resolveCheckoutPaymentLinkBase(env),
     defaultCurrency:
       process.env.PADDLE_DEFAULT_CURRENCY?.trim().toUpperCase() || 'USD',
     apiDebug: process.env.PADDLE_API_DEBUG?.trim().toLowerCase() === 'true',
