@@ -63,10 +63,22 @@ export async function postPaddleCheckout(
   const data = (await res.json()) as {
     url?: string;
     error?: string;
+    detail?: string;
     code?: string;
+    provider_code?: string;
     alreadyPurchased?: boolean;
     ownsProduct?: boolean;
   };
+
+  /** Backend Paddle failures include `detail` (Paddle message); prefer it over generic label. */
+  function checkoutErrorMessage(fallback: string): string {
+    const detail = data.detail?.trim();
+    if (detail) return detail;
+    if (data.provider_code?.trim()) {
+      return `${data.error || fallback} (${data.provider_code})`;
+    }
+    return data.error || fallback;
+  }
 
   if (res.ok && data.alreadyPurchased) {
     return { ok: true, alreadyPurchased: true, ownsProduct: true };
@@ -133,7 +145,7 @@ export async function postPaddleCheckout(
           'Checkout is not configured: set PADDLE_PRICE_MAP_JSON oneTimeByProductSlug.flag-stock on the API server.',
       };
     }
-    return { ok: false, error: data.error || 'Checkout failed' };
+    return { ok: false, error: checkoutErrorMessage('Checkout failed') };
   }
 
   if (data.url) {

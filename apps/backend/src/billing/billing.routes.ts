@@ -66,6 +66,7 @@ function isCheckoutKind(v: unknown): v is 'one_time' | 'subscription' {
 
 function sendApiError(res: Response, err: any, fallbackStatus = 500) {
   if (err instanceof PaddleApiError) {
+    console.error('[billing] Paddle API:', err.message, err.providerError?.code ?? '');
     res.status(err.status >= 400 && err.status < 600 ? err.status : 502).json({
       error: 'Paddle API error',
       detail: err.message,
