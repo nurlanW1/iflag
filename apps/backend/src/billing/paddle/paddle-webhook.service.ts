@@ -15,11 +15,12 @@
 
 import pool from '../../db.js';
 import {
+  resolveOneTimeStockPriceId,
   resolvePaddlePriceToLocal,
   mapPaddleSubscriptionStatus,
 } from './paddle-mapping.js';
+import { resolvePurchaseTargetFromAsset } from '../purchase-keys.js';
 import { upsertOrder, markOrderRefunded } from '../orders.service.js';
-import { resolvePurchaseTarget, slugFromAssetGroupKey } from '../purchase-keys.js';
 import {
   markUserAssetPurchaseRefundedByTransaction,
   upsertUserAssetPurchase,
@@ -118,13 +119,16 @@ async function handleTransactionCompleted(event: PaddleEvent): Promise<HandlerOu
     throw new Error('transaction.completed: first item has no price_id');
   }
 
+  const stockPrice = resolveOneTimeStockPriceId();
   const mapping = await resolvePaddlePriceToLocal(priceId);
-  if (!mapping) {
+  const isFlagStockPrice = Boolean(stockPrice && stockPrice.priceId === priceId);
+
+  if (!isFlagStockPrice && (!mapping || mapping.kind === 'subscription')) {
     throw new Error(
-      `transaction.completed: price ${priceId} is not mapped. Add to PADDLE_PRICE_MAP_JSON or subscription_plans.provider_variant_id.`
+      `transaction.completed: price ${priceId} is not the configured flag-stock one-time price.`
     );
   }
-  if (mapping.kind === 'subscription') {
+  if (mapping?.kind === 'subscription') {
     return {
       status: 'ignored',
       eventType: 'transaction.completed',
@@ -136,25 +140,26 @@ async function handleTransactionCompleted(event: PaddleEvent): Promise<HandlerOu
 
   const customProductSlug = readCustomString(tx.custom_data, 'product_slug');
   const customAssetGroupKey = readCustomString(tx.custom_data, 'asset_group_key');
-  const customAssetId = readCustomString(tx.custom_data, 'asset_id');
+  const customAssetId =
+    readCustomString(tx.custom_data, 'asset_id') ||
+    readCustomString(tx.custom_data, 'file_id');
+  const customCountrySlug = readCustomString(tx.custom_data, 'country_slug');
 
-  let purchaseTarget = customProductSlug
-    ? await resolvePurchaseTarget({
-        productSlug: customProductSlug,
-        assetGroupKey: customAssetGroupKey,
-      })
-    : null;
+  const purchaseTarget = await resolvePurchaseTargetFromAsset({
+    assetGroupKey: customAssetGroupKey,
+    assetId: customAssetId,
+    fileId: customAssetId,
+    assetProductSlug: customProductSlug,
+    countrySlug: customCountrySlug,
+  });
 
-  if (!purchaseTarget && customAssetGroupKey) {
-    purchaseTarget = {
-      assetGroupKey: customAssetGroupKey.toLowerCase(),
-      productSlug: customProductSlug || slugFromAssetGroupKey(customAssetGroupKey),
-      assetId: customAssetId,
-    };
+  if (!purchaseTarget) {
+    throw new Error(
+      'transaction.completed: missing asset_group_key / asset_id in custom_data — cannot grant access.'
+    );
   }
 
-  const orderProductSlug =
-    purchaseTarget?.productSlug || customProductSlug || mapping.productSlug;
+  const orderProductSlug = purchaseTarget.productSlug;
 
   await upsertOrder({
     user_id: userId,

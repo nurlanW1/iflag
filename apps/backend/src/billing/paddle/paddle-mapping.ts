@@ -57,6 +57,16 @@ function loadEnvMap(): PriceMap {
   }
 }
 
+/** Single $1 Paddle price for every premium asset (ignores per-asset slugs). */
+export function resolveOneTimeStockPriceId(): { priceId: string } | null {
+  const map = loadEnvMap();
+  const priceId = map.oneTimeByProductSlug[ONE_TIME_STOCK_SLUG]?.trim();
+  if (!priceId) return null;
+  return { priceId };
+}
+
+export { ONE_TIME_STOCK_SLUG };
+
 export async function resolvePaddlePriceForCheckout(params: {
   kind: CheckoutKind;
   productSlug?: string | null;
@@ -65,16 +75,13 @@ export async function resolvePaddlePriceForCheckout(params: {
   const map = loadEnvMap();
 
   if (params.kind === 'one_time') {
-    if (!params.productSlug) return null;
-    const direct = map.oneTimeByProductSlug[params.productSlug];
-    if (direct) {
-      return { kind: 'one_time', productSlug: params.productSlug, priceId: direct };
-    }
-    const stockPrice = map.oneTimeByProductSlug[ONE_TIME_STOCK_SLUG];
-    if (stockPrice) {
-      return { kind: 'one_time', productSlug: params.productSlug, priceId: stockPrice };
-    }
-    return null;
+    const stock = resolveOneTimeStockPriceId();
+    if (!stock) return null;
+    return {
+      kind: 'one_time',
+      productSlug: ONE_TIME_STOCK_SLUG,
+      priceId: stock.priceId,
+    };
   }
 
   if (!params.planSlug) return null;

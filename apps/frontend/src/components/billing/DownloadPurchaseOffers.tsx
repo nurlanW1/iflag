@@ -9,8 +9,11 @@ import { useClerkUiEnabled } from '@/components/providers/ClerkUiProvider';
 import { ONE_TIME_STOCK, formatPricingMoney } from '@/lib/marketing/pricing-config';
 
 type Props = {
-  productSlug?: string;
   assetGroupKey?: string | null;
+  assetId?: string | null;
+  fileId?: string | null;
+  assetProductSlug?: string | null;
+  countrySlug?: string | null;
   assetLabel?: string;
   className?: string;
   /** PDP sidebar: reduce padding and type scale */
@@ -23,8 +26,11 @@ const btnCompact =
 
 /** Single $1 one-time purchase CTA for paid flag designs. */
 export function DownloadPurchaseOffers({
-  productSlug = ONE_TIME_STOCK.productSlug,
   assetGroupKey,
+  assetId,
+  fileId,
+  assetProductSlug,
+  countrySlug,
   assetLabel,
   className,
   compact = false,
@@ -89,8 +95,12 @@ export function DownloadPurchaseOffers({
         {!needsAuth ? (
           <CheckoutButton
             kind="one_time"
-            productSlug={productSlug}
+            productSlug={ONE_TIME_STOCK.productSlug}
             assetGroupKey={assetGroupKey}
+            assetId={assetId}
+            fileId={fileId}
+            assetProductSlug={assetProductSlug}
+            countrySlug={countrySlug}
             onAlreadyPurchased={onAlreadyPurchased}
             minimal
             className={clsx(

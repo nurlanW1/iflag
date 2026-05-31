@@ -51,7 +51,6 @@ export function GalleryCountryDownloadsPanel({
       files={files}
       cartProduct={cartProduct}
       assetLabel={assetLabel}
-      productSlug={productSlug}
       licenseSummary={licenseSummary}
       selectedId={selectedFormatId}
       onSelectId={onSelectFormatId}

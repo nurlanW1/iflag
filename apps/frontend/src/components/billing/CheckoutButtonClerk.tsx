@@ -11,6 +11,10 @@ type Props = {
   kind: CheckoutKind;
   productSlug?: string;
   assetGroupKey?: string | null;
+  assetId?: string | null;
+  fileId?: string | null;
+  assetProductSlug?: string | null;
+  countrySlug?: string | null;
   planSlug?: string;
   className?: string;
   style?: React.CSSProperties;
@@ -28,6 +32,10 @@ export function CheckoutButtonClerk({
   kind,
   productSlug,
   assetGroupKey,
+  assetId,
+  fileId,
+  assetProductSlug,
+  countrySlug,
   planSlug,
   className,
   style,
@@ -51,6 +59,10 @@ export function CheckoutButtonClerk({
         kind,
         productSlug,
         assetGroupKey,
+        assetId,
+        fileId,
+        assetProductSlug,
+        countrySlug,
         planSlug,
       });
       if (!result.ok) {

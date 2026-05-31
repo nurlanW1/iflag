@@ -11,6 +11,10 @@ type Props = {
   kind: CheckoutKind;
   productSlug?: string;
   assetGroupKey?: string | null;
+  assetId?: string | null;
+  fileId?: string | null;
+  assetProductSlug?: string | null;
+  countrySlug?: string | null;
   planSlug?: string;
   onAlreadyPurchased?: () => void;
   className?: string;

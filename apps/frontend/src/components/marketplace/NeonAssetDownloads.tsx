@@ -11,6 +11,10 @@ type Props = {
   assetLabel?: string;
   productSlug?: string;
   assetGroupKey?: string | null;
+  assetId?: string | null;
+  fileId?: string | null;
+  assetProductSlug?: string | null;
+  countrySlug?: string | null;
   productId?: string;
   previewFile?: PublicProductFile | null;
   requiresEntitlement?: boolean;

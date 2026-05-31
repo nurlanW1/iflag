@@ -1,10 +1,16 @@
 import type { useAuth } from '@clerk/nextjs';
 import type { CheckoutKind } from '@/components/billing/checkout-button-types';
+import { ONE_TIME_STOCK } from '@/lib/marketing/pricing-config';
 
 export type CheckoutPayload = {
   kind: CheckoutKind;
+  /** Always `flag-stock` for Paddle price — asset identity is separate. */
   productSlug?: string;
   assetGroupKey?: string | null;
+  assetId?: string | null;
+  fileId?: string | null;
+  assetProductSlug?: string | null;
+  countrySlug?: string | null;
   planSlug?: string;
 };
 
@@ -40,9 +46,16 @@ export async function postPaddleCheckout(
     },
     body: JSON.stringify({
       kind: payload.kind,
-      productSlug: payload.kind === 'one_time' ? payload.productSlug : undefined,
+      productSlug:
+        payload.kind === 'one_time' ? ONE_TIME_STOCK.productSlug : undefined,
       assetGroupKey:
         payload.kind === 'one_time' ? payload.assetGroupKey?.trim() || undefined : undefined,
+      assetId: payload.kind === 'one_time' ? payload.assetId?.trim() || undefined : undefined,
+      fileId: payload.kind === 'one_time' ? payload.fileId?.trim() || undefined : undefined,
+      assetProductSlug:
+        payload.kind === 'one_time' ? payload.assetProductSlug?.trim() || undefined : undefined,
+      countrySlug:
+        payload.kind === 'one_time' ? payload.countrySlug?.trim() || undefined : undefined,
       planSlug: payload.kind === 'subscription' ? payload.planSlug : undefined,
     }),
   });

@@ -11,6 +11,7 @@ export type CartProductRef = {
   title: string;
   pathname: string;
   assetGroupKey?: string | null;
+  countrySlug?: string | null;
 };
 
 type Props = {

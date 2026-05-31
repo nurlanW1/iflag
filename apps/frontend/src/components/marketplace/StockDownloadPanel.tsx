@@ -16,8 +16,6 @@ import { CanonicalFormatSlots } from '@/components/marketplace/asset-detail/Cano
 import { firstSelectableStockFileId } from '@/lib/marketplace/canonical-stock-formats';
 import { NeonTrustFoot } from '@/components/marketplace/NeonDownloadKit';
 import { DownloadPurchaseOffers } from '@/components/billing/DownloadPurchaseOffers';
-import { ONE_TIME_STOCK } from '@/lib/marketing/pricing-config';
-
 const btnCompact =
   'inline-flex min-h-11 min-w-[2.75rem] shrink-0 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition disabled:opacity-50';
 
@@ -25,7 +23,6 @@ type Props = {
   files: PublicProductFile[];
   cartProduct: CartProductRef;
   assetLabel?: string;
-  productSlug?: string;
   assetGroupKey?: string | null;
   licenseSummary?: string | null;
   /** Catalog JSON products — marketplace download API. */
@@ -67,7 +64,6 @@ export function StockDownloadPanel({
   files,
   cartProduct,
   assetLabel,
-  productSlug = ONE_TIME_STOCK.productSlug,
   assetGroupKey,
   licenseSummary,
   productId,
@@ -171,8 +167,11 @@ export function StockDownloadPanel({
     !active ? null : showPurchaseOffers ? (
     <DownloadPurchaseOffers
       assetLabel={assetLabel ?? cartProduct.title}
-      productSlug={productSlug}
       assetGroupKey={assetGroupKey ?? cartProduct.assetGroupKey}
+      assetProductSlug={cartProduct.slug}
+      countrySlug={cartProduct.countrySlug}
+      fileId={!productId ? active?.id : undefined}
+      assetId={!productId ? active?.id : undefined}
       onAlreadyPurchased={onAlreadyPurchased}
       compact={panelCompact}
     />
@@ -257,8 +256,11 @@ export function StockDownloadPanel({
   ) : (
     <DownloadPurchaseOffers
       assetLabel={assetLabel ?? cartProduct.title}
-      productSlug={productSlug}
       assetGroupKey={assetGroupKey ?? cartProduct.assetGroupKey}
+      assetProductSlug={cartProduct.slug}
+      countrySlug={cartProduct.countrySlug}
+      fileId={!productId ? active?.id : undefined}
+      assetId={!productId ? active?.id : undefined}
       onAlreadyPurchased={onAlreadyPurchased}
       compact={panelCompact}
     />

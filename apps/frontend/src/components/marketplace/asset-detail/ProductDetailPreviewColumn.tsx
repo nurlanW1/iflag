@@ -147,6 +147,8 @@ export function ProductDetailPreviewColumn({
               assetLabel={productTitle}
               productSlug={cartProduct.slug}
               assetGroupKey={cartProduct.assetGroupKey}
+              assetProductSlug={cartProduct.slug}
+              countrySlug={cartProduct.countrySlug}
               productId={neonDownloads ? undefined : productId}
               previewFile={neonDownloads ? undefined : previewFilePublic}
               requiresEntitlement={neonDownloads ? undefined : paid}

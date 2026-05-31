@@ -36,7 +36,6 @@ export function PremiumCatalogCommerce({
       files={files}
       cartProduct={cartProduct}
       assetLabel={assetLabel}
-      productSlug={productSlug}
       licenseSummary={licenseSummary}
       productId={productId}
       previewFile={previewFile}

@@ -10,6 +10,10 @@ type Props = {
   kind: CheckoutKind;
   productSlug?: string;
   assetGroupKey?: string | null;
+  assetId?: string | null;
+  fileId?: string | null;
+  assetProductSlug?: string | null;
+  countrySlug?: string | null;
   planSlug?: string;
   className?: string;
   style?: React.CSSProperties;
@@ -26,6 +30,10 @@ export function CheckoutButtonFallback({
   kind,
   productSlug,
   assetGroupKey,
+  assetId,
+  fileId,
+  assetProductSlug,
+  countrySlug,
   planSlug,
   className,
   style,
@@ -42,6 +50,10 @@ export function CheckoutButtonFallback({
     kind,
     productSlug: kind === 'one_time' ? productSlug : undefined,
     assetGroupKey: kind === 'one_time' ? assetGroupKey?.trim() || undefined : undefined,
+    assetId: kind === 'one_time' ? assetId?.trim() || undefined : undefined,
+    fileId: kind === 'one_time' ? fileId?.trim() || undefined : undefined,
+    assetProductSlug: kind === 'one_time' ? assetProductSlug?.trim() || undefined : undefined,
+    countrySlug: kind === 'one_time' ? countrySlug?.trim() || undefined : undefined,
     planSlug: kind === 'subscription' ? planSlug : undefined,
   });
 

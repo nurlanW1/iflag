@@ -24,7 +24,11 @@ import {
   getPaddleConfig,
   requirePaddleConfig,
 } from './paddle/paddle.config.js';
-import { resolvePaddlePriceForCheckout } from './paddle/paddle-mapping.js';
+import {
+  ONE_TIME_STOCK_SLUG,
+  resolveOneTimeStockPriceId,
+  resolvePaddlePriceForCheckout,
+} from './paddle/paddle-mapping.js';
 import {
   createTransaction as paddleCreateTransaction,
   cancelSubscription as paddleCancelSubscription,
@@ -38,7 +42,11 @@ import { verifyPaddleSignature } from './paddle/paddle-signature.js';
 import { dispatchPaddleEvent } from './paddle/paddle-webhook.service.js';
 import { getUserActiveSubscription } from './subscriptions.service.js';
 import { getUserOrders } from './orders.service.js';
-import { resolvePurchaseTarget, slugFromAssetGroupKey } from './purchase-keys.js';
+import {
+  resolvePurchaseTarget,
+  resolvePurchaseTargetFromAsset,
+  slugFromAssetGroupKey,
+} from './purchase-keys.js';
 import {
   listUserPurchasedAssets,
   userOwnsAssetGroup,
@@ -82,7 +90,16 @@ router.use(authenticateAppJwtOrClerkBilling);
 
 router.post('/checkout', async (req: AuthRequest, res: Response) => {
   try {
-    const { kind, planSlug, productSlug, assetGroupKey } = req.body || {};
+    const {
+      kind,
+      planSlug,
+      productSlug,
+      assetGroupKey,
+      assetId,
+      fileId,
+      assetProductSlug,
+      countrySlug,
+    } = req.body || {};
 
     if (!isCheckoutKind(kind)) {
       return res.status(400).json({ error: 'kind must be "subscription" or "one_time"' });
@@ -90,23 +107,37 @@ router.post('/checkout', async (req: AuthRequest, res: Response) => {
     if (kind === 'subscription' && !planSlug) {
       return res.status(400).json({ error: 'planSlug is required for subscription checkout' });
     }
-    if (kind === 'one_time' && !productSlug) {
-      return res.status(400).json({ error: 'productSlug is required for one_time checkout' });
-    }
 
     const user = await getUserById(req.user!.userId);
     if (!user) return res.status(401).json({ error: 'User not found' });
 
-    let oneTimeTarget: Awaited<ReturnType<typeof resolvePurchaseTarget>> = null;
+    let oneTimeTarget: Awaited<ReturnType<typeof resolvePurchaseTargetFromAsset>> = null;
     if (kind === 'one_time') {
-      oneTimeTarget = await resolvePurchaseTarget({
-        productSlug: String(productSlug),
-        assetGroupKey: assetGroupKey ? String(assetGroupKey) : null,
+      const ag = assetGroupKey ? String(assetGroupKey) : null;
+      const aid = assetId ? String(assetId) : null;
+      const fid = fileId ? String(fileId) : null;
+      const mslug = assetProductSlug ? String(assetProductSlug) : null;
+
+      if (!ag?.trim() && !aid?.trim() && !fid?.trim() && !mslug?.trim()) {
+        return res.status(400).json({
+          error:
+            'assetGroupKey, assetId, or assetProductSlug is required for one_time checkout.',
+        });
+      }
+
+      oneTimeTarget = await resolvePurchaseTargetFromAsset({
+        assetGroupKey: ag,
+        assetId: aid,
+        fileId: fid,
+        assetProductSlug: mslug,
+        countrySlug: countrySlug ? String(countrySlug) : null,
       });
       if (!oneTimeTarget) {
         return res.status(400).json({
-          error: 'Unknown product — could not resolve asset group for checkout.',
-          productSlug,
+          error: 'Unknown asset — could not resolve design for checkout.',
+          assetGroupKey: ag,
+          assetId: aid,
+          assetProductSlug: mslug,
         });
       }
 
@@ -126,25 +157,34 @@ router.post('/checkout', async (req: AuthRequest, res: Response) => {
     }
 
     const cfg = requirePaddleConfig();
-    const resolved = await resolvePaddlePriceForCheckout({
-      kind,
-      planSlug: planSlug || null,
-      productSlug: productSlug || null,
-    });
-    if (!resolved) {
-      const target =
-        kind === 'subscription'
-          ? `plan "${planSlug}"`
-          : `product "${productSlug}"`;
-      return res.status(400).json({
-        error:
-          `No Paddle price mapped for ${target}. ` +
-          'Set PADDLE_PRICE_MAP_JSON on the backend (e.g. ' +
-          '{"oneTimeByProductSlug":{"flag-stock":"pri_..."}}) ' +
-          'or set provider_variant_id on the matching subscription_plans row.',
-        planSlug: kind === 'subscription' ? planSlug : undefined,
-        productSlug: kind === 'one_time' ? productSlug : undefined,
+
+    let resolved: Awaited<ReturnType<typeof resolvePaddlePriceForCheckout>> = null;
+    if (kind === 'one_time') {
+      const stock = resolveOneTimeStockPriceId();
+      if (!stock) {
+        return res.status(400).json({
+          error: 'Paddle one-time price for flag-stock is not configured',
+          code: 'PADDLE_FLAG_STOCK_PRICE_MISSING',
+          productSlug: ONE_TIME_STOCK_SLUG,
+        });
+      }
+      resolved = {
+        kind: 'one_time',
+        productSlug: ONE_TIME_STOCK_SLUG,
+        priceId: stock.priceId,
+      };
+    } else {
+      resolved = await resolvePaddlePriceForCheckout({
+        kind,
+        planSlug: planSlug || null,
+        productSlug: productSlug || null,
       });
+      if (!resolved) {
+        return res.status(400).json({
+          error: `No Paddle price mapped for plan "${planSlug}".`,
+          planSlug,
+        });
+      }
     }
 
     const tx = await paddleCreateTransaction(cfg, {
@@ -153,13 +193,17 @@ router.post('/checkout', async (req: AuthRequest, res: Response) => {
       customerName: user.full_name ?? undefined,
       customData: {
         user_id: user.id,
+        user_email: user.email,
         kind: resolved.kind,
         ...(resolved.kind === 'subscription'
           ? { plan_slug: resolved.planSlug }
           : {
-              product_slug: oneTimeTarget?.productSlug ?? resolved.productSlug,
-              asset_group_key: oneTimeTarget?.assetGroupKey ?? null,
-              asset_id: oneTimeTarget?.assetId ?? null,
+              paddle_product_slug: ONE_TIME_STOCK_SLUG,
+              product_slug: oneTimeTarget!.productSlug,
+              asset_group_key: oneTimeTarget!.assetGroupKey,
+              asset_id: oneTimeTarget!.assetId,
+              country_slug: countrySlug ? String(countrySlug).trim().toLowerCase() : null,
+              file_id: fileId ? String(fileId).trim() : oneTimeTarget!.assetId,
             }),
       },
     });
