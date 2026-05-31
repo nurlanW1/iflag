@@ -10,10 +10,12 @@ import { ONE_TIME_STOCK, formatPricingMoney } from '@/lib/marketing/pricing-conf
 
 type Props = {
   productSlug?: string;
+  assetGroupKey?: string | null;
   assetLabel?: string;
   className?: string;
   /** PDP sidebar: reduce padding and type scale */
   compact?: boolean;
+  onAlreadyPurchased?: () => void;
 };
 
 const btnCompact =
@@ -22,9 +24,11 @@ const btnCompact =
 /** Single $1 one-time purchase CTA for paid flag designs. */
 export function DownloadPurchaseOffers({
   productSlug = ONE_TIME_STOCK.productSlug,
+  assetGroupKey,
   assetLabel,
   className,
   compact = false,
+  onAlreadyPurchased,
 }: Props) {
   const clerkUiEnabled = useClerkUiEnabled();
   const { isLoaded, isSignedIn, user } = useUser();
@@ -86,6 +90,8 @@ export function DownloadPurchaseOffers({
           <CheckoutButton
             kind="one_time"
             productSlug={productSlug}
+            assetGroupKey={assetGroupKey}
+            onAlreadyPurchased={onAlreadyPurchased}
             minimal
             className={clsx(
               btnCompact,

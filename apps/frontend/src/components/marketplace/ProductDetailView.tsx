@@ -65,6 +65,7 @@ export function ProductDetailView({ slug, product }: Props) {
     slug: product.slug,
     title: product.title,
     pathname: cartPathname,
+    assetGroupKey: product.assetGroupKey ?? null,
   };
 
   const canonicalPath =

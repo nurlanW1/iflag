@@ -9,11 +9,13 @@ import type { CheckoutKind } from './checkout-button-types';
 type Props = {
   kind: CheckoutKind;
   productSlug?: string;
+  assetGroupKey?: string | null;
   planSlug?: string;
   className?: string;
   style?: React.CSSProperties;
   children: React.ReactNode;
   minimal?: boolean;
+  onAlreadyPurchased?: () => void;
 };
 
 /**
@@ -23,11 +25,13 @@ type Props = {
 export function CheckoutButtonFallback({
   kind,
   productSlug,
+  assetGroupKey,
   planSlug,
   className,
   style,
   children,
   minimal = false,
+  onAlreadyPurchased,
 }: Props) {
   const pathname = usePathname();
   const { user, loading } = useAuth();
@@ -37,6 +41,7 @@ export function CheckoutButtonFallback({
   const checkoutPayload = JSON.stringify({
     kind,
     productSlug: kind === 'one_time' ? productSlug : undefined,
+    assetGroupKey: kind === 'one_time' ? assetGroupKey?.trim() || undefined : undefined,
     planSlug: kind === 'subscription' ? planSlug : undefined,
   });
 
@@ -62,7 +67,12 @@ export function CheckoutButtonFallback({
     setBusy(true);
     try {
       let res = await postCheckout();
-      let data = (await res.json()) as { url?: string; error?: string; code?: string };
+      let data = (await res.json()) as {
+        url?: string;
+        error?: string;
+        code?: string;
+        alreadyPurchased?: boolean;
+      };
 
       if (res.status === 401) {
         setError(
@@ -70,6 +80,10 @@ export function CheckoutButtonFallback({
             ? 'Sign in again or allow cookies for this site, then retry checkout.'
             : 'Sign in required for checkout.',
         );
+        return;
+      }
+      if (res.ok && data.alreadyPurchased) {
+        onAlreadyPurchased?.();
         return;
       }
       if (!res.ok) {

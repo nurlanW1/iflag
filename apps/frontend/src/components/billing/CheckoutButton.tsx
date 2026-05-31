@@ -10,7 +10,9 @@ export type { CheckoutKind };
 type Props = {
   kind: CheckoutKind;
   productSlug?: string;
+  assetGroupKey?: string | null;
   planSlug?: string;
+  onAlreadyPurchased?: () => void;
   className?: string;
   style?: React.CSSProperties;
   children: React.ReactNode;

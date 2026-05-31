@@ -10,12 +10,15 @@ import type { CheckoutKind } from './checkout-button-types';
 type Props = {
   kind: CheckoutKind;
   productSlug?: string;
+  assetGroupKey?: string | null;
   planSlug?: string;
   className?: string;
   style?: React.CSSProperties;
   children: React.ReactNode;
   /** Hide signed-in footer — use when parent shows a shared checkout footnote. */
   minimal?: boolean;
+  /** Called when checkout API reports the user already owns this asset. */
+  onAlreadyPurchased?: () => void;
 };
 
 /**
@@ -24,11 +27,13 @@ type Props = {
 export function CheckoutButtonClerk({
   kind,
   productSlug,
+  assetGroupKey,
   planSlug,
   className,
   style,
   children,
   minimal = false,
+  onAlreadyPurchased,
 }: Props) {
   const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
@@ -45,10 +50,15 @@ export function CheckoutButtonClerk({
       const result = await postPaddleCheckout(getToken, {
         kind,
         productSlug,
+        assetGroupKey,
         planSlug,
       });
       if (!result.ok) {
         setError(result.error);
+        return;
+      }
+      if (result.alreadyPurchased) {
+        onAlreadyPurchased?.();
         return;
       }
       window.location.href = result.url;

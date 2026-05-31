@@ -7,6 +7,8 @@
  *   POST /api/billing/subscriptions/pause       authenticated — pause (resume_at)
  *   POST /api/billing/portal                    authenticated — customer portal URL
  *   GET  /api/billing/orders                    authenticated — one-time purchases
+ *   GET  /api/billing/purchased-assets          authenticated — lifetime owned designs
+ *   GET  /api/billing/ownership                 authenticated — ?productSlug=&assetGroupKey=
  *   GET  /api/billing/subscription              authenticated — current subscription
  *
  * Webhook is mounted separately in index.ts BEFORE express.json() for signature verification.
@@ -36,6 +38,11 @@ import { verifyPaddleSignature } from './paddle/paddle-signature.js';
 import { dispatchPaddleEvent } from './paddle/paddle-webhook.service.js';
 import { getUserActiveSubscription } from './subscriptions.service.js';
 import { getUserOrders } from './orders.service.js';
+import { resolvePurchaseTarget, slugFromAssetGroupKey } from './purchase-keys.js';
+import {
+  listUserPurchasedAssets,
+  userOwnsAssetGroup,
+} from './user-asset-purchases.service.js';
 import {
   tryRegisterDelivery,
   markProcessed,
@@ -75,7 +82,7 @@ router.use(authenticateAppJwtOrClerkBilling);
 
 router.post('/checkout', async (req: AuthRequest, res: Response) => {
   try {
-    const { kind, planSlug, productSlug } = req.body || {};
+    const { kind, planSlug, productSlug, assetGroupKey } = req.body || {};
 
     if (!isCheckoutKind(kind)) {
       return res.status(400).json({ error: 'kind must be "subscription" or "one_time"' });
@@ -89,6 +96,34 @@ router.post('/checkout', async (req: AuthRequest, res: Response) => {
 
     const user = await getUserById(req.user!.userId);
     if (!user) return res.status(401).json({ error: 'User not found' });
+
+    let oneTimeTarget: Awaited<ReturnType<typeof resolvePurchaseTarget>> = null;
+    if (kind === 'one_time') {
+      oneTimeTarget = await resolvePurchaseTarget({
+        productSlug: String(productSlug),
+        assetGroupKey: assetGroupKey ? String(assetGroupKey) : null,
+      });
+      if (!oneTimeTarget) {
+        return res.status(400).json({
+          error: 'Unknown product — could not resolve asset group for checkout.',
+          productSlug,
+        });
+      }
+
+      const alreadyOwned = await userOwnsAssetGroup(
+        user.id,
+        oneTimeTarget.assetGroupKey,
+        oneTimeTarget.productSlug
+      );
+      if (alreadyOwned) {
+        return res.json({
+          alreadyPurchased: true,
+          ownsProduct: true,
+          productSlug: oneTimeTarget.productSlug,
+          assetGroupKey: oneTimeTarget.assetGroupKey,
+        });
+      }
+    }
 
     const cfg = requirePaddleConfig();
     const resolved = await resolvePaddlePriceForCheckout({
@@ -105,7 +140,7 @@ router.post('/checkout', async (req: AuthRequest, res: Response) => {
         error:
           `No Paddle price mapped for ${target}. ` +
           'Set PADDLE_PRICE_MAP_JSON on the backend (e.g. ' +
-          '{"subscriptionByPlanSlug":{"pro-monthly":"pri_..."}}) ' +
+          '{"oneTimeByProductSlug":{"flag-stock":"pri_..."}}) ' +
           'or set provider_variant_id on the matching subscription_plans row.',
         planSlug: kind === 'subscription' ? planSlug : undefined,
         productSlug: kind === 'one_time' ? productSlug : undefined,
@@ -121,7 +156,11 @@ router.post('/checkout', async (req: AuthRequest, res: Response) => {
         kind: resolved.kind,
         ...(resolved.kind === 'subscription'
           ? { plan_slug: resolved.planSlug }
-          : { product_slug: resolved.productSlug }),
+          : {
+              product_slug: oneTimeTarget?.productSlug ?? resolved.productSlug,
+              asset_group_key: oneTimeTarget?.assetGroupKey ?? null,
+              asset_id: oneTimeTarget?.assetId ?? null,
+            }),
       },
     });
 
@@ -130,7 +169,57 @@ router.post('/checkout', async (req: AuthRequest, res: Response) => {
       transaction_id: tx.id,
       url: tx.checkout?.url ?? null,
       status: tx.status,
+      alreadyPurchased: false,
     });
+  } catch (err) {
+    return sendApiError(res, err);
+  }
+});
+
+router.get('/ownership', async (req: AuthRequest, res: Response) => {
+  try {
+    const productSlug = String(req.query.productSlug ?? '').trim();
+    const assetGroupKey = String(req.query.assetGroupKey ?? '').trim() || null;
+
+    if (!productSlug && !assetGroupKey) {
+      return res.status(400).json({ error: 'productSlug or assetGroupKey is required' });
+    }
+
+    const target = productSlug
+      ? await resolvePurchaseTarget({ productSlug, assetGroupKey })
+      : assetGroupKey
+        ? {
+            assetGroupKey: assetGroupKey.toLowerCase(),
+            productSlug: slugFromAssetGroupKey(assetGroupKey),
+            assetId: null,
+          }
+        : null;
+
+    if (!target) {
+      return res.json({ ownsProduct: false, alreadyPurchased: false });
+    }
+
+    const owns = await userOwnsAssetGroup(
+      req.user!.userId,
+      target.assetGroupKey,
+      target.productSlug
+    );
+
+    return res.json({
+      ownsProduct: owns,
+      alreadyPurchased: owns,
+      productSlug: target.productSlug,
+      assetGroupKey: target.assetGroupKey,
+    });
+  } catch (err) {
+    return sendApiError(res, err);
+  }
+});
+
+router.get('/purchased-assets', async (req: AuthRequest, res: Response) => {
+  try {
+    const assets = await listUserPurchasedAssets(req.user!.userId);
+    return res.json({ assets });
   } catch (err) {
     return sendApiError(res, err);
   }

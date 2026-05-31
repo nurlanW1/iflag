@@ -1,8 +1,9 @@
 import type { User } from '@clerk/nextjs/server';
-import { fetchBackendPaidProductGrantDates } from '@/lib/account/billing-access.server';
+import { fetchBackendAssetOwnership } from '@/lib/account/billing-ownership.server';
 import { isMarketplaceOwnerDownloadBypass } from '@/lib/account/entitlements.server';
 import { normalizedEmailsFromClerkUser } from '@/lib/auth/admin-email';
 import { slugFromAssetGroupKey } from '@/lib/marketplace/group-flag-products';
+import { assetGroupKeyForFlagFileRow } from '@/lib/server/asset-group-key';
 
 export type FlagFilePurchaseRow = {
   id: string;
@@ -15,7 +16,7 @@ export function marketplaceSlugForFlagFile(row: FlagFilePurchaseRow): string {
   return `nf-${row.id.toLowerCase()}`;
 }
 
-/** Paid Neon row: owner bypass or one-time order for this design slug (no subscriptions). */
+/** Paid Neon row: owner bypass or lifetime one-time purchase for this design group. */
 export async function userOwnsPaidFlagFile(
   clerkUser: User | null | undefined,
   accessToken: string | null | undefined,
@@ -29,8 +30,14 @@ export async function userOwnsPaidFlagFile(
   const tok = accessToken?.trim();
   if (!tok) return false;
 
-  const slugs = await fetchBackendPaidProductGrantDates(tok);
-  if (!slugs) return false;
+  const productSlug = marketplaceSlugForFlagFile(row);
+  const assetGroupKey = assetGroupKeyForFlagFileRow(row);
 
-  return slugs.has(marketplaceSlugForFlagFile(row));
+  const ownership = await fetchBackendAssetOwnership(tok, {
+    productSlug,
+    assetGroupKey,
+  });
+  if (ownership?.ownsProduct) return true;
+
+  return false;
 }

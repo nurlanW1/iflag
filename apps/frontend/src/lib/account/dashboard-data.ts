@@ -9,6 +9,10 @@ import {
   fetchBackendPaidProductGrantDates,
   fetchAllBillingOrders,
 } from '@/lib/account/billing-access.server';
+import {
+  fetchBackendPurchasedAssets,
+  type PurchasedAssetRow,
+} from '@/lib/account/billing-ownership.server';
 import type {
   AccountDownloadRow,
   AccountFreePreviewRow,
@@ -64,6 +68,15 @@ function mapBillingPurchaseStatus(st: string): AccountPurchaseRow['status'] {
   if (st === 'refunded') return 'refunded';
   if (st === 'paid' || st === 'partial_refund') return 'fulfilled';
   return 'pending';
+}
+
+/** Lifetime owned designs from `user_asset_purchases` (Paddle one-time). */
+export async function fetchAccountPurchasedAssets(
+  accessToken?: string | null
+): Promise<PurchasedAssetRow[]> {
+  if (!accessToken?.trim()) return [];
+  const assets = await fetchBackendPurchasedAssets(accessToken.trim());
+  return assets ?? [];
 }
 
 export async function fetchAccountPurchases(

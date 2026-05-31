@@ -4,6 +4,7 @@ import type { CheckoutKind } from '@/components/billing/checkout-button-types';
 export type CheckoutPayload = {
   kind: CheckoutKind;
   productSlug?: string;
+  assetGroupKey?: string | null;
   planSlug?: string;
 };
 
@@ -19,7 +20,8 @@ export async function postPaddleCheckout(
   getToken: ReturnType<typeof useAuth>['getToken'],
   payload: CheckoutPayload,
 ): Promise<
-  | { ok: true; url: string }
+  | { ok: true; url: string; alreadyPurchased?: false }
+  | { ok: true; alreadyPurchased: true; ownsProduct: true }
   | { ok: false; error: string }
 > {
   const token = await fetchClerkSessionToken(getToken);
@@ -39,6 +41,8 @@ export async function postPaddleCheckout(
     body: JSON.stringify({
       kind: payload.kind,
       productSlug: payload.kind === 'one_time' ? payload.productSlug : undefined,
+      assetGroupKey:
+        payload.kind === 'one_time' ? payload.assetGroupKey?.trim() || undefined : undefined,
       planSlug: payload.kind === 'subscription' ? payload.planSlug : undefined,
     }),
   });
@@ -47,7 +51,13 @@ export async function postPaddleCheckout(
     url?: string;
     error?: string;
     code?: string;
+    alreadyPurchased?: boolean;
+    ownsProduct?: boolean;
   };
+
+  if (res.ok && data.alreadyPurchased) {
+    return { ok: true, alreadyPurchased: true, ownsProduct: true };
+  }
 
   if (res.status === 401) {
     return {

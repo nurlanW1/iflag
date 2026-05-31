@@ -19,6 +19,11 @@ import {
   mapPaddleSubscriptionStatus,
 } from './paddle-mapping.js';
 import { upsertOrder, markOrderRefunded } from '../orders.service.js';
+import { resolvePurchaseTarget, slugFromAssetGroupKey } from '../purchase-keys.js';
+import {
+  markUserAssetPurchaseRefundedByTransaction,
+  upsertUserAssetPurchase,
+} from '../user-asset-purchases.service.js';
 import {
   upsertSubscription,
   userIdFromProviderSubscription,
@@ -58,6 +63,14 @@ function asNumberCents(amountString: unknown): number {
 function readUserId(customData: any): string | null {
   if (!customData || typeof customData !== 'object') return null;
   const raw = customData.user_id;
+  if (raw === null || raw === undefined) return null;
+  const s = String(raw).trim();
+  return s.length ? s : null;
+}
+
+function readCustomString(customData: any, key: string): string | null {
+  if (!customData || typeof customData !== 'object') return null;
+  const raw = customData[key];
   if (raw === null || raw === undefined) return null;
   const s = String(raw).trim();
   return s.length ? s : null;
@@ -121,13 +134,36 @@ async function handleTransactionCompleted(event: PaddleEvent): Promise<HandlerOu
 
   const totals = tx.details?.totals ?? tx.totals ?? {};
 
+  const customProductSlug = readCustomString(tx.custom_data, 'product_slug');
+  const customAssetGroupKey = readCustomString(tx.custom_data, 'asset_group_key');
+  const customAssetId = readCustomString(tx.custom_data, 'asset_id');
+
+  let purchaseTarget = customProductSlug
+    ? await resolvePurchaseTarget({
+        productSlug: customProductSlug,
+        assetGroupKey: customAssetGroupKey,
+      })
+    : null;
+
+  if (!purchaseTarget && customAssetGroupKey) {
+    purchaseTarget = {
+      assetGroupKey: customAssetGroupKey.toLowerCase(),
+      productSlug: customProductSlug || slugFromAssetGroupKey(customAssetGroupKey),
+      assetId: customAssetId,
+    };
+  }
+
+  const orderProductSlug =
+    purchaseTarget?.productSlug || customProductSlug || mapping.productSlug;
+
   await upsertOrder({
     user_id: userId,
     provider: PROVIDER,
     provider_order_id: txId,
     provider_customer_id: asString(tx.customer_id),
     provider_variant_id: priceId,
-    product_slug: mapping.productSlug,
+    product_slug: orderProductSlug,
+    asset_id: purchaseTarget?.assetId || customAssetId || null,
     amount_cents: asNumberCents(totals.total ?? totals.grand_total ?? 0),
     currency: asString(totals.currency_code ?? tx.currency_code) || 'USD',
     status: 'paid',
@@ -136,8 +172,26 @@ async function handleTransactionCompleted(event: PaddleEvent): Promise<HandlerOu
       invoice_number: tx.invoice_number,
       invoice_id: tx.invoice_id,
       occurred_at: event.occurred_at,
+      asset_group_key: purchaseTarget?.assetGroupKey ?? null,
     },
   });
+
+  if (purchaseTarget) {
+    await upsertUserAssetPurchase({
+      user_id: userId,
+      asset_group_key: purchaseTarget.assetGroupKey,
+      product_slug: purchaseTarget.productSlug,
+      asset_id: purchaseTarget.assetId,
+      paddle_transaction_id: txId,
+      purchase_type: 'one_time',
+      status: 'paid',
+      purchased_at: event.occurred_at ? new Date(event.occurred_at) : new Date(),
+    });
+  } else {
+    console.warn(
+      `[paddle] transaction.completed ${txId}: could not resolve asset_group_key (product_slug=${customProductSlug ?? '—'})`
+    );
+  }
 
   return { status: 'processed', eventType: 'transaction.completed' };
 }
@@ -168,6 +222,7 @@ async function handleAdjustment(event: PaddleEvent): Promise<HandlerOutcome> {
   // We can't easily tell if this is a partial refund without summing items;
   // mark as refunded — partial refund detection can be added later.
   await markOrderRefunded(PROVIDER, txId, true);
+  await markUserAssetPurchaseRefundedByTransaction(txId);
   return { status: 'processed', eventType: 'adjustment.created' };
 }
 
@@ -290,7 +345,9 @@ export async function dispatchPaddleEvent(
 ): Promise<HandlerOutcome> {
   const type = payload.event_type || '';
 
-  if (type === 'transaction.completed') return handleTransactionCompleted(payload);
+  if (type === 'transaction.completed' || type === 'transaction.paid') {
+    return handleTransactionCompleted(payload);
+  }
   if (type === 'transaction.payment_failed') {
     // Optionally update our orders table to status='failed' for one-offs.
     const txId = asString(payload.data?.id);

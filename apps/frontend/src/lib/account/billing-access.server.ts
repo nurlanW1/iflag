@@ -2,6 +2,7 @@
  * Backend billing / subscription checks (Paddle + Postgres), via JWT cookie.
  */
 
+import { fetchBackendPurchasedAssets } from '@/lib/account/billing-ownership.server';
 import { resolveBackendApiBase } from '@/lib/auth/backend-url';
 
 type OrdersPage = {
@@ -71,6 +72,17 @@ export async function fetchBackendPaidProductGrantDates(
 
       if (orders.length === 0) break;
       page += 1;
+    }
+
+    const assets = await fetchBackendPurchasedAssets(accessToken);
+    if (assets) {
+      for (const a of assets) {
+        const slug = a.product_slug?.trim();
+        if (!slug) continue;
+        const ts = a.purchased_at ?? '';
+        const prev = bySlug.get(slug);
+        if (!prev || ts > prev) bySlug.set(slug, ts || prev || new Date().toISOString());
+      }
     }
 
     return bySlug;

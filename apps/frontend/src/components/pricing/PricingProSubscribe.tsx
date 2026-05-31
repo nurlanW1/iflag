@@ -36,6 +36,7 @@ function PricingProSubscribeClerk({ planSlug, className, style, children, minima
         setError(result.error);
         return;
       }
+      if (result.alreadyPurchased) return;
       window.location.href = result.url;
     } catch {
       setError('Network error — please try again');

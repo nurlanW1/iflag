@@ -10,6 +10,7 @@ export type CartProductRef = {
   slug: string;
   title: string;
   pathname: string;
+  assetGroupKey?: string | null;
 };
 
 type Props = {

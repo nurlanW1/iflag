@@ -1,14 +1,16 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { Package } from 'lucide-react';
+import { Package, ShoppingBag } from 'lucide-react';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import {
   fetchAccountOwnedFileRows,
+  fetchAccountPurchasedAssets,
   fetchAccountPurchases,
 } from '@/lib/account/dashboard-data';
 import { getDashboardDataUserId } from '@/lib/dashboard/account';
 import { getAccessTokenFromCookies } from '@/lib/auth/session.server';
 import type { AccountPurchaseRow } from '@/types/account';
+import { slugFromAssetGroupKey } from '@/lib/marketplace/group-flag-products';
 
 function Badge({
   children,
@@ -39,23 +41,97 @@ function purchaseStatusBadge(status: AccountPurchaseRow['status']) {
   }
 }
 
+function assetHref(productSlug: string | null, assetGroupKey: string): string {
+  const slug =
+    productSlug?.trim() ||
+    (assetGroupKey.startsWith('solo:') ? `nf-${assetGroupKey.slice(5)}` : slugFromAssetGroupKey(assetGroupKey));
+  return `/assets/${encodeURIComponent(slug)}`;
+}
+
 export default async function DashboardPurchasesPage() {
   const dataUserId = await getDashboardDataUserId();
   const access = await getAccessTokenFromCookies();
-  const [purchases, ownedFiles] = await Promise.all([
+  const [purchases, ownedFiles, purchasedAssets] = await Promise.all([
     fetchAccountPurchases(dataUserId, access),
     fetchAccountOwnedFileRows(dataUserId, access),
+    fetchAccountPurchasedAssets(access),
   ]);
   const hasOwned = ownedFiles.length > 0;
   const hasOrders = purchases.length > 0;
+  const hasAssets = purchasedAssets.length > 0;
 
   return (
     <div className="w-full min-w-0">
-      <h1 className="text-2xl font-black text-gray-900">Purchased files</h1>
+      <h1 className="text-2xl font-black text-gray-900">My purchases</h1>
       <p className="mt-1 text-sm text-gray-600">
-        One-time purchases from Paddle (and demo/admin grants in development) linked to your account.
-        Files stay available while your account is in good standing.
+        One-time $1 purchases unlock a design forever — download again anytime without paying twice.
       </p>
+
+      <section className="mt-10" aria-labelledby="assets-heading">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 id="assets-heading" className="text-lg font-bold text-gray-900">
+              Purchased designs
+            </h2>
+            <p className="mt-1 text-sm text-gray-600">
+              Lifetime access per design — all formats included after checkout.
+            </p>
+          </div>
+          <Badge className="bg-emerald-600 text-white">Owned</Badge>
+        </div>
+
+        {!hasAssets ? (
+          <div className="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 px-5 py-8 text-center">
+            <p className="text-sm text-gray-600">
+              No purchased designs yet. Buy a premium variant on any asset page — it appears here after Paddle
+              confirms payment.
+            </p>
+            <Link
+              href="/gallery"
+              className="mt-4 inline-flex text-sm font-semibold text-[#2563eb] hover:underline"
+            >
+              Browse gallery
+            </Link>
+          </div>
+        ) : (
+          <ul className="mt-6 divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-white">
+            {purchasedAssets.map((row) => {
+              const title =
+                row.display_title?.trim() ||
+                row.product_slug?.trim() ||
+                row.asset_group_key;
+              const href = assetHref(row.product_slug, row.asset_group_key);
+              return (
+                <li
+                  key={row.id}
+                  className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <ShoppingBag className="h-4 w-4 text-emerald-600" aria-hidden />
+                      <p className="font-semibold text-gray-900">{title}</p>
+                      <Badge className="bg-emerald-100 text-emerald-900">Lifetime</Badge>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Purchased{' '}
+                      <time dateTime={row.purchased_at}>
+                        {new Date(row.purchased_at).toLocaleString()}
+                      </time>
+                      {row.country_slug ? ` · ${row.country_slug}` : null}
+                    </p>
+                  </div>
+                  <Link
+                    href={href}
+                    className="inline-flex shrink-0 items-center justify-center rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2563eb]"
+                  >
+                    Open &amp; download
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
 
       <section className="mt-10" aria-labelledby="orders-heading">
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -63,17 +139,14 @@ export default async function DashboardPurchasesPage() {
             <h2 id="orders-heading" className="text-lg font-bold text-gray-900">
               Order history
             </h2>
-            <p className="mt-1 text-sm text-gray-600">
-              Checkout rows from Paddle when your session is linked to the billing backend.
-            </p>
+            <p className="mt-1 text-sm text-gray-600">Paddle checkout receipts synced to your account.</p>
           </div>
         </div>
 
         {!hasOrders ? (
           <div className="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 px-5 py-8 text-center">
             <p className="text-sm text-gray-600">
-              No orders synced yet. After you complete a Paddle checkout, orders appear here if backend cookies
-              match your Clerk email (open any dashboard page once to sync).
+              No orders synced yet. After checkout, rows appear here when your session is linked to the billing API.
             </p>
           </div>
         ) : (
@@ -112,21 +185,20 @@ export default async function DashboardPurchasesPage() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 id="owned-heading" className="text-lg font-bold text-gray-900">
-              Your library
+              Download entitlements
             </h2>
             <p className="mt-1 text-sm text-gray-600">
-              Download links are issued after the server verifies your access.
+              Pro file rows you can download from the catalog API.
             </p>
           </div>
-          <Badge className="bg-emerald-600 text-white">Owned</Badge>
         </div>
 
         {!hasOwned ? (
           <div className="mt-6">
             <EmptyState
               icon={Package}
-              title="No purchases yet"
-              description="When you buy a product, the files you are entitled to will be listed here."
+              title="No file entitlements yet"
+              description="After you buy a design, downloadable formats appear here when the catalog is linked."
               action={{ label: 'Open gallery', href: '/gallery' }}
             />
           </div>
@@ -150,7 +222,7 @@ export default async function DashboardPurchasesPage() {
                     <time dateTime={row.grantedAt}>{new Date(row.grantedAt).toLocaleString()}</time>
                   </p>
                   <Link
-                    href={`/flags/${row.productSlug}`}
+                    href={`/assets/${row.productSlug}`}
                     className="mt-2 inline-block text-xs font-medium text-[#2563eb] hover:underline"
                   >
                     Product page

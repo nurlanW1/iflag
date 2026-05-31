@@ -10,6 +10,7 @@ type Props = {
   cartProduct: CartProductRef;
   assetLabel?: string;
   productSlug?: string;
+  assetGroupKey?: string | null;
   productId?: string;
   previewFile?: PublicProductFile | null;
   requiresEntitlement?: boolean;
@@ -20,6 +21,7 @@ type Props = {
   /** PDP desktop: narrower column + denser format/offer rails. */
   narrowDesktopSidebar?: boolean;
   ownsProduct?: boolean;
+  onAlreadyPurchased?: () => void;
   selectedId?: string | null;
   onSelectId?: (fileId: string) => void;
 };

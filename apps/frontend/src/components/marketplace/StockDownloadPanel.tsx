@@ -26,6 +26,7 @@ type Props = {
   cartProduct: CartProductRef;
   assetLabel?: string;
   productSlug?: string;
+  assetGroupKey?: string | null;
   licenseSummary?: string | null;
   /** Catalog JSON products — marketplace download API. */
   productId?: string;
@@ -47,8 +48,10 @@ type Props = {
   roomyDesktopSidebar?: boolean;
   /** Desktop PDP — fixed narrow column; compact format + purchase rails. */
   narrowDesktopSidebar?: boolean;
-  /** User completed one-time checkout for this product slug. */
+  /** User completed one-time checkout for this design group. */
   ownsProduct?: boolean;
+  /** After checkout API reports existing ownership — refresh PDP state. */
+  onAlreadyPurchased?: () => void;
 };
 
 function downloadPath(productId: string | undefined, fileId: string): string {
@@ -65,6 +68,7 @@ export function StockDownloadPanel({
   cartProduct,
   assetLabel,
   productSlug = ONE_TIME_STOCK.productSlug,
+  assetGroupKey,
   licenseSummary,
   productId,
   previewFile,
@@ -79,6 +83,7 @@ export function StockDownloadPanel({
   roomyDesktopSidebar = false,
   narrowDesktopSidebar = false,
   ownsProduct = false,
+  onAlreadyPurchased,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -167,6 +172,8 @@ export function StockDownloadPanel({
     <DownloadPurchaseOffers
       assetLabel={assetLabel ?? cartProduct.title}
       productSlug={productSlug}
+      assetGroupKey={assetGroupKey ?? cartProduct.assetGroupKey}
+      onAlreadyPurchased={onAlreadyPurchased}
       compact={panelCompact}
     />
   ) : needsAccountForFree ? (
@@ -251,6 +258,8 @@ export function StockDownloadPanel({
     <DownloadPurchaseOffers
       assetLabel={assetLabel ?? cartProduct.title}
       productSlug={productSlug}
+      assetGroupKey={assetGroupKey ?? cartProduct.assetGroupKey}
+      onAlreadyPurchased={onAlreadyPurchased}
       compact={panelCompact}
     />
   );

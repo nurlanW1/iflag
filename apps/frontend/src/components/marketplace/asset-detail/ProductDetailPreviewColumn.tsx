@@ -57,7 +57,10 @@ export function ProductDetailPreviewColumn({
     const slug = cartProduct.slug?.trim();
     if (!slug) return;
     let cancelled = false;
-    void fetch(`/api/account/flagswing-plan?productSlug=${encodeURIComponent(slug)}`, {
+    const q = new URLSearchParams({ productSlug: slug });
+    const agk = cartProduct.assetGroupKey?.trim();
+    if (agk) q.set('assetGroupKey', agk);
+    void fetch(`/api/account/flagswing-plan?${q.toString()}`, {
       credentials: 'include',
     })
       .then((r) => (r.ok ? r.json() : null))
@@ -70,7 +73,7 @@ export function ProductDetailPreviewColumn({
     return () => {
       cancelled = true;
     };
-  }, [cartProduct.slug]);
+  }, [cartProduct.slug, cartProduct.assetGroupKey]);
 
   const defaultFileId = useMemo(() => firstSelectableStockFileId(dedupedFiles), [dedupedFiles]);
 
@@ -143,12 +146,14 @@ export function ProductDetailPreviewColumn({
               licenseSummary={licenseSummary}
               assetLabel={productTitle}
               productSlug={cartProduct.slug}
+              assetGroupKey={cartProduct.assetGroupKey}
               productId={neonDownloads ? undefined : productId}
               previewFile={neonDownloads ? undefined : previewFilePublic}
               requiresEntitlement={neonDownloads ? undefined : paid}
               compactLayout
               narrowDesktopSidebar
               ownsProduct={ownsProduct}
+              onAlreadyPurchased={() => setOwnsProduct(true)}
               selectedId={selectedFileId}
               onSelectId={setSelectedFileId}
             />
