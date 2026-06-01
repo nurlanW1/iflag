@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useClerk, useUser } from '@clerk/nextjs';
 import {
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import type { DashboardAccount } from '@/lib/dashboard/account';
 import { clerkEmailMatchesAdmin, clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
+import { ensureClerkBackendSession } from '@/lib/auth/clerk-session-bridge.client';
 
 const navItems: { href: string; label: string; icon: typeof User }[] = [
   { href: '/dashboard', label: 'Dashboard home', icon: LayoutDashboard },
@@ -34,7 +35,6 @@ export function DashboardShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [billingNotice, setBillingNotice] = useState<string | null>(null);
   const { signOut } = useClerk();
   const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
@@ -47,57 +47,28 @@ export function DashboardShell({
 
     let cancelled = false;
 
-    (async () => {
-      try {
-        const linkRes = await fetch('/api/auth/session-linked', {
-          cache: 'no-store',
-          credentials: 'include',
-        });
-        const linkJson = (await linkRes.json()) as {
-          linked?: boolean;
-          reason?: string;
-        };
-        if (cancelled) return;
-        if (linkJson.linked || linkJson.reason === 'clerk_disabled') {
-          setBillingNotice(null);
-          return;
-        }
-
-        const syncRes = await fetch('/api/auth/clerk-sync', {
-          method: 'POST',
-          credentials: 'include',
-        });
-        const syncBody = (await syncRes.json().catch(() => ({}))) as {
-          ok?: boolean;
-          error?: string;
-          code?: string;
-        };
-        if (cancelled) return;
-        if (syncRes.ok) {
-          setBillingNotice(null);
-          router.refresh();
-          return;
-        }
-
-        const configCodes = new Set([
-          'BRIDGE_SECRET_MISSING',
-          'API_URL_MISSING',
-          'API_UNREACHABLE',
-        ]);
-        if (syncBody.code && configCodes.has(syncBody.code) && syncBody.error) {
-          setBillingNotice(syncBody.error);
-        } else {
-          setBillingNotice(null);
-        }
-      } catch {
-        /* ignore — Paddle checkout uses Clerk session tokens without backend cookies */
+    void ensureClerkBackendSession(clerkUser.id).then((result) => {
+      if (cancelled) return;
+      if (result.status === 'linked' || result.status === 'synced' || result.status === 'clerk_disabled') {
+        setBillingNotice(null);
+        return;
       }
-    })();
+      const configCodes = new Set([
+        'BRIDGE_SECRET_MISSING',
+        'API_URL_MISSING',
+        'API_UNREACHABLE',
+      ]);
+      if (result.status === 'failed' && result.code && configCodes.has(result.code) && result.error) {
+        setBillingNotice(result.error);
+      } else {
+        setBillingNotice(null);
+      }
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [clerkLoaded, clerkUser?.id, router]);
+  }, [clerkLoaded, clerkUser?.id]);
 
   async function handleSignOut() {
     await signOut({ redirectUrl: '/' });

@@ -4,6 +4,7 @@ import { currentUser } from '@clerk/nextjs/server';
 import { backendUnreachableResponse, fetchBackendApi } from '@/lib/auth/backend-fetch.server';
 import { logBackendApiHostOnce, resolveBackendApiBase } from '@/lib/auth/backend-url';
 import { applyAuthSessionCookies } from '@/lib/auth/session-cookies.server';
+import { getSessionUserFromCookies } from '@/lib/auth/session.server';
 import { isClerkConfigured } from '@/lib/auth/clerk-env';
 
 export const runtime = 'nodejs';
@@ -49,6 +50,19 @@ export async function POST() {
   const email = addr?.emailAddress?.trim();
   if (!email) {
     return NextResponse.json({ error: 'No email on Clerk account' }, { status: 400 });
+  }
+
+  const clerkEmailNorm = email.toLowerCase();
+  const existingBackend = await getSessionUserFromCookies();
+  if (
+    existingBackend &&
+    existingBackend.email.trim().toLowerCase() === clerkEmailNorm
+  ) {
+    return NextResponse.json({
+      ok: true,
+      alreadyLinked: true,
+      user: existingBackend,
+    });
   }
 
   const verified = addr?.verification?.status === 'verified';
