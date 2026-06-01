@@ -202,32 +202,42 @@ export default function Footer() {
           </LinkColumn>
         </div>
 
-        <div className="mt-8 flex flex-col gap-4 border-t border-neutral-200/90 pt-6 lg:mt-7 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-          <div className="min-w-0 lg:max-w-xs">
-            <h3 className="text-sm font-semibold text-[#2a2a2a]">Occasional notes</h3>
-            <p className="mt-1 text-xs leading-snug text-neutral-600">
-              Product updates and curated drops — low frequency, straight to inbox.
-            </p>
-          </div>
-          <form
-            onSubmit={handleNewsletterSubmit}
-            className="flex w-full min-w-0 flex-col gap-2 sm:max-w-md sm:flex-row sm:items-center lg:max-w-lg lg:flex-1 lg:justify-end"
-          >
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email address"
-              className="min-h-10 flex-1 rounded-lg border border-neutral-300 bg-white px-3.5 py-2 text-sm text-[#2a2a2a] placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-300/80"
-              required
-            />
-            <button
-              type="submit"
-              className="min-h-10 shrink-0 rounded-lg bg-[var(--brand-blue)] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--brand-blue-hover)] sm:px-6"
+        <div className="mt-8 border-t border-neutral-200/90 pt-6 lg:mt-7">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
+            <div className="min-w-0 lg:max-w-sm">
+              <h3 className="text-sm font-semibold text-[#2a2a2a]">Occasional notes</h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-neutral-600">
+                Product updates and curated drops — low frequency, straight to your inbox.
+              </p>
+            </div>
+            <form
+              onSubmit={handleNewsletterSubmit}
+              className="w-full min-w-0 lg:max-w-xl lg:flex-1"
+              aria-label="Newsletter signup"
             >
-              Subscribe
-            </button>
-          </form>
+              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-stretch">
+                <label htmlFor="footer-newsletter-email" className="sr-only">
+                  Email address
+                </label>
+                <input
+                  id="footer-newsletter-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  autoComplete="email"
+                  className="min-h-11 w-full min-w-0 flex-1 rounded-xl border border-neutral-300/90 bg-white px-4 py-2.5 text-sm text-[#2a2a2a] shadow-sm placeholder:text-neutral-400 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/25"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)] sm:w-auto"
+                >
+                  Subscribe
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
 
         <p className="mt-5 text-xs leading-relaxed text-neutral-500">
