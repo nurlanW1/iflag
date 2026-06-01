@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import type { DashboardAccount } from '@/lib/dashboard/account';
 import { clerkEmailMatchesAdmin, clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
-import { ensureClerkBackendSession } from '@/lib/auth/clerk-session-bridge.client';
+import { probeClerkBackendSessionLinked } from '@/lib/auth/clerk-session-bridge.client';
 
 const navItems: { href: string; label: string; icon: typeof User }[] = [
   { href: '/dashboard', label: 'Dashboard home', icon: LayoutDashboard },
@@ -47,22 +47,15 @@ export function DashboardShell({
 
     let cancelled = false;
 
-    void ensureClerkBackendSession(clerkUser.id).then((result) => {
+    void probeClerkBackendSessionLinked().then(({ linked, reason }) => {
       if (cancelled) return;
-      if (result.status === 'linked' || result.status === 'synced' || result.status === 'clerk_disabled') {
+      if (linked || reason === 'clerk_disabled') {
         setBillingNotice(null);
         return;
       }
-      const configCodes = new Set([
-        'BRIDGE_SECRET_MISSING',
-        'API_URL_MISSING',
-        'API_UNREACHABLE',
-      ]);
-      if (result.status === 'failed' && result.code && configCodes.has(result.code) && result.error) {
-        setBillingNotice(result.error);
-      } else {
-        setBillingNotice(null);
-      }
+      setBillingNotice(
+        'Dashboard purchases use a separate server session. If billing looks wrong, sign out and back in once.',
+      );
     });
 
     return () => {

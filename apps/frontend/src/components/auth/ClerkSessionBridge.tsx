@@ -4,7 +4,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useEffect, useRef } from 'react';
 import {
   clearClerkBridgeClientCache,
-  ensureClerkBackendSession,
+  scheduleClerkBackendSessionBridge,
 } from '@/lib/auth/clerk-session-bridge.client';
 
 /**
@@ -13,25 +13,23 @@ import {
  */
 export function ClerkSessionBridge() {
   const { isLoaded, isSignedIn, userId } = useAuth();
-  const activeUserId = useRef<string | null>(null);
+  const lastUserId = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isLoaded) return;
 
     if (!isSignedIn || !userId) {
-      if (activeUserId.current) {
-        clearClerkBridgeClientCache(activeUserId.current);
+      if (lastUserId.current) {
+        clearClerkBridgeClientCache(lastUserId.current);
       }
-      activeUserId.current = null;
+      lastUserId.current = null;
       return;
     }
 
-    if (activeUserId.current === userId) return;
-    activeUserId.current = userId;
+    if (lastUserId.current === userId) return;
+    lastUserId.current = userId;
 
-    void ensureClerkBackendSession(userId).catch(() => {
-      /* optional — Clerk Bearer checkout still works without backend cookies */
-    });
+    scheduleClerkBackendSessionBridge(userId);
   }, [isLoaded, isSignedIn, userId]);
 
   return null;
