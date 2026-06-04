@@ -32,6 +32,8 @@ const marketplaceOwnerDownloadPublic =
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  compress: true,
+  poweredByHeader: false,
   async rewrites() {
     return [{ source: '/countries/:slug', destination: '/gallery/:slug' }];
   },

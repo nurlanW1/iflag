@@ -1,0 +1,115 @@
+{
+  "years": [1900, 1920, 1945, 1991, 2024],
+  "countries": [
+    {
+      "id": "russia",
+      "name": "Russia / USSR",
+      "years": {
+        "1900": { "flag": "russia", "name": "Russian Empire", "color": "#1a237e" },
+        "1920": { "flag": "soviet-union", "name": "Soviet Russia", "color": "#b71c1c" },
+        "1945": { "flag": "soviet-union", "name": "Soviet Union (USSR)", "color": "#b71c1c" },
+        "1991": { "flag": "russia", "name": "Russia (post-USSR)", "color": "#1565c0" },
+        "2024": { "flag": "russia", "name": "Russian Federation", "color": "#1565c0" }
+      }
+    },
+    {
+      "id": "turkey",
+      "name": "Turkey / Ottoman",
+      "years": {
+        "1900": { "flag": "ottoman-empire", "name": "Ottoman Empire", "color": "#b71c1c" },
+        "1920": { "flag": "ottoman-empire", "name": "Ottoman Empire", "color": "#b71c1c" },
+        "1945": { "flag": "turkey", "name": "Republic of Turkey", "color": "#e53935" },
+        "1991": { "flag": "turkey", "name": "Turkey", "color": "#e53935" },
+        "2024": { "flag": "turkey", "name": "Türkiye", "color": "#e53935" }
+      }
+    },
+    {
+      "id": "germany",
+      "name": "Germany",
+      "years": {
+        "1900": { "flag": "germany", "name": "German Empire", "color": "#424242" },
+        "1920": { "flag": "germany", "name": "Weimar Republic", "color": "#f57f17" },
+        "1945": { "flag": "germany", "name": "Occupied Germany", "color": "#424242" },
+        "1991": { "flag": "germany", "name": "Germany (reunified)", "color": "#f57f17" },
+        "2024": { "flag": "germany", "name": "Germany", "color": "#f57f17" }
+      }
+    },
+    {
+      "id": "france",
+      "name": "France",
+      "years": {
+        "1900": { "flag": "france", "name": "French Third Republic", "color": "#1565c0" },
+        "1920": { "flag": "france", "name": "France", "color": "#1565c0" },
+        "1945": { "flag": "france", "name": "France (liberated)", "color": "#1565c0" },
+        "1991": { "flag": "france", "name": "France", "color": "#1565c0" },
+        "2024": { "flag": "france", "name": "France", "color": "#1565c0" }
+      }
+    },
+    {
+      "id": "uk",
+      "name": "United Kingdom",
+      "years": {
+        "1900": { "flag": "united-kingdom", "name": "British Empire", "color": "#0d47a1" },
+        "1920": { "flag": "united-kingdom", "name": "British Empire", "color": "#0d47a1" },
+        "1945": { "flag": "united-kingdom", "name": "UK (post-WWII)", "color": "#0d47a1" },
+        "1991": { "flag": "united-kingdom", "name": "United Kingdom", "color": "#0d47a1" },
+        "2024": { "flag": "united-kingdom", "name": "United Kingdom", "color": "#0d47a1" }
+      }
+    },
+    {
+      "id": "usa",
+      "name": "United States",
+      "years": {
+        "1900": { "flag": "usa", "name": "United States", "color": "#b71c1c" },
+        "1920": { "flag": "usa", "name": "United States", "color": "#b71c1c" },
+        "1945": { "flag": "usa", "name": "USA (WWII Allied)", "color": "#b71c1c" },
+        "1991": { "flag": "usa", "name": "USA (Cold War end)", "color": "#b71c1c" },
+        "2024": { "flag": "usa", "name": "United States", "color": "#b71c1c" }
+      }
+    },
+    {
+      "id": "china",
+      "name": "China",
+      "years": {
+        "1900": { "flag": "china", "name": "Qing Dynasty", "color": "#fdd835" },
+        "1920": { "flag": "china", "name": "Republic of China", "color": "#e53935" },
+        "1945": { "flag": "china", "name": "Republic of China", "color": "#e53935" },
+        "1991": { "flag": "china", "name": "People's Republic of China", "color": "#b71c1c" },
+        "2024": { "flag": "china", "name": "China", "color": "#b71c1c" }
+      }
+    },
+    {
+      "id": "japan",
+      "name": "Japan",
+      "years": {
+        "1900": { "flag": "imperial-japan", "name": "Empire of Japan", "color": "#e53935" },
+        "1920": { "flag": "imperial-japan", "name": "Empire of Japan", "color": "#e53935" },
+        "1945": { "flag": "japan", "name": "Japan (post-WWII)", "color": "#e53935" },
+        "1991": { "flag": "japan", "name": "Japan", "color": "#e53935" },
+        "2024": { "flag": "japan", "name": "Japan", "color": "#e53935" }
+      }
+    },
+    {
+      "id": "india",
+      "name": "India",
+      "years": {
+        "1900": { "flag": "united-kingdom", "name": "British India", "color": "#0d47a1" },
+        "1920": { "flag": "united-kingdom", "name": "British India", "color": "#0d47a1" },
+        "1945": { "flag": "india", "name": "India (independence)", "color": "#ff8f00" },
+        "1991": { "flag": "india", "name": "India", "color": "#ff8f00" },
+        "2024": { "flag": "india", "name": "India", "color": "#ff8f00" }
+      }
+    },
+    {
+      "id": "italy",
+      "name": "Italy",
+      "years": {
+        "1900": { "flag": "italy", "name": "Kingdom of Italy", "color": "#2e7d32" },
+        "1920": { "flag": "italy", "name": "Kingdom of Italy", "color": "#2e7d32" },
+        "1945": { "flag": "italy", "name": "Italy (Allied)", "color": "#2e7d32" },
+        "1991": { "flag": "italy", "name": "Italy", "color": "#2e7d32" },
+        "2024": { "flag": "italy", "name": "Italy", "color": "#2e7d32" }
+      }
+    }
+  ]
+}

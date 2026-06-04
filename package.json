@@ -6,13 +6,14 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspaces",
+    "dev": "concurrently \"npm run dev --workspace=apps/frontend\" \"npm run dev --workspace=apps/backend\" --names \"frontend,backend\" --prefix-colors \"blue,green\"",
     "build": "npm run build --workspaces",
     "lint": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
     "test": "npm run test --workspaces"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.23",
+    "concurrently": "^10.0.3",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18"
   }

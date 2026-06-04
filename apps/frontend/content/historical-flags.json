@@ -1,0 +1,98 @@
+[
+  {
+    "slug": "soviet-union",
+    "name": "Soviet Union (USSR)",
+    "years": "1922–1991",
+    "description": "The USSR flag featured a red field with a gold hammer and sickle, symbolizing the unity of workers and peasants.",
+    "previewColor": "#CC0000",
+    "region": "Eurasia"
+  },
+  {
+    "slug": "ottoman-empire",
+    "name": "Ottoman Empire",
+    "years": "1299–1922",
+    "description": "The Ottoman flag bore a red field with a white crescent moon and star, symbols still used in modern Turkey.",
+    "previewColor": "#CC0000",
+    "region": "Middle East / Europe"
+  },
+  {
+    "slug": "timurid-empire",
+    "name": "Timurid Empire",
+    "years": "1370–1507",
+    "description": "The Timurid dynasty ruled Central Asia and Persia, known for its patronage of arts and the city of Samarkand.",
+    "previewColor": "#1a5276",
+    "region": "Central Asia"
+  },
+  {
+    "slug": "byzantine-empire",
+    "name": "Byzantine Empire",
+    "years": "395–1453",
+    "description": "The Eastern Roman Empire used a golden double-headed eagle on a purple field, symbolizing imperial power.",
+    "previewColor": "#7D6608",
+    "region": "Europe / Middle East"
+  },
+  {
+    "slug": "mughal-empire",
+    "name": "Mughal Empire",
+    "years": "1526–1857",
+    "description": "The Mughal Empire dominated the Indian subcontinent with a rich tradition of art, architecture, and governance.",
+    "previewColor": "#117a65",
+    "region": "South Asia"
+  },
+  {
+    "slug": "imperial-japan",
+    "name": "Imperial Japan",
+    "years": "1868–1947",
+    "description": "The Rising Sun flag with sixteen rays represented Imperial Japan's expansionist era and military power.",
+    "previewColor": "#CC0000",
+    "region": "East Asia"
+  },
+  {
+    "slug": "yugoslavia",
+    "name": "Yugoslavia",
+    "years": "1918–1992",
+    "description": "Yugoslavia united South Slavic peoples under a blue, white, and red tricolor with a red star.",
+    "previewColor": "#003f8a",
+    "region": "Europe"
+  },
+  {
+    "slug": "czechoslovakia",
+    "name": "Czechoslovakia",
+    "years": "1918–1993",
+    "description": "Czechoslovakia's flag featured white, red, and a blue triangle — now used by the Czech Republic.",
+    "previewColor": "#CC0000",
+    "region": "Europe"
+  },
+  {
+    "slug": "confederate-states",
+    "name": "Confederate States",
+    "years": "1861–1865",
+    "description": "The Confederate Battle Flag became one of the most controversial symbols in American history.",
+    "previewColor": "#CC0000",
+    "region": "North America"
+  },
+  {
+    "slug": "holy-roman-empire",
+    "name": "Holy Roman Empire",
+    "years": "962–1806",
+    "description": "The Holy Roman Empire's black eagle on gold is the oldest continuously used heraldic symbol in Europe.",
+    "previewColor": "#F4D03F",
+    "region": "Europe"
+  },
+  {
+    "slug": "mongol-empire",
+    "name": "Mongol Empire",
+    "years": "1206–1368",
+    "description": "The largest contiguous land empire in history, the Mongol Empire stretched from Asia to Eastern Europe.",
+    "previewColor": "#117a65",
+    "region": "Central Asia"
+  },
+  {
+    "slug": "roman-empire",
+    "name": "Roman Empire",
+    "years": "27 BC–476 AD",
+    "description": "The SPQR standard of Rome represented the Senate and People of Rome across centuries of civilization.",
+    "previewColor": "#922B21",
+    "region": "Europe / Middle East"
+  }
+]

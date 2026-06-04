@@ -1,0 +1,98 @@
+[
+  { "slug": "usa", "name": "United States", "colors": [
+    { "name": "Old Glory Red", "hex": "#B22234", "rgb": "178,34,52", "cmyk": "0,81,71,30", "pantone": "193 C" },
+    { "name": "Old Glory Blue", "hex": "#3C3B6E", "rgb": "60,59,110", "cmyk": "45,46,0,57", "pantone": "282 C" },
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" }
+  ]},
+  { "slug": "united-kingdom", "name": "United Kingdom", "colors": [
+    { "name": "Union Red", "hex": "#CF142B", "rgb": "207,20,43", "cmyk": "0,90,79,19", "pantone": "186 C" },
+    { "name": "Union Blue", "hex": "#00247D", "rgb": "0,36,125", "cmyk": "100,71,0,51", "pantone": "280 C" },
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" }
+  ]},
+  { "slug": "france", "name": "France", "colors": [
+    { "name": "French Blue", "hex": "#002395", "rgb": "0,35,149", "cmyk": "100,77,0,42", "pantone": "286 C" },
+    { "name": "French Red", "hex": "#ED2939", "rgb": "237,41,57", "cmyk": "0,83,76,7", "pantone": "485 C" },
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" }
+  ]},
+  { "slug": "germany", "name": "Germany", "colors": [
+    { "name": "Black", "hex": "#000000", "rgb": "0,0,0", "cmyk": "0,0,0,100", "pantone": "Black C" },
+    { "name": "German Red", "hex": "#DD0000", "rgb": "221,0,0", "cmyk": "0,100,100,13", "pantone": "485 C" },
+    { "name": "German Gold", "hex": "#FFCE00", "rgb": "255,206,0", "cmyk": "0,19,100,0", "pantone": "109 C" }
+  ]},
+  { "slug": "russia", "name": "Russia", "colors": [
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" },
+    { "name": "Russian Blue", "hex": "#0039A6", "rgb": "0,57,166", "cmyk": "100,66,0,35", "pantone": "286 C" },
+    { "name": "Russian Red", "hex": "#D52B1E", "rgb": "213,43,30", "cmyk": "0,80,86,16", "pantone": "485 C" }
+  ]},
+  { "slug": "china", "name": "China", "colors": [
+    { "name": "Chinese Red", "hex": "#DE2910", "rgb": "222,41,16", "cmyk": "0,82,93,13", "pantone": "485 C" },
+    { "name": "Chinese Yellow", "hex": "#FFDE00", "rgb": "255,222,0", "cmyk": "0,13,100,0", "pantone": "116 C" }
+  ]},
+  { "slug": "japan", "name": "Japan", "colors": [
+    { "name": "Crimson", "hex": "#BC002D", "rgb": "188,0,45", "cmyk": "0,100,76,26", "pantone": "186 C" },
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" }
+  ]},
+  { "slug": "turkey", "name": "Turkey", "colors": [
+    { "name": "Turkish Red", "hex": "#E30A17", "rgb": "227,10,23", "cmyk": "0,96,90,11", "pantone": "485 C" },
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" }
+  ]},
+  { "slug": "uzbekistan", "name": "Uzbekistan", "colors": [
+    { "name": "Uzbek Blue", "hex": "#1EB53A", "rgb": "30,181,58", "cmyk": "83,0,68,29", "pantone": "355 C" },
+    { "name": "Uzbek Green", "hex": "#009900", "rgb": "0,153,0", "cmyk": "100,0,100,40", "pantone": "355 C" },
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" },
+    { "name": "Sky Blue", "hex": "#1EB7FF", "rgb": "30,183,255", "cmyk": "88,28,0,0", "pantone": "299 C" }
+  ]},
+  { "slug": "ukraine", "name": "Ukraine", "colors": [
+    { "name": "Ukrainian Blue", "hex": "#005BBB", "rgb": "0,91,187", "cmyk": "100,51,0,27", "pantone": "285 C" },
+    { "name": "Ukrainian Yellow", "hex": "#FFD500", "rgb": "255,213,0", "cmyk": "0,16,100,0", "pantone": "116 C" }
+  ]},
+  { "slug": "italy", "name": "Italy", "colors": [
+    { "name": "Italian Green", "hex": "#009246", "rgb": "0,146,70", "cmyk": "100,0,52,43", "pantone": "354 C" },
+    { "name": "Italian Red", "hex": "#CE2B37", "rgb": "206,43,55", "cmyk": "0,79,73,19", "pantone": "485 C" },
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" }
+  ]},
+  { "slug": "spain", "name": "Spain", "colors": [
+    { "name": "Spanish Red", "hex": "#AA151B", "rgb": "170,21,27", "cmyk": "0,88,84,33", "pantone": "187 C" },
+    { "name": "Spanish Yellow", "hex": "#F1BF00", "rgb": "241,191,0", "cmyk": "0,21,100,5", "pantone": "116 C" }
+  ]},
+  { "slug": "brazil", "name": "Brazil", "colors": [
+    { "name": "Brazilian Green", "hex": "#009C3B", "rgb": "0,156,59", "cmyk": "100,0,62,39", "pantone": "354 C" },
+    { "name": "Brazilian Yellow", "hex": "#FFDF00", "rgb": "255,223,0", "cmyk": "0,13,100,0", "pantone": "116 C" },
+    { "name": "Brazilian Blue", "hex": "#002776", "rgb": "0,39,118", "cmyk": "100,67,0,54", "pantone": "281 C" }
+  ]},
+  { "slug": "india", "name": "India", "colors": [
+    { "name": "India Saffron", "hex": "#FF9933", "rgb": "255,153,51", "cmyk": "0,40,80,0", "pantone": "1495 C" },
+    { "name": "India White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" },
+    { "name": "India Green", "hex": "#138808", "rgb": "19,136,8", "cmyk": "86,0,94,47", "pantone": "362 C" },
+    { "name": "Ashoka Blue", "hex": "#000080", "rgb": "0,0,128", "cmyk": "100,100,0,50", "pantone": "286 C" }
+  ]},
+  { "slug": "saudi-arabia", "name": "Saudi Arabia", "colors": [
+    { "name": "Saudi Green", "hex": "#006C35", "rgb": "0,108,53", "cmyk": "100,0,51,58", "pantone": "356 C" },
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" }
+  ]},
+  { "slug": "uae", "name": "United Arab Emirates", "colors": [
+    { "name": "UAE Green", "hex": "#00732F", "rgb": "0,115,47", "cmyk": "100,0,59,55", "pantone": "355 C" },
+    { "name": "UAE Red", "hex": "#FF0000", "rgb": "255,0,0", "cmyk": "0,100,100,0", "pantone": "485 C" },
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" },
+    { "name": "Black", "hex": "#000000", "rgb": "0,0,0", "cmyk": "0,0,0,100", "pantone": "Black C" }
+  ]},
+  { "slug": "australia", "name": "Australia", "colors": [
+    { "name": "Union Blue", "hex": "#00008B", "rgb": "0,0,139", "cmyk": "100,100,0,45", "pantone": "280 C" },
+    { "name": "Red", "hex": "#FF0000", "rgb": "255,0,0", "cmyk": "0,100,100,0", "pantone": "485 C" },
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" }
+  ]},
+  { "slug": "canada", "name": "Canada", "colors": [
+    { "name": "Canadian Red", "hex": "#FF0000", "rgb": "255,0,0", "cmyk": "0,100,100,0", "pantone": "485 C" },
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" }
+  ]},
+  { "slug": "south-korea", "name": "South Korea", "colors": [
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" },
+    { "name": "Taeguk Red", "hex": "#CD2E3A", "rgb": "205,46,58", "cmyk": "0,78,72,20", "pantone": "186 C" },
+    { "name": "Taeguk Blue", "hex": "#0047A0", "rgb": "0,71,160", "cmyk": "100,56,0,37", "pantone": "286 C" },
+    { "name": "Black", "hex": "#000000", "rgb": "0,0,0", "cmyk": "0,0,0,100", "pantone": "Black C" }
+  ]},
+  { "slug": "kazakhstan", "name": "Kazakhstan", "colors": [
+    { "name": "Sky Blue", "hex": "#00AFCA", "rgb": "0,175,202", "cmyk": "100,13,0,21", "pantone": "313 C" },
+    { "name": "Gold", "hex": "#FEC50C", "rgb": "254,197,12", "cmyk": "0,22,95,0", "pantone": "116 C" }
+  ]}
+]
