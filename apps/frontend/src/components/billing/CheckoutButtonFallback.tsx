@@ -115,12 +115,7 @@ export function CheckoutButtonFallback({
         return;
       }
       if (data.url) {
-        const txnId = new URL(data.url, window.location.origin).searchParams.get('_ptxn')?.trim();
-        if (txnId && (window as any).Paddle?.Checkout) {
-          (window as any).Paddle.Checkout.open({ transactionId: txnId });
-        } else {
-          window.location.href = data.url;
-        }
+        window.location.href = data.url;
         return;
       }
       setError('No checkout URL returned');

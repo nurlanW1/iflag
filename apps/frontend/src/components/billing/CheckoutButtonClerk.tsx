@@ -75,15 +75,7 @@ export function CheckoutButtonClerk({
       }
       // Extract transaction ID from Paddle checkout URL (?_ptxn=txn_...)
       // and open as overlay instead of redirecting to production domain.
-      const txnId = new URL(result.url, window.location.origin).searchParams.get('_ptxn')?.trim();
-      if (txnId && (window as any).Paddle?.Checkout) {
-        (window as any).Paddle.Checkout.open({
-          transactionId: txnId,
-          settings: { displayMode: 'overlay', successUrl: '/thank-you' },
-        });
-      } else {
-        window.location.href = result.url;
-      }
+      window.location.href = result.url;
     } catch {
       setError('Network error — please try again');
     } finally {
