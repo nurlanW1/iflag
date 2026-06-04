@@ -1,4 +1,5 @@
-import 'dotenv/config';
+import { config as dotenvConfig } from 'dotenv';
+dotenvConfig({ override: true });
 import express from 'express';
 import cors from 'cors';
 import helmetPackage from "helmet";

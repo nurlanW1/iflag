@@ -6,7 +6,6 @@ export const PRIMARY_HUB_LINKS = [
   { href: '/pricing', label: 'Pricing' },
   { href: '/gallery', label: 'Country gallery' },
   { href: '/assets', label: 'All assets' },
-  { href: '/gallery', label: 'Gallery' },
   { href: '/categories/country-flags', label: 'Country flags category' },
   { href: '/categories/autonomous-flags', label: 'Autonomous & regional flags' },
   { href: '/categories/organization-flags', label: 'International organization flags' },

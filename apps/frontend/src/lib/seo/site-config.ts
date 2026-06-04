@@ -5,7 +5,7 @@ export const SITE_NAME = 'Flagswing';
 
 /** Short default description; override per-page with `description` in metadata. */
 export const SITE_DESCRIPTION =
-  'Discover and download flag assets in vector and raster formats for creative and professional projects.';
+  'Download country flags in SVG, PNG, EPS formats. Free flat flags + premium shapes, mockups, and historical flags. 250+ countries and territories.';
 
 /**
  * Canonical site origin for metadataBase, sitemap, and robots.
@@ -37,7 +37,7 @@ export function buildDefaultMetadata(): Metadata {
   return {
     metadataBase,
     title: {
-      default: `${SITE_NAME} — Flag marketplace`,
+      default: `${SITE_NAME} — Flag Assets SVG PNG Free Download`,
       template: `%s | ${SITE_NAME}`,
     },
     description: SITE_DESCRIPTION,

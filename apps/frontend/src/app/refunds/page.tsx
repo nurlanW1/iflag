@@ -7,7 +7,7 @@ import { P, getPublicContactEmail } from '@/lib/legal/legal-placeholders';
 export const metadata = legalPageMetadata(
   '/refunds',
   'Refund Policy',
-  'Refunds, cancellations, and billing disputes for digital goods and subscriptions. Template with customizable placeholders.'
+  'Refunds, cancellations, and billing disputes for digital flag assets and subscriptions on Flagswing.'
 );
 
 export default function RefundsPage() {
@@ -32,21 +32,21 @@ export default function RefundsPage() {
         </p>
         <p className="text-sm text-gray-600">Effective date: {P.EFFECTIVE_DATE}.</p>
         <p>
-          Payments may be processed by <strong>{P.PAYMENT_PROCESSOR}</strong>. In some cases, their
-          dispute or chargeback rules may also apply.
+          Payments are processed by <strong>{P.PAYMENT_PROCESSOR}</strong>. Their dispute and chargeback
+          rules may also apply.
         </p>
       </section>
 
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">2. Digital goods</h2>
         <p>
-          Many jurisdictions treat digital content delivered instantly as final once delivery begins, with
-          limited cancellation rights. [PLACEHOLDER: EU/UK/EEA 14-day withdrawal and the “I agree to immediate
-          delivery and lose withdrawal” checkbox text you use at checkout, if applicable.]
+          Digital assets are delivered instantly upon successful payment. By completing your purchase
+          you agree to immediate delivery and acknowledge that this may limit withdrawal rights under
+          consumer protection law in your jurisdiction (e.g. EU/UK 14-day right of withdrawal).
         </p>
         <p>
-          [PLACEHOLDER: define when “delivery” occurs — e.g. on successful download or license grant; and
-          whether streaming-only access counts as delivered.]
+          &quot;Delivery&quot; occurs when the download link or presigned URL is made available, or when
+          access is granted via subscription — whichever comes first.
         </p>
       </section>
 
@@ -55,35 +55,37 @@ export default function RefundsPage() {
         <p>We may provide refunds or account credits where required by law or at our discretion, including:</p>
         <ul className="list-inside list-disc space-y-2 pl-1">
           <li>Duplicate charges or proven billing errors.</li>
-          <li>Technical failure that prevents access and cannot be resolved within a reasonable time.</li>
-          <li>Major misdescription of what was purchased (subject to verification). [PLACEHOLDER: evidence you require.]</li>
+          <li>Technical failure that prevents access and cannot be resolved within 48 hours.</li>
+          <li>Major misdescription of what was purchased (please email us with your order reference and a description of the issue).</li>
           <li>Mandatory consumer rights in your region that cannot be waived.</li>
         </ul>
-        <p>[PLACEHOLDER: time window to request a refund — e.g. 7 / 14 / 30 days — and exclusions.]</p>
+        <p>Refund requests must be submitted within <strong>14 days</strong> of the original charge. Requests after this window are evaluated at our discretion.</p>
       </section>
 
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">4. Subscriptions</h2>
         <p>
-          Subscription fees may renew until cancelled. If you cancel, you typically retain access until the
-          end of the current billing period unless stated otherwise at purchase. [PLACEHOLDER: mid-cycle
-          refunds, partial months, annual plans, and free-trial conversion rules.]
+          Subscriptions renew automatically until cancelled. If you cancel, you retain access until
+          the end of the current billing period. No partial-month or mid-cycle refunds are issued
+          unless required by law. Annual plans may be refunded within 14 days of the renewal date if
+          you have not downloaded any assets in that period.
         </p>
       </section>
 
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">5. Chargebacks and payment disputes</h2>
         <p>
-          Please contact us before filing a chargeback so we can investigate. Unfounded chargebacks may
-          result in account suspension and loss of licenses where permitted. [PLACEHOLDER: appeal process.]
+          Please contact us before filing a chargeback so we can resolve the issue quickly. Unfounded
+          chargebacks may result in account suspension and loss of licenses. To appeal a suspension,
+          email us with your order reference.
         </p>
       </section>
 
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">6. Taxes and currency</h2>
         <p>
-          Refunds, if issued, are generally processed in the same currency and via the same payment method
-          where possible. Tax treatment depends on local rules and processor capabilities. {P.VAT_OR_TAX_ID}
+          Refunds, if issued, are processed in the original payment currency via the same payment method
+          where possible. Tax treatment depends on local rules and processor capabilities.
         </p>
       </section>
 
@@ -94,16 +96,17 @@ export default function RefundsPage() {
           <a className="font-medium text-[#2563eb] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>{' '}
-          with your transaction reference, account email, and a short description. [PLACEHOLDER: SLA and
-          business hours.]
+          with your transaction reference, account email, and a short description of the issue.
+          We aim to respond within 2 business days.
         </p>
       </section>
 
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">8. Changes</h2>
         <p>
-          We may update this policy to reflect product, legal, or processor changes. [PLACEHOLDER: notice
-          approach for material changes.]
+          We may update this policy to reflect product, legal, or processor changes. Material changes
+          will be announced via email or a prominent notice on the site at least 7 days before they
+          take effect.
         </p>
       </section>
     </LegalDocumentShell>

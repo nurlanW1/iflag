@@ -13,19 +13,17 @@ export const LEGAL_TEMPLATE_NOTICE =
 /** Public support / contact email shown in footers and legal pages. */
 export function getPublicContactEmail(): string {
   const v = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim();
-  return v || '[PLACEHOLDER: contact@yourdomain.com]';
+  return v || 'support@flagswing.com';
 }
 
 export const P = {
-  OPERATOR_LEGAL_NAME: '[PLACEHOLDER: Legal name of the entity operating the marketplace]',
-  TRADING_NAME: `[PLACEHOLDER: Trading / brand name — e.g. “${SITE_NAME}”]`,
-  JURISDICTION: '[PLACEHOLDER: Country or region of establishment / primary governing law — customize]',
-  REGISTERED_OFFICE:
-    '[PLACEHOLDER: Registered office or principal business address — obtain from your records; do not invent]',
-  EFFECTIVE_DATE: '[PLACEHOLDER: Effective date of this document — e.g. 17 April 2026]',
+  OPERATOR_LEGAL_NAME: process.env.NEXT_PUBLIC_OPERATOR_LEGAL_NAME || SITE_NAME,
+  TRADING_NAME: SITE_NAME,
+  JURISDICTION: process.env.NEXT_PUBLIC_JURISDICTION || 'Uzbekistan',
+  REGISTERED_OFFICE: process.env.NEXT_PUBLIC_REGISTERED_OFFICE || '',
+  EFFECTIVE_DATE: '4 June 2026',
   /** Merchant of Record / payment partner shown in footer & legal trust copy. */
   PAYMENT_PROCESSOR: 'Paddle',
-  SUPER_AUTHORITY:
-    '[PLACEHOLDER: Supervisory or complaint body if applicable — e.g. EU/UK data authority link]',
-  VAT_OR_TAX_ID: '[PLACEHOLDER: Tax / VAT ID if you publish one — or remove this sentence]',
+  SUPER_AUTHORITY: '',
+  VAT_OR_TAX_ID: '',
 } as const;

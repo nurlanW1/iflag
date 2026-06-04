@@ -1,36 +1,36 @@
-import { Pool, PoolConfig } from 'pg';
-import { runMigrations } from './db/migrations.js';
-import { normalizeDatabaseUrlForPg } from './lib/database-url.js';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import type { Pool as PgPool } from 'pg';
+import ws from 'ws';
 
-const rawConnectionString =
-  process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/flagstock';
+/**
+ * Lazy pool initialization — DATABASE_URL is read on first use,
+ * AFTER dotenv has loaded env vars. This avoids ESM import-hoisting
+ * issues where module-level code runs before dotenvConfig().
+ */
+neonConfig.webSocketConstructor = ws;
 
-const poolConfig: PoolConfig = {
-  connectionString: normalizeDatabaseUrlForPg(rawConnectionString),
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-};
+let _pool: PgPool | undefined;
 
-const pool = new Pool(poolConfig);
-
-// Handle pool errors
-pool.on('error', (err: Error) => {
-  console.error('Unexpected error on idle client', err);
-  process.exit(-1);
-});
-
-// Initialize database on first connection
-let migrationsRun = false;
-pool.on('connect', async () => {
-  if (!migrationsRun) {
-    migrationsRun = true;
-    try {
-      await runMigrations(pool);
-    } catch (error) {
-      console.error('Failed to run migrations:', error);
+function getPool(): PgPool {
+  if (!_pool) {
+    const url = process.env.DATABASE_URL?.trim();
+    if (!url || url.includes('localhost:5432')) {
+      console.error('[db] DATABASE_URL not set or points to localhost — check .env');
     }
+    const connectionString = url || 'postgresql://user:password@localhost:5432/flagstock';
+    _pool = new Pool({ connectionString, max: 10 }) as unknown as PgPool;
+    (_pool as any).on?.('error', (err: Error) => {
+      console.error('[db] Pool error:', err.message);
+    });
   }
+  return _pool;
+}
+
+/** Proxy that forwards all pg.Pool methods to the lazily-created pool. */
+const pool = new Proxy({} as PgPool, {
+  get(_target, prop) {
+    return (getPool() as any)[prop];
+  },
 });
 
 export default pool;

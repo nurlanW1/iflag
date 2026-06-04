@@ -36,8 +36,7 @@ export default function CookiesPage() {
         <h2 className="text-xl font-bold text-gray-900">2. What are cookies?</h2>
         <p>
           Cookies are small text files stored on your device. Similar technologies include local storage,
-          session storage, pixels, and software development kits (SDKs) in apps. [PLACEHOLDER: link to a
-          glossary if you maintain one.]
+          session storage, pixels, and software development kits (SDKs) in apps.
         </p>
       </section>
 
@@ -46,20 +45,20 @@ export default function CookiesPage() {
         <p>We group technologies into the following categories:</p>
         <ul className="list-inside list-disc space-y-2 pl-1">
           <li>
-            <strong>Strictly necessary</strong> — required for security, load balancing, authentication,
-            cart/checkout, and basic preferences. [PLACEHOLDER: list cookie names, purposes, duration.]
+            <strong>Strictly necessary</strong> — required for security, authentication, session management,
+            and checkout. These include <code>fs_access</code> (session token, 15 min) and{' '}
+            <code>fs_refresh</code> (refresh token, 30 days).
           </li>
           <li>
-            <strong>Functional</strong> — remembers choices such as language or UI settings. [PLACEHOLDER:
-            list cookie names, purposes, duration.]
+            <strong>Functional</strong> — remembers UI preferences such as theme or search filters.
           </li>
           <li>
-            <strong>Analytics</strong> — helps us understand usage and improve performance. [PLACEHOLDER:
-            name vendors — e.g. Plausible, GA4 — and whether IP anonymization is enabled.]
+            <strong>Analytics</strong> — helps us understand usage and improve performance. We do not
+            currently use third-party analytics with persistent identifiers.
           </li>
           <li>
-            <strong>Marketing / advertising</strong> — used to measure campaigns or personalize ads where
-            permitted. [PLACEHOLDER: list ad platforms; whether remarketing is used; consent requirements.]
+            <strong>Marketing / advertising</strong> — we do not currently run personalized ad campaigns
+            or share data with ad platforms.
           </li>
         </ul>
       </section>
@@ -68,20 +67,25 @@ export default function CookiesPage() {
         <h2 className="text-xl font-bold text-gray-900">4. Consent and the site banner</h2>
         <p>
           Where required, we will request your consent before setting non-essential cookies. The banner stores
-          your choice locally so we do not ask on every visit. [PLACEHOLDER: describe how to reopen the
-          preference center; link to vendor opt-outs.]
+          your choice locally so we do not ask on every visit. You can change your preference at any time by
+          clearing site cookies in your browser settings.
         </p>
       </section>
 
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">5. Third parties</h2>
         <p>
-          Payment processing may be handled by <strong>{P.PAYMENT_PROCESSOR}</strong>, which may set their own
-          strictly necessary cookies during checkout. [PLACEHOLDER: embed links to processor cookie notices.]
-        </p>
-        <p>
-          [PLACEHOLDER: social plugins, embedded videos, maps, or support chat widgets — each may set
-          cookies.]
+          Payment processing is handled by <strong>{P.PAYMENT_PROCESSOR}</strong>, which may set their own
+          strictly necessary cookies during checkout. See{' '}
+          <a
+            href="https://www.paddle.com/legal/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-[#2563eb] hover:underline"
+          >
+            Paddle&apos;s Privacy Policy
+          </a>{' '}
+          for details.
         </p>
       </section>
 
@@ -95,14 +99,14 @@ export default function CookiesPage() {
 
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">7. Do Not Track</h2>
-        <p>[PLACEHOLDER: your DNT / Global Privacy Control response, if any.]</p>
+        <p>We currently do not respond to Do Not Track (DNT) browser signals, as no industry standard has been adopted. We do not track users across third-party sites.</p>
       </section>
 
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-gray-900">8. Updates</h2>
         <p>
-          We will update this policy when we change technologies or partners. [PLACEHOLDER: material change
-          notice approach.]
+          We will update this policy when we change technologies or partners. Material changes will be
+          announced via the email address on your account or a prominent notice on the site.
         </p>
       </section>
 
