@@ -16,6 +16,8 @@ import { logProductionDeploymentWarnings } from '@/lib/seo/production-warnings';
 import { organizationJsonLd, websiteJsonLd } from '@/lib/seo/structured-data';
 import { AdSenseScriptPlaceholder } from '@/components/ads/AdSensePlaceholder';
 import { AppToaster } from '@/components/AppToaster';
+import { PaddleInitializer } from '@/components/billing/PaddleInitializer';
+import { Suspense } from 'react';
 import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 import type { Viewport } from 'next';
@@ -64,6 +66,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <CookieNotice />
               <AuthModalWrapper />
               <AppToaster />
+              <Suspense><PaddleInitializer /></Suspense>
             </AuthModalProvider>
           </CartProvider>
         </AuthProvider>
