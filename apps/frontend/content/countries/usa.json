@@ -1,0 +1,18 @@
+{
+  "code": "US",
+  "slug": "usa",
+  "name": "United States",
+  "localName": "United States of America",
+  "capital": "Washington, D.C.",
+  "flagAdopted": 1777,
+  "independence": "July 4, 1776",
+  "nationalHoliday": "Independence Day — July 4",
+  "region": "Americas",
+  "colors": [
+    { "name": "Old Glory Red", "hex": "#B22234", "rgb": "178,34,52", "cmyk": "0,81,71,30", "pantone": "193 C" },
+    { "name": "Old Glory Blue", "hex": "#3C3B6E", "rgb": "60,59,110", "cmyk": "45,46,0,57", "pantone": "282 C" },
+    { "name": "White", "hex": "#FFFFFF", "rgb": "255,255,255", "cmyk": "0,0,0,0", "pantone": "Safe" }
+  ],
+  "history": "The flag of the United States, known as the Stars and Stripes, has evolved from 13 stripes and 13 stars representing the original colonies (1777) to its current form with 50 stars representing the 50 states. Each star was added as new states joined the Union, with the last change in 1960 when Hawaii became the 50th state.",
+  "symbolism": "The 13 stripes represent the original colonies. The red symbolizes valor and hardiness, white represents purity and innocence, and blue signifies vigilance, perseverance, and justice."
+}
