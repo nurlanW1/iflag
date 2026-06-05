@@ -2,13 +2,29 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Edit, Trash2, Eye, EyeOff, Download, Filter } from 'lucide-react';
+import {
+  Search,
+  Edit,
+  Trash2,
+  Eye,
+  EyeOff,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  Flag,
+  CheckSquare,
+  Square,
+} from 'lucide-react';
+
+const PAGE_SIZE = 20;
 
 export default function AdminAssetsPage() {
   const [assets, setAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkLoading, setBulkLoading] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
     asset_type: '',
@@ -18,15 +34,17 @@ export default function AdminAssetsPage() {
 
   useEffect(() => {
     loadAssets();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, filters]);
 
   const loadAssets = async () => {
     setLoading(true);
+    setSelectedIds(new Set());
     try {
       const { adminApi } = await import('@/lib/admin-api');
       const data = await adminApi.getAssets({
         page: page.toString(),
-        limit: '50',
+        limit: PAGE_SIZE.toString(),
         ...filters,
       });
       setAssets(data.assets || []);
@@ -49,10 +67,7 @@ export default function AdminAssetsPage() {
   };
 
   const deleteAsset = async (assetId: string) => {
-    if (!confirm('Are you sure you want to archive this asset?')) {
-      return;
-    }
-
+    if (!confirm('Are you sure you want to archive this asset?')) return;
     try {
       const { adminApi } = await import('@/lib/admin-api');
       await adminApi.deleteAsset(assetId);
@@ -62,214 +77,379 @@ export default function AdminAssetsPage() {
     }
   };
 
+  const allSelected = assets.length > 0 && assets.every((a) => selectedIds.has(a.id));
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(assets.map((a) => a.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const bulkPublish = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkLoading(true);
+    try {
+      const { adminApi } = await import('@/lib/admin-api');
+      await Promise.all([...selectedIds].map((id) => adminApi.toggleAssetStatus(id, true)));
+      setSelectedIds(new Set());
+      loadAssets();
+    } catch (error) {
+      console.error('Bulk publish failed:', error);
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const bulkDelete = async () => {
+    if (selectedIds.size === 0 || !confirm(`Archive ${selectedIds.size} selected assets?`)) return;
+    setBulkLoading(true);
+    try {
+      const { adminApi } = await import('@/lib/admin-api');
+      await Promise.all([...selectedIds].map((id) => adminApi.deleteAsset(id)));
+      setSelectedIds(new Set());
+      loadAssets();
+    } catch (error) {
+      console.error('Bulk delete failed:', error);
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-xl)' }}>
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 style={{ fontSize: '2rem', marginBottom: 'var(--spacing-sm)' }}>
-            Manage Assets
-          </h1>
-          <p style={{ color: 'var(--color-gray-600)' }}>
-            {total} total assets
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">Asset Management</h1>
+          <p className="mt-0.5 text-sm text-gray-500">{total} total assets</p>
         </div>
-        <Link href="/admin/upload" className="btn btn-primary">
-          Upload New Asset
+        <Link
+          href="/admin/upload"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1d4ed8]"
+        >
+          <Plus size={16} aria-hidden />
+          Upload New
         </Link>
       </div>
 
       {/* Filters */}
-      <div className="card" style={{ marginBottom: 'var(--spacing-lg)' }}>
-        <div className="card-body">
-          <div className="grid grid-cols-4" style={{ gap: 'var(--spacing-md)' }}>
-            <div>
-              <label className="form-label">Search</label>
-              <div style={{ position: 'relative' }}>
-                <Search size={18} style={{
-                  position: 'absolute',
-                  left: 'var(--spacing-sm)',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'var(--color-gray-400)',
-                }} />
-                <input
-                  type="text"
-                  value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                  className="form-input"
-                  placeholder="Search assets..."
-                  style={{ paddingLeft: '2.5rem' }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="form-label">Type</label>
-              <select
-                value={filters.asset_type}
-                onChange={(e) => setFilters({ ...filters, asset_type: e.target.value })}
-                className="form-select"
-              >
-                <option value="">All Types</option>
-                <option value="flag">Flag</option>
-                <option value="emblem">Emblem</option>
-                <option value="coat_of_arms">Coat of Arms</option>
-                <option value="symbol">Symbol</option>
-                <option value="video">Video</option>
-                <option value="animated">Animated</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="form-label">Status</label>
-              <select
-                value={filters.status}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="form-select"
-              >
-                <option value="">All Status</option>
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
-                <option value="archived">Archived</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="form-label">Pricing</label>
-              <select
-                value={filters.is_premium}
-                onChange={(e) => setFilters({ ...filters, is_premium: e.target.value })}
-                className="form-select"
-              >
-                <option value="">All</option>
-                <option value="true">Premium</option>
-                <option value="false">Free</option>
-              </select>
-            </div>
+      <div className="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              size={16}
+              aria-hidden
+            />
+            <input
+              type="text"
+              value={filters.search}
+              onChange={(e) => { setFilters({ ...filters, search: e.target.value }); setPage(1); }}
+              placeholder="Search assets…"
+              className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50/80 pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+            />
           </div>
+          <select
+            value={filters.asset_type}
+            onChange={(e) => { setFilters({ ...filters, asset_type: e.target.value }); setPage(1); }}
+            className="h-10 rounded-xl border border-gray-200 bg-gray-50/80 px-3 text-sm font-medium text-gray-700 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+          >
+            <option value="">All Types</option>
+            <option value="flag">Flag</option>
+            <option value="emblem">Emblem</option>
+            <option value="coat_of_arms">Coat of Arms</option>
+            <option value="symbol">Symbol</option>
+            <option value="video">Video</option>
+            <option value="animated">Animated</option>
+          </select>
+          <select
+            value={filters.status}
+            onChange={(e) => { setFilters({ ...filters, status: e.target.value }); setPage(1); }}
+            className="h-10 rounded-xl border border-gray-200 bg-gray-50/80 px-3 text-sm font-medium text-gray-700 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+          >
+            <option value="">All Status</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="archived">Archived</option>
+          </select>
+          <select
+            value={filters.is_premium}
+            onChange={(e) => { setFilters({ ...filters, is_premium: e.target.value }); setPage(1); }}
+            className="h-10 rounded-xl border border-gray-200 bg-gray-50/80 px-3 text-sm font-medium text-gray-700 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+          >
+            <option value="">All Pricing</option>
+            <option value="true">Premium</option>
+            <option value="false">Free</option>
+          </select>
         </div>
       </div>
 
-      {/* Assets Table */}
-      <div className="card">
-        <div className="card-body" style={{ padding: 0 }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: 'var(--spacing-3xl)' }}>
-              <div className="spinner" style={{ margin: '0 auto' }}></div>
-            </div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--color-gray-200)', backgroundColor: 'var(--color-gray-50)' }}>
-                    <th style={{ padding: 'var(--spacing-md)', textAlign: 'left' }}>Title</th>
-                    <th style={{ padding: 'var(--spacing-md)', textAlign: 'left' }}>Type</th>
-                    <th style={{ padding: 'var(--spacing-md)', textAlign: 'left' }}>Status</th>
-                    <th style={{ padding: 'var(--spacing-md)', textAlign: 'left' }}>Pricing</th>
-                    <th style={{ padding: 'var(--spacing-md)', textAlign: 'left' }}>Downloads</th>
-                    <th style={{ padding: 'var(--spacing-md)', textAlign: 'left' }}>Created</th>
-                    <th style={{ padding: 'var(--spacing-md)', textAlign: 'right' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {assets.map((asset) => (
-                    <tr key={asset.id} style={{ borderBottom: '1px solid var(--color-gray-100)' }}>
-                      <td style={{ padding: 'var(--spacing-md)' }}>
-                        <div>
-                          <strong>{asset.title}</strong>
-                          {asset.description && (
-                            <p style={{ fontSize: '0.875rem', color: 'var(--color-gray-600)', margin: 0 }}>
-                              {asset.description.substring(0, 50)}...
-                            </p>
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5">
+          <span className="text-sm font-semibold text-blue-700">
+            {selectedIds.size} selected
+          </span>
+          <button
+            type="button"
+            onClick={bulkPublish}
+            disabled={bulkLoading}
+            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+          >
+            Publish selected
+          </button>
+          <button
+            type="button"
+            onClick={bulkDelete}
+            disabled={bulkLoading}
+            className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
+          >
+            Delete selected
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedIds(new Set())}
+            className="ml-auto text-xs font-medium text-blue-600 hover:underline"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
+      {/* Table */}
+      <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm">
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="h-9 w-9 animate-spin rounded-full border-[3px] border-gray-200 border-t-[#2563eb]" aria-hidden />
+          </div>
+        ) : assets.length === 0 ? (
+          <div className="py-16 text-center">
+            <Flag className="mx-auto mb-3 text-gray-300" size={40} aria-hidden />
+            <p className="text-sm font-medium text-gray-500">No assets found</p>
+            <Link
+              href="/admin/upload"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563eb] hover:underline"
+            >
+              <Plus size={14} /> Upload first asset
+            </Link>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px]">
+              <thead>
+                <tr className="border-b border-gray-200/80 bg-gray-50/60">
+                  <th className="w-10 py-3 pl-4 pr-2">
+                    <button
+                      type="button"
+                      onClick={toggleSelectAll}
+                      aria-label={allSelected ? 'Deselect all' : 'Select all'}
+                      className="flex items-center text-gray-400 hover:text-[#2563eb]"
+                    >
+                      {allSelected
+                        ? <CheckSquare size={16} className="text-[#2563eb]" />
+                        : <Square size={16} />}
+                    </button>
+                  </th>
+                  <th className="w-14 py-3 pr-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                    Thumb
+                  </th>
+                  <th className="py-3 pr-4 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                    Country / Title
+                  </th>
+                  <th className="py-3 pr-4 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                    Category
+                  </th>
+                  <th className="py-3 pr-4 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                    Format
+                  </th>
+                  <th className="py-3 pr-4 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                    Price
+                  </th>
+                  <th className="py-3 pr-4 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                    Status
+                  </th>
+                  <th className="py-3 pr-4 text-right text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {assets.map((asset) => {
+                  const checked = selectedIds.has(asset.id);
+                  return (
+                    <tr
+                      key={asset.id}
+                      className={`transition-colors hover:bg-gray-50/60 ${checked ? 'bg-blue-50/40' : ''}`}
+                    >
+                      <td className="py-3 pl-4 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => toggleSelect(asset.id)}
+                          aria-label={checked ? 'Deselect' : 'Select'}
+                          className="flex items-center text-gray-400 hover:text-[#2563eb]"
+                        >
+                          {checked
+                            ? <CheckSquare size={16} className="text-[#2563eb]" />
+                            : <Square size={16} />}
+                        </button>
+                      </td>
+                      <td className="py-3 pr-3">
+                        <div className="h-9 w-12 overflow-hidden rounded-md bg-gray-100">
+                          {asset.thumbnail_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={asset.thumbnail_url}
+                              alt=""
+                              className="h-full w-full object-contain"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-gray-300">
+                              <Flag size={14} />
+                            </div>
                           )}
                         </div>
                       </td>
-                      <td style={{ padding: 'var(--spacing-md)' }}>
-                        <span className="badge">{asset.asset_type}</span>
-                      </td>
-                      <td style={{ padding: 'var(--spacing-md)' }}>
-                        <span className={`badge ${
-                          asset.status === 'published' ? 'badge-success' : 
-                          asset.status === 'archived' ? 'badge-error' : ''
-                        }`}>
-                          {asset.status}
-                        </span>
-                      </td>
-                      <td style={{ padding: 'var(--spacing-md)' }}>
-                        {asset.is_premium ? (
-                          <span className="badge badge-warning">Premium</span>
-                        ) : (
-                          <span className="badge">Free</span>
+                      <td className="max-w-[180px] py-3 pr-4">
+                        <p className="truncate text-sm font-semibold text-gray-900">{asset.title}</p>
+                        {asset.description && (
+                          <p className="truncate text-xs text-gray-400">
+                            {asset.description.substring(0, 40)}…
+                          </p>
                         )}
                       </td>
-                      <td style={{ padding: 'var(--spacing-md)' }}>
-                        {asset.download_count || 0}
+                      <td className="py-3 pr-4">
+                        <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-semibold capitalize text-gray-600">
+                          {asset.asset_type || '—'}
+                        </span>
                       </td>
-                      <td style={{ padding: 'var(--spacing-md)', color: 'var(--color-gray-600)' }}>
-                        {new Date(asset.created_at).toLocaleDateString()}
+                      <td className="py-3 pr-4 text-xs text-gray-500">
+                        {asset.formats?.join(', ') || '—'}
                       </td>
-                      <td style={{ padding: 'var(--spacing-md)', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: 'var(--spacing-xs)', justifyContent: 'flex-end' }}>
+                      <td className="py-3 pr-4">
+                        {asset.is_premium ? (
+                          <span className="rounded-md bg-violet-100 px-2 py-0.5 text-[11px] font-semibold text-violet-700">
+                            ${asset.price_cents ? Math.ceil(asset.price_cents / 100) : '?'}
+                          </span>
+                        ) : (
+                          <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                            Free
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 pr-4">
+                        <button
+                          type="button"
+                          onClick={() => toggleStatus(asset.id, asset.status)}
+                          title={asset.status === 'published' ? 'Click to unpublish' : 'Click to publish'}
+                          className={`rounded-md px-2 py-0.5 text-[11px] font-semibold transition hover:opacity-80 ${
+                            asset.status === 'published'
+                              ? 'bg-green-100 text-green-700'
+                              : asset.status === 'draft'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          {asset.status === 'published' ? 'Published' : asset.status === 'draft' ? 'Draft' : asset.status}
+                        </button>
+                      </td>
+                      <td className="py-3 pr-4">
+                        <div className="flex items-center justify-end gap-1">
                           <Link
                             href={`/admin/assets/${asset.id}`}
-                            className="btn btn-sm btn-outline"
                             title="Edit"
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
                           >
-                            <Edit size={14} />
+                            <Edit size={14} aria-hidden />
                           </Link>
                           <button
+                            type="button"
                             onClick={() => toggleStatus(asset.id, asset.status)}
-                            className="btn btn-sm btn-outline"
-                            title={asset.status === 'published' ? 'Disable' : 'Enable'}
+                            title={asset.status === 'published' ? 'Unpublish' : 'Publish'}
+                            className={`flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-gray-100 ${
+                              asset.status === 'published'
+                                ? 'text-green-500 hover:text-gray-600'
+                                : 'text-gray-400 hover:text-green-600'
+                            }`}
                           >
-                            {asset.status === 'published' ? <EyeOff size={14} /> : <Eye size={14} />}
+                            {asset.status === 'published'
+                              ? <EyeOff size={14} aria-hidden />
+                              : <Eye size={14} aria-hidden />}
                           </button>
                           <button
+                            type="button"
                             onClick={() => deleteAsset(asset.id)}
-                            className="btn btn-sm btn-outline"
-                            style={{ color: 'var(--color-error)' }}
                             title="Archive"
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600"
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={14} aria-hidden />
                           </button>
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-          {!loading && assets.length === 0 && (
-            <div style={{ textAlign: 'center', padding: 'var(--spacing-3xl)', color: 'var(--color-gray-500)' }}>
-              No assets found. <Link href="/admin/upload">Upload your first asset</Link>
-            </div>
-          )}
-
-          {/* Pagination */}
-          {total > 50 && (
-            <div className="card-footer" style={{ display: 'flex', justifyContent: 'center', gap: 'var(--spacing-sm)' }}>
+        {/* Pagination */}
+        {!loading && totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3">
+            <p className="text-xs text-gray-500">
+              Page <span className="font-semibold text-gray-700">{page}</span> of{' '}
+              <span className="font-semibold text-gray-700">{totalPages}</span> · {total} total
+            </p>
+            <div className="flex items-center gap-1">
               <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="btn btn-outline"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Previous
+                <ChevronLeft size={14} aria-hidden />
               </button>
-              <span style={{ display: 'flex', alignItems: 'center', padding: '0 var(--spacing-md)' }}>
-                Page {page} of {Math.ceil(total / 50)}
-              </span>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const p = Math.max(1, Math.min(totalPages - 4, page - 2)) + i;
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPage(p)}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-semibold transition ${
+                      p === page
+                        ? 'border-[#2563eb] bg-[#2563eb] text-white'
+                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
               <button
-                onClick={() => setPage(p => p + 1)}
-                disabled={page >= Math.ceil(total / 50)}
-                className="btn btn-outline"
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Next
+                <ChevronRight size={14} aria-hidden />
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

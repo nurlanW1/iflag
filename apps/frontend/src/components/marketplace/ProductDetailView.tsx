@@ -113,6 +113,11 @@ export function ProductDetailView({ slug, product }: Props) {
 
   const browseBackHref = neonDownloads ? '/assets' : '/gallery';
 
+  const countrySlug = product.countrySlug?.trim().toLowerCase() ?? null;
+  const countryDisplayName = countrySlug
+    ? countrySlug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    : null;
+
   return (
     <>
       <JsonLd
@@ -132,20 +137,38 @@ export function ProductDetailView({ slug, product }: Props) {
         )}
       >
         <div className="mx-auto max-w-[min(100%,1392px)] px-4 pb-10 pt-4 sm:px-5 sm:pb-12 sm:pt-5 lg:pb-10 lg:pt-5 xl:px-8">
-          <nav className="flex items-center gap-2 text-[11px] font-medium text-slate-500">
+          <nav aria-label="Breadcrumb" className="text-[11px] font-medium text-slate-500">
+            {/* Mobile: just ← Back */}
             <Link
               href={browseBackHref}
-              className="group inline-flex items-center gap-1.5 transition-colors hover:text-slate-900"
+              className="group inline-flex items-center gap-1.5 transition-colors hover:text-slate-900 sm:hidden"
             >
-              <ArrowLeft
-                size={14}
-                strokeWidth={2}
-                className="transition-transform group-hover:-translate-x-0.5"
-              />
-              {neonDownloads ? 'Assets' : 'Gallery'}
+              <ArrowLeft size={14} strokeWidth={2} className="transition-transform group-hover:-translate-x-0.5" />
+              Back
             </Link>
-            <span className="text-slate-300">/</span>
-            <span className="truncate text-slate-700">{product.title}</span>
+            {/* Desktop: full 3-level breadcrumb */}
+            <div className="hidden items-center gap-2 sm:flex">
+              <Link
+                href={browseBackHref}
+                className="group inline-flex items-center gap-1.5 transition-colors hover:text-slate-900"
+              >
+                <ArrowLeft size={14} strokeWidth={2} className="transition-transform group-hover:-translate-x-0.5" />
+                {neonDownloads ? 'Assets' : 'Gallery'}
+              </Link>
+              {countrySlug && countryDisplayName ? (
+                <>
+                  <span className="text-slate-300">/</span>
+                  <Link
+                    href={`/gallery/${encodeURIComponent(countrySlug)}`}
+                    className="truncate transition-colors hover:text-slate-900"
+                  >
+                    {countryDisplayName}
+                  </Link>
+                </>
+              ) : null}
+              <span className="text-slate-300">/</span>
+              <span className="truncate font-semibold text-slate-700">{product.title}</span>
+            </div>
           </nav>
 
           <header className="mt-3 border-b border-slate-200/80 pb-3 lg:mt-4 lg:pb-4">
@@ -173,7 +196,11 @@ export function ProductDetailView({ slug, product }: Props) {
             />
 
             {siblingPublic.length > 0 ? (
-              <CountryDesignVariantRibbon variants={siblingPublic} galleryHref={variantGalleryHref} />
+              <CountryDesignVariantRibbon
+                variants={siblingPublic}
+                galleryHref={variantGalleryHref}
+                countryName={countryDisplayName ?? undefined}
+              />
             ) : null}
 
             {tagTrail}

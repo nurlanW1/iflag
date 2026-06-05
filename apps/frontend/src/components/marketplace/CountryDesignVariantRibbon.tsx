@@ -11,20 +11,24 @@ type Props = {
   variants: PublicProduct[];
   /** Optional “see all in gallery” link */
   galleryHref: string | null;
+  /** Display name shown in the section heading, e.g. “United States” */
+  countryName?: string;
 };
 
 /**
  * Same-country designs — spacing matches gallery country variant picker.
  */
-export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
+export function CountryDesignVariantRibbon({ variants, galleryHref, countryName }: Props) {
   if (variants.length === 0) return null;
 
   return (
     <section className="rounded-[1.25rem] border border-slate-200/80 bg-white px-4 py-4 sm:px-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Other designs</p>
-          <h2 className="mt-1 text-sm font-semibold text-slate-900">Choose another shape or style</h2>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Same country</p>
+          <h2 className="mt-1 text-sm font-semibold text-slate-900">
+            More {countryName ? `${countryName} ` : ''}Flags
+          </h2>
         </div>
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
@@ -60,9 +64,9 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
               role="listitem"
               aria-label={`${p.title}${isPremium ? ' — paid stock' : ' — free download'}`}
               title={p.title}
-              className="group w-[7.5rem] shrink-0 text-left sm:w-32"
+              className="group w-[7.5rem] shrink-0 text-left"
             >
-              <div className="relative aspect-square overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 transition-all group-hover:ring-slate-300">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 transition-all group-hover:ring-slate-300">
                 {thumb ? (
                   <ProductPreviewImage
                     className="absolute inset-0"
@@ -77,7 +81,7 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
                       loading="lazy"
                       draggable={false}
                       sizes="128px"
-                      className="relative z-0 object-contain p-2 transition-transform duration-300 group-hover:scale-[1.03] sm:p-2.5"
+                      className="relative z-0 object-contain p-2 transition-transform duration-300 group-hover:scale-105"
                     />
                   </ProductPreviewImage>
                 ) : (
@@ -86,9 +90,9 @@ export function CountryDesignVariantRibbon({ variants, galleryHref }: Props) {
                   </div>
                 )}
                 {isPremium ? (
-                  <span className="pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-0.5 rounded-md bg-amber-400/95 px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-950 ring-1 ring-amber-600/40">
+                  <span className="pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-0.5 rounded-md bg-violet-600/90 px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide text-white ring-1 ring-violet-700/40">
                     <Crown size={9} aria-hidden strokeWidth={2.5} />
-                    Paid
+                    {p.priceCents > 0 ? `$${Math.ceil(p.priceCents / 100)}` : 'Paid'}
                   </span>
                 ) : (
                   <span className="pointer-events-none absolute left-1.5 top-1.5 z-10 rounded-md bg-emerald-500/90 px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">

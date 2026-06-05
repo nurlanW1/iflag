@@ -128,9 +128,9 @@ export default function AdminDashboard() {
         />
         <StatCard
           icon={Download}
-          title="Downloads"
-          value={(stats?.total_downloads || 0).toLocaleString()}
-          subtitle="All time"
+          title="Today's Downloads"
+          value={(stats?.today_downloads ?? stats?.total_downloads ?? 0).toLocaleString()}
+          subtitle="All time total"
           color="#10b981"
           trend="+8%"
         />
@@ -144,9 +144,9 @@ export default function AdminDashboard() {
         />
         <StatCard
           icon={DollarSign}
-          title="Revenue"
-          value={formatCurrency(stats?.revenue_cents || 0)}
-          subtitle="Monthly recurring"
+          title="Revenue (30d)"
+          value={formatCurrency(stats?.monthly_revenue_cents ?? stats?.revenue_cents ?? 0)}
+          subtitle="Last 30 days"
           color="#8b5cf6"
           trend="+15%"
         />
@@ -263,6 +263,125 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
       </div>
+
+      {/* Recent Downloads */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+        className="mb-8 bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm"
+      >
+        <div className="flex justify-between items-center p-6 border-b border-gray-200/80 bg-gray-50/50">
+          <h3 className="text-lg font-bold text-gray-900">Recent Downloads</h3>
+          <Link
+            href="/admin/analytics"
+            className="text-[#2563eb] hover:text-[#1d4ed8] text-sm font-semibold transition-colors flex items-center gap-1"
+          >
+            View All <ArrowRight size={14} />
+          </Link>
+        </div>
+        <div className="overflow-x-auto">
+          {stats?.recent_downloads && stats.recent_downloads.length > 0 ? (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/40">
+                  <th className="py-3 px-4 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">Date</th>
+                  <th className="py-3 px-4 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">Flag</th>
+                  <th className="py-3 px-4 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">Format</th>
+                  <th className="py-3 px-4 text-left text-[10px] font-bold uppercase tracking-wider text-gray-500">User</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {stats.recent_downloads.slice(0, 10).map((dl: any, i: number) => (
+                  <tr key={dl.id ?? i} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="py-3 px-4 text-xs text-gray-500">
+                      {dl.created_at ? new Date(dl.created_at).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                      {dl.asset_title ?? dl.flag_name ?? '—'}
+                    </td>
+                    <td className="py-3 px-4">
+                      {dl.format ? (
+                        <span className="rounded-md bg-gray-100 px-2 py-0.5 font-mono text-[11px] font-bold uppercase text-gray-600">
+                          {dl.format}
+                        </span>
+                      ) : '—'}
+                    </td>
+                    <td className="py-3 px-4 text-xs text-gray-500">
+                      {dl.user_email ?? dl.user_id ?? 'Anonymous'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="py-10 text-center text-gray-400">
+              <Download size={36} className="mx-auto mb-2 opacity-40" />
+              <p className="text-sm">No download data available yet</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Pending (Draft) Assets */}
+      {(() => {
+        const pending = (stats?.pending_assets ?? stats?.recent_uploads?.filter((a: any) => a.status === 'draft')) ?? [];
+        return pending.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.38 }}
+            className="mb-8 bg-white border border-yellow-200/80 rounded-2xl overflow-hidden shadow-sm"
+          >
+            <div className="flex justify-between items-center p-6 border-b border-yellow-100 bg-yellow-50/60">
+              <div className="flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-yellow-500" aria-hidden />
+                <h3 className="text-lg font-bold text-gray-900">Pending Approval</h3>
+                <span className="rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-bold text-yellow-700">
+                  {pending.length}
+                </span>
+              </div>
+              <Link
+                href="/admin/assets?status=draft"
+                className="text-[#2563eb] hover:text-[#1d4ed8] text-sm font-semibold transition-colors flex items-center gap-1"
+              >
+                View All <ArrowRight size={14} />
+              </Link>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {pending.slice(0, 5).map((asset: any) => (
+                <div key={asset.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/50 transition-colors">
+                  <div className="h-10 w-14 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                    {asset.thumbnail_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={asset.thumbnail_url} alt="" className="h-full w-full object-contain" loading="lazy" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-gray-300">
+                        <Package size={16} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate text-sm font-semibold text-gray-900">{asset.title}</p>
+                    <p className="text-xs text-gray-500">
+                      {asset.created_at ? new Date(asset.created_at).toLocaleDateString() : ''}
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-md bg-yellow-100 px-2 py-0.5 text-[11px] font-bold text-yellow-700">
+                    Draft
+                  </span>
+                  <Link
+                    href={`/admin/assets/${asset.id}`}
+                    className="shrink-0 inline-flex items-center gap-1 rounded-xl bg-[#2563eb] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#1d4ed8]"
+                  >
+                    Review <ArrowRight size={12} />
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        ) : null;
+      })()}
 
       {/* Recent Uploads */}
       <motion.div

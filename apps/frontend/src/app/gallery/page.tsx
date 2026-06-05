@@ -31,11 +31,14 @@ type Country = GalleryCountrySummary;
 
 type ViewMode = 'grid' | 'list';
 type SortKey = 'name-asc' | 'name-desc' | 'designs-desc' | 'designs-asc';
+type FormatFilter = 'all' | 'svg' | 'png' | 'video';
+type TypeFilter = 'all' | 'free' | 'premium';
 
 const KIND_TABS: ReadonlyArray<{ id: string | null; label: string; Icon: LucideIcon }> = [
   { id: null, label: 'All', Icon: Compass },
-  { id: 'organizations', label: 'Organizations', Icon: Building2 },
-  { id: 'autonomy', label: 'Autonomy', Icon: Map },
+  { id: 'independent', label: 'Independent', Icon: Building2 },
+  { id: 'us-states', label: 'US States', Icon: Map },
+  { id: 'autonomy', label: 'Autonomous', Icon: Globe2 },
   { id: 'historical', label: 'Historical', Icon: Clock3 },
 ];
 
@@ -58,13 +61,16 @@ function GalleryContent() {
   const [searchQuery, setSearchQuery] = useState(initialQ);
   const [view, setView] = useState<ViewMode>('grid');
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
+  const [formatFilter, setFormatFilter] = useState<FormatFilter>('all');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const filterLabel = useMemo(() => {
     const ks = kind?.trim();
     const rg = region?.trim();
-    if (ks === 'organizations') return 'Organizations';
-    if (ks === 'autonomy') return 'Autonomy regions';
+    if (ks === 'independent') return 'Independent';
+    if (ks === 'us-states') return 'US States';
+    if (ks === 'autonomy') return 'Autonomous';
     if (ks === 'historical') return 'Historical flags';
     if (rg) return rg;
     return null;
@@ -170,6 +176,14 @@ function GalleryContent() {
 
   const activeKind = kind?.trim() || null;
 
+  const activeFilterCount = useMemo(() => {
+    let n = 0;
+    if (activeKind !== null) n++;
+    if (formatFilter !== 'all') n++;
+    if (typeFilter !== 'all') n++;
+    return n;
+  }, [activeKind, formatFilter, typeFilter]);
+
   const useContinentSections = !region?.trim() && !kind?.trim() && !searchQuery.trim();
 
   const continentSections = useMemo(
@@ -222,106 +236,156 @@ function GalleryContent() {
       <div className="sticky top-0 z-30 -mt-6 border-b border-stone-200/60 bg-stone-50/92 backdrop-blur-md">
         <div className="marketplace-shell pt-5 pb-2 sm:pt-6 sm:pb-1">
           <div className="rounded-2xl border border-stone-200/85 bg-white/98 px-3 py-3 shadow-[0_6px_24px_-12px_rgba(15,23,42,0.12)] ring-1 ring-stone-100/90 backdrop-blur-md sm:px-4 lg:shadow-[0_12px_36px_-18px_rgba(15,23,42,0.14)]">
-            <div className="flex w-full flex-col gap-3 min-[620px]:flex-row min-[620px]:flex-wrap min-[620px]:items-center">
-              <div className="relative min-h-11 w-full min-w-0 flex-1 md:min-w-[14rem]">
-                <Search
-                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
-                  size={18}
-                  aria-hidden
-                />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by country or ISO code…"
-                  className="w-full rounded-xl border border-stone-200 bg-stone-50/90 py-3 pl-11 pr-10 text-base text-stone-900 placeholder:text-stone-400 transition-all focus:border-[#2563eb] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/22 sm:text-sm"
-                />
-                {searchQuery ? (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    aria-label="Clear search"
-                    className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-stone-400 hover:bg-stone-100 hover:text-stone-700"
-                  >
-                    <X size={16} />
-                  </button>
-                ) : null}
+            <div className="flex w-full flex-col gap-2.5">
+              {/* Row 1: search + mobile filters + sort + view */}
+              <div className="flex items-center gap-2">
+                <div className="relative min-h-11 w-full min-w-0 flex-1 md:min-w-[14rem]">
+                  <Search
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                    size={18}
+                    aria-hidden
+                  />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search by country or ISO code…"
+                    className="w-full rounded-xl border border-stone-200 bg-stone-50/90 py-3 pl-11 pr-10 text-base text-stone-900 placeholder:text-stone-400 transition-all focus:border-[#2563eb] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/22 sm:text-sm"
+                  />
+                  {searchQuery ? (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      aria-label="Clear search"
+                      className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+                    >
+                      <X size={16} />
+                    </button>
+                  ) : null}
+                </div>
+                <button
+                  type="button"
+                  className="flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-stone-200 bg-stone-50/90 px-4 py-3 text-sm font-semibold text-stone-800 transition hover:bg-stone-100 min-[620px]:hidden"
+                  onClick={() => setFiltersOpen(true)}
+                  aria-expanded={filtersOpen}
+                  aria-haspopup="dialog"
+                >
+                  <SlidersHorizontal size={17} aria-hidden />
+                  Filters
+                  {activeFilterCount > 0 && (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#2563eb] px-1 text-[11px] font-bold text-white">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </button>
+                <div className="ml-auto flex shrink-0 items-center gap-2">
+                  <div className="relative hidden min-w-0 min-[620px]:block">
+                    <select
+                      value={sortKey}
+                      onChange={(e) => setSortKey(e.target.value as SortKey)}
+                      aria-label="Sort countries"
+                      className="h-11 min-h-[44px] appearance-none rounded-xl border border-stone-200 bg-stone-50/90 px-3 py-2 pl-3 pr-10 text-xs font-semibold text-stone-800 transition-all hover:bg-white focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 md:min-w-[10.5rem]"
+                    >
+                      {SORT_OPTIONS.map((opt) => (
+                        <option key={opt.id} value={opt.id}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400" aria-hidden>
+                      ▾
+                    </span>
+                  </div>
+                  <div className="flex shrink-0 items-center rounded-xl bg-stone-100/90 p-1">
+                    <button
+                      type="button"
+                      onClick={() => setView('grid')}
+                      aria-label="Grid view"
+                      aria-pressed={view === 'grid'}
+                      className={`flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg transition-colors ${
+                        view === 'grid' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'
+                      }`}
+                    >
+                      <LayoutGrid size={18} aria-hidden />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setView('list')}
+                      aria-label="List view"
+                      aria-pressed={view === 'list'}
+                      className={`flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg transition-colors ${
+                        view === 'list' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'
+                      }`}
+                    >
+                      <Rows3 size={18} aria-hidden />
+                    </button>
+                  </div>
+                </div>
               </div>
-
-              <button
-                type="button"
-                className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-stone-200 bg-stone-50/90 px-4 py-3 text-sm font-semibold text-stone-800 transition hover:bg-stone-100 min-[620px]:hidden"
-                onClick={() => setFiltersOpen(true)}
-                aria-expanded={filtersOpen}
-                aria-haspopup="dialog"
-              >
-                <SlidersHorizontal size={17} aria-hidden />
-                Filters
-              </button>
-
-              <div className="hidden flex-wrap items-center gap-1.5 min-[620px]:flex">
-                {KIND_TABS.map(({ id, label, Icon }) => {
-                  const active = (id ?? null) === activeKind;
-                  return (
-                    <Link
-                      key={label}
-                      href={buildHref(id)}
-                      className={`group inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
-                        active
-                          ? 'bg-[#2563eb] text-white shadow-sm shadow-[#2563eb]/30'
+              {/* Row 2: filter pills — desktop only */}
+              <div className="hidden border-t border-stone-100 pt-2.5 min-[620px]:flex min-[620px]:flex-wrap min-[620px]:items-center min-[620px]:gap-x-3 min-[620px]:gap-y-1.5">
+                <div className="flex flex-wrap gap-1">
+                  {KIND_TABS.map(({ id, label, Icon }) => {
+                    const active = (id ?? null) === activeKind;
+                    return (
+                      <Link
+                        key={label}
+                        href={buildHref(id)}
+                        className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+                          active
+                            ? 'bg-[#2563eb] text-white shadow-sm shadow-[#2563eb]/30'
+                            : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
+                        }`}
+                      >
+                        <Icon size={13} aria-hidden />
+                        {label}
+                      </Link>
+                    );
+                  })}
+                </div>
+                <span className="h-5 w-px shrink-0 bg-stone-200" aria-hidden />
+                <div className="flex flex-wrap gap-1">
+                  {(['all', 'svg', 'png', 'video'] as const).map((f) => (
+                    <button
+                      key={f}
+                      type="button"
+                      onClick={() => setFormatFilter(f)}
+                      className={`rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+                        formatFilter === f
+                          ? 'bg-stone-800 text-white shadow-sm'
                           : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
                       }`}
                     >
-                      <Icon size={13} aria-hidden />
-                      {label}
-                    </Link>
-                  );
-                })}
-              </div>
-
-              <div className="flex w-full min-w-0 items-center gap-2 min-[620px]:ml-auto min-[620px]:w-auto">
-                <div className="relative min-w-0 flex-1 sm:flex-initial">
-                  <select
-                    value={sortKey}
-                    onChange={(e) => setSortKey(e.target.value as SortKey)}
-                    aria-label="Sort countries"
-                    className="h-11 w-full min-h-[44px] appearance-none rounded-xl border border-stone-200 bg-stone-50/90 px-3 py-2 pl-3 pr-10 text-sm font-semibold text-stone-800 transition-all hover:bg-white focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 sm:text-xs md:w-auto md:min-w-[10.5rem]"
-                  >
-                    {SORT_OPTIONS.map((opt) => (
-                      <option key={opt.id} value={opt.id}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400" aria-hidden>
-                    ▾
+                      {f === 'all' ? 'All formats' : f.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+                <span className="h-5 w-px shrink-0 bg-stone-200" aria-hidden />
+                <div className="flex flex-wrap gap-1">
+                  {(['all', 'free', 'premium'] as const).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setTypeFilter(t)}
+                      className={`rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+                        typeFilter === t
+                          ? t === 'free'
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : t === 'premium'
+                            ? 'bg-violet-600 text-white shadow-sm'
+                            : 'bg-stone-800 text-white shadow-sm'
+                          : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
+                      }`}
+                    >
+                      {t === 'all' ? 'All types' : t.charAt(0).toUpperCase() + t.slice(1)}
+                    </button>
+                  ))}
+                </div>
+                {activeFilterCount > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#2563eb]/10 px-2.5 py-1 text-[11px] font-bold text-[#2563eb]">
+                    {activeFilterCount} active
                   </span>
-                </div>
-
-                <div className="flex shrink-0 items-center rounded-xl bg-stone-100/90 p-1">
-                  <button
-                    type="button"
-                    onClick={() => setView('grid')}
-                    aria-label="Grid view"
-                    aria-pressed={view === 'grid'}
-                    className={`flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg transition-colors ${
-                      view === 'grid' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'
-                    }`}
-                  >
-                    <LayoutGrid size={18} aria-hidden />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setView('list')}
-                    aria-label="List view"
-                    aria-pressed={view === 'list'}
-                    className={`flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg transition-colors ${
-                      view === 'list' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'
-                    }`}
-                  >
-                    <Rows3 size={18} aria-hidden />
-                  </button>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -338,7 +402,7 @@ function GalleryContent() {
           />
           <div className="absolute inset-x-0 bottom-0 max-h-[82dvh] overflow-y-auto rounded-t-2xl border border-stone-200 bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] pt-2 shadow-[0_-12px_40px_-14px_rgba(15,23,42,0.2)]">
             <div className="mx-auto mb-5 h-1 w-11 rounded-full bg-stone-200" aria-hidden />
-            <p className="mb-4 text-[11px] font-bold uppercase tracking-wide text-stone-500">Browse by type</p>
+            <p className="mb-4 text-[11px] font-bold uppercase tracking-wide text-stone-500">Category</p>
             <ul className="mx-0 mb-6 list-none space-y-2 p-0">
               {KIND_TABS.map(({ id, label, Icon }) => {
                 const active = (id ?? null) === activeKind;
@@ -360,6 +424,44 @@ function GalleryContent() {
                 );
               })}
             </ul>
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Format</p>
+            <div className="mb-6 flex flex-wrap gap-2">
+              {(['all', 'svg', 'png', 'video'] as const).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setFormatFilter(f)}
+                  className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+                    formatFilter === f
+                      ? 'bg-stone-800 text-white'
+                      : 'bg-stone-50 text-stone-700 ring-1 ring-stone-200/90'
+                  }`}
+                >
+                  {f === 'all' ? 'All formats' : f.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Type</p>
+            <div className="mb-6 flex flex-wrap gap-2">
+              {(['all', 'free', 'premium'] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTypeFilter(t)}
+                  className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+                    typeFilter === t
+                      ? t === 'free'
+                        ? 'bg-emerald-600 text-white'
+                        : t === 'premium'
+                        ? 'bg-violet-600 text-white'
+                        : 'bg-stone-800 text-white'
+                      : 'bg-stone-50 text-stone-700 ring-1 ring-stone-200/90'
+                  }`}
+                >
+                  {t === 'all' ? 'All types' : t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              ))}
+            </div>
             <button
               type="button"
               className="flex min-h-12 w-full items-center justify-center rounded-xl bg-stone-900 py-3.5 text-base font-semibold text-white hover:bg-stone-800"
@@ -395,7 +497,7 @@ function GalleryContent() {
           <SkeletonGrid view={view} />
         ) : filteredCountries.length === 0 ? (
           <EmptyState
-            hasSearch={!!searchQuery}
+            searchQuery={searchQuery}
             hasFilter={!!filterLabel}
             onClearSearch={() => setSearchQuery('')}
             onClearFilter={() => router.push('/gallery')}
@@ -499,12 +601,12 @@ function SkeletonGrid({ view }: { view: ViewMode }) {
 }
 
 function EmptyState({
-  hasSearch,
+  searchQuery,
   hasFilter,
   onClearSearch,
   onClearFilter,
 }: {
-  hasSearch: boolean;
+  searchQuery: string;
   hasFilter: boolean;
   onClearSearch: () => void;
   onClearFilter: () => void;
@@ -514,12 +616,14 @@ function EmptyState({
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#2563eb]/10 text-[#2563eb]">
         <Search size={22} aria-hidden />
       </div>
-      <h2 className="mt-5 text-lg font-semibold text-stone-900">No countries match</h2>
+      <h2 className="mt-5 text-lg font-semibold text-stone-900">
+        {searchQuery ? <>No flags found for &ldquo;{searchQuery}&rdquo;</> : 'No flags found'}
+      </h2>
       <p className="mx-auto mt-2 max-w-sm text-sm text-stone-500">
         Try a different search term or clear the current filter to browse the full catalog.
       </p>
-      <div className="mt-6 flex justify-center gap-2">
-        {hasSearch ? (
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        {searchQuery ? (
           <button
             type="button"
             onClick={onClearSearch}
@@ -534,9 +638,15 @@ function EmptyState({
             onClick={onClearFilter}
             className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-[#2563eb]/30 transition-colors hover:bg-[#3b82f6]"
           >
-            View all countries
+            View all
           </button>
         ) : null}
+        <Link
+          href="/contact"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50"
+        >
+          Request this flag <ArrowRight size={14} aria-hidden />
+        </Link>
       </div>
     </div>
   );

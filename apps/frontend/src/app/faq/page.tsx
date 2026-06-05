@@ -1,98 +1,233 @@
 'use client';
 
-import { Flag, ChevronDown } from 'lucide-react';
-import Link from 'next/link';
 import { useState } from 'react';
-import { PRICING_MARKETING } from '@/lib/marketing/pricing-config';
+import { ChevronDown } from 'lucide-react';
+import Link from 'next/link';
 
-export default function FAQPage() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+type FaqItem = { q: string; a: React.ReactNode };
+type FaqSection = { id: string; title: string; items: FaqItem[] };
 
-  const faqs = [
-    {
-      question: 'What file formats are available?',
-      answer:
-        'We offer flags in multiple formats including SVG, PNG, JPG, AI, EPS, and video formats. Vector formats are perfect for scalable designs, while raster formats work great for web and print.',
-    },
-    {
-      question: 'How are purchases billed?',
-      answer: `We use Paddle as Merchant of Record. ${PRICING_MARKETING.plansLine}. Paddle runs secure checkout, calculates tax where required, and sends receipts. You manage cards and invoices through the Paddle customer portal.`,
-    },
-    {
-      question: 'Can I use flags for commercial projects?',
-      answer:
-        `Yes — after you buy a paid design (${PRICING_MARKETING.oneTimeShort} one-time) you can download all formats for that design. Official flat country flags stay free. See our license page for full terms.`,
-    },
-    {
-      question: 'How do I download flags?',
-      answer: `Search for the flag you need, pick a format, and sign in. Official flat flags download free. Other designs unlock with a ${PRICING_MARKETING.oneTimeShort} one-time purchase per design — all listed formats included.`,
-    },
-    {
-      question: 'What is the difference between free and paid?',
-      answer: `Free: official flat country flags. Paid: every other published design is ${PRICING_MARKETING.oneTimePerAsset} — one checkout per design, no monthly plans.`,
-    },
-    {
-      question: 'Can I request a specific flag?',
-      answer:
-        "Absolutely! We're constantly adding new flags. If you need a specific flag that isn't available, contact us at support@flagstock.com and we'll do our best to add it.",
-    },
-    {
-      question: 'Are the flags updated regularly?',
-      answer:
-        'Yes — we regularly update the collection with new designs, corrections, and formats. Purchased designs stay in your account; new paid designs follow the same one-time price.',
-    },
-  ];
+const FAQ_SECTIONS: FaqSection[] = [
+  {
+    id: 'general',
+    title: 'General',
+    items: [
+      {
+        q: 'What is Flagswing?',
+        a: 'Flagswing is the world’s most comprehensive flag asset library — SVG, PNG, EPS, video, historical flags, and creative compositions, all properly licensed for designers, journalists, and developers.',
+      },
+      {
+        q: 'How many flags do you have?',
+        a: '250+ assets covering 195 independent states, 50 US states, autonomous regions, and 20+ historical empires. New flags added weekly.',
+      },
+      {
+        q: 'What makes Flagswing different?',
+        a: 'Specialization. Official color codes (HEX, CMYK, Pantone), multiple shapes, 4K video, historical archives, and clear commercial licensing — all focused exclusively on flags.',
+      },
+    ],
+  },
+  {
+    id: 'downloads',
+    title: 'Downloads',
+    items: [
+      {
+        q: 'How do I download a free flag?',
+        a: 'Click “Download Free” — no account, no email required. Instant download.',
+      },
+      {
+        q: 'What formats are included?',
+        a: 'Free: SVG + PNG. Premium: SVG, PNG, EPS, PDF. Video: MP4 + MOV.',
+      },
+      {
+        q: 'What is the maximum resolution?',
+        a: 'SVG/EPS: infinitely scalable vector. PNG: up to 4000×2667 px. Video: 4K (3840×2160 px).',
+      },
+    ],
+  },
+  {
+    id: 'licensing',
+    title: 'Licensing',
+    items: [
+      {
+        q: 'Can I use flags commercially?',
+        a: 'Free flags: yes, personal and commercial, no attribution needed. Premium: full commercial license included.',
+      },
+      {
+        q: 'Do I need to credit Flagswing?',
+        a: 'No attribution required for any asset — free or premium.',
+      },
+      {
+        q: 'Can I use flags on merchandise?',
+        a: (
+          <>
+            Yes with Premium license (up to 500 units). For bulk orders:{' '}
+            <a
+              href="mailto:hello@flagswing.com"
+              className="font-medium text-[#2563eb] underline-offset-2 hover:underline"
+            >
+              hello@flagswing.com
+            </a>
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    id: 'billing',
+    title: 'Billing',
+    items: [
+      {
+        q: 'What payment methods do you accept?',
+        a: 'All major cards (Visa, Mastercard, Amex) via Paddle secure checkout.',
+      },
+      {
+        q: 'Can I get a refund?',
+        a: (
+          <>
+            Corrupted file or wrong delivery — yes, within 7 days. Email{' '}
+            <a
+              href="mailto:support@flagswing.com"
+              className="font-medium text-[#2563eb] underline-offset-2 hover:underline"
+            >
+              support@flagswing.com
+            </a>{' '}
+            with your order ID.
+          </>
+        ),
+      },
+      {
+        q: 'Do you provide invoices?',
+        a: 'Yes, automatically emailed after every purchase.',
+      },
+    ],
+  },
+  {
+    id: 'technical',
+    title: 'Technical',
+    items: [
+      {
+        q: 'What software opens SVG files?',
+        a: 'Illustrator, Figma, Inkscape, Sketch, Affinity Designer, any modern browser.',
+      },
+      {
+        q: 'Colors look different on screen vs print. Why?',
+        a: 'Use our CMYK values for accurate print output. Find color codes on each flag’s detail page.',
+      },
+      {
+        q: 'Can I embed flags via CDN?',
+        a: 'Yes — CDN links available on each flag page under the “For Developers” section.',
+      },
+    ],
+  },
+];
+
+function AccordionItem({
+  q,
+  a,
+  open,
+  onToggle,
+}: {
+  q: string;
+  a: React.ReactNode;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="border-b border-slate-200/80 last:border-0">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-4 py-4 text-left transition-colors hover:text-[#2563eb]"
+        aria-expanded={open}
+      >
+        <span className="text-[0.95rem] font-semibold leading-snug text-slate-900">{q}</span>
+        <ChevronDown
+          size={18}
+          aria-hidden
+          className={`shrink-0 text-slate-400 transition-transform duration-300 ${
+            open ? 'rotate-180 text-[#2563eb]' : ''
+          }`}
+        />
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          open ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <p className="pb-5 pr-8 text-sm leading-relaxed text-slate-600">{a}</p>
+      </div>
+    </div>
+  );
+}
+
+export default function FaqPage() {
+  const [openKey, setOpenKey] = useState<string | null>(null);
+
+  const toggle = (key: string) =>
+    setOpenKey((cur) => (cur === key ? null : key));
 
   return (
-    <main className="min-h-screen bg-white">
-      <div className="marketplace-shell py-14 sm:py-16 lg:py-20">
-        <div className="mb-12 flex items-center gap-3">
-          <Flag size={32} className="text-[#2563eb]" />
-          <h1 className="text-4xl font-black text-black">Frequently Asked Questions</h1>
-        </div>
-
-        <p className="mb-8 max-w-3xl text-gray-600">{PRICING_MARKETING.plansLine}</p>
-
-        <div className="space-y-4">
-          {faqs.map((faq, idx) => (
-            <div key={idx} className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-              <button
-                onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
-                className="flex w-full items-center justify-between px-6 py-4 text-left transition-colors hover:bg-gray-50"
-              >
-                <span className="pr-4 font-semibold text-black">{faq.question}</span>
-                <ChevronDown
-                  className={`flex-shrink-0 text-[#2563eb] transition-transform ${
-                    openIndex === idx ? 'rotate-180 transform' : ''
-                  }`}
-                  size={20}
-                />
-              </button>
-              {openIndex === idx ? (
-                <div className="px-6 pb-4">
-                  <p className="text-gray-700">{faq.answer}</p>
-                </div>
-              ) : null}
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-12 rounded-xl bg-gray-50 p-8 text-center">
-          <h2 className="mb-4 text-2xl font-bold text-black">Still have questions?</h2>
-          <p className="mb-4 text-gray-700">
-            See live checkout amounts on the{' '}
-            <Link href="/pricing" className="font-semibold text-[#2563eb] hover:underline">
-              pricing page
-            </Link>{' '}
-            or email support.
-          </p>
-          <a
-            href="mailto:support@flagstock.com"
-            className="inline-block rounded-lg bg-[#2563eb] px-6 py-3 font-semibold text-white transition-colors hover:bg-[#1d4ed8]"
+    <main className="marketplace-shell min-h-screen bg-[#fafaf9] pb-20 pt-10 sm:pb-24 sm:pt-12">
+      {/* Page header */}
+      <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-12">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+          Help center
+        </p>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          Frequently asked questions
+        </h1>
+        <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
+          Can&apos;t find your answer?{' '}
+          <Link
+            href="/contact"
+            className="font-semibold text-[#2563eb] underline-offset-2 hover:underline"
           >
-            Contact Support
-          </a>
-        </div>
+            Contact us
+          </Link>
+          .
+        </p>
+      </div>
+
+      {/* FAQ sections */}
+      <div className="mx-auto max-w-2xl space-y-8">
+        {FAQ_SECTIONS.map((section) => (
+          <section key={section.id} aria-labelledby={`faq-${section.id}`}>
+            <h2
+              id={`faq-${section.id}`}
+              className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400"
+            >
+              {section.title}
+            </h2>
+            <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white px-5 shadow-sm">
+              {section.items.map((item, idx) => {
+                const key = `${section.id}-${idx}`;
+                return (
+                  <AccordionItem
+                    key={key}
+                    q={item.q}
+                    a={item.a}
+                    open={openKey === key}
+                    onToggle={() => toggle(key)}
+                  />
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      {/* Bottom CTA */}
+      <div className="mx-auto mt-14 max-w-2xl rounded-2xl border border-slate-200/80 bg-white px-6 py-8 text-center shadow-sm sm:mt-16">
+        <p className="text-base font-semibold text-slate-900">Still have questions?</p>
+        <p className="mt-1.5 text-sm text-slate-500">
+          Our team responds within one business day.
+        </p>
+        <Link
+          href="/contact"
+          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1d4ed8]"
+        >
+          Get in touch
+        </Link>
       </div>
     </main>
   );

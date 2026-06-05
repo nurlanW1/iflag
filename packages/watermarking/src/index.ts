@@ -2,7 +2,6 @@
 // Supports image watermarking using sharp
 
 import sharp from 'sharp';
-import { Readable } from 'stream';
 
 export interface WatermarkOptions {
   text?: string;
@@ -14,43 +13,98 @@ export interface WatermarkOptions {
 }
 
 const DEFAULT_OPTIONS: Required<WatermarkOptions> = {
-  text: 'FLAGSTOCK.COM',
-  opacity: 0.7,
-  fontSize: 48,
+  text: 'flagswing.com',
+  opacity: 0.85,
+  fontSize: 14,
   position: 'center',
   color: '#FFFFFF',
-  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  backgroundColor: 'rgba(0, 0, 0, 0.0)',
 };
 
+const TILE_SIZE = 180;
+
 /**
- * Add watermark to image buffer
+ * Creates a single 180×180 SVG tile with diagonal "flagswing.com" text.
+ */
+function createWatermarkTile(text = 'flagswing.com'): Buffer {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${TILE_SIZE}" height="${TILE_SIZE}">
+  <g transform="rotate(-35, ${TILE_SIZE / 2}, ${TILE_SIZE / 2})">
+    <text
+      x="${TILE_SIZE / 2}" y="${TILE_SIZE / 2}"
+      text-anchor="middle"
+      dominant-baseline="middle"
+      font-family="Arial, sans-serif"
+      font-size="14"
+      font-weight="500"
+      letter-spacing="2"
+      fill="white"
+      fill-opacity="0.85"
+      stroke="rgba(0,0,0,0.3)"
+      stroke-width="0.4"
+      paint-order="stroke fill">${text}</text>
+  </g>
+</svg>`;
+  return Buffer.from(svg);
+}
+
+/**
+ * Creates a full-size transparent PNG overlay tiled with the watermark.
+ */
+async function createFullWatermark(
+  width: number,
+  height: number,
+  text?: string,
+): Promise<Buffer> {
+  const tile = createWatermarkTile(text);
+  const cols = Math.ceil(width / TILE_SIZE) + 1;
+  const rows = Math.ceil(height / TILE_SIZE) + 1;
+
+  const composites: sharp.OverlayOptions[] = [];
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      composites.push({
+        input: tile,
+        left: col * TILE_SIZE,
+        top: row * TILE_SIZE,
+        blend: 'over',
+      });
+    }
+  }
+
+  return sharp({
+    create: {
+      width,
+      height,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  })
+    .composite(composites)
+    .png()
+    .toBuffer();
+}
+
+/**
+ * Add watermark to image buffer.
+ * Signature unchanged — options accepted for compatibility.
  */
 export async function addWatermarkToImage(
   imageBuffer: Buffer,
   options: WatermarkOptions = {}
 ): Promise<Buffer> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
-  
+
   try {
     const image = sharp(imageBuffer);
     const metadata = await image.metadata();
-    const width = metadata.width || 800;
-    const height = metadata.height || 600;
+    const width = metadata.width ?? 800;
+    const height = metadata.height ?? 600;
 
-    // Create watermark text SVG
-    const svgWatermark = createWatermarkSVG(width, height, opts);
+    const overlay = await createFullWatermark(width, height, opts.text);
 
-    // Composite watermark onto image
-    const watermarked = await image
-      .composite([
-        {
-          input: Buffer.from(svgWatermark),
-          blend: 'over',
-        },
-      ])
+    return image
+      .composite([{ input: overlay, blend: 'over' }])
       .toBuffer();
-
-    return watermarked;
   } catch (error) {
     console.error('Watermarking error:', error);
     throw new Error('Failed to add watermark to image');
@@ -66,86 +120,7 @@ export async function addWatermarkImage(
 }
 
 /**
- * Create SVG watermark overlay
- */
-function createWatermarkSVG(
-  width: number,
-  height: number,
-  options: Required<WatermarkOptions>
-): string {
-  const { text, opacity, fontSize, position, color, backgroundColor } = options;
-
-  // Calculate position
-  let x = width / 2;
-  let y = height / 2;
-  let textAnchor = 'middle';
-
-  switch (position) {
-    case 'top-left':
-      x = fontSize;
-      y = fontSize + 20;
-      textAnchor = 'start';
-      break;
-    case 'top-right':
-      x = width - fontSize;
-      y = fontSize + 20;
-      textAnchor = 'end';
-      break;
-    case 'bottom-left':
-      x = fontSize;
-      y = height - fontSize;
-      textAnchor = 'start';
-      break;
-    case 'bottom-right':
-      x = width - fontSize;
-      y = height - fontSize;
-      textAnchor = 'end';
-      break;
-    case 'center':
-    default:
-      x = width / 2;
-      y = height / 2;
-      textAnchor = 'middle';
-      break;
-  }
-
-  // Create repeating watermark pattern for better coverage
-  const pattern = Array(9)
-    .fill(null)
-    .map((_, i) => {
-      const row = Math.floor(i / 3);
-      const col = i % 3;
-      const offsetX = (width / 3) * col;
-      const offsetY = (height / 3) * row;
-      return `<text x="${offsetX + x}" y="${offsetY + y}" 
-              font-family="Arial, sans-serif" 
-              font-size="${fontSize}" 
-              font-weight="bold"
-              fill="${color}" 
-              fill-opacity="${opacity}"
-              text-anchor="${textAnchor}"
-              transform="rotate(-45 ${offsetX + x} ${offsetY + y})">${text}</text>`;
-    })
-    .join('\n');
-
-  return `
-    <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <style>
-          .watermark-text {
-            font-family: Arial, sans-serif;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-          }
-        </style>
-      </defs>
-      ${pattern}
-    </svg>
-  `;
-}
-
-/**
- * Add watermark to image from URL (for server-side processing)
+ * Add watermark to image from URL (for server-side processing).
  */
 export async function addWatermarkFromUrl(
   imageUrl: string,
@@ -156,11 +131,8 @@ export async function addWatermarkFromUrl(
     if (!response.ok) {
       throw new Error(`Failed to fetch image: ${response.statusText}`);
     }
-
     const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    return await addWatermarkToImage(buffer, options);
+    return await addWatermarkToImage(Buffer.from(arrayBuffer), options);
   } catch (error) {
     console.error('Watermark from URL error:', error);
     throw new Error('Failed to add watermark from URL');
@@ -168,77 +140,98 @@ export async function addWatermarkFromUrl(
 }
 
 /**
- * Check if file is an image that can be watermarked
+ * Check if file is an image that can be watermarked.
  */
 export function isImageFile(mimeType: string): boolean {
-  return ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml', 'image/tiff', 'image/tif'].includes(
-    mimeType.toLowerCase()
-  );
+  return [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/svg+xml',
+    'image/tiff',
+    'image/tif',
+  ].includes(mimeType.toLowerCase());
 }
 
 /**
- * Check if file is a video that can be watermarked
+ * Check if file is a video that can be watermarked.
  */
 export function isVideoFile(mimeType: string): boolean {
-  return ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'].includes(
-    mimeType.toLowerCase()
-  );
+  return [
+    'video/mp4',
+    'video/webm',
+    'video/quicktime',
+    'video/x-msvideo',
+  ].includes(mimeType.toLowerCase());
 }
 
 /**
- * Add watermark to video (requires FFmpeg)
- * Note: This is a placeholder - requires FFmpeg installation
+ * Add watermark to video (requires FFmpeg).
  */
 export async function addWatermarkToVideo(
-  videoBuffer: Buffer,
-  options: WatermarkOptions = {}
+  _videoBuffer: Buffer,
+  _options: WatermarkOptions = {}
 ): Promise<Buffer> {
-  // This would require FFmpeg integration
-  // For now, return original buffer
-  // In production, use FFmpeg to overlay watermark
   throw new Error('Video watermarking requires FFmpeg integration');
 }
 
 /**
- * Add watermark to SVG (inline SVG element)
+ * Add watermark to SVG string using an inline tiled pattern.
  */
 export function addWatermarkToSVG(
   svgContent: string,
   options: WatermarkOptions = {}
 ): string {
   const opts = { ...DEFAULT_OPTIONS, ...options };
-  
-  // Parse SVG to get dimensions
+  const text = opts.text ?? 'flagswing.com';
+
+  // Parse SVG dimensions
   const viewBoxMatch = svgContent.match(/viewBox=["']([^"']+)["']/);
-  const widthMatch = svgContent.match(/width=["']([^"']+)["']/);
-  const heightMatch = svgContent.match(/height=["']([^"']+)["']/);
-  
+  const widthMatch = svgContent.match(/\bwidth=["']([^"']+)["']/);
+  const heightMatch = svgContent.match(/\bheight=["']([^"']+)["']/);
+
   let width = 800;
   let height = 600;
-  
+
   if (viewBoxMatch) {
-    const [, , , w, h] = viewBoxMatch[1].split(/\s+/);
-    width = parseFloat(w) || width;
-    height = parseFloat(h) || height;
+    const parts = viewBoxMatch[1].split(/\s+/);
+    width = parseFloat(parts[2]) || width;
+    height = parseFloat(parts[3]) || height;
   } else if (widthMatch && heightMatch) {
     width = parseFloat(widthMatch[1]) || width;
     height = parseFloat(heightMatch[1]) || height;
   }
-  
-  // Create watermark SVG element
-  const watermarkSvg = createWatermarkSVG(width, height, opts);
-  
-  // Insert watermark before closing </svg> tag
-  const svgWithWatermark = svgContent.replace(
-    '</svg>',
-    `${watermarkSvg}</svg>`
-  );
-  
-  return svgWithWatermark;
+
+  // Build tiled watermark overlay using SVG <pattern>
+  const patternId = 'flagswing-wm';
+  const overlay = `
+  <defs>
+    <pattern id="${patternId}" x="0" y="0" width="${TILE_SIZE}" height="${TILE_SIZE}" patternUnits="userSpaceOnUse">
+      <g transform="rotate(-35, ${TILE_SIZE / 2}, ${TILE_SIZE / 2})">
+        <text
+          x="${TILE_SIZE / 2}" y="${TILE_SIZE / 2}"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          font-family="Arial, sans-serif"
+          font-size="14"
+          font-weight="500"
+          letter-spacing="2"
+          fill="white"
+          fill-opacity="0.85"
+          stroke="rgba(0,0,0,0.3)"
+          stroke-width="0.4"
+          paint-order="stroke fill">${text}</text>
+      </g>
+    </pattern>
+  </defs>
+  <rect width="${width}" height="${height}" fill="url(#${patternId})" />`;
+
+  return svgContent.replace('</svg>', `${overlay}</svg>`);
 }
 
 /**
- * Generate watermark URL parameter (for client-side indication)
+ * Generate watermark URL parameter (for client-side indication).
  */
 export function generateWatermarkUrl(imageUrl: string, watermarkText?: string): string {
   const separator = imageUrl.includes('?') ? '&' : '?';

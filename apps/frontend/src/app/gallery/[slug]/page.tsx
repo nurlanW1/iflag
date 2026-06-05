@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, ImageOff, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
@@ -73,6 +73,7 @@ export default function CountryHubPage() {
   const [data, setData] = useState<CountryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [sortOrder, setSortOrder] = useState<'newest' | 'popular' | 'price'>('newest');
 
   const loadCountryData = useCallback(async (countrySlug: string) => {
     setLoading(true);
@@ -99,6 +100,23 @@ export default function CountryHubPage() {
   useEffect(() => {
     if (slug) void loadCountryData(slug);
   }, [slug, loadCountryData]);
+
+  const sortedVariants = useMemo(() => {
+    if (!data?.variants) return [];
+    const v = [...data.variants];
+    switch (sortOrder) {
+      case 'popular':
+        return v.sort((a, b) => b.formats.length - a.formats.length || a.name.localeCompare(b.name));
+      case 'price':
+        return v.sort((a, b) => {
+          const aP = a.isPremiumDesign ? 1 : 0;
+          const bP = b.isPremiumDesign ? 1 : 0;
+          return aP - bP || a.name.localeCompare(b.name);
+        });
+      default:
+        return v;
+    }
+  }, [data?.variants, sortOrder]);
 
   if (loading) {
     return (
@@ -166,6 +184,13 @@ export default function CountryHubPage() {
     data.country.description?.trim() ||
     `${pageTitle} — browse flag designs and download formats below.`;
 
+  const infoChips = [
+    data.country.design_count != null ? { label: 'Designs', value: String(data.country.design_count) } : null,
+    data.country.file_count != null ? { label: 'Files', value: String(data.country.file_count) } : null,
+    data.country.region ? { label: 'Region', value: data.country.region } : null,
+    data.country.code ? { label: 'ISO Code', value: data.country.code.toUpperCase() } : null,
+  ].filter((c): c is { label: string; value: string } => c !== null);
+
   return (
     <main className="marketplace-shell min-h-screen bg-[#fafaf9] pb-16 pt-8 sm:pb-20 sm:pt-10 lg:pb-24">
       <nav className="flex items-center gap-2 text-xs font-medium text-slate-500">
@@ -184,31 +209,78 @@ export default function CountryHubPage() {
         <span className="truncate text-slate-700">{pageTitle}</span>
       </nav>
 
-      <header className="mt-4 flex flex-col gap-5 border-b border-slate-200/80 pb-6 sm:mt-6 sm:gap-6 sm:pb-8 lg:flex-row lg:items-stretch lg:justify-between lg:gap-10 lg:pb-10">
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-            Country folder
-            {data.country.region ? (
-              <span className="normal-case tracking-normal text-slate-500"> · {data.country.region}</span>
-            ) : null}
-          </p>
-          <h1 className="text-balance text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
-            {pageTitle}
-          </h1>
-          <p className="max-w-2xl line-clamp-5 text-sm leading-relaxed text-slate-600 sm:text-base">
-            {description}
-          </p>
-        </div>
-        <div className="mx-auto w-full max-w-[min(100%,20rem)] shrink-0 sm:max-w-[min(100%,24rem)] lg:mx-0">
-          <div className="relative aspect-[4/3]">
-            <CountryHubFolderCover
-              countryName={pageTitle}
-              coverUrl={webpCover}
-              hasWebpCover={hasWebpCover}
-              className="absolute inset-0"
-              imageClassName="h-full w-full object-contain"
-              priority
-            />
+      <header className="mt-4 border-b border-slate-200/80 pb-6 sm:mt-6 sm:pb-8 lg:pb-10">
+        <div className="flex items-start gap-5 lg:gap-8">
+          {/* Text column */}
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Country folder
+            </p>
+            {/* Heading row — flag image inline on mobile */}
+            <div className="flex items-start gap-3">
+              <h1 className="flex-1 text-balance text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+                {pageTitle}
+              </h1>
+              {/* Mobile flag image (max 90px wide, visible only on mobile) */}
+              <div className="w-[90px] shrink-0 overflow-hidden rounded-[6px] shadow-[0_2px_12px_rgba(0,0,0,0.10)] lg:hidden">
+                <div className="relative aspect-[3/2]">
+                  <CountryHubFolderCover
+                    countryName={pageTitle}
+                    coverUrl={webpCover}
+                    hasWebpCover={hasWebpCover}
+                    className="absolute inset-0"
+                    imageClassName="h-full w-full object-contain"
+                    priority
+                  />
+                </div>
+              </div>
+            </div>
+            {/* Badges above description */}
+            <div className="flex flex-wrap gap-1.5">
+              {data.country.region ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+                  🌎 {data.country.region}
+                </span>
+              ) : null}
+              {data.country.code ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+                  🏳 {data.country.code}
+                </span>
+              ) : null}
+              <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+                ✦ Sovereign
+              </span>
+            </div>
+            {/* Description */}
+            <p className="max-w-2xl line-clamp-5 text-sm leading-relaxed text-slate-600 sm:text-base">
+              {description}
+            </p>
+            {/* Info chips — 2×2 mobile, 4×1 desktop */}
+            {infoChips.length > 0 && (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {infoChips.map(({ label, value }) => (
+                  <div key={label} className="rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-800">{value}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {/* Desktop flag image — right column, 180×120px */}
+          <div className="hidden shrink-0 lg:block">
+            <div className="w-[180px] overflow-hidden rounded-[6px] shadow-[0_2px_12px_rgba(0,0,0,0.10)]">
+              <div className="relative h-[120px]">
+                <CountryHubFolderCover
+                  countryName={pageTitle}
+                  coverUrl={webpCover}
+                  hasWebpCover={hasWebpCover}
+                  className="absolute inset-0"
+                  imageClassName="h-full w-full object-contain"
+                  priority
+                />
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -222,8 +294,29 @@ export default function CountryHubPage() {
             No published designs for this country yet.
           </p>
         ) : (
-          <ul className="grid grid-cols-1 gap-3.5 min-[380px]:grid-cols-2 sm:gap-4 md:grid-cols-3 md:gap-5 xl:grid-cols-4">
-            {data.variants.map((v) => {
+          <>
+            {/* Sort bar */}
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <p className="text-xs font-medium text-slate-500">
+                <span className="font-semibold text-slate-800">{sortedVariants.length}</span>{' '}
+                design{sortedVariants.length === 1 ? '' : 's'}
+              </p>
+              <div className="relative">
+                <select
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value as 'newest' | 'popular' | 'price')}
+                  aria-label="Sort designs"
+                  className="h-9 appearance-none rounded-xl border border-slate-200 bg-white pl-3 pr-8 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                >
+                  <option value="newest">Newest</option>
+                  <option value="popular">Popular</option>
+                  <option value="price">Price</option>
+                </select>
+                <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden>▾</span>
+              </div>
+            </div>
+          <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+            {sortedVariants.map((v) => {
               const href = `/assets/${encodeURIComponent(v.productSlug)}`;
               const isPremium =
                 v.isPremiumDesign ??
@@ -264,7 +357,7 @@ export default function CountryHubPage() {
                 <li key={v.id} className="list-none">
                   <Link
                     href={href}
-                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:border-slate-300 hover:shadow-md"
                   >
                     <div
                       className={clsx(
@@ -348,6 +441,7 @@ export default function CountryHubPage() {
               );
             })}
           </ul>
+          </>
         )}
       </section>
     </main>

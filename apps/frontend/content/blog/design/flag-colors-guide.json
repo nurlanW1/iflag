@@ -1,0 +1,22 @@
+{
+  "slug": "design/flag-colors-guide",
+  "title": "Official Flag Colors: Why HEX Codes Aren't Enough for Print",
+  "category": "Design",
+  "date": "2026-01-22",
+  "excerpt": "Your flag looks perfect on screen but wrong in print. Here's why CMYK and Pantone matter.",
+  "keywords": ["flag color codes", "Pantone flags", "CMYK flag printing", "HEX vs CMYK design"],
+  "coverGradient": "from-blue-600 to-indigo-800",
+  "content": [
+    { "type": "p", "text": "You download a flag SVG, it looks perfect on your monitor — vivid French blue, bold German black, crisp Swiss red. Then the print shop calls: the colors are wrong. This scenario plays out thousands of times every year, and it comes down to one fundamental misunderstanding about color spaces." },
+    { "type": "h2", "text": "Why HEX Codes Only Tell Half the Story" },
+    { "type": "p", "text": "HEX codes describe color in the RGB model — mixing red, green, and blue light. Screens emit light, so RGB is native to them. But printers work differently: they deposit ink on paper using the CMYK model (Cyan, Magenta, Yellow, Key/Black). When you hand a printer a HEX value, their software converts RGB to CMYK algorithmically — and that conversion is lossy. Certain vivid RGB colors simply don't exist in the CMYK gamut." },
+    { "type": "h2", "text": "The Pantone System: A Universal Language" },
+    { "type": "p", "text": "Pantone Matching System (PMS) solves this by assigning standardized numbers to specific ink formulations. When a country's official protocol specifies 'Pantone 186 C' for its red, every certified printer worldwide can mix that exact shade. It's a physical standard, not a mathematical conversion. Many nations publish official Pantone codes precisely to avoid the HEX-to-print color drift problem." },
+    { "type": "h2", "text": "Real-World Examples" },
+    { "type": "p", "text": "France's official 'bleu' is Pantone 281 C — a deep navy. Convert it to HEX (#003189) and print via RGB-CMYK conversion, and you often get a noticeably lighter, more purple blue. Germany's federal black is technically 100% K in CMYK, but many printers use a 'rich black' mix that produces muddy results in small applications. The United Kingdom's Royal Blue is Pantone 280 C, and even minor deviations are visible on official government documents." },
+    { "type": "h2", "text": "A Practical Workflow for Flag Design" },
+    { "type": "p", "text": "For digital-only projects (websites, apps, presentations), HEX codes are sufficient and convenient. For any print work — merchandise, signage, publications — always source CMYK or Pantone values. When designing in Illustrator, use the Pantone color library and convert to CMYK for output. In Figma, set document color profile to sRGB for screen work, and export with embedded profiles for handoff to print. Always request a physical proof before large print runs." },
+    { "type": "h2", "text": "Where to Find Official Color Codes" },
+    { "type": "p", "text": "Each flag's detail page on Flagswing includes HEX, RGB, CMYK, and Pantone values sourced from official state protocols where available. For countries without publicly documented Pantone codes, we provide professionally matched equivalents. This data is particularly valuable for press teams, manufacturers, and government suppliers who need color accuracy across media types." }
+  ]
+}
