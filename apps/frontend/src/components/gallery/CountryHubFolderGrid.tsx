@@ -52,18 +52,12 @@ export function CountryHubFolderGrid({
                 tileClassName || 'shadow-sm hover:shadow-md',
               )}
             >
-              <div
-                className={
-                  country.has_webp_cover
-                    ? 'relative aspect-[4/3] overflow-hidden'
-                    : 'relative aspect-[4/3] overflow-hidden bg-stone-50'
-                }
-              >
+              <div className="relative aspect-[4/3] overflow-hidden">
                 <CountryHubFolderCover
                   countryName={country.name}
                   coverUrl={country.webp_cover_url ?? country.thumbnail}
                   hasWebpCover={country.has_webp_cover}
-                  imageClassName="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+                  imageClassName="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03] [filter:drop-shadow(0_2px_8px_rgba(0,0,0,0.13))]"
                 />
                 {country.code ? (
                   <span className="absolute left-2 top-2 z-10 rounded-md bg-black/40 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-white">

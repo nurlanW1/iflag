@@ -18,6 +18,10 @@ import {
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
 import { hrefLooksLikeNonBrowserMaster, pickFormatPreviewUrl } from '@/lib/flag-preview-display';
+import COUNTRY_FACTS from '../../../../content/countries/facts.json';
+
+type CountryFact = { capital: string; population: string; area: string; currency: string };
+const countryFacts = COUNTRY_FACTS as Record<string, CountryFact>;
 
 interface Variant {
   id: string;
@@ -180,16 +184,19 @@ export default function CountryHubPage() {
 
   const hasWebpCover = Boolean(data.country.has_webp_cover);
   const webpCover = data.country.webp_cover_url?.trim() || data.country.cover_image_url?.trim() || '';
-  const description =
-    data.country.description?.trim() ||
-    `${pageTitle} — browse flag designs and download formats below.`;
 
-  const infoChips = [
-    data.country.design_count != null ? { label: 'Designs', value: String(data.country.design_count) } : null,
-    data.country.file_count != null ? { label: 'Files', value: String(data.country.file_count) } : null,
-    data.country.region ? { label: 'Region', value: data.country.region } : null,
-    data.country.code ? { label: 'ISO Code', value: data.country.code.toUpperCase() } : null,
-  ].filter((c): c is { label: string; value: string } => c !== null);
+  const facts: CountryFact | null = countryFacts[data.country.slug] ?? null;
+
+  const description = (() => {
+    const base = data.country.description?.trim();
+    if (base) return base;
+    const region = data.country.region ? ` in ${data.country.region}` : '';
+    const cap  = facts ? ` Capital city is ${facts.capital}.` : '';
+    const pop  = facts ? ` Population: ~${facts.population}.` : '';
+    const area = facts ? ` Total area: ${facts.area}.` : '';
+    const cur  = facts ? ` Official currency: ${facts.currency}.` : '';
+    return `${pageTitle} is a sovereign country${region}.${cap}${pop}${area}${cur}`;
+  })();
 
   return (
     <main className="marketplace-shell min-h-screen bg-[#fafaf9] pb-16 pt-8 sm:pb-20 sm:pt-10 lg:pb-24">
@@ -216,26 +223,27 @@ export default function CountryHubPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
               Country folder
             </p>
-            {/* Heading row — flag image inline on mobile */}
+            {/* Heading row — mobile flag inline right */}
             <div className="flex items-start gap-3">
               <h1 className="flex-1 text-balance text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
                 {pageTitle}
               </h1>
-              {/* Mobile flag image (max 90px wide, visible only on mobile) */}
-              <div className="w-[90px] shrink-0 overflow-hidden rounded-[6px] shadow-[0_2px_12px_rgba(0,0,0,0.10)] lg:hidden">
-                <div className="relative aspect-[3/2]">
-                  <CountryHubFolderCover
-                    countryName={pageTitle}
-                    coverUrl={webpCover}
-                    hasWebpCover={hasWebpCover}
-                    className="absolute inset-0"
-                    imageClassName="h-full w-full object-contain"
-                    priority
-                  />
-                </div>
-              </div>
+              {/* Mobile flag — natural size, shadow only */}
+              {webpCover ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={webpCover}
+                  alt={`${pageTitle} flag`}
+                  width={80}
+                  className="shrink-0 rounded-[3px] shadow-[0_3px_14px_rgba(0,0,0,0.16)] lg:hidden"
+                  loading="eager"
+                  decoding="async"
+                  referrerPolicy="no-referrer"
+                  draggable={false}
+                />
+              ) : null}
             </div>
-            {/* Badges above description */}
+            {/* Badges */}
             <div className="flex flex-wrap gap-1.5">
               {data.country.region ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
@@ -252,36 +260,50 @@ export default function CountryHubPage() {
               </span>
             </div>
             {/* Description */}
-            <p className="max-w-2xl line-clamp-5 text-sm leading-relaxed text-slate-600 sm:text-base">
+            <p className="max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
               {description}
             </p>
-            {/* Info chips — 2×2 mobile, 4×1 desktop */}
-            {infoChips.length > 0 && (
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {infoChips.map(({ label, value }) => (
-                  <div key={label} className="rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-800">{value}</p>
-                  </div>
-                ))}
+            {/* Country facts — inline, no panel */}
+            {facts && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-slate-500">
+                <span>
+                  <span className="mr-1 text-slate-400">Capital</span>
+                  <span className="font-semibold text-slate-700">{facts.capital}</span>
+                </span>
+                <span className="hidden text-slate-300 sm:inline">·</span>
+                <span>
+                  <span className="mr-1 text-slate-400">Population</span>
+                  <span className="font-semibold text-slate-700">~{facts.population}</span>
+                </span>
+                <span className="hidden text-slate-300 sm:inline">·</span>
+                <span>
+                  <span className="mr-1 text-slate-400">Area</span>
+                  <span className="font-semibold text-slate-700">{facts.area}</span>
+                </span>
+                <span className="hidden text-slate-300 sm:inline">·</span>
+                <span>
+                  <span className="mr-1 text-slate-400">Currency</span>
+                  <span className="font-semibold text-slate-700">{facts.currency}</span>
+                </span>
               </div>
             )}
           </div>
-          {/* Desktop flag image — right column, 180×120px */}
-          <div className="hidden shrink-0 lg:block">
-            <div className="w-[180px] overflow-hidden rounded-[6px] shadow-[0_2px_12px_rgba(0,0,0,0.10)]">
-              <div className="relative h-[120px]">
-                <CountryHubFolderCover
-                  countryName={pageTitle}
-                  coverUrl={webpCover}
-                  hasWebpCover={hasWebpCover}
-                  className="absolute inset-0"
-                  imageClassName="h-full w-full object-contain"
-                  priority
-                />
-              </div>
+          {/* Desktop flag — natural size, shadow only */}
+          {webpCover ? (
+            <div className="hidden shrink-0 lg:block">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={webpCover}
+                alt={`${pageTitle} flag`}
+                width={180}
+                className="rounded-[4px] shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
+                loading="eager"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                draggable={false}
+              />
             </div>
-          </div>
+          ) : null}
         </div>
       </header>
 

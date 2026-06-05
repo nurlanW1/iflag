@@ -136,7 +136,7 @@ export function ProductDetailView({ slug, product }: Props) {
           'max-lg:pb-[calc(2.5rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]',
         )}
       >
-        <div className="mx-auto max-w-[min(100%,1392px)] px-4 pb-10 pt-4 sm:px-5 sm:pb-12 sm:pt-5 lg:pb-10 lg:pt-5 xl:px-8">
+        <div className="mx-auto max-w-[min(100%,1060px)] px-4 pb-10 pt-4 sm:px-5 sm:pb-12 sm:pt-5 lg:pb-10 lg:pt-5 xl:px-8">
           <nav aria-label="Breadcrumb" className="text-[11px] font-medium text-slate-500">
             {/* Mobile: just ← Back */}
             <Link

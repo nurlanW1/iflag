@@ -15,7 +15,7 @@ import type { PublicProductFile } from '@/lib/marketplace/product-mapper';
 
 /** Equal-height PDP row on desktop — fits viewport below nav + title. */
 const PDP_ROW_HEIGHT_CLASS =
-  'lg:h-[min(40rem,calc(100dvh-10.5rem))] lg:max-h-[min(40rem,calc(100dvh-10.5rem))]';
+  'lg:h-[min(34rem,calc(100dvh-12rem))] lg:max-h-[min(34rem,calc(100dvh-12rem))]';
 
 type Props = {
   productTitle: string;
@@ -127,7 +127,7 @@ export function ProductDetailPreviewColumn({
   return (
     <div
       className={clsx(
-        'grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(17.5rem,21rem)] lg:items-stretch lg:gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]',
+        'grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,1fr)_21rem]',
         PDP_ROW_HEIGHT_CLASS,
       )}
     >
@@ -201,9 +201,9 @@ export function ProductDetailPreviewColumn({
         )}
       </div>
 
-      <aside className="flex min-h-0 min-w-0 flex-col max-lg:w-full max-lg:flex-none lg:h-full">
-        <div className="flex min-h-0 flex-col rounded-xl border border-slate-200/80 bg-white shadow-sm max-lg:flex-none lg:h-full lg:flex-1">
-          <div className="flex flex-col gap-3 p-3 sm:gap-4 sm:p-4 max-lg:overflow-visible lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain">
+      <aside className="flex min-h-0 min-w-0 flex-col max-lg:w-full max-lg:flex-none">
+        <div className="flex min-h-0 flex-col rounded-xl border border-slate-200/80 bg-white shadow-sm max-lg:flex-none">
+          <div className="flex flex-col gap-3 p-3 sm:gap-4 sm:p-4 max-lg:overflow-visible lg:overflow-y-auto lg:overscroll-contain" style={{ maxHeight: 'min(34rem, calc(100dvh - 12rem))' }}>
             <NeonAssetDownloads
               cartProduct={cartProduct}
               files={dedupedFiles}
