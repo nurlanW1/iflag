@@ -58,17 +58,6 @@ export function ProductDetailPreviewColumn({
 }: Props) {
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [ownsProduct, setOwnsProduct] = useState(false);
-  const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>('light');
-
-  useEffect(() => {
-    const saved = localStorage.getItem('flagswing-preview-theme');
-    if (saved === 'dark' || saved === 'light') setPreviewTheme(saved);
-  }, []);
-
-  const handleThemeChange = (t: 'light' | 'dark') => {
-    setPreviewTheme(t);
-    localStorage.setItem('flagswing-preview-theme', t);
-  };
 
   useEffect(() => {
     const slug = cartProduct.slug?.trim();
@@ -132,33 +121,8 @@ export function ProductDetailPreviewColumn({
       )}
     >
       <div className="flex min-w-0 flex-col gap-2 lg:h-full">
-        {/* Dark / Light toggle */}
-        <div className="flex shrink-0 items-center justify-end gap-0.5 self-end rounded-xl bg-slate-100/90 p-1">
-          {(['light', 'dark'] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => handleThemeChange(t)}
-              className={clsx(
-                'rounded-lg px-3 py-1.5 text-xs font-medium transition-all',
-                previewTheme === t
-                  ? t === 'dark'
-                    ? 'bg-slate-800 text-white shadow-sm'
-                    : 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
-                  : 'text-slate-500 hover:text-slate-700',
-              )}
-            >
-              {t === 'light' ? '☀️ Light' : '🌙 Dark'}
-            </button>
-          ))}
-        </div>
         {/* Preview container */}
-        <div
-          className={clsx(
-            'flex min-h-[min(18rem,44vh)] max-h-[min(48vh,26rem)] min-w-0 flex-col overflow-hidden rounded-xl transition-colors duration-200 lg:flex-1 lg:min-h-0 lg:max-h-none',
-            previewTheme === 'dark' ? 'bg-slate-900' : 'bg-[#fafaf9]',
-          )}
-        >
+        <div className="flex min-h-[min(18rem,44vh)] max-h-[min(48vh,26rem)] min-w-0 flex-col overflow-hidden rounded-xl bg-[#fafaf9] lg:flex-1 lg:min-h-0 lg:max-h-none">
           {videoPlayback ? (
             <VideoAssetPreview
               className="h-full min-h-0"
