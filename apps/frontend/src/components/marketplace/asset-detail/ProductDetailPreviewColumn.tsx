@@ -115,10 +115,10 @@ export function ProductDetailPreviewColumn({
   }, [selectedFileId, catalogFiles, defaultPreviewUrls]);
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[3fr_2fr] lg:items-start">
+    <div className="grid gap-5 lg:grid-cols-[1fr_380px] lg:items-start">
       {/* LEFT — preview with checkered transparency background */}
       <div
-        className="flex min-h-[min(20rem,50vh)] flex-col overflow-hidden rounded-2xl border border-gray-200 lg:h-[min(34rem,calc(100dvh-14rem))]"
+        className="flex min-h-[min(18rem,46vh)] flex-col overflow-hidden rounded-2xl border border-gray-200 lg:h-[min(30rem,52vh)]"
         style={CHECKER_BG}
       >
         <div className="flex flex-1 min-h-0 items-center justify-center p-2">
