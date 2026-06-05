@@ -95,7 +95,7 @@ export function ProductDetailView({ slug, product }: Props) {
 
   const tagTrail =
     product.tags.length > 0 ? (
-      <section className="mt-10 border-t border-slate-200/80 pt-7 md:mt-12 lg:max-w-[1040px]" aria-label="Tags">
+      <section aria-label="Tags">
         <p className="text-[12px] leading-relaxed text-slate-500">
           {product.tags.map((t, i) => (
             <span key={t} className="inline whitespace-nowrap">
@@ -131,89 +131,101 @@ export function ProductDetailView({ slug, product }: Props) {
           ]),
         ]}
       />
+      {/* Page — soft gray canvas, centered card */}
       <main
         className={clsx(
-          'marketplace-shell min-h-screen bg-slate-50',
-          'max-lg:pb-[calc(2.5rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]',
+          'min-h-screen bg-[#F0F0EE]',
+          'max-lg:pb-[calc(2.5rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))]',
+          'py-6 sm:py-8 lg:py-10',
         )}
       >
-        <div className="pb-10 pt-4 sm:pb-12 sm:pt-5 lg:pb-10 lg:pt-5">
-          <nav aria-label="Breadcrumb" className="text-[11px] font-medium text-slate-500 lg:max-w-[1040px]">
-            {/* Mobile: just ← Back */}
+        {/* Centered popup card */}
+        <div className="mx-auto w-full max-w-[1060px] px-4 sm:px-5 xl:px-0">
+          {/* Breadcrumb — above card */}
+          <nav aria-label="Breadcrumb" className="mb-3 text-[11px] font-medium text-slate-500">
+            {/* Mobile */}
             <Link
               href={browseBackHref}
-              className="group inline-flex items-center gap-1.5 transition-colors hover:text-slate-900 sm:hidden"
+              className="group inline-flex items-center gap-1.5 transition-colors hover:text-slate-700 sm:hidden"
             >
-              <ArrowLeft size={14} strokeWidth={2} className="transition-transform group-hover:-translate-x-0.5" />
+              <ArrowLeft size={13} strokeWidth={2} className="transition-transform group-hover:-translate-x-0.5" />
               Back
             </Link>
-            {/* Desktop: full 3-level breadcrumb */}
-            <div className="hidden items-center gap-2 sm:flex">
-              <Link
-                href={browseBackHref}
-                className="group inline-flex items-center gap-1.5 transition-colors hover:text-slate-900"
-              >
-                <ArrowLeft size={14} strokeWidth={2} className="transition-transform group-hover:-translate-x-0.5" />
+            {/* Desktop */}
+            <div className="hidden items-center gap-1.5 sm:flex">
+              <Link href={browseBackHref} className="group inline-flex items-center gap-1.5 transition-colors hover:text-slate-700">
+                <ArrowLeft size={13} strokeWidth={2} className="transition-transform group-hover:-translate-x-0.5" />
                 {neonDownloads ? 'Assets' : 'Gallery'}
               </Link>
               {countrySlug && countryDisplayName ? (
                 <>
                   <span className="text-slate-300">/</span>
-                  <Link
-                    href={`/gallery/${encodeURIComponent(countrySlug)}`}
-                    className="truncate transition-colors hover:text-slate-900"
-                  >
+                  <Link href={`/gallery/${encodeURIComponent(countrySlug)}`} className="truncate transition-colors hover:text-slate-700">
                     {countryDisplayName}
                   </Link>
                 </>
               ) : null}
               <span className="text-slate-300">/</span>
-              <span className="truncate font-semibold text-slate-700">{product.title}</span>
+              <span className="truncate font-semibold text-slate-600">{product.title}</span>
             </div>
           </nav>
 
-          <header className="mt-3 border-b border-slate-200/80 pb-3 lg:mt-4 lg:max-w-[1040px] lg:pb-4">
-            <h1 className="text-balance text-[1.35rem] font-semibold leading-snug tracking-tight text-slate-900 sm:text-2xl lg:max-w-[min(100%,42rem)] xl:text-[1.65rem]">
-              {product.title}
-            </h1>
-          </header>
+          {/* White popup card */}
+          <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_4px_24px_rgba(0,0,0,0.08)]">
+            {/* Card header */}
+            <div className="border-b border-gray-100 px-5 py-4 sm:px-6">
+              <h1 className="text-balance text-lg font-semibold leading-snug tracking-tight text-gray-900 sm:text-xl lg:text-[1.35rem]">
+                {product.title}
+              </h1>
+            </div>
 
-          <div className="mt-4 space-y-4 lg:space-y-5">
-            <ProductDetailPreviewColumn
-              productTitle={product.title}
-              publicProduct={publicProduct}
-              catalogFiles={product.files}
-              dedupedFiles={dedupedFiles}
-              formatHints={formatHints}
-              useTransparencyBackdrop={formatHintsMayHaveAlpha(formatHints)}
-              watermarkEnabled={shouldWatermarkFlagPreview({ isPremiumDesign: paid })}
-              paid={paid}
-              cartProduct={cartProduct}
-              licenseSummary={licenseSummary}
-              neonDownloads={neonDownloads}
-              productId={neonDownloads ? undefined : product.id}
-              previewFilePublic={neonDownloads ? null : previewFilePublic}
-              videoPlayback={videoPlayback}
-            />
-
-            {siblingPublic.length > 0 ? (
-              <CountryDesignVariantRibbon
-                variants={siblingPublic}
-                galleryHref={variantGalleryHref}
-                countryName={countryDisplayName ?? undefined}
+            {/* Card body */}
+            <div className="space-y-0 p-5 sm:p-6">
+              <ProductDetailPreviewColumn
+                productTitle={product.title}
+                publicProduct={publicProduct}
+                catalogFiles={product.files}
+                dedupedFiles={dedupedFiles}
+                formatHints={formatHints}
+                useTransparencyBackdrop={formatHintsMayHaveAlpha(formatHints)}
+                watermarkEnabled={shouldWatermarkFlagPreview({ isPremiumDesign: paid })}
+                paid={paid}
+                cartProduct={cartProduct}
+                licenseSummary={licenseSummary}
+                neonDownloads={neonDownloads}
+                productId={neonDownloads ? undefined : product.id}
+                previewFilePublic={neonDownloads ? null : previewFilePublic}
+                videoPlayback={videoPlayback}
               />
-            ) : null}
+            </div>
 
-            {countrySlug && variantGalleryHref ? (
-              <GalleryVariantsRow
-                countrySlug={countrySlug}
-                currentProductSlug={product.slug}
-                countryName={countryDisplayName ?? countrySlug}
-                galleryHref={variantGalleryHref}
-              />
-            ) : null}
+            {/* Related variants inside card */}
+            {siblingPublic.length > 0 && (
+              <div className="border-t border-gray-100 px-5 py-4 sm:px-6">
+                <CountryDesignVariantRibbon
+                  variants={siblingPublic}
+                  galleryHref={variantGalleryHref}
+                  countryName={countryDisplayName ?? undefined}
+                />
+              </div>
+            )}
 
-            {tagTrail}
+            {countrySlug && variantGalleryHref && (
+              <div className="border-t border-gray-100 px-5 py-4 sm:px-6">
+                <GalleryVariantsRow
+                  countrySlug={countrySlug}
+                  currentProductSlug={product.slug}
+                  countryName={countryDisplayName ?? countrySlug}
+                  galleryHref={variantGalleryHref}
+                />
+              </div>
+            )}
+
+            {tagTrail && (
+              <div className="border-t border-gray-100 px-5 py-4 sm:px-6">
+                {tagTrail}
+              </div>
+            )}
           </div>
         </div>
       </main>
