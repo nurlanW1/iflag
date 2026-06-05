@@ -188,64 +188,70 @@ export function StockDownloadPanel({
       message="Create a free account or sign in to download this official flag file."
     />
   ) : isFreeOfficialFile ? (
-    <div className="flex min-h-12 items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50/80 px-3 py-2">
-      <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-800">Free official flag</p>
-        <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)} · free with your account</p>
+    <div className="space-y-2.5">
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Free</span>
+        <span className="text-[11px] text-slate-500">
+          {formatBadgeLabel(active.format)} · free with your account
+        </span>
       </div>
       <button
         type="button"
         disabled={busy}
         onClick={() => void onProtectedDownload()}
-        className={`${btnCompact} bg-slate-950 text-white hover:bg-slate-900`}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-black py-3 text-sm font-semibold text-white transition hover:bg-gray-900 disabled:opacity-50"
       >
         <Download className="h-4 w-4" aria-hidden strokeWidth={2.25} />
         {busy ? '…' : 'Download'}
       </button>
     </div>
   ) : onDirectDownload ? (
-    <div className="flex min-h-12 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
-      <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Download</p>
-        <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)}</p>
+    <div className="space-y-2.5">
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Download</span>
+        <span className="text-[11px] text-slate-500">{formatBadgeLabel(active.format)}</span>
       </div>
       <button
         type="button"
         disabled={directDownloadBusy}
         onClick={() => onDirectDownload()}
-        className={`${btnCompact} bg-slate-950 text-white hover:bg-slate-900`}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-black py-3 text-sm font-semibold text-white transition hover:bg-gray-900 disabled:opacity-50"
       >
         <Download className="h-4 w-4" aria-hidden strokeWidth={2.25} />
         {directDownloadBusy ? '…' : directDownloadLabel?.replace(/^Download\s+/i, '') ?? 'Get'}
       </button>
     </div>
   ) : isPreviewSlot ? (
-    <div className="flex min-h-12 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
-      <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Preview</p>
-        <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)} · free with account</p>
+    <div className="space-y-2.5">
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Preview</span>
+        <span className="text-[11px] text-slate-500">
+          {formatBadgeLabel(active.format)} · free with account
+        </span>
       </div>
       <button
         type="button"
         disabled={busy}
         onClick={() => void onProtectedDownload()}
-        className={`${btnCompact} bg-slate-950 text-white hover:bg-slate-900`}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-black py-3 text-sm font-semibold text-white transition hover:bg-gray-900 disabled:opacity-50"
       >
         <Download className="h-4 w-4" aria-hidden strokeWidth={2.25} />
         {busy ? '…' : 'Get'}
       </button>
     </div>
   ) : ownsProduct && needsEntitlement ? (
-    <div className="flex min-h-12 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
-      <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">Purchased</p>
-        <p className="text-xs text-slate-600">{formatBadgeLabel(active.format)} · download ready</p>
+    <div className="space-y-2.5">
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Purchased</span>
+        <span className="text-[11px] text-slate-500">
+          {formatBadgeLabel(active.format)} · download ready
+        </span>
       </div>
       <button
         type="button"
         disabled={busy}
         onClick={() => void onProtectedDownload()}
-        className={`${btnCompact} bg-slate-950 text-white hover:bg-slate-900`}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-black py-3 text-sm font-semibold text-white transition hover:bg-gray-900 disabled:opacity-50"
       >
         <Download className="h-4 w-4" aria-hidden strokeWidth={2.25} />
         {busy ? '…' : 'Download'}

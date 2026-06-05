@@ -112,7 +112,7 @@ export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId, c
                 slotBtnBase,
                 'transition-[color,background,ring] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2',
                 on
-                  ? 'bg-white ring-2 ring-[var(--brand-blue)]/38'
+                  ? 'bg-white ring-2 ring-gray-900'
                   : 'text-slate-600 hover:bg-white/70 hover:text-slate-900',
               )}
             >
@@ -138,7 +138,7 @@ export function CanonicalFormatSlots({ files, selectedId, onSelect, headingId, c
                 slotBtnBase,
                 'transition-[color,background,ring] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] focus-visible:ring-offset-2',
                 on
-                  ? 'bg-white ring-2 ring-[var(--brand-blue)]/38'
+                  ? 'bg-white ring-2 ring-gray-900'
                   : 'text-slate-600 hover:bg-white/70 hover:text-slate-900',
               )}
             >

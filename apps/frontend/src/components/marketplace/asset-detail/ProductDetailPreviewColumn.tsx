@@ -13,9 +13,10 @@ import type { CartProductRef } from '@/components/marketplace/asset-detail/CopyL
 import type { ProductFile } from '@/types/marketplace';
 import type { PublicProductFile } from '@/lib/marketplace/product-mapper';
 
-/** Equal-height PDP row on desktop — fits viewport below nav + title. */
-const PDP_ROW_HEIGHT_CLASS =
-  'lg:h-[min(34rem,calc(100dvh-12rem))] lg:max-h-[min(34rem,calc(100dvh-12rem))]';
+const CHECKER_BG = {
+  background:
+    'repeating-conic-gradient(#e0e0e0 0% 25%, white 0% 50%) 0 0 / 20px 20px',
+} as React.CSSProperties;
 
 type Props = {
   productTitle: string;
@@ -114,18 +115,16 @@ export function ProductDetailPreviewColumn({
   }, [selectedFileId, catalogFiles, defaultPreviewUrls]);
 
   return (
-    <div
-      className={clsx(
-        'grid gap-4 lg:max-w-[1040px] lg:grid-cols-[minmax(0,1fr)_minmax(16rem,19rem)] lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]',
-        PDP_ROW_HEIGHT_CLASS,
-      )}
-    >
-      <div className="flex min-w-0 flex-col gap-2 lg:h-full">
-        {/* Preview container */}
-        <div className="flex min-h-[min(18rem,44vh)] max-h-[min(48vh,26rem)] min-w-0 flex-col overflow-hidden rounded-xl bg-[#fafaf9] lg:flex-1 lg:min-h-0 lg:max-h-none">
+    <div className="grid gap-5 lg:max-w-[1040px] lg:grid-cols-[3fr_2fr] lg:items-start">
+      {/* LEFT — preview with checkered transparency background */}
+      <div
+        className="flex min-h-[min(20rem,50vh)] flex-col overflow-hidden rounded-2xl border border-gray-200 lg:h-[min(34rem,calc(100dvh-14rem))]"
+        style={CHECKER_BG}
+      >
+        <div className="flex flex-1 min-h-0 items-center justify-center p-2">
           {videoPlayback ? (
             <VideoAssetPreview
-              className="h-full min-h-0"
+              className="h-full min-h-0 w-full"
               productTitle={productTitle}
               videoUrl={videoPlayback.videoUrl}
               posterUrl={videoPlayback.posterUrl}
@@ -133,7 +132,7 @@ export function ProductDetailPreviewColumn({
             />
           ) : (
             <PremiumAssetPreview
-              className="h-full min-h-0"
+              className="h-full min-h-0 w-full"
               productTitle={productTitle}
               previewUrls={previewUrls}
               formatHints={formatHints}
@@ -144,51 +143,37 @@ export function ProductDetailPreviewColumn({
             />
           )}
         </div>
-        {/* Format + size chips */}
-        {dedupedFiles.length > 0 && (
-          <div className="flex shrink-0 flex-wrap gap-1.5">
-            {dedupedFiles.map((f) => (
-              <span
-                key={f.id}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] shadow-sm"
-              >
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wide text-slate-700">
-                  {f.format}
-                </span>
-                {f.bytes != null && (
-                  <span className="text-slate-400">{formatBytes(f.bytes)}</span>
-                )}
-                <span className="text-slate-400">↓</span>
-              </span>
-            ))}
-          </div>
-        )}
+        {/* ALPHA PREVIEW label */}
+        <div className="shrink-0 border-t border-gray-200/80 bg-black/[0.025] py-2.5 text-center">
+          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-gray-400">
+            Alpha Preview
+          </span>
+        </div>
       </div>
 
-      <aside className="flex min-h-0 min-w-0 flex-col max-lg:w-full max-lg:flex-none">
-        <div className="flex min-h-0 flex-col rounded-xl border border-slate-200/80 bg-white shadow-sm max-lg:flex-none">
-          <div className="flex flex-col gap-3 p-3 sm:gap-4 sm:p-4 max-lg:overflow-visible lg:overflow-y-auto lg:overscroll-contain" style={{ maxHeight: 'min(34rem, calc(100dvh - 12rem))' }}>
-            <NeonAssetDownloads
-              cartProduct={cartProduct}
-              files={dedupedFiles}
-              licenseSummary={licenseSummary}
-              assetLabel={productTitle}
-              productSlug={cartProduct.slug}
-              assetGroupKey={cartProduct.assetGroupKey}
-              assetProductSlug={cartProduct.slug}
-              countrySlug={cartProduct.countrySlug}
-              productId={neonDownloads ? undefined : productId}
-              previewFile={neonDownloads ? undefined : previewFilePublic}
-              requiresEntitlement={neonDownloads ? undefined : paid}
-              compactLayout
-              narrowDesktopSidebar
-              mobileBottomDock={false}
-              ownsProduct={ownsProduct}
-              onAlreadyPurchased={() => setOwnsProduct(true)}
-              selectedId={selectedFileId}
-              onSelectId={setSelectedFileId}
-            />
-          </div>
+      {/* RIGHT — download panel */}
+      <aside className="min-w-0 max-lg:w-full">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <NeonAssetDownloads
+            cartProduct={cartProduct}
+            files={dedupedFiles}
+            licenseSummary={licenseSummary}
+            assetLabel={productTitle}
+            productSlug={cartProduct.slug}
+            assetGroupKey={cartProduct.assetGroupKey}
+            assetProductSlug={cartProduct.slug}
+            countrySlug={cartProduct.countrySlug}
+            productId={neonDownloads ? undefined : productId}
+            previewFile={neonDownloads ? undefined : previewFilePublic}
+            requiresEntitlement={neonDownloads ? undefined : paid}
+            compactLayout
+            narrowDesktopSidebar
+            mobileBottomDock={false}
+            ownsProduct={ownsProduct}
+            onAlreadyPurchased={() => setOwnsProduct(true)}
+            selectedId={selectedFileId}
+            onSelectId={setSelectedFileId}
+          />
         </div>
       </aside>
     </div>
