@@ -14,6 +14,7 @@ import { productShareImageUrl } from '@/lib/seo/product-share-image';
 import type { Product } from '@/types/marketplace';
 
 import { CountryDesignVariantRibbon } from '@/components/marketplace/CountryDesignVariantRibbon';
+import { GalleryVariantsRow } from '@/components/marketplace/GalleryVariantsRow';
 import { listPublishedProducts } from '@/services/marketplace';
 
 type Props = {
@@ -200,6 +201,15 @@ export function ProductDetailView({ slug, product }: Props) {
                 variants={siblingPublic}
                 galleryHref={variantGalleryHref}
                 countryName={countryDisplayName ?? undefined}
+              />
+            ) : null}
+
+            {countrySlug && variantGalleryHref ? (
+              <GalleryVariantsRow
+                countrySlug={countrySlug}
+                currentProductSlug={product.slug}
+                countryName={countryDisplayName ?? countrySlug}
+                galleryHref={variantGalleryHref}
               />
             ) : null}
 
