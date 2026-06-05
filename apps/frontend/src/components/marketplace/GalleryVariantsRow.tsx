@@ -61,7 +61,7 @@ export function GalleryVariantsRow({
 
   return (
     <section
-      className="mt-6 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
+      className="mt-6 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm lg:max-w-[1040px]"
       aria-label={`More ${countryName} flags`}
     >
       {/* Header */}

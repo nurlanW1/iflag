@@ -22,7 +22,7 @@ export function CountryDesignVariantRibbon({ variants, galleryHref, countryName 
   if (variants.length === 0) return null;
 
   return (
-    <section className="rounded-[1.25rem] border border-slate-200/80 bg-white px-4 py-4 sm:px-5">
+    <section className="rounded-[1.25rem] border border-slate-200/80 bg-white px-4 py-4 sm:px-5 lg:max-w-[1040px]">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Same country</p>

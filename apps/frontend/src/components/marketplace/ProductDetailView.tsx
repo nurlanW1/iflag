@@ -95,7 +95,7 @@ export function ProductDetailView({ slug, product }: Props) {
 
   const tagTrail =
     product.tags.length > 0 ? (
-      <section className="mt-10 border-t border-slate-200/80 pt-7 md:mt-12" aria-label="Tags">
+      <section className="mt-10 border-t border-slate-200/80 pt-7 md:mt-12 lg:max-w-[1040px]" aria-label="Tags">
         <p className="text-[12px] leading-relaxed text-slate-500">
           {product.tags.map((t, i) => (
             <span key={t} className="inline whitespace-nowrap">
@@ -137,8 +137,8 @@ export function ProductDetailView({ slug, product }: Props) {
           'max-lg:pb-[calc(2.5rem+env(safe-area-inset-bottom,0px)+var(--cookie-banner-h,0px))] lg:pb-[4.75rem]',
         )}
       >
-        <div className="mx-auto max-w-[min(100%,1060px)] px-4 pb-10 pt-4 sm:px-5 sm:pb-12 sm:pt-5 lg:pb-10 lg:pt-5 xl:px-8">
-          <nav aria-label="Breadcrumb" className="text-[11px] font-medium text-slate-500">
+        <div className="pb-10 pt-4 sm:pb-12 sm:pt-5 lg:pb-10 lg:pt-5">
+          <nav aria-label="Breadcrumb" className="text-[11px] font-medium text-slate-500 lg:max-w-[1040px]">
             {/* Mobile: just ← Back */}
             <Link
               href={browseBackHref}
@@ -172,7 +172,7 @@ export function ProductDetailView({ slug, product }: Props) {
             </div>
           </nav>
 
-          <header className="mt-3 border-b border-slate-200/80 pb-3 lg:mt-4 lg:pb-4">
+          <header className="mt-3 border-b border-slate-200/80 pb-3 lg:mt-4 lg:max-w-[1040px] lg:pb-4">
             <h1 className="text-balance text-[1.35rem] font-semibold leading-snug tracking-tight text-slate-900 sm:text-2xl lg:max-w-[min(100%,42rem)] xl:text-[1.65rem]">
               {product.title}
             </h1>

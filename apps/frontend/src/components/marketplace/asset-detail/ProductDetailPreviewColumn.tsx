@@ -127,7 +127,7 @@ export function ProductDetailPreviewColumn({
   return (
     <div
       className={clsx(
-        'grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,1fr)_21rem]',
+        'grid gap-4 lg:max-w-[1040px] lg:grid-cols-[minmax(0,1fr)_minmax(16rem,19rem)] lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]',
         PDP_ROW_HEIGHT_CLASS,
       )}
     >
