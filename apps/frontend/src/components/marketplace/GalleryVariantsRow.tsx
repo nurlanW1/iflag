@@ -99,7 +99,7 @@ export function GalleryVariantsRow({
             href={`/assets/${encodeURIComponent(v.productSlug)}`}
             role="listitem"
             title={v.name}
-            className="group w-[7.5rem] shrink-0 text-left"
+            className="group w-[9rem] shrink-0 text-left"
           >
             {/* Thumbnail */}
             <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200 transition-all group-hover:ring-[#2563eb]/50 group-hover:shadow-md">
@@ -131,13 +131,6 @@ export function GalleryVariantsRow({
                 </span>
               )}
             </div>
-            {/* Name */}
-            <p
-              className="mt-2 line-clamp-2 px-0.5 text-[11px] font-medium leading-tight text-slate-600 group-hover:text-slate-900"
-              title={v.name}
-            >
-              {v.name}
-            </p>
           </Link>
         ))}
 

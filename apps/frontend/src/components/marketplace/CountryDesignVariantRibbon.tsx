@@ -64,7 +64,7 @@ export function CountryDesignVariantRibbon({ variants, galleryHref, countryName 
               role="listitem"
               aria-label={`${p.title}${isPremium ? ' — paid stock' : ' — free download'}`}
               title={p.title}
-              className="group w-[7.5rem] shrink-0 text-left"
+              className="group w-[9rem] shrink-0 text-left"
             >
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 transition-all group-hover:ring-slate-300">
                 {thumb ? (
@@ -105,12 +105,6 @@ export function CountryDesignVariantRibbon({ variants, galleryHref, countryName 
                   </span>
                 ) : null}
               </div>
-              <p
-                className="mt-2 line-clamp-2 px-0.5 text-[11px] font-medium leading-tight text-slate-600 group-hover:text-slate-900"
-                title={p.title}
-              >
-                {p.title}
-              </p>
             </Link>
           );
         })}
