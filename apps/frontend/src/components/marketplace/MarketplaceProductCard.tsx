@@ -1,11 +1,30 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Crown } from 'lucide-react';
+import { useState } from 'react';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import type { PublicProduct } from '@/lib/marketplace/product-mapper';
 import { collectFormatLabels, formatProductListPrice, isPaidCatalogProduct } from '@/lib/marketplace/catalog-utils';
 import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
+
+/** Non-displayable vector/document formats browsers cannot render as images */
+const NON_DISPLAYABLE_RE = /\.(?:eps|ai|pdf|tiff?|psd|cdr|indd)(?:$|[?#])/i;
+
+function pickDisplayableThumb(
+  thumbnailUrl: string | null | undefined,
+  previewUrl: string | null | undefined,
+): string | null {
+  for (const url of [thumbnailUrl, previewUrl]) {
+    if (!url?.trim()) continue;
+    const lower = url.toLowerCase();
+    if (NON_DISPLAYABLE_RE.test(lower)) continue;
+    return url;
+  }
+  return null;
+}
 
 function countryLabelFromSlug(slug: string) {
   return slug
@@ -22,10 +41,11 @@ export function MarketplaceProductCard({
   product: PublicProduct;
   categoryName: string;
 }) {
+  const [imgError, setImgError] = useState(false);
   const formats = collectFormatLabels(product.files);
   const href = product.detailHref?.trim() || `/flags/${product.slug}`;
   const formatHints = product.files.map((f) => f.format);
-  const thumb = product.thumbnailUrl ?? product.previewUrl;
+  const thumb = pickDisplayableThumb(product.thumbnailUrl, product.previewUrl);
   const svgThumb = thumb ? shouldUnoptimizeFlagImageHref(thumb, formatHints) : false;
   const isPremium = isPaidCatalogProduct(product);
   const showWatermark = shouldWatermarkFlagPreview({ isPremiumDesign: isPremium });
@@ -39,7 +59,7 @@ export function MarketplaceProductCard({
         href={href}
         className={`relative block aspect-[4/3] overflow-hidden ${isWebpThumb ? '' : 'bg-[#fafaf9]'}`}
       >
-        {thumb ? (
+        {thumb && !imgError ? (
           <ProductPreviewImage
             className="absolute inset-0"
             watermarkEnabled={showWatermark}
@@ -51,14 +71,19 @@ export function MarketplaceProductCard({
               fill
               unoptimized={svgThumb}
               draggable={false}
-              className={`relative z-0 transition duration-300 ease-out group-hover:scale-[1.02] ${svgThumb ? 'object-contain p-2' : 'object-contain p-2'}`}
+              className="relative z-0 object-contain p-2 transition duration-300 ease-out group-hover:scale-[1.02]"
               sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1280px) 25vw, 380px"
               loading="lazy"
+              onError={() => setImgError(true)}
             />
           </ProductPreviewImage>
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-slate-100 text-sm font-medium text-slate-400">
-            Preview unavailable
+          <div className="flex h-full w-full items-center justify-center bg-slate-100">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <rect x="3" y="5" width="18" height="14" rx="2" stroke="#94a3b8" strokeWidth="1.5" />
+              <circle cx="12" cy="12" r="3.5" stroke="#94a3b8" strokeWidth="1.5" />
+              <circle cx="17.5" cy="7.5" r="1" fill="#94a3b8" />
+            </svg>
           </div>
         )}
 
