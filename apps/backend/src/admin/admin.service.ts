@@ -35,81 +35,98 @@ export interface BulkUploadResult {
 
 // Get admin dashboard statistics
 export async function getAdminStats(): Promise<AdminStats> {
-  // Total assets
-  const assetsResult = await pool.query(`
-    SELECT 
+  // country_flag_files (primary Neon table)
+  const flagFilesResult = await pool.query(`
+    SELECT
       COUNT(*) as total,
       COUNT(*) FILTER (WHERE status = 'published') as published,
-      COUNT(*) FILTER (WHERE status = 'draft') as draft,
-      COUNT(*) FILTER (WHERE is_premium = TRUE) as premium,
-      COUNT(*) FILTER (WHERE is_premium = FALSE) as free
-    FROM assets
+      COUNT(*) FILTER (WHERE status = 'draft' OR status IS NULL) as draft,
+      COUNT(*) FILTER (WHERE premium_tier = 'pro') as premium,
+      COUNT(*) FILTER (WHERE premium_tier IS NULL OR premium_tier = 'free') as free
+    FROM country_flag_files
   `);
-  const assets = assetsResult.rows[0];
+  const ff = flagFilesResult.rows[0];
 
-  // Downloads
-  const downloadsResult = await pool.query('SELECT COUNT(*) as total FROM downloads');
-  const downloads = downloadsResult.rows[0];
+  // Subscriptions (Paddle/Neon)
+  let totalSubs = 0;
+  let activeSubs = 0;
+  try {
+    const subsResult = await pool.query(`
+      SELECT
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE status = 'active') as active
+      FROM user_subscriptions
+    `);
+    totalSubs = parseInt(subsResult.rows[0]?.total ?? '0');
+    activeSubs = parseInt(subsResult.rows[0]?.active ?? '0');
+  } catch { /* table may not exist yet */ }
 
-  // Subscriptions
-  const subsResult = await pool.query(`
-    SELECT 
-      COUNT(*) as total,
-      COUNT(*) FILTER (WHERE status = 'active') as active
-    FROM user_subscriptions
-  `);
-  const subs = subsResult.rows[0];
+  // Revenue from orders (Paddle one-time + subscriptions)
+  let revenueCents = 0;
+  try {
+    const revenueResult = await pool.query(`
+      SELECT COALESCE(SUM(amount_cents), 0) as revenue
+      FROM orders
+      WHERE status = 'paid'
+    `);
+    revenueCents = parseInt(revenueResult.rows[0]?.revenue ?? '0');
+  } catch { /* table may not exist yet */ }
 
-  // Revenue (from subscriptions)
-  const revenueResult = await pool.query(`
-    SELECT COALESCE(SUM(sp.price_cents), 0) as revenue
-    FROM user_subscriptions us
-    JOIN subscription_plans sp ON us.plan_id = sp.id
-    WHERE us.status = 'active'
-  `);
-  const revenue = revenueResult.rows[0];
+  // Downloads count (best effort)
+  let totalDownloads = 0;
+  try {
+    const dlResult = await pool.query('SELECT COUNT(*) as total FROM downloads');
+    totalDownloads = parseInt(dlResult.rows[0]?.total ?? '0');
+  } catch { /* table may not exist yet */ }
 
-  // Assets by type
-  const typeResult = await pool.query(`
-    SELECT asset_type, COUNT(*) as count
-    FROM assets
-    GROUP BY asset_type
+  // Assets by format (from country_flag_files)
+  const formatResult = await pool.query(`
+    SELECT format, COUNT(*) as count
+    FROM country_flag_files
+    WHERE status = 'published'
+    GROUP BY format
+    ORDER BY count DESC
   `);
   const assets_by_type: Record<string, number> = {};
-  typeResult.rows.forEach((row: any) => {
-    assets_by_type[row.asset_type] = parseInt(row.count);
+  formatResult.rows.forEach((row: any) => {
+    assets_by_type[row.format || 'unknown'] = parseInt(row.count);
   });
 
-  // Assets by category
-  const catResult = await pool.query(`
-    SELECT c.name, COUNT(*) as count
-    FROM assets a
-    LEFT JOIN asset_categories c ON a.category_id = c.id
-    GROUP BY c.name
+  // Assets by region (country)
+  const regionResult = await pool.query(`
+    SELECT COALESCE(c.region::text, 'Unknown') as name, COUNT(*) as count
+    FROM country_flag_files cff
+    LEFT JOIN countries c ON c.id = cff.country_id
+    WHERE cff.status = 'published'
+    GROUP BY c.region
+    ORDER BY count DESC
   `);
   const assets_by_category: Record<string, number> = {};
-  catResult.rows.forEach((row: any) => {
-    assets_by_category[row.name || 'Uncategorized'] = parseInt(row.count);
+  regionResult.rows.forEach((row: any) => {
+    assets_by_category[row.name] = parseInt(row.count);
   });
 
   // Recent uploads
   const recentResult = await pool.query(`
-    SELECT id, title, created_at, status
-    FROM assets
+    SELECT id,
+           COALESCE(title, variant_name, file_name) as title,
+           created_at,
+           status
+    FROM country_flag_files
     ORDER BY created_at DESC
     LIMIT 10
   `);
 
   return {
-    total_assets: parseInt(assets.total),
-    published_assets: parseInt(assets.published),
-    draft_assets: parseInt(assets.draft),
-    premium_assets: parseInt(assets.premium),
-    free_assets: parseInt(assets.free),
-    total_downloads: parseInt(downloads.total),
-    total_subscriptions: parseInt(subs.total),
-    active_subscriptions: parseInt(subs.active),
-    revenue_cents: parseInt(revenue.revenue),
+    total_assets: parseInt(ff.total ?? '0'),
+    published_assets: parseInt(ff.published ?? '0'),
+    draft_assets: parseInt(ff.draft ?? '0'),
+    premium_assets: parseInt(ff.premium ?? '0'),
+    free_assets: parseInt(ff.free ?? '0'),
+    total_downloads: totalDownloads,
+    total_subscriptions: totalSubs,
+    active_subscriptions: activeSubs,
+    revenue_cents: revenueCents,
     assets_by_type,
     assets_by_category,
     recent_uploads: recentResult.rows,

@@ -322,6 +322,22 @@ router.get('/countries', async (req: AuthRequest, res) => {
   }
 });
 
+// GET /api/admin/countries/slug/:slug - Get country by slug
+// NOTE: must be BEFORE /countries/:id to avoid ":id=slug" match
+router.get('/countries/slug/:slug', async (req: AuthRequest, res) => {
+  try {
+    const slug = Array.isArray(req.params.slug) ? req.params.slug[0] : req.params.slug;
+    const country = await getCountryBySlug(slug);
+    if (!country) {
+      return res.status(404).json({ error: 'Country not found' });
+    }
+    res.json(country);
+  } catch (error: any) {
+    console.error('Get country by slug error:', error);
+    res.status(500).json({ error: error.message || 'Failed to fetch country' });
+  }
+});
+
 // GET /api/admin/countries/:id - Get country by ID
 router.get('/countries/:id', async (req: AuthRequest, res) => {
   try {
@@ -333,21 +349,6 @@ router.get('/countries/:id', async (req: AuthRequest, res) => {
     res.json(country);
   } catch (error: any) {
     console.error('Get country error:', error);
-    res.status(500).json({ error: error.message || 'Failed to fetch country' });
-  }
-});
-
-// GET /api/admin/countries/slug/:slug - Get country by slug
-router.get('/countries/slug/:slug', async (req: AuthRequest, res) => {
-  try {
-    const slug = Array.isArray(req.params.slug) ? req.params.slug[0] : req.params.slug;
-    const country = await getCountryBySlug(slug);
-    if (!country) {
-      return res.status(404).json({ error: 'Country not found' });
-    }
-    res.json(country);
-  } catch (error: any) {
-    console.error('Get country by slug error:', error);
     res.status(500).json({ error: error.message || 'Failed to fetch country' });
   }
 });
@@ -383,6 +384,43 @@ router.post('/countries', async (req: AuthRequest, res) => {
   } catch (error: any) {
     console.error('Create country error:', error);
     res.status(400).json({ error: error.message || 'Failed to create country' });
+  }
+});
+
+// PUT /api/admin/countries/flags/:flagId - Update flag file metadata
+// NOTE: must be BEFORE /countries/:id to avoid ":id=flags" match
+router.put('/countries/flags/:flagId', async (req: AuthRequest, res) => {
+  try {
+    const flagId = Array.isArray(req.params.flagId) ? req.params.flagId[0] : req.params.flagId;
+    const updates: Partial<CreateFlagFileData> = {
+      variant_name: req.body.variant_name,
+      ratio: req.body.ratio,
+      premium_tier: req.body.premium_tier,
+      price_cents: req.body.price_cents,
+      watermark_enabled: req.body.watermark_enabled,
+      tags: req.body.tags,
+      metadata: req.body.metadata,
+      status: req.body.status,
+    };
+
+    const flagFile = await updateFlagFile(flagId, updates);
+    res.json(flagFile);
+  } catch (error: any) {
+    console.error('Update flag file error:', error);
+    res.status(400).json({ error: error.message || 'Failed to update flag file' });
+  }
+});
+
+// DELETE /api/admin/countries/flags/:flagId - Delete flag file
+// NOTE: must be BEFORE /countries/:id to avoid ":id=flags" match
+router.delete('/countries/flags/:flagId', async (req: AuthRequest, res) => {
+  try {
+    const flagId = Array.isArray(req.params.flagId) ? req.params.flagId[0] : req.params.flagId;
+    await deleteFlagFile(flagId);
+    res.json({ message: 'Flag file deleted successfully' });
+  } catch (error: any) {
+    console.error('Delete flag file error:', error);
+    res.status(400).json({ error: error.message || 'Failed to delete flag file' });
   }
 });
 
@@ -509,41 +547,6 @@ router.post('/countries/:id/flags', upload.single('file'), async (req: AuthReque
   } catch (error: any) {
     console.error('Create flag file error:', error);
     res.status(400).json({ error: error.message || 'Failed to create flag file' });
-  }
-});
-
-// PUT /api/admin/countries/flags/:flagId - Update flag file metadata
-router.put('/countries/flags/:flagId', async (req: AuthRequest, res) => {
-  try {
-    const flagId = Array.isArray(req.params.flagId) ? req.params.flagId[0] : req.params.flagId;
-    const updates: Partial<CreateFlagFileData> = {
-      variant_name: req.body.variant_name,
-      ratio: req.body.ratio,
-      premium_tier: req.body.premium_tier,
-      price_cents: req.body.price_cents,
-      watermark_enabled: req.body.watermark_enabled,
-      tags: req.body.tags,
-      metadata: req.body.metadata,
-      status: req.body.status,
-    };
-
-    const flagFile = await updateFlagFile(flagId, updates);
-    res.json(flagFile);
-  } catch (error: any) {
-    console.error('Update flag file error:', error);
-    res.status(400).json({ error: error.message || 'Failed to update flag file' });
-  }
-});
-
-// DELETE /api/admin/countries/flags/:flagId - Delete flag file
-router.delete('/countries/flags/:flagId', async (req: AuthRequest, res) => {
-  try {
-    const flagId = Array.isArray(req.params.flagId) ? req.params.flagId[0] : req.params.flagId;
-    await deleteFlagFile(flagId);
-    res.json({ message: 'Flag file deleted successfully' });
-  } catch (error: any) {
-    console.error('Delete flag file error:', error);
-    res.status(400).json({ error: error.message || 'Failed to delete flag file' });
   }
 });
 

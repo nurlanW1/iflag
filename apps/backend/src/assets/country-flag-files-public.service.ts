@@ -142,8 +142,8 @@ export async function listPublishedCountryFlagFiles(
       `(lower(trim(COALESCE(cff.country_slug, c.slug,''))) = lower(trim($${p}))
         OR c.id IN (SELECT id FROM countries WHERE lower(trim(slug)) = lower(trim($${p}))))`,
     );
-    params.push(cSlug, cSlug);
-    p += 2;
+    params.push(cSlug);
+    p += 1;
   }
 
   const fmt = filters.format?.trim().toLowerCase();
