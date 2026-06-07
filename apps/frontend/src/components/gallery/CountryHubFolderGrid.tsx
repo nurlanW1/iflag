@@ -64,33 +64,9 @@ export function CountryHubFolderGrid({
                     {country.code}
                   </span>
                 ) : null}
-                {/* Hover shape previews */}
-                <div className="absolute inset-x-0 bottom-0 z-10 flex translate-y-1 items-center justify-center gap-1.5 pb-2 opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
-                  {(['●', '♥', '★'] as const).map((shape, i) => (
-                    <span
-                      key={i}
-                      className="flex h-6 w-6 items-center justify-center rounded-md bg-white/90 text-[11px] text-stone-500 shadow-sm ring-1 ring-stone-200/80"
-                    >
-                      {shape}
-                    </span>
-                  ))}
-                </div>
               </div>
               <div className="px-3 py-2.5">
                 <h3 className="truncate text-sm font-semibold text-stone-900">{country.name}</h3>
-                <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                  {(['SVG', 'PNG'] as const).map((fmt) => (
-                    <span
-                      key={fmt}
-                      className="rounded-md bg-stone-100 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-stone-600"
-                    >
-                      {fmt}
-                    </span>
-                  ))}
-                  <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200/80">
-                    Free
-                  </span>
-                </div>
               </div>
             </Link>
           </motion.div>
