@@ -115,10 +115,10 @@ export function ProductDetailPreviewColumn({
   }, [selectedFileId, catalogFiles, defaultPreviewUrls]);
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_380px] lg:items-stretch">
+    <div className="grid gap-5 lg:grid-cols-[1fr_380px] lg:items-start">
       {/* LEFT — preview with checkered transparency background */}
       <div
-        className="flex min-h-[min(18rem,46vh)] flex-col overflow-hidden rounded-2xl border border-gray-200 lg:min-h-0"
+        className="flex min-h-[min(18rem,46vh)] flex-col overflow-hidden rounded-2xl border border-gray-200 lg:h-[min(500px,58vh)] lg:min-h-0"
         style={CHECKER_BG}
       >
         <div className="flex flex-1 min-h-0 items-center justify-center p-2">
@@ -151,9 +151,9 @@ export function ProductDetailPreviewColumn({
         </div>
       </div>
 
-      {/* RIGHT — download panel, same height as preview */}
-      <aside className="flex min-w-0 flex-col max-lg:w-full">
-        <div className="flex flex-1 flex-col overflow-y-auto rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+      {/* RIGHT — download panel, natural height */}
+      <aside className="min-w-0 max-lg:w-full">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
           <NeonAssetDownloads
             cartProduct={cartProduct}
             files={dedupedFiles}
@@ -179,3 +179,4 @@ export function ProductDetailPreviewColumn({
     </div>
   );
 }
+
