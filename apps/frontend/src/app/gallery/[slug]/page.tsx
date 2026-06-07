@@ -19,9 +19,13 @@ import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
 import { hrefLooksLikeNonBrowserMaster, pickFormatPreviewUrl } from '@/lib/flag-preview-display';
 import COUNTRY_FACTS from '../../../../content/countries/facts.json';
+import COUNTRY_COLORS from '../../../../content/countries/flag-colors.json';
+import { FlagColorPalette } from '@/components/gallery/FlagColorPalette';
+import type { FlagColor } from '@/components/gallery/FlagColorPalette';
 
 type CountryFact = { capital: string; population: string; area: string; currency: string };
 const countryFacts = COUNTRY_FACTS as Record<string, CountryFact>;
+const countryColors = COUNTRY_COLORS as Record<string, FlagColor[]>;
 
 interface Variant {
   id: string;
@@ -186,6 +190,7 @@ export default function CountryHubPage() {
   const webpCover = data.country.webp_cover_url?.trim() || data.country.cover_image_url?.trim() || '';
 
   const facts: CountryFact | null = countryFacts[data.country.slug] ?? null;
+  const flagColors: FlagColor[] = countryColors[data.country.slug] ?? [];
 
   const description = (() => {
     const base = data.country.description?.trim();
@@ -288,23 +293,32 @@ export default function CountryHubPage() {
               </div>
             )}
           </div>
-          {/* Desktop flag — natural size, shadow only */}
-          {webpCover ? (
-            <div className="hidden shrink-0 lg:block">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* Desktop: flag + color palette stacked */}
+          <div className="hidden shrink-0 flex-col gap-3 lg:flex" style={{ width: 220 }}>
+            {webpCover ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={webpCover}
                 alt={`${pageTitle} flag`}
-                width={180}
-                className="rounded-[4px] shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
+                width={220}
+                className="w-full rounded-[4px] shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
                 loading="eager"
                 decoding="async"
                 referrerPolicy="no-referrer"
                 draggable={false}
               />
-            </div>
-          ) : null}
+            ) : null}
+            {flagColors.length > 0 && (
+              <FlagColorPalette colors={flagColors} />
+            )}
+          </div>
         </div>
+        {/* Mobile color palette (below description) */}
+        {flagColors.length > 0 && (
+          <div className="mt-4 lg:hidden">
+            <FlagColorPalette colors={flagColors} />
+          </div>
+        )}
       </header>
 
       <section className="mt-10" aria-labelledby="designs-heading">
