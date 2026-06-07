@@ -13,10 +13,7 @@ import type { CartProductRef } from '@/components/marketplace/asset-detail/CopyL
 import type { ProductFile } from '@/types/marketplace';
 import type { PublicProductFile } from '@/lib/marketplace/product-mapper';
 
-const CHECKER_BG = {
-  background:
-    'repeating-conic-gradient(#e0e0e0 0% 25%, white 0% 50%) 0 0 / 20px 20px',
-} as React.CSSProperties;
+const CHECKER_BG = {} as React.CSSProperties;
 
 type Props = {
   productTitle: string;
@@ -118,7 +115,7 @@ export function ProductDetailPreviewColumn({
     <div className="grid gap-5 lg:grid-cols-[1fr_380px] lg:items-start">
       {/* LEFT — preview with checkered transparency background */}
       <div
-        className="flex min-h-[min(18rem,46vh)] flex-col overflow-hidden rounded-2xl border border-gray-200 lg:h-[min(500px,58vh)] lg:min-h-0"
+        className="flex min-h-[min(18rem,46vh)] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white lg:h-[min(500px,58vh)] lg:min-h-0"
         style={CHECKER_BG}
       >
         <div className="flex flex-1 min-h-0 items-center justify-center p-2">
