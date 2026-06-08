@@ -21,7 +21,7 @@ export default function AboutPage() {
       icon={<Building2 className="h-8 w-8 text-[#2563eb]" aria-hidden />}
     >
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">Operator</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">Operator</h2>
         <p>
           <strong>{P.TRADING_NAME}</strong> is operated by <strong>{P.OPERATOR_LEGAL_NAME}</strong> from{' '}
           <strong>{P.JURISDICTION}</strong>. We focus on clear licensing, predictable downloads, and a
@@ -34,7 +34,7 @@ export default function AboutPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">What we offer</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">What we offer</h2>
         <p>
           We host a catalog of digital flag and symbol assets for creative and professional projects:
           vectors, raster images, and related media where available. Each listing shows the formats you can
@@ -48,7 +48,7 @@ export default function AboutPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">Trust, payments, and policies</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">Trust, payments, and policies</h2>
         <p>
           Purchases may be processed by <strong>{P.PAYMENT_PROCESSOR}</strong>. For usage rights, privacy,
           refunds, and acceptable use, see:
@@ -78,14 +78,14 @@ export default function AboutPage() {
             </Link>
           </li>
         </ul>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-neutral-500">
           {P.VAT_OR_TAX_ID} List regulatory registrations or industry memberships only when they are
           accurate and verifiable.
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">Contact</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">Contact</h2>
         <p>
           <a className="font-medium text-[#2563eb] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}

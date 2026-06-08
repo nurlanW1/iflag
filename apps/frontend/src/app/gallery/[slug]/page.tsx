@@ -251,16 +251,16 @@ export default function CountryHubPage() {
             {/* Badges */}
             <div className="flex flex-wrap gap-1.5">
               {data.country.region ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+                <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-600">
                   🌎 {data.country.region}
                 </span>
               ) : null}
               {data.country.code ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+                <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-600">
                   🏳 {data.country.code}
                 </span>
               ) : null}
-              <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+              <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-600">
                 ✦ Sovereign
               </span>
             </div>

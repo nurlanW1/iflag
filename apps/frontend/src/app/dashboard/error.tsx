@@ -16,22 +16,22 @@ export default function DashboardError({
 
   return (
     <div className="mx-auto max-w-lg rounded-2xl border border-red-100 bg-red-50/50 px-6 py-8 text-center">
-      <h1 className="text-xl font-bold text-gray-900">Dashboard unavailable</h1>
-      <p className="mt-2 text-sm text-gray-600">
-        Something went wrong loading this page. Your session may still be valid—try again or return to the
+      <h1 className="text-xl font-semibold text-[#2a2a2a]">Dashboard unavailable</h1>
+      <p className="mt-2 text-sm text-neutral-500">
+        Something went wrong loading this page. Your session may still be valid — try again or return to the
         overview.
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <button
           type="button"
           onClick={() => reset()}
-          className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1d4ed8]"
+          className="rounded-xl bg-[var(--brand-blue)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)]"
         >
           Try again
         </button>
         <Link
           href="/dashboard"
-          className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+          className="rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-800 shadow-sm transition hover:bg-neutral-50"
         >
           Overview
         </Link>

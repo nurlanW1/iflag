@@ -348,7 +348,7 @@ export function ProductBrowseSection({
             type="button"
             onClick={onLoadMore}
             disabled={loadingMore}
-            className="min-h-12 w-full max-w-xl rounded-xl border-2 border-gray-200 bg-white px-8 py-3.5 text-base font-semibold text-gray-900 transition hover:border-[#2563eb] hover:text-[#2563eb] disabled:opacity-50 sm:w-auto md:max-w-none"
+            className="min-h-12 w-full max-w-xl rounded-xl border border-neutral-200 bg-white px-8 py-3.5 text-sm font-semibold text-[#2a2a2a] shadow-sm transition hover:border-[var(--brand-blue)]/40 hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue)] disabled:opacity-50 sm:w-auto md:max-w-none"
           >
             {loadingMore ? 'Loading…' : 'Load more'}
           </button>

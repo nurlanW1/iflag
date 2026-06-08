@@ -19,21 +19,23 @@ function AccessDeniedContent() {
       : 'Your account does not have access to this area. Contact the site owner if you believe this is a mistake.';
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 px-4 py-16">
-      <div className="max-w-md rounded-2xl border border-gray-200 bg-white px-8 py-10 text-center shadow-lg">
-        <ShieldOff className="mx-auto mb-4 text-red-500" size={48} aria-hidden />
-        <h1 className="text-2xl font-black text-gray-900">{title}</h1>
-        <p className="mt-3 text-sm text-gray-600 leading-relaxed">{message}</p>
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-[#fafaf9] px-4 py-16">
+      <div className="max-w-md rounded-2xl border border-neutral-200 bg-white px-8 py-10 text-center shadow-sm">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50">
+          <ShieldOff className="text-red-500" size={28} aria-hidden />
+        </div>
+        <h1 className="text-2xl font-semibold tracking-tight text-[#2a2a2a]">{title}</h1>
+        <p className="mt-3 text-sm leading-relaxed text-neutral-500">{message}</p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
             href="/"
-            className="inline-flex items-center justify-center rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+            className="inline-flex items-center justify-center rounded-xl bg-[var(--brand-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)]"
           >
             Back to home
           </Link>
           <Link
             href="/sign-in"
-            className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50"
+            className="inline-flex items-center justify-center rounded-xl border border-neutral-200 bg-white px-5 py-2.5 text-sm font-semibold text-neutral-800 shadow-sm transition hover:bg-neutral-50"
           >
             Sign in
           </Link>
@@ -47,8 +49,8 @@ export default function AccessDeniedPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-dvh items-center justify-center bg-gradient-to-br from-gray-50 to-white">
-          <p className="text-sm text-gray-500">Loading…</p>
+        <div className="flex min-h-dvh items-center justify-center bg-[#fafaf9]">
+          <p className="text-sm text-neutral-400">Loading…</p>
         </div>
       }
     >
