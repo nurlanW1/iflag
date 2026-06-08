@@ -14,10 +14,10 @@ type Props = {
 
 export function LegalDocumentShell({ title, subtitle, icon, children, lastUpdated }: Props) {
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-[#fafaf9]">
       <article className="marketplace-shell py-12 sm:py-16">
         <ContentReadable className="space-y-0">
-          <header className="mb-8 border-b border-gray-100 pb-8">
+          <header className="mb-8 border-b border-neutral-100 pb-8">
             <div className="flex flex-wrap items-center gap-3">
               {icon}
               <div>
@@ -66,7 +66,7 @@ export function LegalDocumentShell({ title, subtitle, icon, children, lastUpdate
             </p>
           </aside>
 
-          <div className="space-y-8 text-base leading-relaxed text-gray-800">{children}</div>
+          <div className="space-y-8 text-base leading-relaxed text-neutral-700">{children}</div>
         </ContentReadable>
       </article>
     </main>

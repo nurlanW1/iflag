@@ -7,7 +7,7 @@ export function PrivacyPolicyBody() {
   return (
     <>
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">1. Who we are</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">1. Who we are</h2>
         <p>
           This Privacy Policy describes how <strong>{P.OPERATOR_LEGAL_NAME}</strong> (“we”, “us”) processes
           personal data when you use <strong>{P.TRADING_NAME}</strong> (the “Service”).
@@ -23,14 +23,14 @@ export function PrivacyPolicyBody() {
           <strong>Registered / principal address (if you publish one):</strong> {P.REGISTERED_OFFICE}.{' '}
           <strong>Tax / company identifiers (only if you choose to publish):</strong> {P.VAT_OR_TAX_ID}.
         </p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-neutral-500">
           Effective date: {P.EFFECTIVE_DATE}. Update this date whenever you publish a new version users
           should read.
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">2. Scope</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">2. Scope</h2>
         <p>
           This policy applies to visitors, account holders, buyers, subscribers, and others who interact with
           the Service, including when you browse pages, create an account, purchase a license, or contact
@@ -43,7 +43,7 @@ export function PrivacyPolicyBody() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">3. Data we may collect</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">3. Data we may collect</h2>
         <p>
           Depending on how you use the Service, we may process categories such as: account and profile
           details; authentication identifiers; billing and transaction records (often handled by our payment
@@ -59,7 +59,7 @@ export function PrivacyPolicyBody() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">4. Purposes and legal bases</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">4. Purposes and legal bases</h2>
         <p>We process personal data to:</p>
         <ul className="list-inside list-disc space-y-2 pl-1">
           <li>Provide, secure, and improve the Service (contract / legitimate interests).</li>
@@ -77,7 +77,7 @@ export function PrivacyPolicyBody() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">5. Sharing and processors</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">5. Sharing and processors</h2>
         <p>
           We share personal data with vendors that help us operate the Service (hosting, email, support
           tooling, payment processing). Payment data is typically collected directly by{' '}
@@ -91,7 +91,7 @@ export function PrivacyPolicyBody() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">6. International transfers</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">6. International transfers</h2>
         <p>
           We may process data in countries other than where you live. Describe the transfer tools you rely
           on (for example Standard Contractual Clauses or adequacy decisions) with advice from counsel.
@@ -99,7 +99,7 @@ export function PrivacyPolicyBody() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">7. Retention</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">7. Retention</h2>
         <p>
           We keep personal data only as long as needed for the purposes above, including legal, tax, and
           dispute resolution needs. Add concrete retention periods for accounts, invoices, marketing
@@ -108,7 +108,7 @@ export function PrivacyPolicyBody() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">8. Your rights</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">8. Your rights</h2>
         <p>
           Depending on your location, you may have rights to access, correct, delete, restrict, or object to
           certain processing, and to data portability. You may withdraw consent where processing is
@@ -121,7 +121,7 @@ export function PrivacyPolicyBody() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">9. Cookies and similar technologies</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">9. Cookies and similar technologies</h2>
         <p>
           We use cookies and similar technologies as described in our{' '}
           <Link href="/cookies" className="font-medium text-[#2563eb] hover:underline">
@@ -132,7 +132,7 @@ export function PrivacyPolicyBody() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">10. Children</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">10. Children</h2>
         <p>
           The Service is not directed to children under the age required in your region. State the minimum
           age you enforce and how you handle parental consent if minors may use the Service.
@@ -140,7 +140,7 @@ export function PrivacyPolicyBody() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">11. Security</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">11. Security</h2>
         <p>
           We implement administrative, technical, and organizational measures appropriate to the risk,
           such as encryption in transit, access controls, and vendor review. Security improves over time;
@@ -149,7 +149,7 @@ export function PrivacyPolicyBody() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">12. Automated decision-making</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">12. Automated decision-making</h2>
         <p>
           State whether you use solely automated decisions that produce legal or similarly significant
           effects. If you do not, say so plainly.
@@ -157,7 +157,7 @@ export function PrivacyPolicyBody() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">13. Changes</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">13. Changes</h2>
         <p>
           We may update this Privacy Policy from time to time. We will post the updated version and revise
           the effective date. Describe how you notify users of material changes (email, banner, or account
@@ -166,7 +166,7 @@ export function PrivacyPolicyBody() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">14. Contact</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">14. Contact</h2>
         <p>
           Questions about privacy:{' '}
           <a className="font-medium text-[#2563eb] hover:underline" href={`mailto:${contactEmail}`}>

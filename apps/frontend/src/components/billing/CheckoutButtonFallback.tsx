@@ -135,7 +135,7 @@ export function CheckoutButtonFallback({
         style={style}
         className={
           className ||
-          'w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#2563eb] disabled:opacity-50'
+          'w-full rounded-xl bg-[var(--brand-blue)] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)] disabled:opacity-50'
         }
       >
         {loading ? 'Loading…' : busy ? 'Redirecting…' : children}

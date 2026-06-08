@@ -76,10 +76,10 @@ export function CookieNotice() {
     >
       <PageShell className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0 flex-1 pr-8 md:pr-4">
-          <p id="cookie-notice-title" className="font-semibold text-gray-900">
+          <p id="cookie-notice-title" className="font-semibold text-[#2a2a2a]">
             Cookies &amp; privacy
           </p>
-          <p id="cookie-notice-desc" className="mt-1 text-sm text-gray-600">
+          <p id="cookie-notice-desc" className="mt-1 text-sm text-neutral-500">
             We use essential cookies for sign-in, account security, and <strong>Paddle checkout</strong> (they
             keep your billing session tied to your login). If you add analytics or ads, document them in our{' '}
             <Link href="/cookies" className="font-medium text-[#2563eb] hover:underline">
@@ -96,21 +96,21 @@ export function CookieNotice() {
           <button
             type="button"
             onClick={() => dismiss('essential')}
-            className="min-h-11 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold leading-snug text-gray-800 hover:bg-gray-50"
+            className="min-h-11 rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm font-semibold leading-snug text-neutral-800 shadow-sm hover:bg-neutral-50"
           >
             Essential only
           </button>
           <button
             type="button"
             onClick={() => dismiss('acknowledged')}
-            className="min-h-11 rounded-xl bg-[#2563eb] px-5 py-3 text-sm font-semibold leading-snug text-white hover:bg-[#1d4ed8]"
+            className="min-h-11 rounded-xl bg-[var(--brand-blue)] px-5 py-3 text-sm font-semibold leading-snug text-white shadow-sm hover:bg-[var(--brand-blue-hover)]"
           >
             OK
           </button>
           <button
             type="button"
             onClick={() => dismiss('acknowledged')}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
             aria-label="Close"
           >
             <X className="h-5 w-5" />

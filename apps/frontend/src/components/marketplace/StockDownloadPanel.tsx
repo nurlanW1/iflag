@@ -199,7 +199,7 @@ export function StockDownloadPanel({
         type="button"
         disabled={busy}
         onClick={() => void onProtectedDownload()}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-black py-3 text-sm font-semibold text-white transition hover:bg-gray-900 disabled:opacity-50"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-blue)] py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)] disabled:opacity-50"
       >
         <Download className="h-4 w-4" aria-hidden strokeWidth={2.25} />
         {busy ? '…' : 'Download'}
@@ -215,7 +215,7 @@ export function StockDownloadPanel({
         type="button"
         disabled={directDownloadBusy}
         onClick={() => onDirectDownload()}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-black py-3 text-sm font-semibold text-white transition hover:bg-gray-900 disabled:opacity-50"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-blue)] py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)] disabled:opacity-50"
       >
         <Download className="h-4 w-4" aria-hidden strokeWidth={2.25} />
         {directDownloadBusy ? '…' : directDownloadLabel?.replace(/^Download\s+/i, '') ?? 'Get'}
@@ -233,7 +233,7 @@ export function StockDownloadPanel({
         type="button"
         disabled={busy}
         onClick={() => void onProtectedDownload()}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-black py-3 text-sm font-semibold text-white transition hover:bg-gray-900 disabled:opacity-50"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-blue)] py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)] disabled:opacity-50"
       >
         <Download className="h-4 w-4" aria-hidden strokeWidth={2.25} />
         {busy ? '…' : 'Get'}
@@ -251,7 +251,7 @@ export function StockDownloadPanel({
         type="button"
         disabled={busy}
         onClick={() => void onProtectedDownload()}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-black py-3 text-sm font-semibold text-white transition hover:bg-gray-900 disabled:opacity-50"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-blue)] py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)] disabled:opacity-50"
       >
         <Download className="h-4 w-4" aria-hidden strokeWidth={2.25} />
         {busy ? '…' : 'Download'}
