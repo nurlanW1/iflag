@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Crown } from 'lucide-react';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ProductDetailPreviewColumn } from '@/components/marketplace/asset-detail/ProductDetailPreviewColumn';
 import { productVideoPlayback } from '@/lib/marketplace/product-video-playback';
@@ -165,11 +165,42 @@ export function ProductDetailView({ slug, product }: Props) {
           </div>
         </nav>
 
-        {/* Title */}
-        <header className="mb-4 border-b border-slate-200/70 pb-4">
-          <h1 className="text-balance text-xl font-semibold leading-snug tracking-tight text-slate-900 sm:text-2xl">
+        {/* Title + meta */}
+        <header className="mb-5 border-b border-slate-200/70 pb-5">
+          {/* Tier + country meta row */}
+          <div className="mb-2.5 flex flex-wrap items-center gap-2">
+            {paid ? (
+              <span className="inline-flex items-center gap-1 rounded-md bg-amber-400/95 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-950 ring-1 ring-amber-600/35">
+                <Crown size={11} className="shrink-0" aria-hidden strokeWidth={2.5} />
+                Paid design
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-md bg-emerald-500/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white ring-1 ring-emerald-600/30">
+                Free download
+              </span>
+            )}
+            {countryDisplayName && countrySlug ? (
+              <Link
+                href={`/gallery/${encodeURIComponent(countrySlug)}`}
+                className="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition-colors hover:bg-slate-200 hover:text-slate-900"
+              >
+                {countryDisplayName}
+              </Link>
+            ) : null}
+            {formatHints.length > 0 ? (
+              <span className="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                {formatHints.length} format{formatHints.length === 1 ? '' : 's'}
+              </span>
+            ) : null}
+          </div>
+          <h1 className="text-balance text-xl font-semibold leading-snug tracking-tight text-slate-900 sm:text-2xl lg:text-[1.625rem]">
             {product.title}
           </h1>
+          {product.description?.trim() ? (
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-500">
+              {product.description.trim()}
+            </p>
+          ) : null}
         </header>
 
         {/* Main content */}
