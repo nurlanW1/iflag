@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Crown } from 'lucide-react';
+import { ArrowRight, Crown } from 'lucide-react';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 import { isPaidCatalogProduct } from '@/lib/marketplace/catalog-utils';
@@ -22,24 +22,24 @@ export function CountryDesignVariantRibbon({ variants, galleryHref, countryName 
   if (variants.length === 0) return null;
 
   return (
-    <section className="rounded-2xl border border-slate-200/80 bg-white px-4 py-4 sm:px-5">
+    <section className="rounded-2xl border border-slate-200/80 bg-white px-4 py-5 sm:px-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Same country</p>
-          <h2 className="mt-1 text-sm font-semibold text-slate-900">
-            More {countryName ? `${countryName} ` : ''}Flags
+          <h2 className="mt-0.5 text-base font-semibold text-slate-900">
+            More {countryName ? `${countryName} ` : ''}designs
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
+          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
             {variants.length}
           </span>
           {galleryHref ? (
             <Link
               href={galleryHref}
-              className="text-xs font-semibold text-[var(--brand-blue)] underline-offset-4 hover:underline"
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
             >
-              Gallery
+              View all <ArrowRight size={12} aria-hidden />
             </Link>
           ) : null}
         </div>
@@ -64,9 +64,9 @@ export function CountryDesignVariantRibbon({ variants, galleryHref, countryName 
               role="listitem"
               aria-label={`${p.title}${isPremium ? ' — paid stock' : ' — free download'}`}
               title={p.title}
-              className="group w-[9rem] shrink-0 text-left"
+              className="group w-[9.5rem] shrink-0 flex-col text-left"
             >
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 transition-all group-hover:ring-slate-300">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 transition-all group-hover:ring-[var(--brand-blue)]/40 group-hover:shadow-md">
                 {thumb ? (
                   <ProductPreviewImage
                     className="absolute inset-0"
@@ -80,7 +80,7 @@ export function CountryDesignVariantRibbon({ variants, galleryHref, countryName 
                       unoptimized={svgThumb}
                       loading="lazy"
                       draggable={false}
-                      sizes="128px"
+                      sizes="144px"
                       className="relative z-0 object-contain p-2 transition-transform duration-300 group-hover:scale-105"
                     />
                   </ProductPreviewImage>
@@ -90,7 +90,7 @@ export function CountryDesignVariantRibbon({ variants, galleryHref, countryName 
                   </div>
                 )}
                 {isPremium ? (
-                  <span className="pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-0.5 rounded-md bg-violet-600/90 px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide text-white ring-1 ring-violet-700/40">
+                  <span className="pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center gap-0.5 rounded-md bg-amber-400/95 px-[5px] py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-950 ring-1 ring-amber-600/30">
                     <Crown size={9} aria-hidden strokeWidth={2.5} />
                     {p.priceCents > 0 ? `$${Math.ceil(p.priceCents / 100)}` : 'Paid'}
                   </span>
@@ -101,10 +101,14 @@ export function CountryDesignVariantRibbon({ variants, galleryHref, countryName 
                 )}
                 {formatCount > 0 ? (
                   <span className="pointer-events-none absolute right-1.5 top-1.5 z-10 rounded-md bg-black/55 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
-                    {formatCount}
+                    {formatCount}f
                   </span>
                 ) : null}
               </div>
+              {/* Title below card */}
+              <p className="mt-1.5 line-clamp-2 text-[11px] font-medium leading-snug text-slate-700 group-hover:text-[var(--brand-blue)]">
+                {p.title}
+              </p>
             </Link>
           );
         })}

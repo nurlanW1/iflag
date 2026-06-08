@@ -2,12 +2,37 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { Search, Filter, Crown, X, SlidersHorizontal, Grid3x3, List } from 'lucide-react';
+import {
+  Search,
+  Crown,
+  X,
+  SlidersHorizontal,
+  LayoutGrid,
+  Rows3,
+  FileImage,
+  Sparkles,
+} from 'lucide-react';
 import AssetCard from '@/components/AssetCard';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 import { motion } from 'framer-motion';
 import { marketplaceProductCardGridClasses } from '@/lib/ui/marketplace-layout';
+
+function SkeletonGrid() {
+  return (
+    <div className={marketplaceProductCardGridClasses}>
+      {Array.from({ length: 12 }).map((_, i) => (
+        <div key={i} className="overflow-hidden rounded-2xl border border-stone-200/80 bg-white">
+          <div className="aspect-[4/3] w-full animate-pulse bg-stone-100" />
+          <div className="space-y-2 px-4 py-3">
+            <div className="h-3.5 w-2/3 animate-pulse rounded bg-stone-100" />
+            <div className="h-2.5 w-1/3 animate-pulse rounded bg-stone-50" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function AssetsPage() {
   const [assets, setAssets] = useState<any[]>([]);
@@ -30,11 +55,7 @@ export default function AssetsPage() {
   const loadAssets = async () => {
     setLoading(true);
     try {
-      const data = await api.searchAssets({
-        ...filters,
-        page,
-        limit: 24,
-      });
+      const data = await api.searchAssets({ ...filters, page, limit: 24 });
       setAssets(data.assets || []);
       setTotal(data.total || 0);
     } catch (error) {
@@ -61,279 +82,311 @@ export default function AssetsPage() {
   };
 
   const clearFilters = () => {
-    setFilters({
-      search: '',
-      asset_type: [],
-      is_premium: undefined,
-      sort: 'newest',
-    });
+    setFilters({ search: '', asset_type: [], is_premium: undefined, sort: 'newest' });
     setPage(1);
   };
 
-  const activeFiltersCount = filters.asset_type.length + (filters.is_premium !== undefined ? 1 : 0);
+  const activeFiltersCount =
+    filters.asset_type.length + (filters.is_premium !== undefined ? 1 : 0);
+
+  const totalPages = Math.ceil(total / 24);
 
   return (
-    <main className="min-h-screen bg-white text-black">
-      {/* Header */}
-      <div className="bg-white border-b border-black/10">
-        <div className="marketplace-shell py-12 sm:py-14 lg:py-20 xl:pb-24 xl:pt-24">
-          <h1 className="text-5xl font-black mb-4 text-black">Browse Flags</h1>
-          <p className="text-black/60 text-lg">Discover high-quality flags from around the world</p>
+    <main className="min-h-screen bg-stone-50">
+      {/* Hero */}
+      <section className="relative overflow-hidden border-b border-stone-200/80 bg-gradient-to-br from-[#0a3b44] via-[#0d4c5b] to-[#0a3b44]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.18]"
+          style={{
+            background:
+              'radial-gradient(circle at 18% 30%, #60a5fa 0%, transparent 38%), radial-gradient(circle at 82% 70%, #2563eb 0%, transparent 42%)',
+          }}
+        />
+        <div className="marketplace-shell relative pb-10 pt-10 sm:pb-14 sm:pt-12 md:pb-16 md:pt-14">
+          <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.22em] text-white/55">
+            <Sparkles size={13} className="text-[#7adcef]" aria-hidden />
+            Asset library
+          </div>
+          <h1 className="mt-3 max-w-2xl text-balance text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl lg:text-4xl">
+            Browse all flag assets
+          </h1>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/75 sm:text-base">
+            Vectors, rasters, animations, and archives — filter by type, format, or access level.
+          </p>
+          <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-white/75">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 font-medium text-white ring-1 ring-white/15 backdrop-blur">
+              <FileImage size={13} aria-hidden /> {total > 0 ? `${total.toLocaleString()} assets` : 'All assets'}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* Sticky search/filter bar */}
+      <div className="sticky top-0 z-30 -mt-5 border-b border-stone-200/60 bg-stone-50/92 backdrop-blur-md">
+        <div className="marketplace-shell py-4">
+          <div className="rounded-2xl border border-stone-200/85 bg-white/98 px-3 py-3 shadow-[0_6px_24px_-12px_rgba(15,23,42,0.12)] ring-1 ring-stone-100/90 sm:px-4">
+            <div className="flex items-center gap-2">
+              {/* Search */}
+              <form onSubmit={handleSearch} className="relative min-h-11 flex-1 min-w-0">
+                <Search
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+                  size={17}
+                  aria-hidden
+                />
+                <input
+                  type="text"
+                  placeholder="Search assets, countries, types…"
+                  value={filters.search}
+                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                  className="h-11 w-full rounded-xl border border-stone-200 bg-stone-50/90 pl-10 pr-4 text-sm text-stone-900 placeholder:text-stone-400 transition-all focus:border-[#2563eb] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                />
+              </form>
+
+              {/* Filters toggle */}
+              <button
+                type="button"
+                onClick={() => setShowFilters((o) => !o)}
+                className={`flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border px-3.5 py-2.5 text-sm font-semibold transition-colors ${
+                  showFilters || activeFiltersCount > 0
+                    ? 'border-[#2563eb] bg-[#2563eb] text-white'
+                    : 'border-stone-200 bg-stone-50/90 text-stone-800 hover:bg-stone-100'
+                }`}
+              >
+                <SlidersHorizontal size={16} aria-hidden />
+                <span className="hidden sm:inline">Filters</span>
+                {activeFiltersCount > 0 && (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1 text-[10px] font-bold">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Sort */}
+              <div className="relative hidden sm:block">
+                <select
+                  value={filters.sort}
+                  onChange={(e) => {
+                    setFilters({ ...filters, sort: e.target.value as any });
+                    setPage(1);
+                  }}
+                  aria-label="Sort assets"
+                  className="h-11 appearance-none rounded-xl border border-stone-200 bg-stone-50/90 pl-3 pr-8 text-xs font-semibold text-stone-800 transition-all focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 md:min-w-[9rem]"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="popular">Most popular</option>
+                  <option value="title">Title A–Z</option>
+                </select>
+                <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400" aria-hidden>▾</span>
+              </div>
+
+              {/* View toggle */}
+              <div className="flex shrink-0 items-center rounded-xl bg-stone-100/90 p-1">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  aria-label="Grid view"
+                  aria-pressed={viewMode === 'grid'}
+                  className={`flex h-9 w-9 touch-manipulation items-center justify-center rounded-lg transition-colors ${
+                    viewMode === 'grid' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'
+                  }`}
+                >
+                  <LayoutGrid size={16} aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('list')}
+                  aria-label="List view"
+                  aria-pressed={viewMode === 'list'}
+                  className={`flex h-9 w-9 touch-manipulation items-center justify-center rounded-lg transition-colors ${
+                    viewMode === 'list' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'
+                  }`}
+                >
+                  <Rows3 size={16} aria-hidden />
+                </button>
+              </div>
+            </div>
+
+            {/* Filter panel */}
+            {showFilters && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-3 border-t border-stone-100 pt-3"
+              >
+                <div className="flex flex-wrap items-start gap-4">
+                  {/* Asset type */}
+                  <div className="min-w-0">
+                    <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-stone-500">Type</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['flag', 'symbol', 'video', 'animated', 'coat_of_arms', 'emblem'].map((type) => (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => toggleAssetType(type)}
+                          className={`rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+                            filters.asset_type.includes(type)
+                              ? 'bg-[#2563eb] text-white shadow-sm shadow-[#2563eb]/30'
+                              : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
+                          }`}
+                        >
+                          {type.replace('_', ' ')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="h-px w-full bg-stone-100 sm:hidden" />
+
+                  {/* Premium toggle */}
+                  <div>
+                    <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-stone-500">Access</p>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFilters({
+                          ...filters,
+                          is_premium: filters.is_premium === true ? undefined : true,
+                        })
+                      }
+                      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+                        filters.is_premium === true
+                          ? 'bg-amber-400/95 text-amber-950 ring-1 ring-amber-600/30'
+                          : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
+                      }`}
+                    >
+                      <Crown size={12} aria-hidden />
+                      Premium only
+                    </button>
+                  </div>
+
+                  {activeFiltersCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={clearFilters}
+                      className="ml-auto flex items-center gap-1.5 rounded-xl border border-stone-200 px-3 py-2 text-xs font-semibold text-stone-600 transition-colors hover:bg-stone-50"
+                    >
+                      <X size={12} aria-hidden />
+                      Clear filters
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="marketplace-shell py-10 sm:py-12 lg:py-16 xl:py-20">
-        {/* Search Bar */}
-        <form onSubmit={handleSearch} className="mb-6">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-              <div className="flex min-w-0 flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black/40" size={20} />
-              <input
-                type="text"
-                placeholder="Search flags, countries, organizations..."
-                value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                className="w-full pl-12 pr-4 py-4 bg-white border border-black/10 rounded-lg text-black placeholder-black/40 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
-              />
-            </div>
-            <button
-              type="submit"
-              className="px-8 py-4 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
-            >
-              <Search size={20} />
-              Search
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowFilters(!showFilters)}
-              className={`px-6 py-4 rounded-lg font-semibold transition-colors flex items-center gap-2 border ${
-                showFilters || activeFiltersCount > 0
-                  ? 'bg-[#2563eb] text-white border-[#2563eb]'
-                  : 'bg-white text-black hover:bg-black/5 border-black/10'
-              }`}
-            >
-              <SlidersHorizontal size={20} />
-              Filters
-              {activeFiltersCount > 0 && (
-                <span className="bg-white text-[#2563eb] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </button>
-          </div>
-        </form>
-
-        {/* Filters Panel */}
-        {showFilters && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-white rounded-lg p-6 mb-6 border border-black/10"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold flex items-center gap-2 text-black">
-                <Filter size={20} />
-                Filters
-              </h3>
-              <div className="flex items-center gap-4">
-                {activeFiltersCount > 0 && (
-                  <button
-                    onClick={clearFilters}
-                    className="text-[#2563eb] hover:text-[#1d4ed8] text-sm font-semibold"
-                  >
-                    Clear all
-                  </button>
-                )}
-                <button
-                  onClick={() => setShowFilters(false)}
-                  className="text-black/40 hover:text-black"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {/* Asset Type */}
-              <div>
-                <label className="block text-sm font-semibold mb-3 text-black/70">Asset Type</label>
-                <div className="flex flex-wrap gap-2">
-                  {['flag', 'symbol', 'video', 'animated', 'coat_of_arms', 'emblem'].map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => toggleAssetType(type)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        filters.asset_type.includes(type)
-                          ? 'bg-[#2563eb] text-white'
-                          : 'bg-black/5 text-black/70 hover:bg-black/10'
-                      }`}
-                    >
-                      {type.replace('_', ' ')}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Premium Filter */}
-              <div>
-                <label className="block text-sm font-semibold mb-3 text-black/70">Access Level</label>
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => setFilters({ ...filters, is_premium: filters.is_premium === true ? undefined : true })}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors text-left flex items-center gap-2 ${
-                      filters.is_premium === true
-                        ? 'bg-amber-400 text-amber-950 ring-1 ring-amber-600/35'
-                        : 'bg-black/5 text-black/70 hover:bg-black/10'
-                    }`}
-                  >
-                    <Crown size={16} />
-                    Premium only
-                  </button>
-                </div>
-              </div>
-
-              {/* Sort */}
-              <div>
-                <label className="block text-sm font-semibold mb-3 text-black/70">Sort By</label>
-                <select
-                  value={filters.sort}
-                  onChange={(e) => setFilters({ ...filters, sort: e.target.value as any })}
-                  className="w-full px-4 py-2 bg-white border border-black/10 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
-                >
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
-                  <option value="popular">Most Popular</option>
-                  <option value="title">Title A-Z</option>
-                </select>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Results Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <p className="text-black/60">
-              <span className="text-black font-semibold">{total.toLocaleString()}</span> {total === 1 ? 'asset' : 'assets'} found
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-colors ${
-                viewMode === 'grid' ? 'bg-[#2563eb] text-white' : 'bg-black/5 text-black/70 hover:bg-black/10'
-              }`}
-            >
-              <Grid3x3 size={20} />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-colors ${
-                viewMode === 'list' ? 'bg-[#2563eb] text-white' : 'bg-black/5 text-black/70 hover:bg-black/10'
-              }`}
-            >
-              <List size={20} />
-            </button>
-          </div>
+      {/* Main content */}
+      <div className="marketplace-shell py-7 sm:py-10 lg:py-12">
+        {/* Results count */}
+        <div className="mb-5">
+          <p className="text-xs font-medium text-stone-500 sm:text-sm">
+            {loading ? 'Loading assets…' : (
+              <>
+                <span className="font-semibold text-stone-900">{total.toLocaleString()}</span>{' '}
+                {total === 1 ? 'asset' : 'assets'}
+                {filters.search ? (
+                  <> for <span className="font-semibold text-stone-900">"{filters.search}"</span></>
+                ) : null}
+              </>
+            )}
+          </p>
         </div>
 
-        {/* Results Grid */}
         {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2563eb]"></div>
+          <SkeletonGrid />
+        ) : assets.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-stone-200 bg-white px-6 py-16 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#2563eb]/10 text-[#2563eb]">
+              <Search size={22} aria-hidden />
+            </div>
+            <h2 className="mt-5 text-lg font-semibold text-stone-900">No assets found</h2>
+            <p className="mx-auto mt-2 max-w-sm text-sm text-stone-500">
+              Try adjusting your filters or search terms.
+            </p>
+            {activeFiltersCount > 0 && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="mt-5 rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#1d4ed8]"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        ) : viewMode === 'grid' ? (
+          <div className={`${marketplaceProductCardGridClasses} mb-8`}>
+            {assets.map((asset, idx) => (
+              <div key={asset.id} className="min-h-0">
+                <AssetCard asset={asset} index={idx} />
+              </div>
+            ))}
           </div>
         ) : (
-          <>
-            {viewMode === 'grid' ? (
-              <div className={`${marketplaceProductCardGridClasses} mb-8`}>
-                {assets.map((asset, idx) => (
-                  <div key={asset.id} className="min-h-0">
-                    <AssetCard asset={asset} index={idx} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-4 mb-8">
-                {assets.map((asset, idx) => (
-                  <motion.div
-                    key={asset.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: idx * 0.05 }}
-                    className="bg-white rounded-lg p-4 hover:bg-black/5 transition-colors border border-black/10"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`relative h-16 w-24 shrink-0 overflow-hidden rounded ${
-                          asset.is_premium ? 'bg-black/5' : asset.thumbnail_url?.includes('.webp') ? '' : 'bg-black/5'
-                        }`}
+          <ul className="mb-8 divide-y divide-stone-100 overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-sm">
+            {assets.map((asset) => (
+              <li key={asset.id}>
+                <div className="flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-stone-50">
+                  <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-stone-50 ring-1 ring-stone-200">
+                    {asset.thumbnail_url && (
+                      <ProductPreviewImage
+                        className="absolute inset-0"
+                        watermarkEnabled={shouldWatermarkFlagPreview({
+                          isPremiumDesign: Boolean(asset.is_premium),
+                        })}
+                        protectEnabled
                       >
-                        {asset.thumbnail_url && (
-                          <ProductPreviewImage
-                            className="absolute inset-0"
-                            watermarkEnabled={shouldWatermarkFlagPreview({
-                              isPremiumDesign: Boolean(asset.is_premium),
-                            })}
-                            protectEnabled
-                          >
-                            <img
-                              src={asset.thumbnail_url}
-                              alt={asset.title}
-                              draggable={false}
-                              className="h-full w-full object-cover"
-                            />
-                          </ProductPreviewImage>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-black mb-1">{asset.title}</h3>
-                        <div className="flex items-center gap-3 text-sm text-black/60">
-                          <span className="uppercase">{asset.asset_type || 'Flag'}</span>
-                          {asset.is_premium && (
-                            <span className="flex items-center gap-1 text-[#2563eb]">
-                              <Crown size={14} />
-                              Premium
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                        <img
+                          src={asset.thumbnail_url}
+                          alt={asset.title}
+                          draggable={false}
+                          className="h-full w-full object-contain p-1"
+                        />
+                      </ProductPreviewImage>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-stone-900">{asset.title}</p>
+                    <div className="mt-0.5 flex items-center gap-2 text-xs text-stone-500">
+                      <span className="uppercase">{asset.asset_type || 'Flag'}</span>
+                      {asset.is_premium && (
+                        <span className="inline-flex items-center gap-1 font-semibold text-amber-700">
+                          <Crown size={11} aria-hidden />
+                          Premium
+                        </span>
+                      )}
                     </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-
-            {/* Pagination */}
-            {total > 24 && (
-              <div className="flex items-center justify-center gap-4">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="px-6 py-3 bg-black/5 hover:bg-black/10 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors text-black"
-                >
-                  Previous
-                </button>
-                <span className="text-black/60">
-                  Page <span className="text-black font-semibold">{page}</span> of{' '}
-                  <span className="text-black font-semibold">{Math.ceil(total / 24)}</span>
-                </span>
-                <button
-                  onClick={() => setPage((p) => p + 1)}
-                  disabled={page >= Math.ceil(total / 24)}
-                  className="px-6 py-3 bg-black/5 hover:bg-black/10 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors text-black"
-                >
-                  Next
-                </button>
-              </div>
-            )}
-          </>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
 
-        {!loading && assets.length === 0 && (
-          <div className="text-center py-20">
-            <p className="text-black/60 text-lg mb-4">No assets found</p>
-            <p className="text-black/40">Try adjusting your filters or search terms</p>
+        {/* Pagination */}
+        {!loading && totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="rounded-xl border border-stone-200 bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 shadow-sm transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-stone-500">
+              Page <span className="font-semibold text-stone-900">{page}</span> of{' '}
+              <span className="font-semibold text-stone-900">{totalPages}</span>
+            </span>
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              disabled={page >= totalPages}
+              className="rounded-xl border border-stone-200 bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 shadow-sm transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Next
+            </button>
           </div>
         )}
       </div>

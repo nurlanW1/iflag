@@ -43,29 +43,42 @@ function ContinentBlock({
       ? '/gallery'
       : `/gallery?region=${encodeURIComponent(section.continent)}`;
   const accent = tile?.accent ?? '#475569';
+  const ContinentIcon = tile?.icon;
 
   return (
     <section aria-labelledby={`continent-${section.continent}`}>
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3 sm:mb-5">
-        <div className="min-w-0">
-          <h2
-            id={`continent-${section.continent}`}
-            className="text-lg font-semibold tracking-tight text-stone-900 sm:text-xl"
-          >
-            {section.continent}
-          </h2>
-          <p className="mt-0.5 text-xs text-stone-500 sm:text-sm">
-            {section.countries.length}{' '}
-            {section.countries.length === 1 ? 'country folder' : 'country folders'}
-          </p>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          {ContinentIcon ? (
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-sm"
+              style={{ backgroundColor: accent }}
+            >
+              <ContinentIcon size={18} strokeWidth={1.75} className="text-white" aria-hidden />
+            </div>
+          ) : (
+            <div className="h-5 w-1 shrink-0 rounded-full" style={{ backgroundColor: accent }} aria-hidden />
+          )}
+          <div className="min-w-0">
+            <h2
+              id={`continent-${section.continent}`}
+              className="text-base font-semibold tracking-tight text-stone-900 sm:text-lg"
+            >
+              {section.continent}
+            </h2>
+            <p className="text-xs text-stone-500">
+              {section.countries.length}{' '}
+              {section.countries.length === 1 ? 'country' : 'countries'}
+            </p>
+          </div>
         </div>
         {section.continent !== 'Other' ? (
           <Link
             href={href}
-            className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition hover:brightness-110 sm:text-sm"
-            style={{ backgroundColor: accent }}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs font-semibold text-stone-700 shadow-sm transition hover:border-stone-300 hover:bg-stone-50 sm:text-sm"
           >
-            View all {section.continent}
+            View all
+            <ArrowRight size={13} aria-hidden />
           </Link>
         ) : null}
       </div>
