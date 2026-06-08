@@ -33,7 +33,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
   // Close modal on ESC key
   useEffect(() => {
     if (!isOpen) return;
-    
+
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setError('');
@@ -122,7 +122,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="relative flex w-full max-w-[min(96rem,calc(100vw-2rem))] min-h-[600px] overflow-hidden rounded-3xl border border-purple-200/50 bg-white shadow-2xl pointer-events-auto"
+              className="relative flex w-full max-w-[min(96rem,calc(100vw-2rem))] min-h-[600px] overflow-hidden rounded-3xl border border-neutral-200/50 bg-white shadow-2xl pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close Button */}
@@ -131,14 +131,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                   e.stopPropagation();
                   handleClose();
                 }}
-                className="absolute top-4 right-4 z-[60] p-2 rounded-full bg-white/90 hover:bg-white border border-gray-200 hover:border-gray-300 transition-colors text-black/70 hover:text-black shadow-lg cursor-pointer"
+                className="absolute top-4 right-4 z-[60] p-2 rounded-full bg-white/90 hover:bg-white border border-neutral-200 hover:border-neutral-300 transition-colors text-neutral-500 hover:text-[#2a2a2a] shadow-sm cursor-pointer"
                 aria-label="Close modal"
                 type="button"
               >
                 <X size={20} />
               </button>
 
-              {/* Left Panel - Red Gradient (1/3) */}
+              {/* Left Panel - Brand Gradient (1/3) */}
               <div className="w-1/3 relative overflow-hidden min-h-[600px]">
                 {/* Gradient Background */}
                 <div
@@ -151,22 +151,22 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                     `,
                   }}
                 />
-                
+
                 {/* Blur Overlay */}
-                <div className="absolute inset-0 backdrop-blur-sm bg-[#2563eb]/20" />
+                <div className="absolute inset-0 backdrop-blur-sm bg-[var(--brand-blue)]/20" />
 
                 {/* Content */}
                 <div className="relative z-10 h-full flex flex-col p-6">
                   {/* Logo - Top Left */}
                   <div className="flex items-center gap-2 mt-2">
                     <Flag size={28} className="text-white" />
-                    <span className="text-white font-black text-lg">{SITE_NAME}</span>
+                    <span className="text-white font-semibold text-lg">{SITE_NAME}</span>
                   </div>
 
                   {/* Promotional Text - Bottom Left */}
                   <div className="absolute bottom-6 left-6 text-white">
                     <p className="text-xs text-white/80 mb-3">You can easily</p>
-                    <h2 className="text-base md:text-lg font-bold leading-tight text-white">
+                    <h2 className="text-base md:text-lg font-semibold leading-tight text-white">
                       Get access to your personal hub for high-quality flags and unlimited downloads
                     </h2>
                   </div>
@@ -177,12 +177,12 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
               <div className="flex-1 bg-white flex flex-col justify-center px-8 py-8 min-h-[600px]">
                 <div className="w-full max-w-md mx-auto">
                   {/* Heading */}
-                  <h1 className="text-4xl font-black text-black mb-3">
+                  <h1 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] mb-3">
                     {isSignUp ? 'Create an account' : 'Sign in'}
                   </h1>
-                  
+
                   {/* Description */}
-                  <p className="text-sm text-black/60 mb-8">
+                  <p className="text-sm text-neutral-500 mb-8">
                     {isSignUp
                       ? 'Access thousands of high-quality flags, download unlimited assets, and keep everything organized in one place.'
                       : 'Access your flags, downloads, and projects anytime, anywhere - and keep everything flowing in one place.'}
@@ -198,7 +198,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                       <motion.button
                         key={idx}
                         type="button"
-                        className="flex-1 h-10 bg-[#1e40af]/5 border border-[#1e40af]/10 rounded-lg flex items-center justify-center text-black/70 hover:bg-[#1e40af]/10 transition-colors font-semibold text-xs"
+                        className="flex-1 h-10 bg-neutral-50 border border-neutral-200 rounded-lg flex items-center justify-center text-neutral-600 hover:bg-neutral-100 transition-colors font-semibold text-xs"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         title={social.name}
@@ -211,10 +211,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                   {/* Separator */}
                   <div className="relative mb-4">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-[#1e40af]/10"></div>
+                      <div className="w-full border-t border-neutral-200"></div>
                     </div>
                     <div className="relative flex justify-center text-xs">
-                      <span className="bg-white px-2 text-black/60">or continue with</span>
+                      <span className="bg-white px-2 text-neutral-400">or continue with</span>
                     </div>
                   </div>
 
@@ -225,7 +225,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="w-full mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm"
+                        className="w-full mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm"
                       >
                         {error}
                       </motion.div>
@@ -236,15 +236,15 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                   <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
                     {/* Name Field (Sign Up Only) - Always render to maintain same height */}
                     <div className={isSignUp ? '' : 'opacity-0 pointer-events-none h-[60px]'}>
-                      <label className="block text-xs font-medium text-black mb-1.5">Your name</label>
+                      <label className="block text-xs font-medium text-neutral-600 mb-1.5">Your name</label>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black/40" size={18} />
+                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
                         <input
                           type="text"
                           value={signUpData.fullName}
                           onChange={(e) => setSignUpData({ ...signUpData, fullName: e.target.value })}
                           placeholder="Enter your name"
-                          className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#1e40af]/10 rounded-lg text-sm text-black placeholder-black/40 focus:outline-none focus:border-[#2563eb] transition-colors"
+                          className="w-full pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-[#2a2a2a] placeholder:text-neutral-400 focus:outline-none focus:border-[var(--brand-blue)] focus:ring-2 focus:ring-[var(--brand-blue)]/15 transition-colors"
                           required={isSignUp}
                           disabled={!isSignUp}
                         />
@@ -253,9 +253,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
 
                     {/* Email Field */}
                     <div>
-                      <label className="block text-xs font-medium text-black mb-1.5">Your email</label>
+                      <label className="block text-xs font-medium text-neutral-600 mb-1.5">Your email</label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black/40" size={18} />
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
                         <input
                           type="email"
                           value={isSignUp ? signUpData.email : signInData.email}
@@ -265,7 +265,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                               : setSignInData({ ...signInData, email: e.target.value })
                           }
                           placeholder="Enter your email"
-                          className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#1e40af]/10 rounded-lg text-sm text-black placeholder-black/40 focus:outline-none focus:border-[#2563eb] transition-colors"
+                          className="w-full pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-[#2a2a2a] placeholder:text-neutral-400 focus:outline-none focus:border-[var(--brand-blue)] focus:ring-2 focus:ring-[var(--brand-blue)]/15 transition-colors"
                           required
                           autoComplete="email"
                         />
@@ -274,9 +274,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
 
                     {/* Password Field */}
                     <div>
-                      <label className="block text-xs font-medium text-black mb-1.5">Password</label>
+                      <label className="block text-xs font-medium text-neutral-600 mb-1.5">Password</label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black/40" size={18} />
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={18} />
                         <input
                           type={showPassword ? 'text' : 'password'}
                           value={isSignUp ? signUpData.password : signInData.password}
@@ -286,7 +286,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                               : setSignInData({ ...signInData, password: e.target.value })
                           }
                           placeholder="Enter your password"
-                          className="w-full pl-10 pr-10 py-2.5 bg-white border border-[#1e40af]/10 rounded-lg text-sm text-black placeholder-black/40 focus:outline-none focus:border-[#2563eb] transition-colors"
+                          className="w-full pl-10 pr-10 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm text-[#2a2a2a] placeholder:text-neutral-400 focus:outline-none focus:border-[var(--brand-blue)] focus:ring-2 focus:ring-[var(--brand-blue)]/15 transition-colors"
                           required
                           minLength={6}
                           autoComplete={isSignUp ? 'new-password' : 'current-password'}
@@ -294,7 +294,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black/40 hover:text-black/60 transition-colors"
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
                         >
                           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
@@ -305,7 +305,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                     <div className={`flex justify-end ${isSignUp ? 'opacity-0 pointer-events-none h-[20px]' : ''}`}>
                       <button
                         type="button"
-                        className="text-xs text-black/60 hover:text-[#2563eb] transition-colors"
+                        className="text-xs text-neutral-400 hover:text-[var(--brand-blue)] transition-colors"
                       >
                         Forgot password?
                       </button>
@@ -315,23 +315,23 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                     <motion.button
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] hover:from-[#1d4ed8] hover:to-[#1e40af] text-white font-bold py-2.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg text-sm"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+                      className="w-full bg-[var(--brand-blue)] hover:bg-[var(--brand-blue-hover)] text-white font-semibold py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm text-sm"
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
                     >
                       {loading ? (isSignUp ? 'Creating Account...' : 'Signing In...') : isSignUp ? 'Get Started' : 'Sign In'}
                     </motion.button>
                   </form>
 
                   {/* Toggle Link */}
-                  <p className="mt-4 text-center text-xs text-black/60">
+                  <p className="mt-4 text-center text-xs text-neutral-500">
                     {isSignUp ? "Don't have an account? " : 'Already have an account? '}
                     <button
                       onClick={() => {
                         setIsSignUp(!isSignUp);
                         setError('');
                       }}
-                      className="text-[#2563eb] hover:text-[#1d4ed8] font-semibold transition-colors"
+                      className="text-[var(--brand-blue)] hover:text-[var(--brand-blue-hover)] font-semibold transition-colors"
                     >
                       {isSignUp ? 'Sign in' : 'Sign up'}
                     </button>

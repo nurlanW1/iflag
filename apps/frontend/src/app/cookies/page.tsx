@@ -17,23 +17,23 @@ export default function CookiesPage() {
     <LegalDocumentShell
       title="Cookie Policy"
       subtitle={`${P.TRADING_NAME} · ${P.JURISDICTION}`}
-      icon={<Cookie className="h-8 w-8 text-[#2563eb]" aria-hidden />}
+      icon={<Cookie className="h-8 w-8 text-[var(--brand-blue)]" aria-hidden />}
     >
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">1. Introduction</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">1. Introduction</h2>
         <p>
           This Cookie Policy explains how <strong>{P.OPERATOR_LEGAL_NAME}</strong> uses cookies and similar
           technologies on <strong>{P.TRADING_NAME}</strong>. It should be read alongside our{' '}
-          <Link href="/privacy-policy" className="font-medium text-[#2563eb] hover:underline">
+          <Link href="/privacy-policy" className="font-medium text-[var(--brand-blue)] hover:underline">
             Privacy Policy
           </Link>
           .
         </p>
-        <p className="text-sm text-gray-600">Effective date: {P.EFFECTIVE_DATE}.</p>
+        <p className="text-sm text-neutral-500">Effective date: {P.EFFECTIVE_DATE}.</p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">2. What are cookies?</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">2. What are cookies?</h2>
         <p>
           Cookies are small text files stored on your device. Similar technologies include local storage,
           session storage, pixels, and software development kits (SDKs) in apps.
@@ -41,7 +41,7 @@ export default function CookiesPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">3. Categories we use</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">3. Categories we use</h2>
         <p>We group technologies into the following categories:</p>
         <ul className="list-inside list-disc space-y-2 pl-1">
           <li>
@@ -64,7 +64,7 @@ export default function CookiesPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">4. Consent and the site banner</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">4. Consent and the site banner</h2>
         <p>
           Where required, we will request your consent before setting non-essential cookies. The banner stores
           your choice locally so we do not ask on every visit. You can change your preference at any time by
@@ -73,7 +73,7 @@ export default function CookiesPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">5. Third parties</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">5. Third parties</h2>
         <p>
           Payment processing is handled by <strong>{P.PAYMENT_PROCESSOR}</strong>, which may set their own
           strictly necessary cookies during checkout. See{' '}
@@ -81,7 +81,7 @@ export default function CookiesPage() {
             href="https://www.paddle.com/legal/privacy"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-[#2563eb] hover:underline"
+            className="font-medium text-[var(--brand-blue)] hover:underline"
           >
             Paddle&apos;s Privacy Policy
           </a>{' '}
@@ -90,7 +90,7 @@ export default function CookiesPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">6. Managing cookies</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">6. Managing cookies</h2>
         <p>
           You can block or delete cookies through your browser settings. Blocking strictly necessary cookies
           may break parts of the Service (for example sign-in or checkout).
@@ -98,12 +98,12 @@ export default function CookiesPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">7. Do Not Track</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">7. Do Not Track</h2>
         <p>We currently do not respond to Do Not Track (DNT) browser signals, as no industry standard has been adopted. We do not track users across third-party sites.</p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">8. Updates</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">8. Updates</h2>
         <p>
           We will update this policy when we change technologies or partners. Material changes will be
           announced via the email address on your account or a prominent notice on the site.
@@ -111,9 +111,9 @@ export default function CookiesPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">9. Contact</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">9. Contact</h2>
         <p>
-          <a className="font-medium text-[#2563eb] hover:underline" href={`mailto:${contactEmail}`}>
+          <a className="font-medium text-[var(--brand-blue)] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>
         </p>

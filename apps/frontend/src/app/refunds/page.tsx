@@ -17,20 +17,20 @@ export default function RefundsPage() {
     <LegalDocumentShell
       title="Refund Policy"
       subtitle={`${P.TRADING_NAME} · ${P.JURISDICTION}`}
-      icon={<Banknote className="h-8 w-8 text-[#2563eb]" aria-hidden />}
+      icon={<Banknote className="h-8 w-8 text-[var(--brand-blue)]" aria-hidden />}
     >
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">1. Overview</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">1. Overview</h2>
         <p>
           This Refund Policy explains how cancellations, refunds, and billing disputes work for purchases
           made through <strong>{P.TRADING_NAME}</strong>, operated by{' '}
           <strong>{P.OPERATOR_LEGAL_NAME}</strong>. It supplements our{' '}
-          <Link href="/terms-of-service" className="font-medium text-[#2563eb] hover:underline">
+          <Link href="/terms-of-service" className="font-medium text-[var(--brand-blue)] hover:underline">
             Terms of Service
           </Link>
           .
         </p>
-        <p className="text-sm text-gray-600">Effective date: {P.EFFECTIVE_DATE}.</p>
+        <p className="text-sm text-neutral-500">Effective date: {P.EFFECTIVE_DATE}.</p>
         <p>
           Payments are processed by <strong>{P.PAYMENT_PROCESSOR}</strong>. Their dispute and chargeback
           rules may also apply.
@@ -38,7 +38,7 @@ export default function RefundsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">2. Digital goods</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">2. Digital goods</h2>
         <p>
           Digital assets are delivered instantly upon successful payment. By completing your purchase
           you agree to immediate delivery and acknowledge that this may limit withdrawal rights under
@@ -51,7 +51,7 @@ export default function RefundsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">3. When we may issue a refund</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">3. When we may issue a refund</h2>
         <p>We may provide refunds or account credits where required by law or at our discretion, including:</p>
         <ul className="list-inside list-disc space-y-2 pl-1">
           <li>Duplicate charges or proven billing errors.</li>
@@ -63,7 +63,7 @@ export default function RefundsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">4. Subscriptions</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">4. Subscriptions</h2>
         <p>
           Subscriptions renew automatically until cancelled. If you cancel, you retain access until
           the end of the current billing period. No partial-month or mid-cycle refunds are issued
@@ -73,7 +73,7 @@ export default function RefundsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">5. Chargebacks and payment disputes</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">5. Chargebacks and payment disputes</h2>
         <p>
           Please contact us before filing a chargeback so we can resolve the issue quickly. Unfounded
           chargebacks may result in account suspension and loss of licenses. To appeal a suspension,
@@ -82,7 +82,7 @@ export default function RefundsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">6. Taxes and currency</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">6. Taxes and currency</h2>
         <p>
           Refunds, if issued, are processed in the original payment currency via the same payment method
           where possible. Tax treatment depends on local rules and processor capabilities.
@@ -90,10 +90,10 @@ export default function RefundsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">7. How to request help</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">7. How to request help</h2>
         <p>
           Email{' '}
-          <a className="font-medium text-[#2563eb] hover:underline" href={`mailto:${contactEmail}`}>
+          <a className="font-medium text-[var(--brand-blue)] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>{' '}
           with your transaction reference, account email, and a short description of the issue.
@@ -102,7 +102,7 @@ export default function RefundsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-bold text-gray-900">8. Changes</h2>
+        <h2 className="text-lg font-semibold text-[#2a2a2a]">8. Changes</h2>
         <p>
           We may update this policy to reflect product, legal, or processor changes. Material changes
           will be announced via email or a prominent notice on the site at least 7 days before they

@@ -53,7 +53,7 @@ function PricingProSubscribeClerk({ planSlug, className, style, children, minima
         style={style}
         className={
           className ||
-          'w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white opacity-50'
+          'w-full rounded-xl bg-[var(--brand-blue)] px-4 py-3 text-sm font-semibold text-white opacity-50'
         }
       >
         Loading…
@@ -87,13 +87,13 @@ function PricingProSubscribeClerk({ planSlug, className, style, children, minima
             style={style}
             className={
               className ||
-              'w-full rounded-xl bg-[#2563eb] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]'
+              'w-full rounded-xl bg-[var(--brand-blue)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-blue-hover)]'
             }
           >
             Sign in to continue
           </button>
         </SignInButton>
-        <p className="mt-2 text-center text-xs text-gray-500">
+        <p className="mt-2 text-center text-xs text-neutral-400">
           Sign in with your account — checkout is hosted by Paddle.
         </p>
       </div>
@@ -113,13 +113,13 @@ function PricingProSubscribeClerk({ planSlug, className, style, children, minima
         style={style}
         className={
           className ||
-          'w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#2563eb] disabled:opacity-50'
+          'w-full rounded-xl bg-[var(--brand-blue)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-blue-hover)] disabled:opacity-50'
         }
       >
         {loading ? 'Redirecting…' : children}
       </button>
       {email && !minimal ? (
-        <p className="mt-2 text-center text-xs text-gray-500">
+        <p className="mt-2 text-center text-xs text-neutral-400">
           Signed in as {email} — secure Paddle checkout.
         </p>
       ) : null}
@@ -143,12 +143,12 @@ function PricingProSubscribeLegacy({ className, style, children }: Props) {
         style={style}
         className={
           className ||
-          'flex w-full items-center justify-center rounded-xl bg-[#2563eb] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]'
+          'flex w-full items-center justify-center rounded-xl bg-[var(--brand-blue)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-blue-hover)]'
         }
       >
         Sign in to continue
       </Link>
-      <p className="mt-2 text-center text-xs text-gray-500">
+      <p className="mt-2 text-center text-xs text-neutral-400">
         Sign in with your account — checkout is hosted by Paddle.
       </p>
     </div>

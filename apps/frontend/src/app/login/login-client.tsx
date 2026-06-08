@@ -49,7 +49,7 @@ function LoginForm() {
         <div className="relative z-10 text-white">
           <div className="mb-4 flex items-center gap-2">
             <Flag size={28} />
-            <span className="text-lg font-black">Account</span>
+            <span className="text-lg font-semibold">Account</span>
           </div>
           <p className="max-w-sm text-sm text-white/90">
             Sign in to access your dashboard, downloads, and subscription tools.
@@ -58,12 +58,12 @@ function LoginForm() {
       </div>
       <div className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          <h1 className="text-3xl font-black text-gray-900">Sign in</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <h1 className="text-3xl font-semibold tracking-tight text-[#2a2a2a]">Sign in</h1>
+          <p className="mt-2 text-sm text-neutral-500">
             New here?{' '}
             <Link
               href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`}
-              className="font-semibold text-[#2563eb] hover:underline"
+              className="font-semibold text-[var(--brand-blue)] hover:underline"
             >
               Create an account
             </Link>
@@ -78,11 +78,11 @@ function LoginForm() {
           ) : null}
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
-              <label htmlFor="login-email" className="block text-xs font-medium text-gray-700">
+              <label htmlFor="login-email" className="block text-xs font-medium text-neutral-600">
                 Email
               </label>
               <div className="relative mt-1.5">
-                <Mail className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
                 <input
                   id="login-email"
                   type="email"
@@ -90,16 +90,16 @@ function LoginForm() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border-2 border-gray-200 py-3 pl-10 pr-4 text-gray-900 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/15"
+                  className="w-full rounded-xl border border-neutral-200 bg-white py-3 pl-10 pr-4 text-[#2a2a2a] outline-none transition focus:border-[var(--brand-blue)] focus:ring-2 focus:ring-[var(--brand-blue)]/15"
                 />
               </div>
             </div>
             <div>
-              <label htmlFor="login-password" className="block text-xs font-medium text-gray-700">
+              <label htmlFor="login-password" className="block text-xs font-medium text-neutral-600">
                 Password
               </label>
               <div className="relative mt-1.5">
-                <Lock className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
                 <input
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
@@ -107,12 +107,12 @@ function LoginForm() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border-2 border-gray-200 py-3 pl-10 pr-12 text-gray-900 outline-none transition focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/15"
+                  className="w-full rounded-xl border border-neutral-200 bg-white py-3 pl-10 pr-12 text-[#2a2a2a] outline-none transition focus:border-[var(--brand-blue)] focus:ring-2 focus:ring-[var(--brand-blue)]/15"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -122,7 +122,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-[#2563eb] py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-[#1d4ed8] disabled:opacity-60"
+              className="w-full rounded-xl bg-[var(--brand-blue)] py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)] disabled:opacity-60"
             >
               {loading ? 'Signing in…' : 'Sign in'}
             </button>
@@ -137,7 +137,7 @@ export default function LoginClientPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-[50vh] items-center justify-center text-gray-500">Loading…</div>
+        <div className="flex min-h-[50vh] items-center justify-center text-neutral-400">Loading…</div>
       }
     >
       <LoginForm />
