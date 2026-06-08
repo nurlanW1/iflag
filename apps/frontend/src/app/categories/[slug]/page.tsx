@@ -89,7 +89,7 @@ export default async function CategoryPage({ params }: Props) {
               </span>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">{vis.chip}</p>
-                <h1 className="mt-1 text-3xl font-black tracking-tight text-neutral-950 sm:text-4xl">{category.name}</h1>
+                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[#2a2a2a] sm:text-3xl lg:text-4xl">{category.name}</h1>
                 {category.description ? (
                   <p className="mt-3 text-pretty text-base leading-relaxed text-neutral-600">{category.description}</p>
                 ) : null}
@@ -101,20 +101,25 @@ export default async function CategoryPage({ params }: Props) {
           ) : useCountryHubs ? (
             <CountryHubBrowseSection fetchPath={galleryApiPathForCategory(category)} />
           ) : (
-            <Suspense fallback={<p className="text-black/60">Loading catalog…</p>}>
+            <Suspense fallback={
+              <div className="flex items-center gap-2 py-8 text-sm text-neutral-400">
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-neutral-200 border-t-[var(--brand-blue)]" />
+                Loading catalog…
+              </div>
+            }>
               <ProductBrowseSection fixedCategorySlug={category.slug} syncUrl={false} />
             </Suspense>
           )}
-          <section className="mt-12 border-t border-gray-200 pt-8" aria-labelledby="related-hubs-heading">
-            <h2 id="related-hubs-heading" className="text-lg font-bold text-black mb-3">
+          <section className="mt-12 border-t border-neutral-200 pt-8" aria-labelledby="related-hubs-heading">
+            <h2 id="related-hubs-heading" className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-neutral-400">
               Explore more
             </h2>
-            <ul className="flex flex-wrap gap-3 text-sm list-none pl-0">
+            <ul className="flex flex-wrap gap-2 list-none pl-0">
               {PRIMARY_HUB_LINKS.map((l) => (
                 <li key={l.href}>
                   <Link
                     href={l.href}
-                    className="text-[#2563eb] hover:underline focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 rounded"
+                    className="inline-flex items-center rounded-full border border-neutral-200 bg-white px-3.5 py-1.5 text-xs font-medium text-neutral-700 shadow-sm transition-colors hover:border-[var(--brand-blue)]/40 hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/30"
                   >
                     {l.label}
                   </Link>
