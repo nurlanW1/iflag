@@ -99,10 +99,10 @@ export function GalleryVariantsRow({
             href={`/assets/${encodeURIComponent(v.productSlug)}`}
             role="listitem"
             title={v.name}
-            className="group w-[9rem] shrink-0 text-left"
+            className="group flex w-[9.5rem] shrink-0 flex-col text-left"
           >
             {/* Thumbnail */}
-            <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200 transition-all group-hover:ring-[#2563eb]/50 group-hover:shadow-md">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200 transition-all group-hover:ring-[var(--brand-blue)]/40 group-hover:shadow-md">
               {v.thumbnail ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -121,9 +121,9 @@ export function GalleryVariantsRow({
               )}
               {/* Premium badge */}
               {v.isPremiumDesign ? (
-                <span className="pointer-events-none absolute left-1.5 top-1.5 inline-flex items-center gap-0.5 rounded-md bg-violet-600/90 px-[5px] py-0.5 text-[9px] font-bold uppercase text-white">
+                <span className="pointer-events-none absolute left-1.5 top-1.5 inline-flex items-center gap-0.5 rounded-md bg-amber-400/95 px-[5px] py-0.5 text-[9px] font-bold uppercase text-amber-950 ring-1 ring-amber-600/30">
                   <Crown size={8} aria-hidden />
-                  Pro
+                  Paid
                 </span>
               ) : (
                 <span className="pointer-events-none absolute left-1.5 top-1.5 rounded-md bg-emerald-500/85 px-[5px] py-0.5 text-[9px] font-bold uppercase text-white">
@@ -131,6 +131,10 @@ export function GalleryVariantsRow({
                 </span>
               )}
             </div>
+            {/* Title */}
+            <p className="mt-1.5 line-clamp-2 text-[11px] font-medium leading-snug text-slate-600 group-hover:text-[var(--brand-blue)]">
+              {v.name}
+            </p>
           </Link>
         ))}
 

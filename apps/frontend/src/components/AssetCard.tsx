@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Crown, Download, Eye, Heart } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Crown, Download } from 'lucide-react';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 
@@ -27,103 +26,87 @@ export default function AssetCard({ asset, index = 0 }: AssetCardProps) {
   const isWebpThumb = Boolean(thumb?.includes('.webp'));
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.05 }}
-      whileHover={{ y: -8 }}
-      className="group relative"
+    <article
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+      style={{ animationDelay: `${Math.min(index, 12) * 50}ms` }}
     >
-      <Link href={`/assets/${asset.slug}`} className="block">
-        <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-black/10">
-          {/* Image Container */}
-          <div
-            className={`aspect-[4/3] relative overflow-hidden ${isWebpThumb ? '' : 'bg-black/5'}`}
+      <Link href={`/assets/${asset.slug}`} className={`relative block aspect-[4/3] overflow-hidden ${isWebpThumb ? '' : 'bg-[#fafaf9]'}`}>
+        {thumb ? (
+          <ProductPreviewImage
+            className="absolute inset-0"
+            watermarkEnabled={showWatermark}
+            protectEnabled
           >
-            {thumb ? (
-              <ProductPreviewImage
-                className="absolute inset-0"
-                watermarkEnabled={showWatermark}
-                protectEnabled
-              >
-                <img
-                  src={thumb}
-                  alt={asset.title}
-                  draggable={false}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-              </ProductPreviewImage>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-black/30">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-black/10 rounded-lg mx-auto mb-2"></div>
-                  <p className="text-sm">No preview</p>
-                </div>
-              </div>
-            )}
+            <img
+              src={thumb}
+              alt={asset.title}
+              draggable={false}
+              className="h-full w-full object-contain p-2 transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+            />
+          </ProductPreviewImage>
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-slate-100">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <rect x="3" y="5" width="18" height="14" rx="2" stroke="#94a3b8" strokeWidth="1.5" />
+              <circle cx="12" cy="12" r="3.5" stroke="#94a3b8" strokeWidth="1.5" />
+              <circle cx="17.5" cy="7.5" r="1" fill="#94a3b8" />
+            </svg>
+          </div>
+        )}
 
-            <div
-              className="pointer-events-none absolute right-3 top-3 z-10 inline-flex items-center gap-1 rounded-lg bg-amber-400/95 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-amber-950 shadow-sm ring-1 ring-amber-600/35 backdrop-blur-[2px] sm:text-xs"
-              title="Premium stock"
+        {/* Tier badge */}
+        <div className="pointer-events-none absolute left-2 top-2 z-10 flex flex-wrap gap-1.5">
+          {isPremium ? (
+            <span
+              className="inline-flex items-center gap-1 rounded-md bg-amber-400/95 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-950 ring-1 ring-amber-600/35 backdrop-blur-[2px]"
+              title="Paid design"
             >
-              <Crown size={12} className="shrink-0 sm:h-[13px] sm:w-[13px]" aria-hidden strokeWidth={2.25} />
-              Premium
-            </div>
-
-            {/* Overlay on Hover */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <div className="flex items-center justify-between text-white text-sm">
-                  <div className="flex items-center gap-4">
-                    {asset.views !== undefined && (
-                      <div className="flex items-center gap-1">
-                        <Eye size={14} />
-                        <span>{asset.views.toLocaleString()}</span>
-                      </div>
-                    )}
-                    {asset.downloads !== undefined && (
-                      <div className="flex items-center gap-1">
-                        <Download size={14} />
-                        <span>{asset.downloads.toLocaleString()}</span>
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      // Handle favorite
-                    }}
-                    className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-                  >
-                    <Heart size={16} />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button className="p-2 bg-black/60 backdrop-blur-sm rounded-lg text-white hover:bg-black/80 transition-colors">
-                <Eye size={18} />
-              </button>
-            </div>
-          </div>
-
-          {/* Card Footer */}
-          <div className="p-4">
-            <h3 className="text-black font-semibold text-sm mb-2 line-clamp-2 group-hover:text-[#2563eb] transition-colors">
-              {asset.title}
-            </h3>
-            <div className="flex items-center justify-between">
-              <span className="text-black/60 text-xs uppercase">{asset.asset_type || 'Flag'}</span>
-              <span className="flex items-center gap-1 text-xs font-semibold text-amber-800">
-                <Crown size={12} className="shrink-0 text-amber-700" aria-hidden strokeWidth={2.25} />
-                Premium
-              </span>
-            </div>
-          </div>
+              <Crown size={10} className="shrink-0" aria-hidden strokeWidth={2.5} />
+              Paid
+            </span>
+          ) : (
+            <span
+              className="inline-flex items-center rounded-md bg-emerald-500/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white ring-1 ring-emerald-600/30 backdrop-blur-[2px]"
+              title="Free download"
+            >
+              Free
+            </span>
+          )}
         </div>
       </Link>
-    </motion.div>
+
+      <div className="flex flex-1 flex-col gap-1.5 p-4">
+        {asset.asset_type ? (
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+            {asset.asset_type}
+          </p>
+        ) : null}
+
+        <h3 className="line-clamp-2 text-[0.9375rem] font-semibold leading-snug text-slate-900">
+          <Link
+            href={`/assets/${asset.slug}`}
+            className="rounded hover:text-[var(--brand-blue)] focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/60"
+          >
+            {asset.title}
+          </Link>
+        </h3>
+
+        {(asset.downloads !== undefined) ? (
+          <p className="mt-auto flex items-center gap-1.5 pt-2 text-[11px] text-slate-400">
+            <Download size={11} aria-hidden />
+            {asset.downloads.toLocaleString()} downloads
+          </p>
+        ) : (
+          <div className="mt-auto pt-2">
+            <Link
+              href={`/assets/${asset.slug}`}
+              className="inline-flex min-h-8 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
+            >
+              View asset
+            </Link>
+          </div>
+        )}
+      </div>
+    </article>
   );
 }
