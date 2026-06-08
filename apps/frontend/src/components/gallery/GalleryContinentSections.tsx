@@ -104,7 +104,7 @@ function ContinentBlock({
                     {country.design_count ?? country.count} designs
                   </p>
                 </div>
-                <span className="flex items-center gap-1 text-xs font-semibold text-[#2563eb] opacity-0 transition-opacity group-hover:opacity-100">
+                <span className="flex items-center gap-1 text-xs font-semibold text-[var(--brand-blue)] opacity-0 transition-opacity group-hover:opacity-100">
                   View <ArrowRight size={14} aria-hidden />
                 </span>
               </Link>

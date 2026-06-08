@@ -52,7 +52,7 @@ function AnnualNotifyForm() {
         onChange={(e) => setEmail(e.target.value)}
         placeholder="your@email.com"
         required
-        className="min-w-0 flex-1 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+        className="min-w-0 flex-1 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
       />
       <button
         type="submit"
@@ -146,10 +146,10 @@ export function PricingPlansClient() {
           </div>
 
           {/* Premium / One-time */}
-          <div className="relative flex flex-col rounded-2xl border-2 border-[#2563eb]/60 bg-white p-6 shadow-[0_8px_32px_-10px_rgba(37,99,235,0.22)] md:p-8 lg:-mt-2">
+          <div className="relative flex flex-col rounded-2xl border-2 border-[var(--brand-blue)]/60 bg-white p-6 shadow-[0_8px_32px_-10px_rgba(37,99,235,0.22)] md:p-8 lg:-mt-2">
             {/* Popular badge */}
             <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2563eb] px-4 py-1 text-xs font-bold text-white shadow-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--brand-blue)] px-4 py-1 text-xs font-bold text-white shadow-sm">
                 <Star size={11} fill="currentColor" strokeWidth={0} aria-hidden />
                 Most popular
               </span>
@@ -250,11 +250,11 @@ export function PricingPlansClient() {
 
         <p className="mt-8 text-center text-sm text-neutral-500">
           Questions? See{' '}
-          <Link href="/licenses" className="font-medium text-[#2563eb] hover:underline">
+          <Link href="/licenses" className="font-medium text-[var(--brand-blue)] hover:underline">
             license terms
           </Link>{' '}
           or check your{' '}
-          <Link href="/dashboard" className="font-medium text-[#2563eb] hover:underline">
+          <Link href="/dashboard" className="font-medium text-[var(--brand-blue)] hover:underline">
             purchase history
           </Link>.
         </p>

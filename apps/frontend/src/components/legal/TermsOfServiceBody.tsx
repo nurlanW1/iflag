@@ -12,15 +12,15 @@ export function TermsOfServiceBody() {
           These Terms of Service (“Terms”) govern access to and use of <strong>{P.TRADING_NAME}</strong>{' '}
           (the “Service”) operated by <strong>{P.OPERATOR_LEGAL_NAME}</strong> (“we”, “us”). By using the
           Service, you agree to these Terms and our{' '}
-          <Link href="/privacy-policy" className="font-medium text-[#2563eb] hover:underline">
+          <Link href="/privacy-policy" className="font-medium text-[var(--brand-blue)] hover:underline">
             Privacy Policy
           </Link>
           ,{' '}
-          <Link href="/refunds" className="font-medium text-[#2563eb] hover:underline">
+          <Link href="/refunds" className="font-medium text-[var(--brand-blue)] hover:underline">
             Refund Policy
           </Link>
           , and{' '}
-          <Link href="/licenses" className="font-medium text-[#2563eb] hover:underline">
+          <Link href="/licenses" className="font-medium text-[var(--brand-blue)] hover:underline">
             Licensing / Usage Rights
           </Link>
           .
@@ -81,7 +81,7 @@ export function TermsOfServiceBody() {
         <p>
           When you lawfully acquire content through the Service, we grant you the usage rights described in
           our{' '}
-          <Link href="/licenses" className="font-medium text-[#2563eb] hover:underline">
+          <Link href="/licenses" className="font-medium text-[var(--brand-blue)] hover:underline">
             Licensing / Usage Rights
           </Link>{' '}
           page and any license terms presented at download/checkout. If there is a conflict, the
@@ -178,7 +178,7 @@ export function TermsOfServiceBody() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-[#2a2a2a]">16. Contact</h2>
         <p>
-          <a className="font-medium text-[#2563eb] hover:underline" href={`mailto:${contactEmail}`}>
+          <a className="font-medium text-[var(--brand-blue)] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>
           . Registered office for legal service if required: {P.REGISTERED_OFFICE}.

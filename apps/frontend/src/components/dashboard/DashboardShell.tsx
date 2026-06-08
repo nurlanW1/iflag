@@ -122,7 +122,7 @@ export function DashboardShell({
             {showAdminEntry ? (
               <Link
                 href="/admin"
-                className="flex items-center gap-3 rounded-xl border border-[#2563eb]/35 bg-[#2563eb]/5 px-4 py-2.5 text-sm font-semibold text-[#2563eb] transition hover:bg-[#2563eb]/10"
+                className="flex items-center gap-3 rounded-xl border border-[var(--brand-blue)]/35 bg-[var(--brand-blue)]/5 px-4 py-2.5 text-sm font-semibold text-[var(--brand-blue)] transition hover:bg-[var(--brand-blue)]/10"
               >
                 <Globe size={18} aria-hidden />
                 Admin Panel

@@ -222,7 +222,7 @@ function GalleryContent() {
               <FileImage size={13} aria-hidden /> {totalDesigns.toLocaleString()} designs inside
             </span>
             {filterLabel ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2563eb] px-3 py-1 font-semibold text-white shadow-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--brand-blue)] px-3 py-1 font-semibold text-white shadow-sm">
                 {filterLabel}
                 <Link href="/gallery" aria-label="Clear filter" className="-mr-1 ml-1 rounded-full p-0.5 hover:bg-white/15">
                   <X size={12} />
@@ -250,7 +250,7 @@ function GalleryContent() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search by country or ISO code…"
-                    className="w-full rounded-xl border border-stone-200 bg-stone-50/90 py-3 pl-11 pr-10 text-base text-stone-900 placeholder:text-stone-400 transition-all focus:border-[#2563eb] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/22 sm:text-sm"
+                    className="w-full rounded-xl border border-stone-200 bg-stone-50/90 py-3 pl-11 pr-10 text-base text-stone-900 placeholder:text-stone-400 transition-all focus:border-[var(--brand-blue)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/22 sm:text-sm"
                   />
                   {searchQuery ? (
                     <button
@@ -273,7 +273,7 @@ function GalleryContent() {
                   <SlidersHorizontal size={17} aria-hidden />
                   Filters
                   {activeFilterCount > 0 && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#2563eb] px-1 text-[11px] font-bold text-white">
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--brand-blue)] px-1 text-[11px] font-bold text-white">
                       {activeFilterCount}
                     </span>
                   )}
@@ -284,7 +284,7 @@ function GalleryContent() {
                       value={sortKey}
                       onChange={(e) => setSortKey(e.target.value as SortKey)}
                       aria-label="Sort countries"
-                      className="h-11 min-h-[44px] appearance-none rounded-xl border border-stone-200 bg-stone-50/90 px-3 py-2 pl-3 pr-10 text-xs font-semibold text-stone-800 transition-all hover:bg-white focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 md:min-w-[10.5rem]"
+                      className="h-11 min-h-[44px] appearance-none rounded-xl border border-stone-200 bg-stone-50/90 px-3 py-2 pl-3 pr-10 text-xs font-semibold text-stone-800 transition-all hover:bg-white focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 md:min-w-[10.5rem]"
                     >
                       {SORT_OPTIONS.map((opt) => (
                         <option key={opt.id} value={opt.id}>
@@ -333,7 +333,7 @@ function GalleryContent() {
                         href={buildHref(id)}
                         className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
                           active
-                            ? 'bg-[#2563eb] text-white shadow-sm shadow-[#2563eb]/30'
+                            ? 'bg-[var(--brand-blue)] text-white shadow-sm shadow-[#2563eb]/30'
                             : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
                         }`}
                       >
@@ -382,7 +382,7 @@ function GalleryContent() {
                   ))}
                 </div>
                 {activeFilterCount > 0 && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#2563eb]/10 px-2.5 py-1 text-[11px] font-bold text-[#2563eb]">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[var(--brand-blue)]/10 px-2.5 py-1 text-[11px] font-bold text-[var(--brand-blue)]">
                     {activeFilterCount} active
                   </span>
                 )}
@@ -413,7 +413,7 @@ function GalleryContent() {
                       onClick={() => setFiltersOpen(false)}
                       className={`flex min-h-12 touch-manipulation items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold transition-colors ${
                         active
-                          ? 'bg-[#2563eb] text-white shadow-sm shadow-[#2563eb]/25'
+                          ? 'bg-[var(--brand-blue)] text-white shadow-sm shadow-[#2563eb]/25'
                           : 'bg-stone-50 text-stone-800 ring-1 ring-stone-200/90 hover:bg-stone-100'
                       }`}
                     >
@@ -556,7 +556,7 @@ function CardList({ countries }: { countries: Country[] }) {
                 in folder
               </p>
             </div>
-            <div className="flex items-center gap-1 text-xs font-semibold text-[#2563eb] opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="flex items-center gap-1 text-xs font-semibold text-[var(--brand-blue)] opacity-0 transition-opacity group-hover:opacity-100">
               View <ArrowRight size={14} aria-hidden />
             </div>
           </Link>
@@ -613,7 +613,7 @@ function EmptyState({
 }) {
   return (
     <div className="rounded-3xl border border-dashed border-stone-200 bg-white px-6 py-16 text-center">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#2563eb]/10 text-[#2563eb]">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--brand-blue)]/10 text-[var(--brand-blue)]">
         <Search size={22} aria-hidden />
       </div>
       <h2 className="mt-5 text-lg font-semibold text-stone-900">
@@ -636,7 +636,7 @@ function EmptyState({
           <button
             type="button"
             onClick={onClearFilter}
-            className="rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-[#2563eb]/30 transition-colors hover:bg-[#3b82f6]"
+            className="rounded-xl bg-[var(--brand-blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-[#2563eb]/30 transition-colors hover:bg-[#3b82f6]"
           >
             View all
           </button>

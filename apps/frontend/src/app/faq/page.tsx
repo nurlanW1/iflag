@@ -63,7 +63,7 @@ const FAQ_SECTIONS: FaqSection[] = [
             Yes with Premium license (up to 500 units). For bulk orders:{' '}
             <a
               href="mailto:hello@flagswing.com"
-              className="font-medium text-[#2563eb] underline-offset-2 hover:underline"
+              className="font-medium text-[var(--brand-blue)] underline-offset-2 hover:underline"
             >
               hello@flagswing.com
             </a>
@@ -87,7 +87,7 @@ const FAQ_SECTIONS: FaqSection[] = [
             Corrupted file or wrong delivery — yes, within 7 days. Email{' '}
             <a
               href="mailto:support@flagswing.com"
-              className="font-medium text-[#2563eb] underline-offset-2 hover:underline"
+              className="font-medium text-[var(--brand-blue)] underline-offset-2 hover:underline"
             >
               support@flagswing.com
             </a>{' '}
@@ -137,7 +137,7 @@ function AccordionItem({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-4 py-4 text-left transition-colors hover:text-[#2563eb]"
+        className="flex w-full items-center justify-between gap-4 py-4 text-left transition-colors hover:text-[var(--brand-blue)]"
         aria-expanded={open}
       >
         <span className="text-[0.95rem] font-semibold leading-snug text-slate-900">{q}</span>
@@ -145,7 +145,7 @@ function AccordionItem({
           size={18}
           aria-hidden
           className={`shrink-0 text-slate-400 transition-transform duration-300 ${
-            open ? 'rotate-180 text-[#2563eb]' : ''
+            open ? 'rotate-180 text-[var(--brand-blue)]' : ''
           }`}
         />
       </button>
@@ -180,7 +180,7 @@ export default function FaqPage() {
           Can&apos;t find your answer?{' '}
           <Link
             href="/contact"
-            className="font-semibold text-[#2563eb] underline-offset-2 hover:underline"
+            className="font-semibold text-[var(--brand-blue)] underline-offset-2 hover:underline"
           >
             Contact us
           </Link>
@@ -224,7 +224,7 @@ export default function FaqPage() {
         </p>
         <Link
           href="/contact"
-          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1d4ed8]"
+          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[var(--brand-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)]"
         >
           Get in touch
         </Link>

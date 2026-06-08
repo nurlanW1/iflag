@@ -47,7 +47,7 @@ export default function HistoricalFlagsPage() {
 
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2">
-                  <h2 className="text-sm font-semibold leading-snug text-stone-900 group-hover:text-[#2563eb]">
+                  <h2 className="text-sm font-semibold leading-snug text-stone-900 group-hover:text-[var(--brand-blue)]">
                     {flag.name}
                   </h2>
                   <span className="shrink-0 rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-semibold text-stone-500">
@@ -60,7 +60,7 @@ export default function HistoricalFlagsPage() {
                 <div className="mt-3 flex items-center gap-1.5">
                   <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-semibold text-stone-600">SVG</span>
                   <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-semibold text-stone-600">PNG</span>
-                  <span className="ml-auto text-xs font-medium text-[#2563eb] opacity-0 transition-opacity group-hover:opacity-100">
+                  <span className="ml-auto text-xs font-medium text-[var(--brand-blue)] opacity-0 transition-opacity group-hover:opacity-100">
                     View →
                   </span>
                 </div>

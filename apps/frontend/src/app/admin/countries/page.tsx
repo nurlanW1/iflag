@@ -95,7 +95,7 @@ export default function CountriesPage() {
       >
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
+            <h1 className="text-4xl font-semibold text-[#2a2a2a] mb-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
               Countries Management
             </h1>
             <p className="text-gray-600 text-lg">
@@ -122,7 +122,7 @@ export default function CountriesPage() {
               setPage(1);
             }}
             placeholder="Search countries by name, ISO code, or region..."
-            className="w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900 placeholder-gray-400"
+            className="w-full pl-12 pr-4 py-4 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:border-[var(--brand-blue)] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-[#2a2a2a] placeholder-gray-400"
           />
           {searchQuery && (
             <button
@@ -138,12 +138,12 @@ export default function CountriesPage() {
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 text-gray-700 hover:text-[#2563eb] font-medium transition-colors"
+            className="flex items-center gap-2 text-gray-700 hover:text-[var(--brand-blue)] font-medium transition-colors"
           >
             <Filter size={18} />
             Filters
             {activeFiltersCount > 0 && (
-              <span className="bg-[#2563eb] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-[var(--brand-blue)] text-white text-xs font-bold px-2 py-0.5 rounded-full">
                 {activeFiltersCount}
               </span>
             )}
@@ -151,7 +151,7 @@ export default function CountriesPage() {
           {activeFiltersCount > 0 && (
             <button
               onClick={clearFilters}
-              className="text-sm text-gray-600 hover:text-[#2563eb] font-medium transition-colors"
+              className="text-sm text-gray-600 hover:text-[var(--brand-blue)] font-medium transition-colors"
             >
               Clear all
             </button>
@@ -167,7 +167,7 @@ export default function CountriesPage() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="bg-white border-2 border-gray-200 rounded-xl p-6 mb-4">
+              <div className="bg-white border-2 border-neutral-200 rounded-xl p-6 mb-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Region Filter */}
                   <div>
@@ -178,7 +178,7 @@ export default function CountriesPage() {
                         setRegionFilter(e.target.value);
                         setPage(1);
                       }}
-                      className="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 transition-all text-gray-900"
+                      className="w-full px-4 py-2.5 bg-white border-2 border-neutral-200 rounded-lg focus:outline-none focus:border-[var(--brand-blue)] focus:ring-2 focus:ring-[#2563eb]/10 transition-all text-[#2a2a2a]"
                     >
                       <option value="">All Regions</option>
                       {regions.map(region => (
@@ -196,7 +196,7 @@ export default function CountriesPage() {
                         setCategoryFilter(e.target.value);
                         setPage(1);
                       }}
-                      className="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 transition-all text-gray-900"
+                      className="w-full px-4 py-2.5 bg-white border-2 border-neutral-200 rounded-lg focus:outline-none focus:border-[var(--brand-blue)] focus:ring-2 focus:ring-[#2563eb]/10 transition-all text-[#2a2a2a]"
                     >
                       <option value="">All Categories</option>
                       {categories.map(cat => (
@@ -214,7 +214,7 @@ export default function CountriesPage() {
                         setStatusFilter(e.target.value);
                         setPage(1);
                       }}
-                      className="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/10 transition-all text-gray-900"
+                      className="w-full px-4 py-2.5 bg-white border-2 border-neutral-200 rounded-lg focus:outline-none focus:border-[var(--brand-blue)] focus:ring-2 focus:ring-[#2563eb]/10 transition-all text-[#2a2a2a]"
                     >
                       <option value="">All Status</option>
                       {statuses.map(status => (
@@ -232,16 +232,16 @@ export default function CountriesPage() {
       {/* Countries Table */}
       {loading ? (
         <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2563eb]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--brand-blue)]"></div>
         </div>
       ) : countries.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center py-20 bg-white border-2 border-dashed border-gray-200 rounded-2xl"
+          className="text-center py-20 bg-white border-2 border-dashed border-neutral-200 rounded-2xl"
         >
           <Globe size={64} className="mx-auto text-gray-300 mb-4" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">No countries found</h3>
+          <h3 className="text-xl font-semibold text-[#2a2a2a] mb-2">No countries found</h3>
           <p className="text-gray-600 mb-6">
             {searchQuery || activeFiltersCount > 0 
               ? 'Try adjusting your search or filters'
@@ -260,11 +260,11 @@ export default function CountriesPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm"
+            className="bg-white border border-neutral-200/80 rounded-2xl overflow-hidden shadow-sm"
           >
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gradient-to-r from-gray-50 to-gray-100/50 border-b border-gray-200">
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100/50 border-b border-neutral-200">
                   <tr>
                     <th className="text-left py-4 px-6 text-xs font-bold text-gray-700 uppercase tracking-wider">Country</th>
                     <th className="text-left py-4 px-6 text-xs font-bold text-gray-700 uppercase tracking-wider">ISO Codes</th>
@@ -285,7 +285,7 @@ export default function CountriesPage() {
                       className="hover:bg-gray-50/50 transition-colors group"
                     >
                       <td className="py-4 px-6">
-                        <div className="font-bold text-gray-900">{country.name}</div>
+                        <div className="font-semibold text-[#2a2a2a]">{country.name}</div>
                         <div className="text-xs text-gray-500 font-mono">{country.slug}</div>
                       </td>
                       <td className="py-4 px-6">
@@ -318,7 +318,7 @@ export default function CountriesPage() {
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-gray-900">{country.published_flag_count}</span>
+                          <span className="font-semibold text-[#2a2a2a]">{country.published_flag_count}</span>
                           <span className="text-gray-400">/</span>
                           <span className="text-gray-600">{country.flag_count}</span>
                         </div>
@@ -343,7 +343,7 @@ export default function CountriesPage() {
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/admin/countries/${country.id}`}
-                            className="p-2 text-[#2563eb] hover:bg-[#2563eb]/10 rounded-lg transition-colors"
+                            className="p-2 text-[var(--brand-blue)] hover:bg-[var(--brand-blue)]/10 rounded-lg transition-colors"
                             title="Edit"
                           >
                             <Edit size={18} />
@@ -380,14 +380,14 @@ export default function CountriesPage() {
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#2563eb] hover:bg-[#2563eb]/5 transition-all font-semibold text-gray-700 disabled:text-gray-400"
+                  className="px-4 py-2 border-2 border-neutral-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:border-[var(--brand-blue)] hover:bg-[var(--brand-blue)]/5 transition-all font-semibold text-gray-700 disabled:text-gray-400"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => setPage(p => p + 1)}
                   disabled={page * limit >= total}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:border-[#2563eb] hover:bg-[#2563eb]/5 transition-all font-semibold text-gray-700 disabled:text-gray-400"
+                  className="px-4 py-2 border-2 border-neutral-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:border-[var(--brand-blue)] hover:bg-[var(--brand-blue)]/5 transition-all font-semibold text-gray-700 disabled:text-gray-400"
                 >
                   Next
                 </button>

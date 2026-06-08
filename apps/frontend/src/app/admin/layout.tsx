@@ -164,17 +164,17 @@ function AdminChrome({
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-[100dvh] w-[min(18rem,calc(100vw-2.5rem))] max-w-[85vw] flex-col overflow-y-auto overscroll-contain border-r border-gray-200/80 bg-white shadow-xl transition-transform duration-200 ease-out md:sticky md:top-0 md:z-auto md:max-w-none md:h-screen md:w-72 md:shrink-0 md:translate-x-0 md:shadow-sm ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-[100dvh] w-[min(18rem,calc(100vw-2.5rem))] max-w-[85vw] flex-col overflow-y-auto overscroll-contain border-r border-neutral-200/80 bg-white shadow-xl transition-transform duration-200 ease-out md:sticky md:top-0 md:z-auto md:max-w-none md:h-screen md:w-72 md:shrink-0 md:translate-x-0 md:shadow-sm ${
           mobileNavOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
         aria-label="Admin navigation"
         id="admin-sidebar"
       >
-        <div className="flex items-center justify-between gap-2 border-b border-gray-200/80 p-4 md:hidden">
-          <span className="truncate text-sm font-semibold text-gray-900">Menu</span>
+        <div className="flex items-center justify-between gap-2 border-b border-neutral-200/80 p-4 md:hidden">
+          <span className="truncate text-sm font-semibold text-[#2a2a2a]">Menu</span>
           <button
             type="button"
-            className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100"
+            className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-neutral-600 hover:bg-gray-100"
             aria-controls="admin-sidebar"
             aria-expanded={mobileNavOpen}
             onClick={() => setMobileNavOpen(false)}
@@ -183,30 +183,30 @@ function AdminChrome({
           </button>
         </div>
         <div className="p-4 sm:p-6">
-          <div className="mb-6 hidden border-b border-gray-200/80 pb-6 md:block">
+          <div className="mb-6 hidden border-b border-neutral-200/80 pb-6 md:block">
             <Link href="/admin" className="group mb-3 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563eb] to-[#1e40af] shadow-lg shadow-[#2563eb]/20 transition-all group-hover:shadow-xl group-hover:shadow-[#2563eb]/30">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--brand-blue)] to-[var(--brand-blue-hover)] shadow-lg shadow-[#2563eb]/20 transition-all group-hover:shadow-xl group-hover:shadow-[#2563eb]/30">
                 <Flag size={20} className="text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Admin</h2>
-                <p className="text-xs text-gray-500">{userEmail}</p>
+                <h2 className="text-lg font-semibold text-[#2a2a2a]">Admin</h2>
+                <p className="text-xs text-neutral-400">{userEmail}</p>
               </div>
             </Link>
           </div>
 
-          <div className="mb-6 border-b border-gray-200/80 pb-6 md:hidden">
+          <div className="mb-6 border-b border-neutral-200/80 pb-6 md:hidden">
             <Link
               href="/admin"
               className="group flex items-center gap-3"
               onClick={() => setMobileNavOpen(false)}
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563eb] to-[#1e40af] shadow-lg shadow-[#2563eb]/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--brand-blue)] to-[var(--brand-blue-hover)] shadow-lg shadow-[#2563eb]/20">
                 <Flag size={20} className="text-white" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-lg font-bold text-gray-900">Admin</h2>
-                <p className="truncate text-xs text-gray-500" title={userEmail}>
+                <h2 className="text-lg font-semibold text-[#2a2a2a]">Admin</h2>
+                <p className="truncate text-xs text-neutral-400" title={userEmail}>
                   {userEmail}
                 </p>
               </div>
@@ -271,7 +271,7 @@ function AdminChrome({
               Settings
             </AdminNavLink>
 
-            <div className="mt-6 border-t border-gray-200/80 pt-6">
+            <div className="mt-6 border-t border-neutral-200/80 pt-6">
               <button
                 type="button"
                 onClick={onSignOut}
@@ -286,7 +286,7 @@ function AdminChrome({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col pb-[env(safe-area-inset-bottom)]">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-gray-200/80 bg-white/95 px-3 py-3 backdrop-blur-md supports-[padding:max(0px)]:pt-[max(0.75rem,env(safe-area-inset-top))] md:hidden">
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-neutral-200/80 bg-white/95 px-3 py-3 backdrop-blur-md supports-[padding:max(0px)]:pt-[max(0.75rem,env(safe-area-inset-top))] md:hidden">
           <button
             type="button"
             className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-gray-800 hover:bg-gray-100"
@@ -298,8 +298,8 @@ function AdminChrome({
             <Menu size={22} aria-hidden />
           </button>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold text-gray-900">Admin</p>
-            <p className="truncate text-xs text-gray-500">{userEmail}</p>
+            <p className="truncate text-sm font-semibold text-[#2a2a2a]">Admin</p>
+            <p className="truncate text-xs text-neutral-400">{userEmail}</p>
           </div>
         </header>
         <main className="min-h-screen flex-1" id="admin-main">
@@ -331,11 +331,11 @@ function AdminNavLink({
         className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
           active
             ? 'bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] text-white shadow-lg shadow-[#2563eb]/20'
-            : 'text-gray-700 hover:bg-gray-50 hover:text-[#2563eb]'
+            : 'text-neutral-600 hover:bg-neutral-50 hover:text-[var(--brand-blue)]'
         }`}
       >
         <div className="flex items-center gap-3">
-          <Icon size={18} className={active ? 'text-white' : 'text-gray-500 group-hover:text-[#2563eb]'} />
+          <Icon size={18} className={active ? 'text-white' : 'text-neutral-400 group-hover:text-[var(--brand-blue)]'} />
           <span>{children}</span>
         </div>
         {active && <ChevronRight size={16} className="text-white/80" />}

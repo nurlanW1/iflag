@@ -80,7 +80,7 @@ export function GalleryVariantsRow({
           </span>
           <Link
             href={galleryHref}
-            className="text-xs font-semibold text-[#2563eb] underline-offset-2 hover:underline"
+            className="text-xs font-semibold text-[var(--brand-blue)] underline-offset-2 hover:underline"
           >
             See all
           </Link>
@@ -141,12 +141,12 @@ export function GalleryVariantsRow({
         {/* See all arrow card */}
         <Link
           href={galleryHref}
-          className="group flex w-[5rem] shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 text-center transition hover:border-[#2563eb]/40 hover:bg-slate-50"
+          className="group flex w-[5rem] shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 text-center transition hover:border-[var(--brand-blue)]/40 hover:bg-slate-50"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2563eb]/10 text-[#2563eb] transition group-hover:bg-[#2563eb] group-hover:text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand-blue)]/10 text-[var(--brand-blue)] transition group-hover:bg-[var(--brand-blue)] group-hover:text-white">
             <ArrowRight size={16} aria-hidden />
           </div>
-          <p className="text-[10px] font-semibold text-slate-500 group-hover:text-[#2563eb]">
+          <p className="text-[10px] font-semibold text-slate-500 group-hover:text-[var(--brand-blue)]">
             View all
           </p>
         </Link>

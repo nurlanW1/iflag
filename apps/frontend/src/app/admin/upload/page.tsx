@@ -103,7 +103,7 @@ function AdminUploadClerkGate() {
             <div className="mt-4 flex flex-wrap gap-3">
               <Link
                 href="/access-denied?reason=forbidden"
-                className="text-sm font-semibold text-[#1e40af] underline underline-offset-2 hover:text-[#2563eb]"
+                className="text-sm font-semibold text-[#1e40af] underline underline-offset-2 hover:text-[var(--brand-blue)]"
               >
                 More about access
               </Link>
@@ -274,7 +274,7 @@ function AdminUploadFormContent({
   }
 
   const fieldClass =
-    'mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm outline-none transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/25';
+    'mt-1 w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-[#2a2a2a] shadow-sm outline-none transition focus:border-[var(--brand-blue)] focus:ring-2 focus:ring-[#2563eb]/25';
 
   return (
     <div className="marketplace-shell">
@@ -282,7 +282,7 @@ function AdminUploadFormContent({
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+          className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
         >
           <ArrowLeft size={16} aria-hidden />
           Admin home
@@ -291,11 +291,11 @@ function AdminUploadFormContent({
 
       <div className="mb-8">
         <div className="mb-3 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#2563eb]/10 text-[#2563eb]">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-blue)]/10 text-[var(--brand-blue)]">
             <Upload size={24} />
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">Upload Flags</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] md:text-4xl">Upload Flags</h1>
             <p className="text-sm text-gray-600 md:text-base">
               Stores files on **Cloudflare R2** and saves metadata to Neon (`country_flag_files`).
             </p>
@@ -367,7 +367,7 @@ function AdminUploadFormContent({
                     href={result.file_url || result.file?.file_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm font-semibold text-[#1e40af] underline underline-offset-2 hover:text-[#2563eb]"
+                    className="inline-flex items-center gap-1 text-sm font-semibold text-[#1e40af] underline underline-offset-2 hover:text-[var(--brand-blue)]"
                   >
                     Open public URL
                     <ExternalLink size={14} aria-hidden />
@@ -379,13 +379,13 @@ function AdminUploadFormContent({
         </div>
       ) : null}
 
-      <div className="mb-8 space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:p-8">
+      <div className="mb-8 space-y-4 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
             <Database size={20} aria-hidden />
           </div>
           <div className="min-w-0">
-            <h2 className="text-lg font-bold text-gray-900">Import R2 files</h2>
+            <h2 className="text-lg font-semibold text-[#2a2a2a]">Import R2 files</h2>
             <p className="mt-1 text-sm text-gray-600">
               Lists your Cloudflare R2 bucket and upserts rows into Neon <code className="rounded bg-black/5 px-1">country_flag_files</code>{' '}
               (no duplicate <code className="rounded bg-black/5 px-1">file_key</code>). Requires the same R2 +{' '}
@@ -456,7 +456,7 @@ function AdminUploadFormContent({
 
       <form
         onSubmit={(e) => void handleSubmit(e)}
-        className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:p-8"
+        className="space-y-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8"
       >
         <fieldset className="grid gap-4 sm:grid-cols-2" disabled={submitting}>
           <legend className="sr-only">Country context</legend>
@@ -627,9 +627,9 @@ function AdminUploadFormContent({
         </fieldset>
 
         <div>
-          <label className="flex cursor-pointer flex-col rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/80 p-6 transition hover:border-[#2563eb]/60 hover:bg-white">
-            <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-              <FileUp size={18} className="text-[#2563eb]" aria-hidden />
+          <label className="flex cursor-pointer flex-col rounded-2xl border-2 border-dashed border-neutral-200 bg-gray-50/80 p-6 transition hover:border-[var(--brand-blue)]/60 hover:bg-white">
+            <span className="flex items-center gap-2 text-sm font-semibold text-[#2a2a2a]">
+              <FileUp size={18} className="text-[var(--brand-blue)]" aria-hidden />
               Choose file
             </span>
             <span className="mt-2 text-xs text-gray-600">One upload per submission (PNG, SVG, …)</span>
@@ -637,7 +637,7 @@ function AdminUploadFormContent({
               type="file"
               disabled={submitting}
               accept=".svg,.png,.jpg,.jpeg,.webp,.pdf,.eps,.ai,.psd"
-              className="mt-4 text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-[#2563eb] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white"
+              className="mt-4 text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--brand-blue)] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white"
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 setFile(f ?? null);
@@ -654,7 +654,7 @@ function AdminUploadFormContent({
         <button
           type="submit"
           disabled={submitting || !file}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] py-4 text-base font-black text-white shadow-lg shadow-[#2563eb]/25 transition hover:brightness-105 disabled:pointer-events-none disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[var(--brand-blue)] to-[var(--brand-blue-hover)] py-4 text-base font-semibold text-white shadow-lg shadow-[var(--brand-blue)]/20 transition hover:brightness-105 disabled:pointer-events-none disabled:opacity-50"
         >
           {submitting ? (
             <>

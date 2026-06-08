@@ -40,13 +40,13 @@ export default function SettingsPage() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm"
+      className="bg-white border border-neutral-200/80 rounded-2xl p-6 shadow-sm"
     >
-      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
-        <div className="w-10 h-10 rounded-xl bg-[#2563eb]/10 flex items-center justify-center">
-          <Icon size={20} className="text-[#2563eb]" />
+      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-neutral-200">
+        <div className="w-10 h-10 rounded-xl bg-[var(--brand-blue)]/10 flex items-center justify-center">
+          <Icon size={20} className="text-[var(--brand-blue)]" />
         </div>
-        <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+        <h3 className="text-lg font-semibold text-[#2a2a2a]">{title}</h3>
       </div>
       <div className="space-y-5">
         {children}
@@ -72,7 +72,7 @@ export default function SettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
+        <h1 className="text-4xl font-semibold text-[#2a2a2a] mb-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
           Settings
         </h1>
         <p className="text-gray-600 text-lg">
@@ -88,7 +88,7 @@ export default function SettingsPage() {
               type="text"
               value={settings.siteName}
               onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900"
+              className="w-full px-4 py-3 border-2 border-neutral-200 rounded-xl focus:outline-none focus:border-[var(--brand-blue)] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-[#2a2a2a]"
             />
           </SettingField>
           <SettingField label="Site Description" description="Brief description for SEO">
@@ -96,7 +96,7 @@ export default function SettingsPage() {
               value={settings.siteDescription}
               onChange={(e) => setSettings({ ...settings, siteDescription: e.target.value })}
               rows={3}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900 resize-none"
+              className="w-full px-4 py-3 border-2 border-neutral-200 rounded-xl focus:outline-none focus:border-[var(--brand-blue)] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-[#2a2a2a] resize-none"
             />
           </SettingField>
           <SettingField label="Site URL" description="Your website's base URL">
@@ -104,7 +104,7 @@ export default function SettingsPage() {
               type="url"
               value={settings.siteUrl}
               onChange={(e) => setSettings({ ...settings, siteUrl: e.target.value })}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900"
+              className="w-full px-4 py-3 border-2 border-neutral-200 rounded-xl focus:outline-none focus:border-[var(--brand-blue)] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-[#2a2a2a]"
             />
           </SettingField>
         </SettingSection>
@@ -116,7 +116,7 @@ export default function SettingsPage() {
               type="email"
               value={settings.adminEmail}
               onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900"
+              className="w-full px-4 py-3 border-2 border-neutral-200 rounded-xl focus:outline-none focus:border-[var(--brand-blue)] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-[#2a2a2a]"
             />
           </SettingField>
           <SettingField label="User Registration" description="Allow new users to register">
@@ -125,7 +125,7 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={settings.enableRegistration}
                 onChange={(e) => setSettings({ ...settings, enableRegistration: e.target.checked })}
-                className="w-5 h-5 text-[#2563eb] border-gray-300 rounded focus:ring-[#2563eb] focus:ring-2"
+                className="w-5 h-5 text-[var(--brand-blue)] border-gray-300 rounded focus:ring-[#2563eb] focus:ring-2"
               />
               <span className="font-semibold text-gray-700">Enable user registration</span>
             </label>
@@ -136,7 +136,7 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={settings.enableEmailVerification}
                 onChange={(e) => setSettings({ ...settings, enableEmailVerification: e.target.checked })}
-                className="w-5 h-5 text-[#2563eb] border-gray-300 rounded focus:ring-[#2563eb] focus:ring-2"
+                className="w-5 h-5 text-[var(--brand-blue)] border-gray-300 rounded focus:ring-[#2563eb] focus:ring-2"
               />
               <span className="font-semibold text-gray-700">Require email verification</span>
             </label>
@@ -150,7 +150,7 @@ export default function SettingsPage() {
               type="number"
               value={settings.maxFileSize}
               onChange={(e) => setSettings({ ...settings, maxFileSize: parseInt(e.target.value) || 0 })}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900"
+              className="w-full px-4 py-3 border-2 border-neutral-200 rounded-xl focus:outline-none focus:border-[var(--brand-blue)] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-[#2a2a2a]"
               min="1"
               max="1000"
             />
@@ -162,8 +162,8 @@ export default function SettingsPage() {
                   key={format}
                   className={`px-4 py-2 rounded-lg border-2 cursor-pointer transition-all ${
                     settings.allowedFormats.includes(format)
-                      ? 'border-[#2563eb] bg-[#2563eb]/5 text-[#2563eb] font-semibold'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                      ? 'border-[var(--brand-blue)] bg-[var(--brand-blue)]/5 text-[var(--brand-blue)] font-semibold'
+                      : 'border-neutral-200 text-gray-600 hover:border-gray-300'
                   }`}
                 >
                   <input
@@ -189,7 +189,7 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={settings.enableWatermarks}
                 onChange={(e) => setSettings({ ...settings, enableWatermarks: e.target.checked })}
-                className="w-5 h-5 text-[#2563eb] border-gray-300 rounded focus:ring-[#2563eb] focus:ring-2"
+                className="w-5 h-5 text-[var(--brand-blue)] border-gray-300 rounded focus:ring-[#2563eb] focus:ring-2"
               />
               <span className="font-semibold text-gray-700">Enable watermarks</span>
             </label>
@@ -199,7 +199,7 @@ export default function SettingsPage() {
                 value={settings.watermarkText}
                 onChange={(e) => setSettings({ ...settings, watermarkText: e.target.value })}
                 placeholder="Watermark text"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900"
+                className="w-full px-4 py-3 border-2 border-neutral-200 rounded-xl focus:outline-none focus:border-[var(--brand-blue)] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-[#2a2a2a]"
               />
             )}
           </SettingField>
@@ -213,7 +213,7 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={settings.enableNotifications}
                 onChange={(e) => setSettings({ ...settings, enableNotifications: e.target.checked })}
-                className="w-5 h-5 text-[#2563eb] border-gray-300 rounded focus:ring-[#2563eb] focus:ring-2"
+                className="w-5 h-5 text-[var(--brand-blue)] border-gray-300 rounded focus:ring-[#2563eb] focus:ring-2"
               />
               <span className="font-semibold text-gray-700">Enable email notifications</span>
             </label>
@@ -224,7 +224,7 @@ export default function SettingsPage() {
                 type="email"
                 value={settings.notificationEmail}
                 onChange={(e) => setSettings({ ...settings, notificationEmail: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-gray-900"
+                className="w-full px-4 py-3 border-2 border-neutral-200 rounded-xl focus:outline-none focus:border-[var(--brand-blue)] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-[#2a2a2a]"
               />
             </SettingField>
           )}
@@ -238,7 +238,7 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={settings.enableAnalytics}
                 onChange={(e) => setSettings({ ...settings, enableAnalytics: e.target.checked })}
-                className="w-5 h-5 text-[#2563eb] border-gray-300 rounded focus:ring-[#2563eb] focus:ring-2"
+                className="w-5 h-5 text-[var(--brand-blue)] border-gray-300 rounded focus:ring-[#2563eb] focus:ring-2"
               />
               <span className="font-semibold text-gray-700">Enable analytics tracking</span>
             </label>

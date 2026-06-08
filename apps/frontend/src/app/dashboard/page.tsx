@@ -32,7 +32,7 @@ export default function DashboardOverviewPage() {
   return (
     <div>
       <div className="mb-8 flex items-start gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#2563eb]/10 text-[#2563eb]">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-blue)]/10 text-[var(--brand-blue)]">
           <LayoutDashboard size={24} />
         </div>
         <div>
@@ -51,7 +51,7 @@ export default function DashboardOverviewPage() {
                 href={card.href}
                 className="group flex h-full flex-col rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] hover:border-[#2563eb]/35 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563eb] focus-visible:ring-offset-2"
               >
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-blue-soft)] text-[var(--brand-blue)] transition group-hover:bg-[#2563eb]/15">
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-blue-soft)] text-[var(--brand-blue)] transition group-hover:bg-[var(--brand-blue)]/15">
                   <Icon size={21} strokeWidth={1.75} />
                 </div>
                 <h2 className="text-[0.9375rem] font-semibold text-[#2a2a2a]">{card.title}</h2>

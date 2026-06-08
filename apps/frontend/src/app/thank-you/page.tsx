@@ -25,7 +25,7 @@ export default function ThankYouPage() {
         <div className="mt-6 space-y-3">
           <Link
             href="/dashboard"
-            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1d4ed8]"
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-blue)] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)]"
           >
             <Download size={16} aria-hidden />
             Go to my downloads
@@ -42,7 +42,7 @@ export default function ThankYouPage() {
 
         <p className="mt-6 text-xs text-stone-400">
           Receipt sent to your email. Questions?{' '}
-          <Link href="/contact" className="text-[#2563eb] hover:underline">
+          <Link href="/contact" className="text-[var(--brand-blue)] hover:underline">
             Contact us
           </Link>
         </p>

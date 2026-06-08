@@ -72,7 +72,7 @@ export function CookieNotice() {
       role="dialog"
       aria-labelledby="cookie-notice-title"
       aria-describedby="cookie-notice-desc"
-      className="fixed bottom-0 left-0 right-0 z-[100] border-t border-gray-200 bg-white/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(0,0,0,0.08)] backdrop-blur-md sm:pb-5 md:px-6 md:pb-6"
+      className="fixed bottom-0 left-0 right-0 z-[100] border-t border-neutral-200 bg-white/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(0,0,0,0.08)] backdrop-blur-md sm:pb-5 md:px-6 md:pb-6"
     >
       <PageShell className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0 flex-1 pr-8 md:pr-4">
@@ -82,11 +82,11 @@ export function CookieNotice() {
           <p id="cookie-notice-desc" className="mt-1 text-sm text-neutral-500">
             We use essential cookies for sign-in, account security, and <strong>Paddle checkout</strong> (they
             keep your billing session tied to your login). If you add analytics or ads, document them in our{' '}
-            <Link href="/cookies" className="font-medium text-[#2563eb] hover:underline">
+            <Link href="/cookies" className="font-medium text-[var(--brand-blue)] hover:underline">
               Cookie Policy
             </Link>{' '}
             and{' '}
-            <Link href="/privacy-policy" className="font-medium text-[#2563eb] hover:underline">
+            <Link href="/privacy-policy" className="font-medium text-[var(--brand-blue)] hover:underline">
               Privacy Policy
             </Link>
             , and update this banner accordingly.

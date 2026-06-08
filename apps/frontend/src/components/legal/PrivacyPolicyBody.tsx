@@ -14,7 +14,7 @@ export function PrivacyPolicyBody() {
         </p>
         <p>
           <strong>Contact:</strong>{' '}
-          <a className="font-medium text-[#2563eb] hover:underline" href={`mailto:${contactEmail}`}>
+          <a className="font-medium text-[var(--brand-blue)] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>
           . If you maintain a separate address for privacy requests, publish it here once finalized.
@@ -124,7 +124,7 @@ export function PrivacyPolicyBody() {
         <h2 className="text-lg font-semibold text-[#2a2a2a]">9. Cookies and similar technologies</h2>
         <p>
           We use cookies and similar technologies as described in our{' '}
-          <Link href="/cookies" className="font-medium text-[#2563eb] hover:underline">
+          <Link href="/cookies" className="font-medium text-[var(--brand-blue)] hover:underline">
             Cookie Policy
           </Link>
           . If you use advertising or cross-site analytics, describe your consent tool and opt-out links.
@@ -169,7 +169,7 @@ export function PrivacyPolicyBody() {
         <h2 className="text-lg font-semibold text-[#2a2a2a]">14. Contact</h2>
         <p>
           Questions about privacy:{' '}
-          <a className="font-medium text-[#2563eb] hover:underline" href={`mailto:${contactEmail}`}>
+          <a className="font-medium text-[var(--brand-blue)] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>
           . Add a Data Protection Officer or EU/UK representative only if you appoint one.

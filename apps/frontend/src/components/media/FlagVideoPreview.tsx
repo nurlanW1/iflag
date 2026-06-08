@@ -135,7 +135,7 @@ export function FlagVideoPreview({
           className="pointer-events-auto absolute inset-0 z-[1] flex items-center justify-center bg-black/25 transition hover:bg-black/15"
           aria-label={`Play ${title}`}
         >
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-[#2563eb] shadow-md">
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-[var(--brand-blue)] shadow-md">
             <Play size={20} className="ml-0.5" fill="currentColor" aria-hidden />
           </span>
         </button>

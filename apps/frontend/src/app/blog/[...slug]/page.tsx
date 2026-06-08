@@ -157,10 +157,10 @@ export default async function BlogPostPage({ params }: Props) {
                   >
                     {rel.category}
                   </span>
-                  <h3 className="line-clamp-2 text-sm font-bold leading-snug text-slate-900 group-hover:text-[#2563eb]">
+                  <h3 className="line-clamp-2 text-sm font-bold leading-snug text-slate-900 group-hover:text-[var(--brand-blue)]">
                     {rel.title}
                   </h3>
-                  <span className="mt-auto inline-flex items-center gap-1 text-[11px] font-semibold text-[#2563eb] opacity-0 transition-opacity group-hover:opacity-100">
+                  <span className="mt-auto inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--brand-blue)] opacity-0 transition-opacity group-hover:opacity-100">
                     Read <ArrowRight size={11} aria-hidden />
                   </span>
                 </div>

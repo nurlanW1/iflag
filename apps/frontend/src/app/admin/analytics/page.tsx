@@ -49,7 +49,7 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2563eb]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--brand-blue)]"></div>
       </div>
     );
   }
@@ -64,22 +64,22 @@ export default function AnalyticsPage() {
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
+            <h1 className="text-4xl font-semibold text-[#2a2a2a] mb-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
               Analytics
             </h1>
             <p className="text-gray-600 text-lg">
               Track performance and user engagement metrics
             </p>
           </div>
-          <div className="flex gap-2 bg-white border-2 border-gray-200 rounded-xl p-1">
+          <div className="flex gap-2 bg-white border-2 border-neutral-200 rounded-xl p-1">
             {(['7d', '30d', '90d', 'all'] as const).map((range) => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
                   timeRange === range
-                    ? 'bg-[#2563eb] text-white shadow-lg'
-                    : 'text-gray-600 hover:text-[#2563eb]'
+                    ? 'bg-[var(--brand-blue)] text-white shadow-lg'
+                    : 'text-gray-600 hover:text-[var(--brand-blue)]'
                 }`}
               >
                 {range === '7d' ? '7 Days' : range === '30d' ? '30 Days' : range === '90d' ? '90 Days' : 'All Time'}
@@ -127,10 +127,10 @@ export default function AnalyticsPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm"
+          className="bg-white border border-neutral-200/80 rounded-2xl p-6 shadow-sm"
         >
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-gray-900">Downloads Trend</h3>
+            <h3 className="text-lg font-semibold text-[#2a2a2a]">Downloads Trend</h3>
             <TrendingUp size={20} className="text-gray-400" />
           </div>
           <div className="h-64 flex items-end justify-between gap-2">
@@ -156,10 +156,10 @@ export default function AnalyticsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm"
+          className="bg-white border border-neutral-200/80 rounded-2xl p-6 shadow-sm"
         >
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-gray-900">Views Trend</h3>
+            <h3 className="text-lg font-semibold text-[#2a2a2a]">Views Trend</h3>
             <Eye size={20} className="text-gray-400" />
           </div>
           <div className="h-64 flex items-end justify-between gap-2">
@@ -186,26 +186,26 @@ export default function AnalyticsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm"
+        className="bg-white border border-neutral-200/80 rounded-2xl overflow-hidden shadow-sm"
       >
-        <div className="p-6 border-b border-gray-200/80 bg-gradient-to-r from-gray-50 to-white">
-          <h2 className="text-xl font-bold text-gray-900">Top Performing Assets</h2>
+        <div className="p-6 border-b border-neutral-200/80 bg-gradient-to-r from-gray-50 to-white">
+          <h2 className="text-xl font-semibold text-[#2a2a2a]">Top Performing Assets</h2>
         </div>
         <div className="p-6">
           <div className="space-y-4">
             {mockData.topAssets.map((asset, idx) => (
               <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-[#2563eb]/10 flex items-center justify-center font-bold text-[#2563eb]">
+                  <div className="w-10 h-10 rounded-lg bg-[var(--brand-blue)]/10 flex items-center justify-center font-bold text-[var(--brand-blue)]">
                     {idx + 1}
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">{asset.name}</p>
+                    <p className="font-semibold text-[#2a2a2a]">{asset.name}</p>
                     <p className="text-sm text-gray-500">{asset.views.toLocaleString()} views</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-gray-900">{asset.downloads.toLocaleString()}</p>
+                  <p className="font-semibold text-[#2a2a2a]">{asset.downloads.toLocaleString()}</p>
                   <p className="text-xs text-gray-500">downloads</p>
                 </div>
               </div>
@@ -223,7 +223,7 @@ function StatCard({ icon: Icon, title, value, change, color }: any) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-200"
+      className="bg-white border border-neutral-200/80 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-200"
     >
       <div className="flex items-start justify-between mb-4">
         <div 
@@ -240,7 +240,7 @@ function StatCard({ icon: Icon, title, value, change, color }: any) {
       </div>
       <div>
         <p className="text-sm text-gray-600 mb-1 font-medium">{title}</p>
-        <h3 className="text-3xl font-black text-gray-900">{value}</h3>
+        <h3 className="text-3xl font-semibold text-[#2a2a2a]">{value}</h3>
       </div>
     </motion.div>
   );

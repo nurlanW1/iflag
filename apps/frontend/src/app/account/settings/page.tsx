@@ -21,7 +21,7 @@ export default function SettingsPage() {
           href="https://accounts.clerk.dev/user"
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-[#2563eb] hover:underline"
+          className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-[var(--brand-blue)] hover:underline"
         >
           Open Clerk Portal <ExternalLink size={11} />
         </a>

@@ -132,12 +132,12 @@ export default function AdminAssetsPage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Asset Management</h1>
+          <h1 className="text-2xl font-semibold text-[#2a2a2a]">Asset Management</h1>
           <p className="mt-0.5 text-sm text-gray-500">{total} total assets</p>
         </div>
         <Link
           href="/admin/upload"
-          className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1d4ed8]"
+          className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-blue)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)]"
         >
           <Plus size={16} aria-hidden />
           Upload New
@@ -145,7 +145,7 @@ export default function AdminAssetsPage() {
       </div>
 
       {/* Filters */}
-      <div className="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm">
+      <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-sm">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="relative">
             <Search
@@ -158,13 +158,13 @@ export default function AdminAssetsPage() {
               value={filters.search}
               onChange={(e) => { setFilters({ ...filters, search: e.target.value }); setPage(1); }}
               placeholder="Search assets…"
-              className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50/80 pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2563eb] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+              className="h-10 w-full rounded-xl border border-neutral-200 bg-gray-50/80 pl-9 pr-3 text-sm text-[#2a2a2a] placeholder:text-gray-400 focus:border-[var(--brand-blue)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
             />
           </div>
           <select
             value={filters.asset_type}
             onChange={(e) => { setFilters({ ...filters, asset_type: e.target.value }); setPage(1); }}
-            className="h-10 rounded-xl border border-gray-200 bg-gray-50/80 px-3 text-sm font-medium text-gray-700 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+            className="h-10 rounded-xl border border-neutral-200 bg-gray-50/80 px-3 text-sm font-medium text-gray-700 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
           >
             <option value="">All Types</option>
             <option value="flag">Flag</option>
@@ -177,7 +177,7 @@ export default function AdminAssetsPage() {
           <select
             value={filters.status}
             onChange={(e) => { setFilters({ ...filters, status: e.target.value }); setPage(1); }}
-            className="h-10 rounded-xl border border-gray-200 bg-gray-50/80 px-3 text-sm font-medium text-gray-700 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+            className="h-10 rounded-xl border border-neutral-200 bg-gray-50/80 px-3 text-sm font-medium text-gray-700 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
           >
             <option value="">All Status</option>
             <option value="published">Published</option>
@@ -187,7 +187,7 @@ export default function AdminAssetsPage() {
           <select
             value={filters.is_premium}
             onChange={(e) => { setFilters({ ...filters, is_premium: e.target.value }); setPage(1); }}
-            className="h-10 rounded-xl border border-gray-200 bg-gray-50/80 px-3 text-sm font-medium text-gray-700 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+            className="h-10 rounded-xl border border-neutral-200 bg-gray-50/80 px-3 text-sm font-medium text-gray-700 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
           >
             <option value="">All Pricing</option>
             <option value="true">Premium</option>
@@ -229,10 +229,10 @@ export default function AdminAssetsPage() {
       )}
 
       {/* Table */}
-      <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="h-9 w-9 animate-spin rounded-full border-[3px] border-gray-200 border-t-[#2563eb]" aria-hidden />
+            <div className="h-9 w-9 animate-spin rounded-full border-[3px] border-neutral-200 border-t-[#2563eb]" aria-hidden />
           </div>
         ) : assets.length === 0 ? (
           <div className="py-16 text-center">
@@ -240,7 +240,7 @@ export default function AdminAssetsPage() {
             <p className="text-sm font-medium text-gray-500">No assets found</p>
             <Link
               href="/admin/upload"
-              className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563eb] hover:underline"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--brand-blue)] hover:underline"
             >
               <Plus size={14} /> Upload first asset
             </Link>
@@ -249,16 +249,16 @@ export default function AdminAssetsPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px]">
               <thead>
-                <tr className="border-b border-gray-200/80 bg-gray-50/60">
+                <tr className="border-b border-neutral-200/80 bg-gray-50/60">
                   <th className="w-10 py-3 pl-4 pr-2">
                     <button
                       type="button"
                       onClick={toggleSelectAll}
                       aria-label={allSelected ? 'Deselect all' : 'Select all'}
-                      className="flex items-center text-gray-400 hover:text-[#2563eb]"
+                      className="flex items-center text-gray-400 hover:text-[var(--brand-blue)]"
                     >
                       {allSelected
-                        ? <CheckSquare size={16} className="text-[#2563eb]" />
+                        ? <CheckSquare size={16} className="text-[var(--brand-blue)]" />
                         : <Square size={16} />}
                     </button>
                   </th>
@@ -298,10 +298,10 @@ export default function AdminAssetsPage() {
                           type="button"
                           onClick={() => toggleSelect(asset.id)}
                           aria-label={checked ? 'Deselect' : 'Select'}
-                          className="flex items-center text-gray-400 hover:text-[#2563eb]"
+                          className="flex items-center text-gray-400 hover:text-[var(--brand-blue)]"
                         >
                           {checked
-                            ? <CheckSquare size={16} className="text-[#2563eb]" />
+                            ? <CheckSquare size={16} className="text-[var(--brand-blue)]" />
                             : <Square size={16} />}
                         </button>
                       </td>
@@ -323,7 +323,7 @@ export default function AdminAssetsPage() {
                         </div>
                       </td>
                       <td className="max-w-[180px] py-3 pr-4">
-                        <p className="truncate text-sm font-semibold text-gray-900">{asset.title}</p>
+                        <p className="truncate text-sm font-semibold text-[#2a2a2a]">{asset.title}</p>
                         {asset.description && (
                           <p className="truncate text-xs text-gray-400">
                             {asset.description.substring(0, 40)}…
@@ -418,7 +418,7 @@ export default function AdminAssetsPage() {
                 type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ChevronLeft size={14} aria-hidden />
               </button>
@@ -431,8 +431,8 @@ export default function AdminAssetsPage() {
                     onClick={() => setPage(p)}
                     className={`flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-semibold transition ${
                       p === page
-                        ? 'border-[#2563eb] bg-[#2563eb] text-white'
-                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                        ? 'border-[var(--brand-blue)] bg-[var(--brand-blue)] text-white'
+                        : 'border-neutral-200 bg-white text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     {p}
@@ -443,7 +443,7 @@ export default function AdminAssetsPage() {
                 type="button"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ChevronRight size={14} aria-hidden />
               </button>

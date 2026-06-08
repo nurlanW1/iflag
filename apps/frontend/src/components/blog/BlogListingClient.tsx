@@ -42,7 +42,7 @@ export default function BlogListingClient() {
             onClick={() => setActive(cat)}
             className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all ${
               active === cat
-                ? 'bg-[#2563eb] text-white shadow-sm shadow-[#2563eb]/30'
+                ? 'bg-[var(--brand-blue)] text-white shadow-sm shadow-[var(--brand-blue)]'
                 : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'
             }`}
           >
@@ -81,7 +81,7 @@ export default function BlogListingClient() {
                 >
                   {post.category}
                 </span>
-                <h2 className="line-clamp-2 text-[1rem] font-bold leading-snug text-slate-900 group-hover:text-[#2563eb]">
+                <h2 className="line-clamp-2 text-[1rem] font-bold leading-snug text-slate-900 group-hover:text-[var(--brand-blue)]">
                   {post.title}
                 </h2>
                 <p className="line-clamp-2 text-sm leading-relaxed text-slate-500">
@@ -92,7 +92,7 @@ export default function BlogListingClient() {
                     <Calendar size={12} aria-hidden />
                     {formatDate(post.date)}
                   </span>
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563eb] opacity-0 transition-opacity group-hover:opacity-100">
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--brand-blue)] opacity-0 transition-opacity group-hover:opacity-100">
                     Read more <ArrowRight size={13} aria-hidden />
                   </span>
                 </div>

@@ -69,15 +69,15 @@ export default function ContactForm() {
         <p className="mb-10 text-sm text-neutral-500">
           For legal notices, privacy requests, and refund questions, use the contact details below and
           reference our{' '}
-          <Link href="/privacy-policy" className="font-medium text-[#2563eb] hover:underline">
+          <Link href="/privacy-policy" className="font-medium text-[var(--brand-blue)] hover:underline">
             Privacy Policy
           </Link>
           ,{' '}
-          <Link href="/terms-of-service" className="font-medium text-[#2563eb] hover:underline">
+          <Link href="/terms-of-service" className="font-medium text-[var(--brand-blue)] hover:underline">
             Terms
           </Link>
           , and{' '}
-          <Link href="/refunds" className="font-medium text-[#2563eb] hover:underline">
+          <Link href="/refunds" className="font-medium text-[var(--brand-blue)] hover:underline">
             Refund Policy
           </Link>
           .

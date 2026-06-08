@@ -139,7 +139,7 @@ export default function AssetsPage() {
                   placeholder="Search assets, countries, types…"
                   value={filters.search}
                   onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                  className="h-11 w-full rounded-xl border border-stone-200 bg-stone-50/90 pl-10 pr-4 text-sm text-stone-900 placeholder:text-stone-400 transition-all focus:border-[#2563eb] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                  className="h-11 w-full rounded-xl border border-stone-200 bg-stone-50/90 pl-10 pr-4 text-sm text-stone-900 placeholder:text-stone-400 transition-all focus:border-[var(--brand-blue)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
                 />
               </form>
 
@@ -149,7 +149,7 @@ export default function AssetsPage() {
                 onClick={() => setShowFilters((o) => !o)}
                 className={`flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border px-3.5 py-2.5 text-sm font-semibold transition-colors ${
                   showFilters || activeFiltersCount > 0
-                    ? 'border-[#2563eb] bg-[#2563eb] text-white'
+                    ? 'border-[var(--brand-blue)] bg-[var(--brand-blue)] text-white'
                     : 'border-stone-200 bg-stone-50/90 text-stone-800 hover:bg-stone-100'
                 }`}
               >
@@ -171,7 +171,7 @@ export default function AssetsPage() {
                     setPage(1);
                   }}
                   aria-label="Sort assets"
-                  className="h-11 appearance-none rounded-xl border border-stone-200 bg-stone-50/90 pl-3 pr-8 text-xs font-semibold text-stone-800 transition-all focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 md:min-w-[9rem]"
+                  className="h-11 appearance-none rounded-xl border border-stone-200 bg-stone-50/90 pl-3 pr-8 text-xs font-semibold text-stone-800 transition-all focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 md:min-w-[9rem]"
                 >
                   <option value="newest">Newest first</option>
                   <option value="oldest">Oldest first</option>
@@ -228,7 +228,7 @@ export default function AssetsPage() {
                           onClick={() => toggleAssetType(type)}
                           className={`rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
                             filters.asset_type.includes(type)
-                              ? 'bg-[#2563eb] text-white shadow-sm shadow-[#2563eb]/30'
+                              ? 'bg-[var(--brand-blue)] text-white shadow-sm shadow-[#2563eb]/30'
                               : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
                           }`}
                         >
@@ -300,7 +300,7 @@ export default function AssetsPage() {
           <SkeletonGrid />
         ) : assets.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-stone-200 bg-white px-6 py-16 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#2563eb]/10 text-[#2563eb]">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--brand-blue)]/10 text-[var(--brand-blue)]">
               <Search size={22} aria-hidden />
             </div>
             <h2 className="mt-5 text-lg font-semibold text-stone-900">No assets found</h2>
@@ -311,7 +311,7 @@ export default function AssetsPage() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="mt-5 rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#1d4ed8]"
+                className="mt-5 rounded-xl bg-[var(--brand-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[var(--brand-blue-hover)]"
               >
                 Clear filters
               </button>

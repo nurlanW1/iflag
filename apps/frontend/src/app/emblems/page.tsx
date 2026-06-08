@@ -68,7 +68,7 @@ export default function EmblemsPage() {
               <div className="flex h-20 items-center justify-center text-4xl">
                 🛡️
               </div>
-              <p className="mt-3 text-sm font-semibold text-stone-900 group-hover:text-[#2563eb]">
+              <p className="mt-3 text-sm font-semibold text-stone-900 group-hover:text-[var(--brand-blue)]">
                 {emblem.name}
               </p>
               <p className="mt-1 text-xs text-stone-400">{emblem.region}</p>

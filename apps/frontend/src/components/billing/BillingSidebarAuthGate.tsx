@@ -40,13 +40,13 @@ export function BillingSidebarAuthGate({
         <div className={clsx('flex flex-wrap gap-2', compact ? 'mt-1.5' : 'mt-2')}>
           <Link
             href={`/login?callbackUrl=${encodeURIComponent(returnTo)}`}
-            className={clsx(btnBase, 'border border-slate-900 bg-white text-slate-900 hover:border-[#2563eb] hover:text-[#2563eb]')}
+            className={clsx(btnBase, 'border border-slate-900 bg-white text-slate-900 hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)]')}
           >
             Sign in
           </Link>
           <Link
             href={`/register?callbackUrl=${encodeURIComponent(returnTo)}`}
-            className={clsx(btnBase, 'bg-[#2563eb] text-white hover:bg-[#1d4ed8]')}
+            className={clsx(btnBase, 'bg-[var(--brand-blue)] text-white hover:bg-[var(--brand-blue-hover)]')}
           >
             Sign up
           </Link>
@@ -69,7 +69,7 @@ export function BillingSidebarAuthGate({
             type="button"
             className={clsx(
               btnBase,
-              'border border-slate-900 bg-white text-slate-900 hover:border-[#2563eb] hover:text-[#2563eb]',
+              'border border-slate-900 bg-white text-slate-900 hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)]',
             )}
           >
             Sign in
@@ -78,7 +78,7 @@ export function BillingSidebarAuthGate({
         <SignUpButton mode="redirect" forceRedirectUrl={returnTo}>
           <button
             type="button"
-            className={clsx(btnBase, 'bg-[#2563eb] text-white hover:bg-[#1d4ed8]')}
+            className={clsx(btnBase, 'bg-[var(--brand-blue)] text-white hover:bg-[var(--brand-blue-hover)]')}
           >
             Sign up
           </button>

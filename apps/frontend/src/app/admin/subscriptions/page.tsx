@@ -57,7 +57,7 @@ export default function SubscriptionsPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2563eb]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--brand-blue)]"></div>
       </div>
     );
   }
@@ -70,7 +70,7 @@ export default function SubscriptionsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-4xl font-black text-gray-900 mb-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
+        <h1 className="text-4xl font-semibold text-[#2a2a2a] mb-2 bg-gradient-to-r from-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
           Subscriptions
         </h1>
         <p className="text-gray-600 text-lg">
@@ -110,22 +110,22 @@ export default function SubscriptionsPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm"
+        className="bg-white border border-neutral-200/80 rounded-2xl overflow-hidden shadow-sm"
       >
-        <div className="p-6 border-b border-gray-200/80 bg-gradient-to-r from-gray-50 to-white">
-          <h2 className="text-xl font-bold text-gray-900">Subscription Plans</h2>
+        <div className="p-6 border-b border-neutral-200/80 bg-gradient-to-r from-gray-50 to-white">
+          <h2 className="text-xl font-semibold text-[#2a2a2a]">Subscription Plans</h2>
         </div>
         
         {subscriptions.length === 0 ? (
           <div className="text-center py-20">
             <Users size={64} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No subscriptions yet</h3>
+            <h3 className="text-xl font-semibold text-[#2a2a2a] mb-2">No subscriptions yet</h3>
             <p className="text-gray-600">Subscription data will appear here once users subscribe</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 border-b border-neutral-200">
                 <tr>
                   <th className="text-left py-4 px-6 text-xs font-bold text-gray-700 uppercase tracking-wider">Plan</th>
                   <th className="text-left py-4 px-6 text-xs font-bold text-gray-700 uppercase tracking-wider">Duration</th>
@@ -146,7 +146,7 @@ export default function SubscriptionsPage() {
                     className="hover:bg-gray-50/50 transition-colors"
                   >
                     <td className="py-4 px-6">
-                      <div className="font-bold text-gray-900">{sub.plan_name}</div>
+                      <div className="font-semibold text-[#2a2a2a]">{sub.plan_name}</div>
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2 text-gray-700">
@@ -155,7 +155,7 @@ export default function SubscriptionsPage() {
                       </div>
                     </td>
                     <td className="py-4 px-6">
-                      <span className="font-bold text-gray-900">{formatCurrency(sub.price_cents)}</span>
+                      <span className="font-semibold text-[#2a2a2a]">{formatCurrency(sub.price_cents)}</span>
                     </td>
                     <td className="py-4 px-6">
                       <span className="font-semibold text-gray-700">{sub.total_subscriptions || 0}</span>
@@ -192,7 +192,7 @@ function StatCard({ icon: Icon, title, value, color }: any) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-200"
+      className="bg-white border border-neutral-200/80 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-200"
     >
       <div className="flex items-start justify-between mb-4">
         <div 
@@ -204,7 +204,7 @@ function StatCard({ icon: Icon, title, value, color }: any) {
       </div>
       <div>
         <p className="text-sm text-gray-600 mb-1 font-medium">{title}</p>
-        <h3 className="text-3xl font-black text-gray-900">{value}</h3>
+        <h3 className="text-3xl font-semibold text-[#2a2a2a]">{value}</h3>
       </div>
     </motion.div>
   );

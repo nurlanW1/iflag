@@ -48,7 +48,7 @@ export function CountryHubFolderGrid({
             <Link
               href={hubHref(country.slug, hrefForSlug)}
               className={clsx(
-                'group block overflow-hidden rounded-2xl border border-stone-200/80 bg-white transition-all hover:-translate-y-0.5 hover:border-[#2563eb]/40',
+                'group block overflow-hidden rounded-2xl border border-stone-200/80 bg-white transition-all hover:-translate-y-0.5 hover:border-[var(--brand-blue)]/40',
                 tileClassName || 'shadow-sm hover:shadow-md',
               )}
             >
@@ -102,7 +102,7 @@ export function CountryHubFolderGrid({
               <p className="text-[0.75rem] font-medium uppercase tracking-wide text-neutral-500">
                 {country.design_count} design{country.design_count === 1 ? '' : 's'} in folder
               </p>
-              <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-[#2563eb] opacity-0 transition-opacity group-hover:opacity-100">
+              <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-[var(--brand-blue)] opacity-0 transition-opacity group-hover:opacity-100">
                 Open folder <ArrowRight size={12} aria-hidden />
               </span>
             </div>

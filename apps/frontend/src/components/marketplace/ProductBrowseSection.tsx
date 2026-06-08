@@ -227,7 +227,7 @@ export function ProductBrowseSection({
                 value={draftQ}
                 onChange={(e) => setDraftQ(e.target.value)}
                 placeholder="Country, design name, tag…"
-                className="min-h-11 w-full rounded-xl border border-stone-200 bg-stone-50/50 py-2 pl-10 pr-4 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-[#2563eb] focus:bg-white focus:ring-2 focus:ring-[#2563eb]/20"
+                className="min-h-11 w-full rounded-xl border border-stone-200 bg-stone-50/50 py-2 pl-10 pr-4 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-[var(--brand-blue)] focus:bg-white focus:ring-2 focus:ring-[#2563eb]/20"
                 aria-label="Search catalog"
               />
             </div>
@@ -242,7 +242,7 @@ export function ProductBrowseSection({
                 <select
                   value={categorySlug}
                   onChange={(e) => setCategorySlug(e.target.value)}
-                  className="min-h-11 w-full min-w-[8.5rem] rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                  className="min-h-11 w-full min-w-[8.5rem] rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
                 >
                   <option value="">All</option>
                   {categories
@@ -260,7 +260,7 @@ export function ProductBrowseSection({
               <select
                 value={tier}
                 onChange={(e) => setTier(e.target.value as TierFilter)}
-                className="min-h-11 w-full min-w-[7.5rem] rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                className="min-h-11 w-full min-w-[7.5rem] rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
               >
                 <option value="all">All tiers</option>
                 <option value="free">Free only</option>
@@ -272,7 +272,7 @@ export function ProductBrowseSection({
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortKey)}
-                className="min-h-11 w-full min-w-[7.5rem] rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+                className="min-h-11 w-full min-w-[7.5rem] rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
               >
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
@@ -284,7 +284,7 @@ export function ProductBrowseSection({
 
           <button
             type="submit"
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-[#2563eb] px-6 text-sm font-bold text-white transition hover:bg-[#1d4ed8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb] lg:mb-0"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-6 text-sm font-bold text-white transition hover:bg-[var(--brand-blue-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-blue)] lg:mb-0"
           >
             Search
           </button>
@@ -303,7 +303,7 @@ export function ProductBrowseSection({
           )}
         </p>
         {fixedCategorySlug ? (
-          <Link href="/gallery" className="font-semibold text-[#2563eb] hover:underline">
+          <Link href="/gallery" className="font-semibold text-[var(--brand-blue)] hover:underline">
             View gallery
           </Link>
         ) : null}

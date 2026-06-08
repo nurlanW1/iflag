@@ -28,7 +28,7 @@ export default function SubscriptionPage() {
     <div className="space-y-4">
       <div className="rounded-2xl border border-stone-200 bg-white p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#2563eb]/10 text-[#2563eb]">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--brand-blue)]/10 text-[var(--brand-blue)]">
             <CreditCard size={22} />
           </div>
           <div>
@@ -54,7 +54,7 @@ export default function SubscriptionPage() {
           {!sub?.isActive && (
             <Link
               href="/pricing"
-              className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1d4ed8]"
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-blue)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-blue-hover)]"
             >
               Upgrade plan
             </Link>

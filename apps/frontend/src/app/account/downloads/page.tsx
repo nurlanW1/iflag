@@ -45,7 +45,7 @@ export default function DownloadsPage() {
         </p>
         <Link
           href="/gallery"
-          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1d4ed8]"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[var(--brand-blue)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-blue-hover)]"
         >
           Browse gallery
         </Link>
@@ -60,7 +60,7 @@ export default function DownloadsPage() {
           key={order.id}
           className="flex items-center gap-4 rounded-xl border border-stone-200 bg-white px-4 py-3"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2563eb]/10 text-[#2563eb]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--brand-blue)]/10 text-[var(--brand-blue)]">
             <Download size={18} />
           </div>
           <div className="min-w-0 flex-1">

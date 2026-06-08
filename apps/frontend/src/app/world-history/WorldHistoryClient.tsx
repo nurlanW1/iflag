@@ -33,7 +33,7 @@ export function WorldHistoryClient() {
       <div className="sticky top-0 z-10 border-b border-stone-800 bg-stone-950/95 px-4 py-4 backdrop-blur">
         <div className="mx-auto max-w-3xl">
           <div className="flex items-center justify-between gap-4">
-            <span className="text-2xl font-bold text-[#2563eb]">{selectedYear}</span>
+            <span className="text-2xl font-bold text-[var(--brand-blue)]">{selectedYear}</span>
             <input
               type="range"
               min={0}
@@ -51,7 +51,7 @@ export function WorldHistoryClient() {
                 onClick={() => setSelectedYear(String(y) as YearKey)}
                 className={`rounded px-2 py-0.5 transition ${
                   String(y) === selectedYear
-                    ? 'bg-[#2563eb] text-white'
+                    ? 'bg-[var(--brand-blue)] text-white'
                     : 'hover:text-stone-300'
                 }`}
               >
@@ -76,7 +76,7 @@ export function WorldHistoryClient() {
                 )}
                 className={`rounded-xl border p-3 text-left transition ${
                   selectedCountry === country.id
-                    ? 'border-[#2563eb] bg-[#2563eb]/10'
+                    ? 'border-[var(--brand-blue)] bg-[var(--brand-blue)]/10'
                     : 'border-stone-700 bg-stone-900 hover:border-stone-500'
                 }`}
               >
@@ -97,7 +97,7 @@ export function WorldHistoryClient() {
           <div className="mt-8 rounded-2xl border border-stone-700 bg-stone-900 p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--brand-blue)]">
                   {selectedYear}
                 </p>
                 <h2 className="mt-1 text-2xl font-bold">{selectedYearData.name}</h2>
@@ -119,7 +119,7 @@ export function WorldHistoryClient() {
                     onClick={() => setSelectedYear(String(y) as YearKey)}
                     className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
                       String(y) === selectedYear
-                        ? 'border-[#2563eb] bg-[#2563eb] text-white'
+                        ? 'border-[var(--brand-blue)] bg-[var(--brand-blue)] text-white'
                         : 'border-stone-600 text-stone-400 hover:border-stone-400'
                     }`}
                   >
@@ -131,7 +131,7 @@ export function WorldHistoryClient() {
 
             <Link
               href={`/gallery/${selectedYearData.flag}`}
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1d4ed8]"
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--brand-blue)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--brand-blue-hover)]"
             >
               View &amp; Download Flag →
             </Link>

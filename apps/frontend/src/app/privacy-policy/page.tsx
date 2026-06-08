@@ -15,7 +15,7 @@ export default function PrivacyPolicyPage() {
     <LegalDocumentShell
       title="Privacy Policy"
       subtitle={`${P.TRADING_NAME} · ${P.JURISDICTION}`}
-      icon={<Shield className="h-8 w-8 text-[#2563eb]" aria-hidden />}
+      icon={<Shield className="h-8 w-8 text-[var(--brand-blue)]" aria-hidden />}
     >
       <PrivacyPolicyBody />
     </LegalDocumentShell>
