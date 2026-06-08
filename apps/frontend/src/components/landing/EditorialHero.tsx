@@ -95,6 +95,33 @@ export function EditorialHero({
                   Search
                 </button>
               </div>
+
+              {/* Popular searches */}
+              <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
+                  Popular:
+                </span>
+                {(
+                  [
+                    { label: 'United States', slug: 'united-states' },
+                    { label: 'United Kingdom', slug: 'united-kingdom' },
+                    { label: 'Germany', slug: 'germany' },
+                    { label: 'Japan', slug: 'japan' },
+                    { label: 'France', slug: 'france' },
+                    { label: 'Canada', slug: 'canada' },
+                    { label: 'Brazil', slug: 'brazil' },
+                    { label: 'Australia', slug: 'australia' },
+                  ] as const
+                ).map(({ label, slug }) => (
+                  <Link
+                    key={slug}
+                    href={`/gallery/${slug}`}
+                    className="rounded-full border border-neutral-300/70 bg-white/80 px-2.5 py-0.5 text-[11px] font-medium text-neutral-700 shadow-sm backdrop-blur-sm transition-colors hover:border-[var(--brand-blue)]/40 hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue)]"
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
             </form>
           </div>
         </div>

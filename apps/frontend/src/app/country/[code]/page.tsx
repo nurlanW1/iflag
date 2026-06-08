@@ -62,18 +62,17 @@ export default async function CountryHubPage({ params }: Props) {
         ]}
       />
       <main className="marketplace-shell py-12 sm:py-14">
-        <h1 className="text-3xl font-black text-black mb-4">Flag assets — {cc}</h1>
-        <p className="text-black/70 mb-8 leading-relaxed">
-          Catalog items linked to country code {cc}. Data depends on your connected backend or seed
-          catalog.
+        <h1 className="mb-3 text-3xl font-semibold tracking-tight text-[#2a2a2a]">Flag assets — {cc}</h1>
+        <p className="mb-8 leading-relaxed text-neutral-500">
+          Catalog items linked to country code {cc}.
         </p>
-        <h2 className="text-xl font-bold text-black mb-4">Products</h2>
+        <h2 className="mb-4 text-base font-semibold text-[#2a2a2a]">Products</h2>
         <ul className="space-y-3 list-none pl-0">
           {products.map((p) => (
             <li key={p.id}>
               <Link
                 href={`/flags/${p.slug}`}
-                className="text-[#2563eb] font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 rounded"
+                className="font-medium text-[var(--brand-blue)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/30 rounded"
               >
                 {p.title}
               </Link>
@@ -81,18 +80,18 @@ export default async function CountryHubPage({ params }: Props) {
           ))}
         </ul>
         {products.length === 0 ? (
-          <p className="text-black/60">No products with this country code in the current catalog.</p>
+          <p className="text-neutral-400">No products with this country code in the current catalog.</p>
         ) : null}
-        <section className="mt-12 border-t border-gray-200 pt-8" aria-labelledby="country-explore-heading">
-          <h2 id="country-explore-heading" className="text-lg font-bold text-black mb-3">
+        <section className="mt-12 border-t border-neutral-200 pt-8" aria-labelledby="country-explore-heading">
+          <h2 id="country-explore-heading" className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-neutral-400">
             Explore more
           </h2>
-          <ul className="flex flex-wrap gap-3 text-sm list-none pl-0">
+          <ul className="flex flex-wrap gap-2 list-none pl-0">
             {PRIMARY_HUB_LINKS.map((l) => (
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="text-[#2563eb] hover:underline focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 rounded"
+                  className="inline-flex items-center rounded-full border border-neutral-200 bg-white px-3.5 py-1.5 text-xs font-medium text-neutral-700 shadow-sm transition-colors hover:border-[var(--brand-blue)]/40 hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/30"
                 >
                   {l.label}
                 </Link>
