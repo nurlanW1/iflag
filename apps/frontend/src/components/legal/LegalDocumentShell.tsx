@@ -21,12 +21,12 @@ export function LegalDocumentShell({ title, subtitle, icon, children, lastUpdate
             <div className="flex flex-wrap items-center gap-3">
               {icon}
               <div>
-                <h1 className="text-3xl font-black tracking-tight text-gray-900 sm:text-4xl">{title}</h1>
-                {subtitle ? <p className="mt-1 text-sm text-gray-600">{subtitle}</p> : null}
+                <h1 className="text-2xl font-semibold tracking-tight text-[#2a2a2a] sm:text-3xl">{title}</h1>
+                {subtitle ? <p className="mt-1 text-sm font-medium text-neutral-500">{subtitle}</p> : null}
               </div>
             </div>
             {lastUpdated ? (
-              <p className="mt-4 text-sm text-gray-500">
+              <p className="mt-3 text-xs text-neutral-400">
                 Last updated: <time dateTime={lastUpdated}>{lastUpdated}</time>
               </p>
             ) : null}
