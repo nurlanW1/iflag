@@ -52,7 +52,7 @@ function AnnualNotifyForm() {
         onChange={(e) => setEmail(e.target.value)}
         placeholder="your@email.com"
         required
-        className="min-w-0 flex-1 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
+        className="min-w-0 flex-1 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-[#2a2a2a] placeholder:text-neutral-400 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/15"
       />
       <button
         type="submit"

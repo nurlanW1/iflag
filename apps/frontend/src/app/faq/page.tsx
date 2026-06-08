@@ -133,18 +133,18 @@ function AccordionItem({
   onToggle: () => void;
 }) {
   return (
-    <div className="border-b border-slate-200/80 last:border-0">
+    <div className="border-b border-neutral-200/80 last:border-0">
       <button
         type="button"
         onClick={onToggle}
         className="flex w-full items-center justify-between gap-4 py-4 text-left transition-colors hover:text-[var(--brand-blue)]"
         aria-expanded={open}
       >
-        <span className="text-[0.95rem] font-semibold leading-snug text-slate-900">{q}</span>
+        <span className="text-[0.95rem] font-semibold leading-snug text-[#2a2a2a]">{q}</span>
         <ChevronDown
           size={18}
           aria-hidden
-          className={`shrink-0 text-slate-400 transition-transform duration-300 ${
+          className={`shrink-0 text-neutral-400 transition-transform duration-300 ${
             open ? 'rotate-180 text-[var(--brand-blue)]' : ''
           }`}
         />
@@ -154,7 +154,7 @@ function AccordionItem({
           open ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <p className="pb-5 pr-8 text-sm leading-relaxed text-slate-600">{a}</p>
+        <p className="pb-5 pr-8 text-sm leading-relaxed text-neutral-500">{a}</p>
       </div>
     </div>
   );
@@ -170,13 +170,13 @@ export default function FaqPage() {
     <main className="marketplace-shell min-h-screen bg-[#fafaf9] pb-20 pt-10 sm:pb-24 sm:pt-12">
       {/* Page header */}
       <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-12">
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
           Help center
         </p>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+        <h1 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-4xl">
           Frequently asked questions
         </h1>
-        <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
+        <p className="mt-3 text-sm leading-relaxed text-neutral-500 sm:text-base">
           Can&apos;t find your answer?{' '}
           <Link
             href="/contact"
@@ -194,11 +194,11 @@ export default function FaqPage() {
           <section key={section.id} aria-labelledby={`faq-${section.id}`}>
             <h2
               id={`faq-${section.id}`}
-              className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400"
+              className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-400"
             >
               {section.title}
             </h2>
-            <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white px-5 shadow-sm">
+            <div className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white px-5 shadow-sm">
               {section.items.map((item, idx) => {
                 const key = `${section.id}-${idx}`;
                 return (
@@ -217,9 +217,9 @@ export default function FaqPage() {
       </div>
 
       {/* Bottom CTA */}
-      <div className="mx-auto mt-14 max-w-2xl rounded-2xl border border-slate-200/80 bg-white px-6 py-8 text-center shadow-sm sm:mt-16">
-        <p className="text-base font-semibold text-slate-900">Still have questions?</p>
-        <p className="mt-1.5 text-sm text-slate-500">
+      <div className="mx-auto mt-14 max-w-2xl rounded-2xl border border-neutral-200/80 bg-white px-6 py-8 text-center shadow-sm sm:mt-16">
+        <p className="text-base font-semibold text-[#2a2a2a]">Still have questions?</p>
+        <p className="mt-1.5 text-sm text-neutral-500">
           Our team responds within one business day.
         </p>
         <Link

@@ -1,359 +1,1008 @@
 {
   "afghanistan": [
-    { "name": "Black",  "hex": "#000000", "rgb": "0, 0, 0",       "pantone": "Black C" },
-    { "name": "Red",    "hex": "#D32011", "rgb": "211, 32, 17",    "pantone": "PMS 485 C" },
-    { "name": "Green",  "hex": "#009A44", "rgb": "0, 154, 68",     "pantone": "PMS 355 C" }
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Red",      "hex": "#D32011", "rgb": "211, 32, 17",     "pantone": "PMS 485 C" },
+    { "name": "Green",    "hex": "#009A44", "rgb": "0, 154, 68",      "pantone": "PMS 355 C" }
   ],
   "albania": [
-    { "name": "Red",    "hex": "#E41E20", "rgb": "228, 30, 32",    "pantone": "PMS 485 C" },
-    { "name": "Black",  "hex": "#000000", "rgb": "0, 0, 0",        "pantone": "Black C" }
+    { "name": "Red",      "hex": "#E41E20", "rgb": "228, 30, 32",     "pantone": "PMS 485 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" }
   ],
   "algeria": [
-    { "name": "Green",  "hex": "#006233", "rgb": "0, 98, 51",      "pantone": "PMS 349 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Red",    "hex": "#D21034", "rgb": "210, 16, 52",    "pantone": "PMS 186 C" }
+    { "name": "Green",    "hex": "#006233", "rgb": "0, 98, 51",       "pantone": "PMS 349 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#D21034", "rgb": "210, 16, 52",     "pantone": "PMS 186 C" }
+  ],
+  "andorra": [
+    { "name": "Blue",     "hex": "#003DA5", "rgb": "0, 61, 165",      "pantone": "PMS 286 C" },
+    { "name": "Yellow",   "hex": "#FFCD00", "rgb": "255, 205, 0",     "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#D01C1F", "rgb": "208, 28, 31",     "pantone": "PMS 485 C" }
+  ],
+  "angola": [
+    { "name": "Red",      "hex": "#CC0000", "rgb": "204, 0, 0",       "pantone": "PMS 485 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Yellow",   "hex": "#FFCD00", "rgb": "255, 205, 0",     "pantone": "PMS 116 C" }
+  ],
+  "antigua-and-barbuda": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Yellow",   "hex": "#FFC726", "rgb": "255, 199, 38",    "pantone": "PMS 116 C" },
+    { "name": "Blue",     "hex": "#007FFF", "rgb": "0, 127, 255",     "pantone": "PMS 285 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "argentina": [
-    { "name": "Sky Blue","hex": "#74ACDF","rgb": "116, 172, 223",  "pantone": "PMS 278 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Gold",   "hex": "#F6B40E", "rgb": "246, 180, 14",   "pantone": "PMS 1235 C" }
+    { "name": "Sky Blue", "hex": "#74ACDF", "rgb": "116, 172, 223",   "pantone": "PMS 278 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Gold",     "hex": "#F6B40E", "rgb": "246, 180, 14",    "pantone": "PMS 1235 C" }
   ],
   "armenia": [
-    { "name": "Red",    "hex": "#D90012", "rgb": "217, 0, 18",     "pantone": "PMS 485 C" },
-    { "name": "Blue",   "hex": "#0033A0", "rgb": "0, 51, 160",     "pantone": "PMS 286 C" },
-    { "name": "Orange", "hex": "#F2A800", "rgb": "242, 168, 0",    "pantone": "PMS 130 C" }
+    { "name": "Red",      "hex": "#D90012", "rgb": "217, 0, 18",      "pantone": "PMS 485 C" },
+    { "name": "Blue",     "hex": "#0033A0", "rgb": "0, 51, 160",      "pantone": "PMS 286 C" },
+    { "name": "Orange",   "hex": "#F2A800", "rgb": "242, 168, 0",     "pantone": "PMS 130 C" }
   ],
   "australia": [
-    { "name": "Blue",   "hex": "#00008B", "rgb": "0, 0, 139",      "pantone": "PMS 280 C" },
-    { "name": "Red",    "hex": "#FF0000", "rgb": "255, 0, 0",       "pantone": "PMS 185 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+    { "name": "Blue",     "hex": "#00008B", "rgb": "0, 0, 139",       "pantone": "PMS 280 C" },
+    { "name": "Red",      "hex": "#FF0000", "rgb": "255, 0, 0",        "pantone": "PMS 185 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",    "pantone": "White" }
   ],
   "austria": [
-    { "name": "Red",    "hex": "#ED2939", "rgb": "237, 41, 57",    "pantone": "PMS 032 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Red",      "hex": "#ED2939", "rgb": "237, 41, 57",     "pantone": "PMS 032 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "azerbaijan": [
-    { "name": "Sky Blue","hex": "#0092BC","rgb": "0, 146, 188",    "pantone": "PMS 313 C" },
-    { "name": "Red",    "hex": "#EF3340", "rgb": "239, 51, 64",    "pantone": "PMS 186 C" },
-    { "name": "Green",  "hex": "#509E2F", "rgb": "80, 158, 47",    "pantone": "PMS 362 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Sky Blue", "hex": "#0092BC", "rgb": "0, 146, 188",     "pantone": "PMS 313 C" },
+    { "name": "Red",      "hex": "#EF3340", "rgb": "239, 51, 64",     "pantone": "PMS 186 C" },
+    { "name": "Green",    "hex": "#509E2F", "rgb": "80, 158, 47",     "pantone": "PMS 362 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "bahamas": [
+    { "name": "Aquamarine","hex": "#00778B","rgb": "0, 119, 139",     "pantone": "PMS 7474 C" },
+    { "name": "Gold",     "hex": "#FFC726", "rgb": "255, 199, 38",    "pantone": "PMS 116 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" }
+  ],
+  "bahrain": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "bangladesh": [
-    { "name": "Green",  "hex": "#006A4E", "rgb": "0, 106, 78",     "pantone": "PMS 343 C" },
-    { "name": "Red",    "hex": "#F42A41", "rgb": "244, 42, 65",    "pantone": "PMS 032 C" }
+    { "name": "Green",    "hex": "#006A4E", "rgb": "0, 106, 78",      "pantone": "PMS 343 C" },
+    { "name": "Red",      "hex": "#F42A41", "rgb": "244, 42, 65",     "pantone": "PMS 032 C" }
+  ],
+  "barbados": [
+    { "name": "Blue",     "hex": "#00267F", "rgb": "0, 38, 127",      "pantone": "PMS 286 C" },
+    { "name": "Yellow",   "hex": "#FFD100", "rgb": "255, 209, 0",     "pantone": "PMS 116 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" }
   ],
   "belarus": [
-    { "name": "Red",    "hex": "#CF101A", "rgb": "207, 16, 26",    "pantone": "PMS 485 C" },
-    { "name": "Green",  "hex": "#009739", "rgb": "0, 151, 57",     "pantone": "PMS 354 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Red",      "hex": "#CF101A", "rgb": "207, 16, 26",     "pantone": "PMS 485 C" },
+    { "name": "Green",    "hex": "#009739", "rgb": "0, 151, 57",      "pantone": "PMS 354 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "belgium": [
-    { "name": "Black",  "hex": "#000000", "rgb": "0, 0, 0",        "pantone": "Black C" },
-    { "name": "Yellow", "hex": "#FAE042", "rgb": "250, 224, 66",   "pantone": "PMS 116 C" },
-    { "name": "Red",    "hex": "#EF3340", "rgb": "239, 51, 64",    "pantone": "PMS 032 C" }
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Yellow",   "hex": "#FAE042", "rgb": "250, 224, 66",    "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#EF3340", "rgb": "239, 51, 64",     "pantone": "PMS 032 C" }
+  ],
+  "belize": [
+    { "name": "Blue",     "hex": "#003F87", "rgb": "0, 63, 135",      "pantone": "PMS 287 C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#007800", "rgb": "0, 120, 0",       "pantone": "PMS 355 C" }
+  ],
+  "benin": [
+    { "name": "Green",    "hex": "#008751", "rgb": "0, 135, 81",      "pantone": "PMS 355 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#E8112D", "rgb": "232, 17, 45",     "pantone": "PMS 485 C" }
+  ],
+  "bhutan": [
+    { "name": "Orange",   "hex": "#FF8000", "rgb": "255, 128, 0",     "pantone": "PMS 1505 C" },
+    { "name": "Crimson",  "hex": "#CF2E3B", "rgb": "207, 46, 59",     "pantone": "PMS 185 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "bolivia": [
-    { "name": "Red",    "hex": "#D52B1E", "rgb": "213, 43, 30",    "pantone": "PMS 485 C" },
-    { "name": "Yellow", "hex": "#F4E400", "rgb": "244, 228, 0",    "pantone": "PMS 102 C" },
-    { "name": "Green",  "hex": "#007A3D", "rgb": "0, 122, 61",     "pantone": "PMS 349 C" }
+    { "name": "Red",      "hex": "#D52B1E", "rgb": "213, 43, 30",     "pantone": "PMS 485 C" },
+    { "name": "Yellow",   "hex": "#F4E400", "rgb": "244, 228, 0",     "pantone": "PMS 102 C" },
+    { "name": "Green",    "hex": "#007A3D", "rgb": "0, 122, 61",      "pantone": "PMS 349 C" }
+  ],
+  "bosnia-and-herzegovina": [
+    { "name": "Blue",     "hex": "#002395", "rgb": "0, 35, 149",      "pantone": "PMS 286 C" },
+    { "name": "Yellow",   "hex": "#FFCD00", "rgb": "255, 205, 0",     "pantone": "PMS 116 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "botswana": [
+    { "name": "Blue",     "hex": "#75AADB", "rgb": "117, 170, 219",   "pantone": "PMS 278 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" }
   ],
   "brazil": [
-    { "name": "Green",  "hex": "#009C3B", "rgb": "0, 156, 59",     "pantone": "PMS 354 C" },
-    { "name": "Yellow", "hex": "#FFDF00", "rgb": "255, 223, 0",    "pantone": "PMS 116 C" },
-    { "name": "Blue",   "hex": "#002776", "rgb": "0, 39, 118",     "pantone": "PMS 281 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Green",    "hex": "#009C3B", "rgb": "0, 156, 59",      "pantone": "PMS 354 C" },
+    { "name": "Yellow",   "hex": "#FFDF00", "rgb": "255, 223, 0",     "pantone": "PMS 116 C" },
+    { "name": "Blue",     "hex": "#002776", "rgb": "0, 39, 118",      "pantone": "PMS 281 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "brunei": [
+    { "name": "Yellow",   "hex": "#F7E017", "rgb": "247, 224, 23",    "pantone": "PMS 116 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Red",      "hex": "#CF0921", "rgb": "207, 9, 33",      "pantone": "PMS 485 C" }
   ],
   "bulgaria": [
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Green",  "hex": "#00966E", "rgb": "0, 150, 110",    "pantone": "PMS 340 C" },
-    { "name": "Red",    "hex": "#D62612", "rgb": "214, 38, 18",    "pantone": "PMS 485 C" }
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#00966E", "rgb": "0, 150, 110",     "pantone": "PMS 340 C" },
+    { "name": "Red",      "hex": "#D62612", "rgb": "214, 38, 18",     "pantone": "PMS 485 C" }
+  ],
+  "burkina-faso": [
+    { "name": "Red",      "hex": "#EF2B2D", "rgb": "239, 43, 45",     "pantone": "PMS 032 C" },
+    { "name": "Green",    "hex": "#009A00", "rgb": "0, 154, 0",       "pantone": "PMS 355 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" }
+  ],
+  "burundi": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#1EB53A", "rgb": "30, 181, 58",     "pantone": "PMS 354 C" }
+  ],
+  "cabo-verde": [
+    { "name": "Blue",     "hex": "#003893", "rgb": "0, 56, 147",      "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#CF2027", "rgb": "207, 32, 39",     "pantone": "PMS 485 C" },
+    { "name": "Yellow",   "hex": "#F7D116", "rgb": "247, 209, 22",    "pantone": "PMS 116 C" }
+  ],
+  "cambodia": [
+    { "name": "Blue",     "hex": "#032EA1", "rgb": "3, 46, 161",      "pantone": "PMS 286 C" },
+    { "name": "Red",      "hex": "#E00025", "rgb": "224, 0, 37",      "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "cameroon": [
+    { "name": "Green",    "hex": "#007A5E", "rgb": "0, 122, 94",      "pantone": "PMS 349 C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" }
   ],
   "canada": [
-    { "name": "Red",    "hex": "#FF0000", "rgb": "255, 0, 0",       "pantone": "PMS 032 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+    { "name": "Red",      "hex": "#FF0000", "rgb": "255, 0, 0",        "pantone": "PMS 032 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",    "pantone": "White" }
+  ],
+  "central-african-republic": [
+    { "name": "Blue",     "hex": "#003082", "rgb": "0, 48, 130",      "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#289728", "rgb": "40, 151, 40",     "pantone": "PMS 355 C" },
+    { "name": "Yellow",   "hex": "#FFCB00", "rgb": "255, 203, 0",     "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#BC0026", "rgb": "188, 0, 38",      "pantone": "PMS 485 C" }
+  ],
+  "chad": [
+    { "name": "Blue",     "hex": "#002664", "rgb": "0, 38, 100",      "pantone": "PMS 281 C" },
+    { "name": "Yellow",   "hex": "#FECB00", "rgb": "254, 203, 0",     "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#C60C30", "rgb": "198, 12, 48",     "pantone": "PMS 186 C" }
   ],
   "chile": [
-    { "name": "Red",    "hex": "#D52B1E", "rgb": "213, 43, 30",    "pantone": "PMS 485 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Blue",   "hex": "#0033A0", "rgb": "0, 51, 160",     "pantone": "PMS 286 C" }
+    { "name": "Red",      "hex": "#D52B1E", "rgb": "213, 43, 30",     "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#0033A0", "rgb": "0, 51, 160",      "pantone": "PMS 286 C" }
   ],
   "china": [
-    { "name": "Red",    "hex": "#DE2910", "rgb": "222, 41, 16",    "pantone": "PMS 485 C" },
-    { "name": "Yellow", "hex": "#FFDE00", "rgb": "255, 222, 0",    "pantone": "PMS 116 C" }
+    { "name": "Red",      "hex": "#DE2910", "rgb": "222, 41, 16",     "pantone": "PMS 485 C" },
+    { "name": "Yellow",   "hex": "#FFDE00", "rgb": "255, 222, 0",     "pantone": "PMS 116 C" }
   ],
   "colombia": [
-    { "name": "Yellow", "hex": "#FCD116", "rgb": "252, 209, 22",   "pantone": "PMS 116 C" },
-    { "name": "Blue",   "hex": "#003087", "rgb": "0, 48, 135",     "pantone": "PMS 287 C" },
-    { "name": "Red",    "hex": "#CE1126", "rgb": "206, 17, 38",    "pantone": "PMS 186 C" }
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "Blue",     "hex": "#003893", "rgb": "0, 56, 147",      "pantone": "PMS 286 C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" }
+  ],
+  "comoros": [
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Blue",     "hex": "#003DA5", "rgb": "0, 61, 165",      "pantone": "PMS 286 C" },
+    { "name": "Green",    "hex": "#009A44", "rgb": "0, 154, 68",      "pantone": "PMS 355 C" }
+  ],
+  "congo": [
+    { "name": "Green",    "hex": "#009A44", "rgb": "0, 154, 68",      "pantone": "PMS 355 C" },
+    { "name": "Yellow",   "hex": "#FBDE4A", "rgb": "251, 222, 74",    "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#DC241F", "rgb": "220, 36, 31",     "pantone": "PMS 485 C" }
+  ],
+  "costa-rica": [
+    { "name": "Blue",     "hex": "#002B7F", "rgb": "0, 43, 127",      "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#CF142B", "rgb": "207, 20, 43",     "pantone": "PMS 186 C" }
   ],
   "croatia": [
-    { "name": "Red",    "hex": "#FF0000", "rgb": "255, 0, 0",       "pantone": "PMS 032 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
-    { "name": "Blue",   "hex": "#0000FF", "rgb": "0, 0, 255",       "pantone": "PMS 286 C" }
+    { "name": "Red",      "hex": "#FF0000", "rgb": "255, 0, 0",        "pantone": "PMS 032 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#0000FF", "rgb": "0, 0, 255",        "pantone": "PMS 286 C" }
+  ],
+  "cuba": [
+    { "name": "Blue",     "hex": "#002A8F", "rgb": "0, 42, 143",      "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#CF142B", "rgb": "207, 20, 43",     "pantone": "PMS 186 C" }
+  ],
+  "cyprus": [
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Copper",   "hex": "#D05C17", "rgb": "208, 92, 23",     "pantone": "PMS 7526 C" },
+    { "name": "Green",    "hex": "#4D7B3A", "rgb": "77, 123, 58",     "pantone": "PMS 364 C" }
+  ],
+  "czech-republic": [
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#D7141A", "rgb": "215, 20, 26",     "pantone": "PMS 485 C" },
+    { "name": "Blue",     "hex": "#11457E", "rgb": "17, 69, 126",     "pantone": "PMS 286 C" }
   ],
   "czechia": [
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Red",    "hex": "#D7141A", "rgb": "215, 20, 26",    "pantone": "PMS 485 C" },
-    { "name": "Blue",   "hex": "#11457E", "rgb": "17, 69, 126",    "pantone": "PMS 287 C" }
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#D7141A", "rgb": "215, 20, 26",     "pantone": "PMS 485 C" },
+    { "name": "Blue",     "hex": "#11457E", "rgb": "17, 69, 126",     "pantone": "PMS 286 C" }
+  ],
+  "democratic-republic-of-the-congo": [
+    { "name": "Sky Blue", "hex": "#007FFF", "rgb": "0, 127, 255",     "pantone": "PMS 285 C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Yellow",   "hex": "#F7D116", "rgb": "247, 209, 22",    "pantone": "PMS 116 C" }
   ],
   "denmark": [
-    { "name": "Red",    "hex": "#C60C30", "rgb": "198, 12, 48",    "pantone": "PMS 186 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Red",      "hex": "#C60C30", "rgb": "198, 12, 48",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "djibouti": [
+    { "name": "Light Blue","hex": "#6AB2E7","rgb": "106, 178, 231",   "pantone": "PMS 278 C" },
+    { "name": "Green",    "hex": "#12AD2B", "rgb": "18, 173, 43",     "pantone": "PMS 355 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#D7141A", "rgb": "215, 20, 26",     "pantone": "PMS 485 C" }
+  ],
+  "dominica": [
+    { "name": "Green",    "hex": "#009E60", "rgb": "0, 158, 96",      "pantone": "PMS 355 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Purple",   "hex": "#4F2D7F", "rgb": "79, 45, 127",     "pantone": "PMS 268 C" }
+  ],
+  "dominican-republic": [
+    { "name": "Blue",     "hex": "#002D62", "rgb": "0, 45, 98",       "pantone": "PMS 287 C" },
+    { "name": "Red",      "hex": "#CF142B", "rgb": "207, 20, 43",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "ecuador": [
+    { "name": "Yellow",   "hex": "#FFD100", "rgb": "255, 209, 0",     "pantone": "PMS 116 C" },
+    { "name": "Blue",     "hex": "#003DA5", "rgb": "0, 61, 165",      "pantone": "PMS 286 C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" }
   ],
   "egypt": [
-    { "name": "Red",    "hex": "#CE1126", "rgb": "206, 17, 38",    "pantone": "PMS 186 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Black",  "hex": "#000000", "rgb": "0, 0, 0",        "pantone": "Black C" },
-    { "name": "Gold",   "hex": "#C09300", "rgb": "192, 147, 0",    "pantone": "PMS 873 C" }
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Gold",     "hex": "#C09300", "rgb": "192, 147, 0",     "pantone": "PMS 873 C" }
+  ],
+  "el-salvador": [
+    { "name": "Blue",     "hex": "#0F47AF", "rgb": "15, 71, 175",     "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "equatorial-guinea": [
+    { "name": "Green",    "hex": "#3E9A00", "rgb": "62, 154, 0",      "pantone": "PMS 362 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#E32118", "rgb": "227, 33, 24",     "pantone": "PMS 485 C" },
+    { "name": "Blue",     "hex": "#003DA5", "rgb": "0, 61, 165",      "pantone": "PMS 286 C" }
+  ],
+  "eritrea": [
+    { "name": "Green",    "hex": "#12995F", "rgb": "18, 153, 95",     "pantone": "PMS 355 C" },
+    { "name": "Blue",     "hex": "#4189DD", "rgb": "65, 137, 221",    "pantone": "PMS 285 C" },
+    { "name": "Red",      "hex": "#E32118", "rgb": "227, 33, 24",     "pantone": "PMS 485 C" },
+    { "name": "Yellow",   "hex": "#FFD700", "rgb": "255, 215, 0",     "pantone": "PMS 116 C" }
+  ],
+  "estonia": [
+    { "name": "Blue",     "hex": "#0072CE", "rgb": "0, 114, 206",     "pantone": "PMS 285 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "eswatini": [
+    { "name": "Blue",     "hex": "#3E5EB9", "rgb": "62, 94, 185",     "pantone": "PMS 286 C" },
+    { "name": "Yellow",   "hex": "#FFD100", "rgb": "255, 209, 0",     "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#BE0027", "rgb": "190, 0, 39",      "pantone": "PMS 485 C" }
   ],
   "ethiopia": [
-    { "name": "Green",  "hex": "#078930", "rgb": "7, 137, 48",     "pantone": "PMS 355 C" },
-    { "name": "Yellow", "hex": "#FCDD09", "rgb": "252, 221, 9",    "pantone": "PMS 116 C" },
-    { "name": "Red",    "hex": "#DA121A", "rgb": "218, 18, 26",    "pantone": "PMS 485 C" },
-    { "name": "Blue",   "hex": "#0F47AF", "rgb": "15, 71, 175",    "pantone": "PMS 286 C" }
+    { "name": "Green",    "hex": "#078930", "rgb": "7, 137, 48",      "pantone": "PMS 355 C" },
+    { "name": "Yellow",   "hex": "#FCDD09", "rgb": "252, 221, 9",     "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#DA121A", "rgb": "218, 18, 26",     "pantone": "PMS 485 C" },
+    { "name": "Blue",     "hex": "#0F47AF", "rgb": "15, 71, 175",     "pantone": "PMS 286 C" }
+  ],
+  "fiji": [
+    { "name": "Blue",     "hex": "#009FCA", "rgb": "0, 159, 202",     "pantone": "PMS 313 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#CF142B", "rgb": "207, 20, 43",     "pantone": "PMS 186 C" }
   ],
   "finland": [
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Blue",   "hex": "#003580", "rgb": "0, 53, 128",     "pantone": "PMS 294 C" }
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#003580", "rgb": "0, 53, 128",      "pantone": "PMS 294 C" }
   ],
   "france": [
-    { "name": "Blue",   "hex": "#002395", "rgb": "0, 35, 149",     "pantone": "PMS 286 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Red",    "hex": "#ED2939", "rgb": "237, 41, 57",    "pantone": "PMS 032 C" }
+    { "name": "Blue",     "hex": "#002395", "rgb": "0, 35, 149",      "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#ED2939", "rgb": "237, 41, 57",     "pantone": "PMS 032 C" }
+  ],
+  "gabon": [
+    { "name": "Green",    "hex": "#009E60", "rgb": "0, 158, 96",      "pantone": "PMS 355 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "Blue",     "hex": "#003DA5", "rgb": "0, 61, 165",      "pantone": "PMS 286 C" }
+  ],
+  "gambia": [
+    { "name": "Red",      "hex": "#CF2027", "rgb": "207, 32, 39",     "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#0C1C8C", "rgb": "12, 28, 140",     "pantone": "PMS 286 C" },
+    { "name": "Green",    "hex": "#3A7728", "rgb": "58, 119, 40",     "pantone": "PMS 362 C" }
   ],
   "georgia": [
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Red",    "hex": "#FF0000", "rgb": "255, 0, 0",       "pantone": "PMS 032 C" }
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#FF0000", "rgb": "255, 0, 0",        "pantone": "PMS 032 C" }
   ],
   "germany": [
-    { "name": "Black",  "hex": "#000000", "rgb": "0, 0, 0",        "pantone": "Black C" },
-    { "name": "Red",    "hex": "#DD0000", "rgb": "221, 0, 0",      "pantone": "PMS 485 C" },
-    { "name": "Gold",   "hex": "#FFCE00", "rgb": "255, 206, 0",    "pantone": "PMS 116 C" }
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Red",      "hex": "#DD0000", "rgb": "221, 0, 0",       "pantone": "PMS 485 C" },
+    { "name": "Gold",     "hex": "#FFCE00", "rgb": "255, 206, 0",     "pantone": "PMS 116 C" }
   ],
   "ghana": [
-    { "name": "Red",    "hex": "#006B3F", "rgb": "0, 107, 63",     "pantone": "PMS 356 C" },
-    { "name": "Gold",   "hex": "#FCD116", "rgb": "252, 209, 22",   "pantone": "PMS 116 C" },
-    { "name": "Green",  "hex": "#CE1126", "rgb": "206, 17, 38",    "pantone": "PMS 186 C" },
-    { "name": "Black",  "hex": "#000000", "rgb": "0, 0, 0",        "pantone": "Black C" }
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Gold",     "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "Green",    "hex": "#006B3F", "rgb": "0, 107, 63",      "pantone": "PMS 356 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" }
   ],
   "greece": [
-    { "name": "Blue",   "hex": "#0D5EAF", "rgb": "13, 94, 175",    "pantone": "PMS 286 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Blue",     "hex": "#0D5EAF", "rgb": "13, 94, 175",     "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "grenada": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "Green",    "hex": "#009E60", "rgb": "0, 158, 96",      "pantone": "PMS 355 C" }
+  ],
+  "guatemala": [
+    { "name": "Blue",     "hex": "#4997D0", "rgb": "73, 151, 208",    "pantone": "PMS 285 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "guinea": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "Green",    "hex": "#009035", "rgb": "0, 144, 53",      "pantone": "PMS 355 C" }
+  ],
+  "guinea-bissau": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "Green",    "hex": "#009035", "rgb": "0, 144, 53",      "pantone": "PMS 355 C" }
+  ],
+  "guyana": [
+    { "name": "Green",    "hex": "#009E60", "rgb": "0, 158, 96",      "pantone": "PMS 355 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" }
+  ],
+  "haiti": [
+    { "name": "Blue",     "hex": "#00209F", "rgb": "0, 32, 159",      "pantone": "PMS 286 C" },
+    { "name": "Red",      "hex": "#D21034", "rgb": "210, 16, 52",     "pantone": "PMS 186 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "honduras": [
+    { "name": "Blue",     "hex": "#0073CF", "rgb": "0, 115, 207",     "pantone": "PMS 285 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "hungary": [
-    { "name": "Red",    "hex": "#CE2939", "rgb": "206, 41, 57",    "pantone": "PMS 032 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Green",  "hex": "#477050", "rgb": "71, 112, 80",    "pantone": "PMS 364 C" }
+    { "name": "Red",      "hex": "#CE2939", "rgb": "206, 41, 57",     "pantone": "PMS 032 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#477050", "rgb": "71, 112, 80",     "pantone": "PMS 364 C" }
+  ],
+  "iceland": [
+    { "name": "Blue",     "hex": "#003897", "rgb": "0, 56, 151",      "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#DC1C2E", "rgb": "220, 28, 46",     "pantone": "PMS 485 C" }
   ],
   "india": [
-    { "name": "Saffron","hex": "#FF9933", "rgb": "255, 153, 51",   "pantone": "PMS 1495 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Green",  "hex": "#138808", "rgb": "19, 136, 8",     "pantone": "PMS 362 C" },
-    { "name": "Navy",   "hex": "#000080", "rgb": "0, 0, 128",      "pantone": "PMS 282 C" }
+    { "name": "Saffron",  "hex": "#FF9933", "rgb": "255, 153, 51",    "pantone": "PMS 1495 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#138808", "rgb": "19, 136, 8",      "pantone": "PMS 362 C" },
+    { "name": "Navy",     "hex": "#000080", "rgb": "0, 0, 128",       "pantone": "PMS 282 C" }
   ],
   "indonesia": [
-    { "name": "Red",    "hex": "#CE1126", "rgb": "206, 17, 38",    "pantone": "PMS 186 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "iran": [
-    { "name": "Green",  "hex": "#239F40", "rgb": "35, 159, 64",    "pantone": "PMS 354 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Red",    "hex": "#DA0000", "rgb": "218, 0, 0",      "pantone": "PMS 485 C" }
+    { "name": "Green",    "hex": "#239F40", "rgb": "35, 159, 64",     "pantone": "PMS 354 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#DA0000", "rgb": "218, 0, 0",       "pantone": "PMS 485 C" }
   ],
   "iraq": [
-    { "name": "Red",    "hex": "#CE1126", "rgb": "206, 17, 38",    "pantone": "PMS 186 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Black",  "hex": "#000000", "rgb": "0, 0, 0",        "pantone": "Black C" },
-    { "name": "Green",  "hex": "#007A3D", "rgb": "0, 122, 61",     "pantone": "PMS 349 C" }
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Green",    "hex": "#007A3D", "rgb": "0, 122, 61",      "pantone": "PMS 349 C" }
   ],
   "ireland": [
-    { "name": "Green",  "hex": "#169B62", "rgb": "22, 155, 98",    "pantone": "PMS 347 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Orange", "hex": "#FF883E", "rgb": "255, 136, 62",   "pantone": "PMS 1505 C" }
+    { "name": "Green",    "hex": "#169B62", "rgb": "22, 155, 98",     "pantone": "PMS 347 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Orange",   "hex": "#FF883E", "rgb": "255, 136, 62",    "pantone": "PMS 1505 C" }
   ],
   "israel": [
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Blue",   "hex": "#0038B8", "rgb": "0, 56, 184",     "pantone": "PMS 286 C" }
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#0038B8", "rgb": "0, 56, 184",      "pantone": "PMS 286 C" }
   ],
   "italy": [
-    { "name": "Green",  "hex": "#009246", "rgb": "0, 146, 70",     "pantone": "PMS 354 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Red",    "hex": "#CE2B37", "rgb": "206, 43, 55",    "pantone": "PMS 032 C" }
+    { "name": "Green",    "hex": "#009246", "rgb": "0, 146, 70",      "pantone": "PMS 354 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#CE2B37", "rgb": "206, 43, 55",     "pantone": "PMS 032 C" }
+  ],
+  "ivory-coast": [
+    { "name": "Orange",   "hex": "#F77F00", "rgb": "247, 127, 0",     "pantone": "PMS 1505 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#009A44", "rgb": "0, 154, 68",      "pantone": "PMS 355 C" }
+  ],
+  "jamaica": [
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Gold",     "hex": "#FFB300", "rgb": "255, 179, 0",     "pantone": "PMS 116 C" },
+    { "name": "Green",    "hex": "#007749", "rgb": "0, 119, 73",      "pantone": "PMS 349 C" }
   ],
   "japan": [
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Red",    "hex": "#BC002D", "rgb": "188, 0, 45",     "pantone": "PMS 186 C" }
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#BC002D", "rgb": "188, 0, 45",      "pantone": "PMS 186 C" }
   ],
   "jordan": [
-    { "name": "Black",  "hex": "#007A3D", "rgb": "0, 122, 61",     "pantone": "PMS 349 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Green",  "hex": "#CE1126", "rgb": "206, 17, 38",    "pantone": "PMS 186 C" },
-    { "name": "Red",    "hex": "#000000", "rgb": "0, 0, 0",        "pantone": "Black C" }
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#007A3D", "rgb": "0, 122, 61",      "pantone": "PMS 349 C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" }
   ],
   "kazakhstan": [
-    { "name": "Sky Blue","hex": "#00AFCA","rgb": "0, 175, 202",    "pantone": "PMS 313 C" },
-    { "name": "Yellow", "hex": "#FEC50C", "rgb": "254, 197, 12",   "pantone": "PMS 116 C" }
+    { "name": "Sky Blue", "hex": "#00AFCA", "rgb": "0, 175, 202",     "pantone": "PMS 313 C" },
+    { "name": "Yellow",   "hex": "#FEC50C", "rgb": "254, 197, 12",    "pantone": "PMS 116 C" }
   ],
   "kenya": [
-    { "name": "Black",  "hex": "#006600", "rgb": "0, 102, 0",      "pantone": "PMS 356 C" },
-    { "name": "Red",    "hex": "#BB0000", "rgb": "187, 0, 0",      "pantone": "PMS 485 C" },
-    { "name": "Green",  "hex": "#000000", "rgb": "0, 0, 0",        "pantone": "Black C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Red",      "hex": "#BB0000", "rgb": "187, 0, 0",       "pantone": "PMS 485 C" },
+    { "name": "Green",    "hex": "#006600", "rgb": "0, 102, 0",       "pantone": "PMS 356 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "kiribati": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#003DA5", "rgb": "0, 61, 165",      "pantone": "PMS 286 C" },
+    { "name": "Yellow",   "hex": "#FFD700", "rgb": "255, 215, 0",     "pantone": "PMS 116 C" }
+  ],
+  "kuwait": [
+    { "name": "Green",    "hex": "#007A3D", "rgb": "0, 122, 61",      "pantone": "PMS 349 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" }
   ],
   "kyrgyzstan": [
-    { "name": "Red",    "hex": "#E8112D", "rgb": "232, 17, 45",    "pantone": "PMS 485 C" },
-    { "name": "Yellow", "hex": "#FFCB00", "rgb": "255, 203, 0",    "pantone": "PMS 116 C" }
+    { "name": "Red",      "hex": "#E8112D", "rgb": "232, 17, 45",     "pantone": "PMS 485 C" },
+    { "name": "Yellow",   "hex": "#FFCB00", "rgb": "255, 203, 0",     "pantone": "PMS 116 C" }
+  ],
+  "laos": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Blue",     "hex": "#002868", "rgb": "0, 40, 104",      "pantone": "PMS 281 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "latvia": [
+    { "name": "Carmine",  "hex": "#9E3039", "rgb": "158, 48, 57",     "pantone": "PMS 187 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "lebanon": [
+    { "name": "Red",      "hex": "#FF0000", "rgb": "255, 0, 0",        "pantone": "PMS 032 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#00A651", "rgb": "0, 166, 81",      "pantone": "PMS 355 C" }
+  ],
+  "lesotho": [
+    { "name": "Blue",     "hex": "#003893", "rgb": "0, 56, 147",      "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#009A44", "rgb": "0, 154, 68",      "pantone": "PMS 355 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" }
+  ],
+  "liberia": [
+    { "name": "Red",      "hex": "#BF0A30", "rgb": "191, 10, 48",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#002868", "rgb": "0, 40, 104",      "pantone": "PMS 281 C" }
+  ],
+  "libya": [
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Red",      "hex": "#EF3340", "rgb": "239, 51, 64",     "pantone": "PMS 032 C" },
+    { "name": "Green",    "hex": "#009E60", "rgb": "0, 158, 96",      "pantone": "PMS 355 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "liechtenstein": [
+    { "name": "Blue",     "hex": "#002B7F", "rgb": "0, 43, 127",      "pantone": "PMS 286 C" },
+    { "name": "Red",      "hex": "#CF0921", "rgb": "207, 9, 33",      "pantone": "PMS 485 C" },
+    { "name": "Gold",     "hex": "#FFD700", "rgb": "255, 215, 0",     "pantone": "PMS 116 C" }
+  ],
+  "lithuania": [
+    { "name": "Yellow",   "hex": "#FDB913", "rgb": "253, 185, 19",    "pantone": "PMS 116 C" },
+    { "name": "Green",    "hex": "#006A44", "rgb": "0, 106, 68",      "pantone": "PMS 349 C" },
+    { "name": "Red",      "hex": "#BE0027", "rgb": "190, 0, 39",      "pantone": "PMS 186 C" }
+  ],
+  "luxembourg": [
+    { "name": "Red",      "hex": "#EF3340", "rgb": "239, 51, 64",     "pantone": "PMS 032 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Light Blue","hex": "#00A3E0","rgb": "0, 163, 224",     "pantone": "PMS 299 C" }
+  ],
+  "madagascar": [
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#FC3D32", "rgb": "252, 61, 50",     "pantone": "PMS 485 C" },
+    { "name": "Green",    "hex": "#007E3A", "rgb": "0, 126, 58",      "pantone": "PMS 355 C" }
+  ],
+  "malawi": [
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Green",    "hex": "#339E35", "rgb": "51, 158, 53",     "pantone": "PMS 362 C" }
   ],
   "malaysia": [
-    { "name": "Red",    "hex": "#CC0001", "rgb": "204, 0, 1",      "pantone": "PMS 485 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Blue",   "hex": "#006DB6", "rgb": "0, 109, 182",    "pantone": "PMS 285 C" },
-    { "name": "Yellow", "hex": "#FFCD00", "rgb": "255, 205, 0",    "pantone": "PMS 116 C" }
+    { "name": "Red",      "hex": "#CC0001", "rgb": "204, 0, 1",       "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#006DB6", "rgb": "0, 109, 182",     "pantone": "PMS 285 C" },
+    { "name": "Yellow",   "hex": "#FFCD00", "rgb": "255, 205, 0",     "pantone": "PMS 116 C" }
+  ],
+  "maldives": [
+    { "name": "Red",      "hex": "#D21034", "rgb": "210, 16, 52",     "pantone": "PMS 186 C" },
+    { "name": "Green",    "hex": "#007E3A", "rgb": "0, 126, 58",      "pantone": "PMS 355 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "mali": [
+    { "name": "Green",    "hex": "#009A44", "rgb": "0, 154, 68",      "pantone": "PMS 355 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" }
+  ],
+  "malta": [
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#CF142B", "rgb": "207, 20, 43",     "pantone": "PMS 186 C" }
+  ],
+  "marshall-islands": [
+    { "name": "Blue",     "hex": "#003DA5", "rgb": "0, 61, 165",      "pantone": "PMS 286 C" },
+    { "name": "Orange",   "hex": "#FF6000", "rgb": "255, 96, 0",      "pantone": "PMS 1505 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "mauritania": [
+    { "name": "Green",    "hex": "#006233", "rgb": "0, 98, 51",       "pantone": "PMS 349 C" },
+    { "name": "Yellow",   "hex": "#FFD700", "rgb": "255, 215, 0",     "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#D01C1F", "rgb": "208, 28, 31",     "pantone": "PMS 485 C" }
+  ],
+  "mauritius": [
+    { "name": "Red",      "hex": "#EA2839", "rgb": "234, 40, 57",     "pantone": "PMS 032 C" },
+    { "name": "Blue",     "hex": "#1A206D", "rgb": "26, 32, 109",     "pantone": "PMS 286 C" },
+    { "name": "Yellow",   "hex": "#FFD500", "rgb": "255, 213, 0",     "pantone": "PMS 116 C" },
+    { "name": "Green",    "hex": "#00A551", "rgb": "0, 165, 81",      "pantone": "PMS 355 C" }
   ],
   "mexico": [
-    { "name": "Green",  "hex": "#006847", "rgb": "0, 104, 71",     "pantone": "PMS 347 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Red",    "hex": "#CE1126", "rgb": "206, 17, 38",    "pantone": "PMS 186 C" }
+    { "name": "Green",    "hex": "#006847", "rgb": "0, 104, 71",      "pantone": "PMS 347 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" }
+  ],
+  "micronesia": [
+    { "name": "Blue",     "hex": "#75B2DD", "rgb": "117, 178, 221",   "pantone": "PMS 278 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "moldova": [
+    { "name": "Blue",     "hex": "#003DA5", "rgb": "0, 61, 165",      "pantone": "PMS 286 C" },
+    { "name": "Yellow",   "hex": "#FFDE00", "rgb": "255, 222, 0",     "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#CC0001", "rgb": "204, 0, 1",       "pantone": "PMS 485 C" }
+  ],
+  "monaco": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "mongolia": [
+    { "name": "Red",      "hex": "#C4272F", "rgb": "196, 39, 47",     "pantone": "PMS 485 C" },
+    { "name": "Blue",     "hex": "#015197", "rgb": "1, 81, 151",      "pantone": "PMS 286 C" },
+    { "name": "Yellow",   "hex": "#F9CF02", "rgb": "249, 207, 2",     "pantone": "PMS 116 C" }
+  ],
+  "montenegro": [
+    { "name": "Red",      "hex": "#D4312E", "rgb": "212, 49, 46",     "pantone": "PMS 485 C" },
+    { "name": "Gold",     "hex": "#D4AF37", "rgb": "212, 175, 55",    "pantone": "PMS 871 C" }
   ],
   "morocco": [
-    { "name": "Red",    "hex": "#C1272D", "rgb": "193, 39, 45",    "pantone": "PMS 485 C" },
-    { "name": "Green",  "hex": "#006233", "rgb": "0, 98, 51",      "pantone": "PMS 349 C" }
+    { "name": "Red",      "hex": "#C1272D", "rgb": "193, 39, 45",     "pantone": "PMS 485 C" },
+    { "name": "Green",    "hex": "#006233", "rgb": "0, 98, 51",       "pantone": "PMS 349 C" }
+  ],
+  "mozambique": [
+    { "name": "Green",    "hex": "#009A44", "rgb": "0, 154, 68",      "pantone": "PMS 355 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" }
+  ],
+  "myanmar": [
+    { "name": "Yellow",   "hex": "#FECB00", "rgb": "254, 203, 0",     "pantone": "PMS 116 C" },
+    { "name": "Green",    "hex": "#34B233", "rgb": "52, 178, 51",     "pantone": "PMS 362 C" },
+    { "name": "Red",      "hex": "#EA2839", "rgb": "234, 40, 57",     "pantone": "PMS 032 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "namibia": [
+    { "name": "Blue",     "hex": "#003580", "rgb": "0, 53, 128",      "pantone": "PMS 294 C" },
+    { "name": "Red",      "hex": "#CF142B", "rgb": "207, 20, 43",     "pantone": "PMS 186 C" },
+    { "name": "Green",    "hex": "#009543", "rgb": "0, 149, 67",      "pantone": "PMS 355 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Gold",     "hex": "#FFB915", "rgb": "255, 185, 21",    "pantone": "PMS 1235 C" }
+  ],
+  "nauru": [
+    { "name": "Blue",     "hex": "#002B7F", "rgb": "0, 43, 127",      "pantone": "PMS 286 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "nepal": [
+    { "name": "Red",      "hex": "#DC143C", "rgb": "220, 20, 60",     "pantone": "PMS 186 C" },
+    { "name": "Blue",     "hex": "#003893", "rgb": "0, 56, 147",      "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "netherlands": [
-    { "name": "Red",    "hex": "#AE1C28", "rgb": "174, 28, 40",    "pantone": "PMS 186 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Blue",   "hex": "#21468B", "rgb": "33, 70, 139",    "pantone": "PMS 286 C" }
+    { "name": "Red",      "hex": "#AE1C28", "rgb": "174, 28, 40",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#21468B", "rgb": "33, 70, 139",     "pantone": "PMS 286 C" }
   ],
   "new-zealand": [
-    { "name": "Blue",   "hex": "#00247D", "rgb": "0, 36, 125",     "pantone": "PMS 280 C" },
-    { "name": "Red",    "hex": "#CC142B", "rgb": "204, 20, 43",    "pantone": "PMS 186 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Blue",     "hex": "#00247D", "rgb": "0, 36, 125",      "pantone": "PMS 280 C" },
+    { "name": "Red",      "hex": "#CC142B", "rgb": "204, 20, 43",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "nicaragua": [
+    { "name": "Blue",     "hex": "#3E6EB4", "rgb": "62, 110, 180",    "pantone": "PMS 285 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "niger": [
+    { "name": "Orange",   "hex": "#E05206", "rgb": "224, 82, 6",      "pantone": "PMS 1505 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#009A17", "rgb": "0, 154, 23",      "pantone": "PMS 355 C" }
   ],
   "nigeria": [
-    { "name": "Green",  "hex": "#008751", "rgb": "0, 135, 81",     "pantone": "PMS 355 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Green",    "hex": "#008751", "rgb": "0, 135, 81",      "pantone": "PMS 355 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "north-korea": [
+    { "name": "Blue",     "hex": "#024FA2", "rgb": "2, 79, 162",      "pantone": "PMS 286 C" },
+    { "name": "Red",      "hex": "#CF0921", "rgb": "207, 9, 33",      "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "north-macedonia": [
+    { "name": "Red",      "hex": "#CE2028", "rgb": "206, 32, 40",     "pantone": "PMS 485 C" },
+    { "name": "Yellow",   "hex": "#FFE600", "rgb": "255, 230, 0",     "pantone": "PMS 116 C" }
   ],
   "norway": [
-    { "name": "Red",    "hex": "#EF2B2D", "rgb": "239, 43, 45",    "pantone": "PMS 032 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Blue",   "hex": "#002868", "rgb": "0, 40, 104",     "pantone": "PMS 281 C" }
+    { "name": "Red",      "hex": "#EF2B2D", "rgb": "239, 43, 45",     "pantone": "PMS 032 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#002868", "rgb": "0, 40, 104",      "pantone": "PMS 281 C" }
+  ],
+  "oman": [
+    { "name": "Red",      "hex": "#DB161B", "rgb": "219, 22, 27",     "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#008C51", "rgb": "0, 140, 81",      "pantone": "PMS 355 C" }
   ],
   "pakistan": [
-    { "name": "Green",  "hex": "#01411C", "rgb": "1, 65, 28",      "pantone": "PMS 350 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Green",    "hex": "#01411C", "rgb": "1, 65, 28",       "pantone": "PMS 350 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "palau": [
+    { "name": "Blue",     "hex": "#4AAAFF", "rgb": "74, 170, 255",    "pantone": "PMS 285 C" },
+    { "name": "Yellow",   "hex": "#FFDE00", "rgb": "255, 222, 0",     "pantone": "PMS 116 C" }
+  ],
+  "panama": [
+    { "name": "Red",      "hex": "#CC0001", "rgb": "204, 0, 1",       "pantone": "PMS 485 C" },
+    { "name": "Blue",     "hex": "#1C3F94", "rgb": "28, 63, 148",     "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "papua-new-guinea": [
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" }
+  ],
+  "paraguay": [
+    { "name": "Red",      "hex": "#D52B1E", "rgb": "213, 43, 30",     "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#0038A8", "rgb": "0, 56, 168",      "pantone": "PMS 286 C" }
   ],
   "peru": [
-    { "name": "Red",    "hex": "#D91023", "rgb": "217, 16, 35",    "pantone": "PMS 485 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Red",      "hex": "#D91023", "rgb": "217, 16, 35",     "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "philippines": [
-    { "name": "Blue",   "hex": "#0038A8", "rgb": "0, 56, 168",     "pantone": "PMS 286 C" },
-    { "name": "Red",    "hex": "#CE1126", "rgb": "206, 17, 38",    "pantone": "PMS 186 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Yellow", "hex": "#FCD116", "rgb": "252, 209, 22",   "pantone": "PMS 116 C" }
+    { "name": "Blue",     "hex": "#0038A8", "rgb": "0, 56, 168",      "pantone": "PMS 286 C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" }
   ],
   "poland": [
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Red",    "hex": "#DC143C", "rgb": "220, 20, 60",    "pantone": "PMS 186 C" }
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#DC143C", "rgb": "220, 20, 60",     "pantone": "PMS 186 C" }
   ],
   "portugal": [
-    { "name": "Green",  "hex": "#006600", "rgb": "0, 102, 0",      "pantone": "PMS 356 C" },
-    { "name": "Red",    "hex": "#FF0000", "rgb": "255, 0, 0",       "pantone": "PMS 032 C" },
-    { "name": "Yellow", "hex": "#FFD700", "rgb": "255, 215, 0",    "pantone": "PMS 116 C" }
+    { "name": "Green",    "hex": "#006600", "rgb": "0, 102, 0",       "pantone": "PMS 356 C" },
+    { "name": "Red",      "hex": "#FF0000", "rgb": "255, 0, 0",        "pantone": "PMS 032 C" },
+    { "name": "Yellow",   "hex": "#FFD700", "rgb": "255, 215, 0",     "pantone": "PMS 116 C" }
+  ],
+  "qatar": [
+    { "name": "Maroon",   "hex": "#8D1B3D", "rgb": "141, 27, 61",     "pantone": "PMS 201 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "romania": [
-    { "name": "Blue",   "hex": "#002B7F", "rgb": "0, 43, 127",     "pantone": "PMS 286 C" },
-    { "name": "Yellow", "hex": "#FCD116", "rgb": "252, 209, 22",   "pantone": "PMS 116 C" },
-    { "name": "Red",    "hex": "#CE1126", "rgb": "206, 17, 38",    "pantone": "PMS 186 C" }
+    { "name": "Blue",     "hex": "#002B7F", "rgb": "0, 43, 127",      "pantone": "PMS 286 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" }
   ],
   "russia": [
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Blue",   "hex": "#0039A6", "rgb": "0, 57, 166",     "pantone": "PMS 286 C" },
-    { "name": "Red",    "hex": "#D52B1E", "rgb": "213, 43, 30",    "pantone": "PMS 485 C" }
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#0039A6", "rgb": "0, 57, 166",      "pantone": "PMS 286 C" },
+    { "name": "Red",      "hex": "#D52B1E", "rgb": "213, 43, 30",     "pantone": "PMS 485 C" }
+  ],
+  "rwanda": [
+    { "name": "Blue",     "hex": "#82C8E5", "rgb": "130, 200, 229",   "pantone": "PMS 278 C" },
+    { "name": "Yellow",   "hex": "#FAD201", "rgb": "250, 210, 1",     "pantone": "PMS 116 C" },
+    { "name": "Green",    "hex": "#20603D", "rgb": "32, 96, 61",      "pantone": "PMS 349 C" }
+  ],
+  "saint-kitts-and-nevis": [
+    { "name": "Green",    "hex": "#009E60", "rgb": "0, 158, 96",      "pantone": "PMS 355 C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "saint-lucia": [
+    { "name": "Blue",     "hex": "#00338D", "rgb": "0, 51, 141",      "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Black",    "hex": "#231F20", "rgb": "35, 31, 32",      "pantone": "Black C" },
+    { "name": "Gold",     "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" }
+  ],
+  "saint-vincent-and-the-grenadines": [
+    { "name": "Green",    "hex": "#009E60", "rgb": "0, 158, 96",      "pantone": "PMS 355 C" },
+    { "name": "Gold",     "hex": "#FFD100", "rgb": "255, 209, 0",     "pantone": "PMS 116 C" },
+    { "name": "Blue",     "hex": "#002868", "rgb": "0, 40, 104",      "pantone": "PMS 281 C" }
+  ],
+  "samoa": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Blue",     "hex": "#002868", "rgb": "0, 40, 104",      "pantone": "PMS 281 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "san-marino": [
+    { "name": "Sky Blue", "hex": "#5EB6E4", "rgb": "94, 182, 228",    "pantone": "PMS 278 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "sao-tome-and-principe": [
+    { "name": "Green",    "hex": "#12AD2B", "rgb": "18, 173, 43",     "pantone": "PMS 355 C" },
+    { "name": "Yellow",   "hex": "#FFCE00", "rgb": "255, 206, 0",     "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#D21034", "rgb": "210, 16, 52",     "pantone": "PMS 186 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" }
   ],
   "saudi-arabia": [
-    { "name": "Green",  "hex": "#006C35", "rgb": "0, 108, 53",     "pantone": "PMS 349 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Green",    "hex": "#006C35", "rgb": "0, 108, 53",      "pantone": "PMS 349 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "senegal": [
+    { "name": "Green",    "hex": "#00853F", "rgb": "0, 133, 63",      "pantone": "PMS 355 C" },
+    { "name": "Yellow",   "hex": "#FDEF42", "rgb": "253, 239, 66",    "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#E31B23", "rgb": "227, 27, 35",     "pantone": "PMS 485 C" }
+  ],
+  "serbia": [
+    { "name": "Red",      "hex": "#C6363C", "rgb": "198, 54, 60",     "pantone": "PMS 032 C" },
+    { "name": "Blue",     "hex": "#0C4076", "rgb": "12, 64, 118",     "pantone": "PMS 287 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "seychelles": [
+    { "name": "Blue",     "hex": "#003F87", "rgb": "0, 63, 135",      "pantone": "PMS 287 C" },
+    { "name": "Yellow",   "hex": "#FFD700", "rgb": "255, 215, 0",     "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#D62828", "rgb": "214, 40, 40",     "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#007A5E", "rgb": "0, 122, 94",      "pantone": "PMS 349 C" }
+  ],
+  "sierra-leone": [
+    { "name": "Green",    "hex": "#1EB53A", "rgb": "30, 181, 58",     "pantone": "PMS 354 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#0072C6", "rgb": "0, 114, 198",     "pantone": "PMS 285 C" }
+  ],
+  "singapore": [
+    { "name": "Red",      "hex": "#EF3340", "rgb": "239, 51, 64",     "pantone": "PMS 032 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "slovakia": [
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#003DA5", "rgb": "0, 61, 165",      "pantone": "PMS 286 C" },
+    { "name": "Red",      "hex": "#EE1C25", "rgb": "238, 28, 37",     "pantone": "PMS 485 C" }
+  ],
+  "slovenia": [
+    { "name": "Blue",     "hex": "#003DA5", "rgb": "0, 61, 165",      "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" }
+  ],
+  "solomon-islands": [
+    { "name": "Blue",     "hex": "#0120CE", "rgb": "1, 32, 206",      "pantone": "PMS 286 C" },
+    { "name": "Green",    "hex": "#007140", "rgb": "0, 113, 64",      "pantone": "PMS 349 C" },
+    { "name": "Yellow",   "hex": "#FFCD00", "rgb": "255, 205, 0",     "pantone": "PMS 116 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "somalia": [
+    { "name": "Light Blue","hex": "#4189DD","rgb": "65, 137, 221",    "pantone": "PMS 285 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "south-africa": [
-    { "name": "Black",  "hex": "#007A4D", "rgb": "0, 122, 77",     "pantone": "PMS 355 C" },
-    { "name": "Gold",   "hex": "#FFB612", "rgb": "255, 182, 18",   "pantone": "PMS 1235 C" },
-    { "name": "Green",  "hex": "#DE3831", "rgb": "222, 56, 49",    "pantone": "PMS 485 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Blue",   "hex": "#002395", "rgb": "0, 35, 149",     "pantone": "PMS 286 C" },
-    { "name": "Red",    "hex": "#000000", "rgb": "0, 0, 0",        "pantone": "Black C" }
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Gold",     "hex": "#FFB612", "rgb": "255, 182, 18",    "pantone": "PMS 1235 C" },
+    { "name": "Green",    "hex": "#007A4D", "rgb": "0, 122, 77",      "pantone": "PMS 355 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#002395", "rgb": "0, 35, 149",      "pantone": "PMS 286 C" },
+    { "name": "Red",      "hex": "#DE3831", "rgb": "222, 56, 49",     "pantone": "PMS 485 C" }
   ],
   "south-korea": [
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Red",    "hex": "#CD2E3A", "rgb": "205, 46, 58",    "pantone": "PMS 186 C" },
-    { "name": "Blue",   "hex": "#003478", "rgb": "0, 52, 120",     "pantone": "PMS 287 C" },
-    { "name": "Black",  "hex": "#000000", "rgb": "0, 0, 0",        "pantone": "Black C" }
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#CD2E3A", "rgb": "205, 46, 58",     "pantone": "PMS 186 C" },
+    { "name": "Blue",     "hex": "#003478", "rgb": "0, 52, 120",      "pantone": "PMS 287 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" }
+  ],
+  "south-sudan": [
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Red",      "hex": "#DD1701", "rgb": "221, 23, 1",      "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#078930", "rgb": "7, 137, 48",      "pantone": "PMS 355 C" },
+    { "name": "Blue",     "hex": "#0F47AF", "rgb": "15, 71, 175",     "pantone": "PMS 286 C" },
+    { "name": "Yellow",   "hex": "#FCDD09", "rgb": "252, 221, 9",     "pantone": "PMS 116 C" }
   ],
   "spain": [
-    { "name": "Red",    "hex": "#AA151B", "rgb": "170, 21, 27",    "pantone": "PMS 485 C" },
-    { "name": "Yellow", "hex": "#F1BF00", "rgb": "241, 191, 0",    "pantone": "PMS 116 C" }
+    { "name": "Red",      "hex": "#AA151B", "rgb": "170, 21, 27",     "pantone": "PMS 485 C" },
+    { "name": "Yellow",   "hex": "#F1BF00", "rgb": "241, 191, 0",     "pantone": "PMS 116 C" }
+  ],
+  "sri-lanka": [
+    { "name": "Maroon",   "hex": "#8D153A", "rgb": "141, 21, 58",     "pantone": "PMS 202 C" },
+    { "name": "Gold",     "hex": "#F8C300", "rgb": "248, 195, 0",     "pantone": "PMS 116 C" },
+    { "name": "Orange",   "hex": "#FF7300", "rgb": "255, 115, 0",     "pantone": "PMS 1505 C" },
+    { "name": "Green",    "hex": "#469A00", "rgb": "70, 154, 0",      "pantone": "PMS 362 C" }
+  ],
+  "sudan": [
+    { "name": "Red",      "hex": "#D21034", "rgb": "210, 16, 52",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Green",    "hex": "#007229", "rgb": "0, 114, 41",      "pantone": "PMS 349 C" }
+  ],
+  "suriname": [
+    { "name": "Green",    "hex": "#377E3F", "rgb": "55, 126, 63",     "pantone": "PMS 362 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#B40A2D", "rgb": "180, 10, 45",     "pantone": "PMS 186 C" },
+    { "name": "Yellow",   "hex": "#ECC81A", "rgb": "236, 200, 26",    "pantone": "PMS 116 C" }
   ],
   "sweden": [
-    { "name": "Blue",   "hex": "#006AA7", "rgb": "0, 106, 167",    "pantone": "PMS 285 C" },
-    { "name": "Yellow", "hex": "#FECC02", "rgb": "254, 204, 2",    "pantone": "PMS 116 C" }
+    { "name": "Blue",     "hex": "#006AA7", "rgb": "0, 106, 167",     "pantone": "PMS 285 C" },
+    { "name": "Yellow",   "hex": "#FECC02", "rgb": "254, 204, 2",     "pantone": "PMS 116 C" }
   ],
   "switzerland": [
-    { "name": "Red",    "hex": "#FF0000", "rgb": "255, 0, 0",       "pantone": "PMS 485 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+    { "name": "Red",      "hex": "#FF0000", "rgb": "255, 0, 0",        "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",    "pantone": "White" }
+  ],
+  "syria": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Green",    "hex": "#007A3D", "rgb": "0, 122, 61",      "pantone": "PMS 349 C" }
+  ],
+  "taiwan": [
+    { "name": "Red",      "hex": "#FE0000", "rgb": "254, 0, 0",       "pantone": "PMS 485 C" },
+    { "name": "Blue",     "hex": "#000095", "rgb": "0, 0, 149",       "pantone": "PMS 286 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "tajikistan": [
-    { "name": "Red",    "hex": "#CC0000", "rgb": "204, 0, 0",      "pantone": "PMS 485 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Green",  "hex": "#006600", "rgb": "0, 102, 0",      "pantone": "PMS 356 C" },
-    { "name": "Gold",   "hex": "#F8C300", "rgb": "248, 195, 0",    "pantone": "PMS 116 C" }
+    { "name": "Red",      "hex": "#CC0000", "rgb": "204, 0, 0",       "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#006600", "rgb": "0, 102, 0",       "pantone": "PMS 356 C" },
+    { "name": "Gold",     "hex": "#F8C300", "rgb": "248, 195, 0",     "pantone": "PMS 116 C" }
+  ],
+  "tanzania": [
+    { "name": "Green",    "hex": "#1EB53A", "rgb": "30, 181, 58",     "pantone": "PMS 354 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" },
+    { "name": "Blue",     "hex": "#00A3DD", "rgb": "0, 163, 221",     "pantone": "PMS 299 C" }
   ],
   "thailand": [
-    { "name": "Red",    "hex": "#A51931", "rgb": "165, 25, 49",    "pantone": "PMS 193 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Blue",   "hex": "#2D2A4A", "rgb": "45, 42, 74",     "pantone": "PMS 2765 C" }
+    { "name": "Red",      "hex": "#A51931", "rgb": "165, 25, 49",     "pantone": "PMS 193 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#2D2A4A", "rgb": "45, 42, 74",      "pantone": "PMS 2765 C" }
+  ],
+  "timor-leste": [
+    { "name": "Red",      "hex": "#DC241F", "rgb": "220, 36, 31",     "pantone": "PMS 485 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Yellow",   "hex": "#FFC726", "rgb": "255, 199, 38",    "pantone": "PMS 116 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "togo": [
+    { "name": "Green",    "hex": "#006A4E", "rgb": "0, 106, 78",      "pantone": "PMS 349 C" },
+    { "name": "Yellow",   "hex": "#FFCE00", "rgb": "255, 206, 0",     "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#D21034", "rgb": "210, 16, 52",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "tonga": [
+    { "name": "Red",      "hex": "#C10000", "rgb": "193, 0, 0",       "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "trinidad-and-tobago": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "tunisia": [
+    { "name": "Red",      "hex": "#E70013", "rgb": "231, 0, 19",      "pantone": "PMS 032 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "turkey": [
-    { "name": "Red",    "hex": "#E30A17", "rgb": "227, 10, 23",    "pantone": "PMS 485 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Red",      "hex": "#E30A17", "rgb": "227, 10, 23",     "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "turkmenistan": [
-    { "name": "Green",  "hex": "#1A7A39", "rgb": "26, 122, 57",    "pantone": "PMS 355 C" },
-    { "name": "Red",    "hex": "#C8312B", "rgb": "200, 49, 43",    "pantone": "PMS 485 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Green",    "hex": "#1A7A39", "rgb": "26, 122, 57",     "pantone": "PMS 355 C" },
+    { "name": "Red",      "hex": "#C8312B", "rgb": "200, 49, 43",     "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "tuvalu": [
+    { "name": "Blue",     "hex": "#009FCA", "rgb": "0, 159, 202",     "pantone": "PMS 313 C" },
+    { "name": "Yellow",   "hex": "#FFD100", "rgb": "255, 209, 0",     "pantone": "PMS 116 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Red",      "hex": "#CF142B", "rgb": "207, 20, 43",     "pantone": "PMS 186 C" }
+  ],
+  "uganda": [
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Yellow",   "hex": "#FCDC04", "rgb": "252, 220, 4",     "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#D90000", "rgb": "217, 0, 0",       "pantone": "PMS 485 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "ukraine": [
-    { "name": "Blue",   "hex": "#005BBB", "rgb": "0, 91, 187",     "pantone": "PMS 285 C" },
-    { "name": "Yellow", "hex": "#FFD500", "rgb": "255, 213, 0",    "pantone": "PMS 116 C" }
+    { "name": "Blue",     "hex": "#005BBB", "rgb": "0, 91, 187",      "pantone": "PMS 285 C" },
+    { "name": "Yellow",   "hex": "#FFD500", "rgb": "255, 213, 0",     "pantone": "PMS 116 C" }
   ],
   "united-arab-emirates": [
-    { "name": "Green",  "hex": "#00732F", "rgb": "0, 115, 47",     "pantone": "PMS 355 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Black",  "hex": "#000000", "rgb": "0, 0, 0",        "pantone": "Black C" },
-    { "name": "Red",    "hex": "#FF0000", "rgb": "255, 0, 0",       "pantone": "PMS 032 C" }
+    { "name": "Green",    "hex": "#00732F", "rgb": "0, 115, 47",      "pantone": "PMS 355 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Red",      "hex": "#FF0000", "rgb": "255, 0, 0",        "pantone": "PMS 032 C" }
   ],
   "united-kingdom": [
-    { "name": "Blue",   "hex": "#012169", "rgb": "1, 33, 105",     "pantone": "PMS 280 C" },
-    { "name": "Red",    "hex": "#C8102E", "rgb": "200, 16, 46",    "pantone": "PMS 186 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" }
+    { "name": "Blue",     "hex": "#012169", "rgb": "1, 33, 105",      "pantone": "PMS 280 C" },
+    { "name": "Red",      "hex": "#C8102E", "rgb": "200, 16, 46",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
+  ],
+  "united-nations": [
+    { "name": "Blue",     "hex": "#009EDB", "rgb": "0, 158, 219",     "pantone": "PMS 279 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ],
   "united-states": [
-    { "name": "Red",    "hex": "#B22234", "rgb": "178, 34, 52",    "pantone": "PMS 193 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Blue",   "hex": "#3C3B6E", "rgb": "60, 59, 110",    "pantone": "PMS 281 C" }
+    { "name": "Red",      "hex": "#B22234", "rgb": "178, 34, 52",     "pantone": "PMS 193 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#3C3B6E", "rgb": "60, 59, 110",     "pantone": "PMS 281 C" }
+  ],
+  "uruguay": [
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Blue",     "hex": "#003DA5", "rgb": "0, 61, 165",      "pantone": "PMS 286 C" },
+    { "name": "Yellow",   "hex": "#F3C300", "rgb": "243, 195, 0",     "pantone": "PMS 116 C" }
   ],
   "uzbekistan": [
-    { "name": "Sky Blue","hex": "#1EB53A","rgb": "30, 181, 58",    "pantone": "PMS 354 C" },
-    { "name": "White",  "hex": "#FFFFFF", "rgb": "255, 255, 255",  "pantone": "White" },
-    { "name": "Green",  "hex": "#009FCA", "rgb": "0, 159, 202",    "pantone": "PMS 313 C" },
-    { "name": "Red",    "hex": "#CE1126", "rgb": "206, 17, 38",    "pantone": "PMS 186 C" }
+    { "name": "Sky Blue", "hex": "#009FCA", "rgb": "0, 159, 202",     "pantone": "PMS 313 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Green",    "hex": "#1EB53A", "rgb": "30, 181, 58",     "pantone": "PMS 354 C" },
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" }
+  ],
+  "vanuatu": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "Green",    "hex": "#009543", "rgb": "0, 149, 67",      "pantone": "PMS 355 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Yellow",   "hex": "#FCD116", "rgb": "252, 209, 22",    "pantone": "PMS 116 C" }
   ],
   "venezuela": [
-    { "name": "Yellow", "hex": "#CF142B", "rgb": "207, 20, 43",    "pantone": "PMS 186 C" },
-    { "name": "Blue",   "hex": "#00247D", "rgb": "0, 36, 125",     "pantone": "PMS 280 C" },
-    { "name": "Red",    "hex": "#CF8B00", "rgb": "207, 139, 0",    "pantone": "PMS 130 C" }
+    { "name": "Yellow",   "hex": "#CF8B00", "rgb": "207, 139, 0",     "pantone": "PMS 130 C" },
+    { "name": "Blue",     "hex": "#00247D", "rgb": "0, 36, 125",      "pantone": "PMS 280 C" },
+    { "name": "Red",      "hex": "#CF142B", "rgb": "207, 20, 43",     "pantone": "PMS 186 C" }
   ],
   "vietnam": [
-    { "name": "Red",    "hex": "#DA251D", "rgb": "218, 37, 29",    "pantone": "PMS 485 C" },
-    { "name": "Yellow", "hex": "#FFCD00", "rgb": "255, 205, 0",    "pantone": "PMS 116 C" }
+    { "name": "Red",      "hex": "#DA251D", "rgb": "218, 37, 29",     "pantone": "PMS 485 C" },
+    { "name": "Yellow",   "hex": "#FFCD00", "rgb": "255, 205, 0",     "pantone": "PMS 116 C" }
+  ],
+  "yemen": [
+    { "name": "Red",      "hex": "#CE1126", "rgb": "206, 17, 38",     "pantone": "PMS 186 C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" }
+  ],
+  "zambia": [
+    { "name": "Green",    "hex": "#198A00", "rgb": "25, 138, 0",      "pantone": "PMS 362 C" },
+    { "name": "Red",      "hex": "#EF0000", "rgb": "239, 0, 0",       "pantone": "PMS 485 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "Orange",   "hex": "#EF7D00", "rgb": "239, 125, 0",     "pantone": "PMS 1505 C" }
+  ],
+  "zimbabwe": [
+    { "name": "Green",    "hex": "#006400", "rgb": "0, 100, 0",       "pantone": "PMS 349 C" },
+    { "name": "Yellow",   "hex": "#FFD200", "rgb": "255, 210, 0",     "pantone": "PMS 116 C" },
+    { "name": "Red",      "hex": "#DE2010", "rgb": "222, 32, 16",     "pantone": "PMS 485 C" },
+    { "name": "Black",    "hex": "#000000", "rgb": "0, 0, 0",         "pantone": "Black C" },
+    { "name": "White",    "hex": "#FFFFFF", "rgb": "255, 255, 255",   "pantone": "White" }
   ]
 }
