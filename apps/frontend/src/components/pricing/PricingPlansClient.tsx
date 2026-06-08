@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { Check, Crown, Zap, ArrowRight, Star } from 'lucide-react';
 import {
   ONE_TIME_STOCK,
   PRICING_CHECKOUT_DISCLAIMER,
@@ -35,104 +36,227 @@ function AnnualNotifyForm() {
   };
 
   if (done) {
-    return <p className="mt-4 text-sm font-medium text-emerald-700">✓ You&apos;re on the list!</p>;
+    return (
+      <div className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+        <Check size={16} className="shrink-0" />
+        You&apos;re on the list! We&apos;ll notify you at launch.
+      </div>
+    );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
+    <form onSubmit={handleSubmit} className="mt-5 flex gap-2">
       <input
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="your@email.com"
         required
-        className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563eb] focus:outline-none focus:ring-1 focus:ring-[#2563eb]/30"
+        className="min-w-0 flex-1 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
       />
       <button
         type="submit"
         disabled={loading}
-        className="shrink-0 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50"
+        className="shrink-0 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-50"
       >
-        {loading ? '…' : 'Notify Me'}
+        {loading ? '…' : 'Notify me'}
       </button>
     </form>
   );
 }
 
+const FREE_FEATURES = [
+  'Official flat country flags',
+  '250+ countries & territories',
+  'SVG, PNG, WebP formats',
+  'Commercial use included',
+  'No attribution required',
+  'Instant download',
+];
+
+const PAID_FEATURES = [
+  'All formats: AI, EPS, SVG, PNG, WebP',
+  'Sphere, wave, mockup, circle variants',
+  'Commercial use — client work & products',
+  'Lifetime access, download anytime',
+  'One-time payment, no subscription',
+  'Secure checkout via Paddle',
+];
+
+const ANNUAL_FEATURES = [
+  'Unlimited flag downloads',
+  'All current & future designs',
+  'Priority new flag requests',
+  'Team license (up to 5 seats)',
+];
+
 export function PricingPlansClient() {
   const price = formatPricingMoney(ONE_TIME_STOCK.displayCents);
 
   return (
-    <main className="marketplace-shell min-h-screen bg-slate-50 py-10 md:py-14">
-      <div className="mx-auto max-w-2xl">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Simple pricing</h1>
-        <p className="mt-4 text-base leading-relaxed text-slate-600">{PRICING_MARKETING.pricingPageDescription}</p>
+    <main className="min-h-screen bg-[#fafaf9]">
+      {/* Hero */}
+      <div className="border-b border-neutral-200/80 bg-white">
+        <div className="marketplace-shell py-14 text-center md:py-20">
+          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-amber-200/80 bg-amber-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-amber-800">
+            <Crown size={13} strokeWidth={1.75} aria-hidden />
+            Pricing
+          </div>
+          <h1 className="mx-auto mt-4 max-w-2xl text-balance text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-4xl lg:text-[2.5rem]">
+            Simple pricing — free flags always free
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-neutral-600">
+            {PRICING_MARKETING.pricingPageDescription}
+          </p>
+        </div>
+      </div>
 
-        <div className="mt-8 space-y-4">
+      {/* Plans */}
+      <div className="marketplace-shell py-10 md:py-14 lg:py-16">
+        <div className="grid gap-5 lg:grid-cols-3 lg:items-start lg:gap-6">
+
           {/* Free */}
-          <div className="rounded-2xl border border-emerald-200/90 bg-emerald-50/60 p-5 sm:p-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Free</p>
-            <p className="mt-2 text-lg font-semibold text-slate-900">Official flat country flags</p>
-            <ul className="mt-2 space-y-1 text-sm text-slate-600">
-              <li>✓ 250+ countries &amp; territories</li>
-              <li>✓ SVG, PNG, EPS formats</li>
-              <li>✓ No attribution required</li>
-              <li>✓ Commercial use allowed</li>
+          <div className="flex flex-col rounded-2xl border border-emerald-200/80 bg-gradient-to-b from-emerald-50/60 to-white p-6 md:p-8">
+            <div className="mb-1 inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-800">
+              Free forever
+            </div>
+            <div className="mt-5">
+              <p className="text-4xl font-bold tabular-nums text-[#2a2a2a]">$0</p>
+              <p className="mt-1 text-sm text-neutral-500">No credit card required</p>
+            </div>
+            <p className="mt-4 text-sm leading-relaxed text-neutral-600">
+              Official flat country flags for personal and commercial projects. Always free with an account.
+            </p>
+            <ul className="mt-6 flex-1 space-y-3">
+              {FREE_FEATURES.map((f) => (
+                <li key={f} className="flex items-start gap-2.5 text-sm text-neutral-700">
+                  <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                    <Check size={11} strokeWidth={2.5} />
+                  </span>
+                  {f}
+                </li>
+              ))}
             </ul>
             <Link
               href="/gallery"
-              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-700 px-5 text-sm font-semibold text-white hover:bg-emerald-800"
+              className="mt-8 inline-flex min-h-[3rem] items-center justify-center rounded-xl bg-emerald-700 px-6 text-base font-semibold text-white transition-colors hover:bg-emerald-800"
             >
-              Browse gallery
+              Browse free flags
             </Link>
           </div>
 
-          {/* Single $1 */}
-          <div className="rounded-2xl border border-[#2563eb]/30 bg-white p-5 shadow-sm ring-1 ring-[#2563eb]/10 sm:p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#2563eb]">Premium Design</p>
-                <p className="mt-2 text-2xl font-bold text-slate-900">{price} <span className="text-sm font-normal text-slate-500">per design</span></p>
-              </div>
-              <span className="rounded-full bg-[#2563eb]/10 px-2.5 py-0.5 text-xs font-semibold text-[#2563eb]">One-time</span>
+          {/* Premium / One-time */}
+          <div className="relative flex flex-col rounded-2xl border-2 border-[#2563eb]/60 bg-white p-6 shadow-[0_8px_32px_-10px_rgba(37,99,235,0.22)] md:p-8 lg:-mt-2">
+            {/* Popular badge */}
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2563eb] px-4 py-1 text-xs font-bold text-white shadow-sm">
+                <Star size={11} fill="currentColor" strokeWidth={0} aria-hidden />
+                Most popular
+              </span>
             </div>
-            <ul className="mt-3 space-y-1 text-sm text-slate-600">
-              <li>✓ All formats included (AI, EPS, JPG, PNG, SVG)</li>
-              <li>✓ Sphere, wave, mockup, circle variants</li>
-              <li>✓ Commercial use — client work &amp; products</li>
-              <li>✓ Lifetime access, download anytime</li>
+            <div className="mb-1 mt-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-[var(--brand-blue-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--brand-blue)]">
+              <Zap size={11} strokeWidth={2} aria-hidden />
+              One-time purchase
+            </div>
+            <div className="mt-5">
+              <p className="text-4xl font-bold tabular-nums text-[#2a2a2a]">
+                {price}
+                <span className="ml-2 text-base font-normal text-neutral-500">per design</span>
+              </p>
+              <p className="mt-1 text-sm text-neutral-500">Pay once, use forever</p>
+            </div>
+            <p className="mt-4 text-sm leading-relaxed text-neutral-600">
+              Premium flag variants — sphere, wave, mockup, circle. All formats included in a single Paddle checkout.
+            </p>
+            <ul className="mt-6 flex-1 space-y-3">
+              {PAID_FEATURES.map((f) => (
+                <li key={f} className="flex items-start gap-2.5 text-sm text-neutral-700">
+                  <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-[var(--brand-blue-soft)] text-[var(--brand-blue)]">
+                    <Check size={11} strokeWidth={2.5} />
+                  </span>
+                  {f}
+                </li>
+              ))}
             </ul>
-            <p className="mt-4 text-xs text-slate-400">{PRICING_CHECKOUT_DISCLAIMER}</p>
+            <Link
+              href="/gallery"
+              className="mt-8 inline-flex min-h-[3rem] items-center justify-center gap-2 rounded-xl bg-[var(--brand-blue)] px-6 text-base font-semibold text-white transition-colors hover:bg-[var(--brand-blue-hover)]"
+            >
+              Browse premium designs
+              <ArrowRight size={16} aria-hidden />
+            </Link>
+            <p className="mt-3 text-center text-[11px] text-neutral-400">{PRICING_CHECKOUT_DISCLAIMER}</p>
           </div>
 
-          {/* Annual — Coming Soon */}
-          <div className="rounded-2xl border border-slate-200/90 bg-slate-50 p-5 sm:p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Annual Plan</p>
-                <p className="mt-2 text-2xl font-bold text-slate-400">$99 <span className="text-sm font-normal">/year</span></p>
-              </div>
-              <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-500">Coming Soon</span>
+          {/* Annual — Coming soon */}
+          <div className="flex flex-col rounded-2xl border border-neutral-200/90 bg-white p-6 opacity-80 md:p-8">
+            <div className="mb-1 inline-flex w-fit items-center rounded-full bg-neutral-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-neutral-500">
+              Coming soon
             </div>
-            <ul className="mt-3 space-y-1 text-sm text-slate-400">
-              <li>✓ Unlimited downloads</li>
-              <li>✓ All current &amp; future flags</li>
-              <li>✓ Priority new flag requests</li>
+            <div className="mt-5">
+              <p className="text-4xl font-bold tabular-nums text-neutral-300">
+                $99
+                <span className="ml-2 text-base font-normal text-neutral-400">/year</span>
+              </p>
+              <p className="mt-1 text-sm text-neutral-400">Annual subscription</p>
+            </div>
+            <p className="mt-4 text-sm leading-relaxed text-neutral-500">
+              Unlimited downloads for teams and high-volume users. Be first to know at launch.
+            </p>
+            <ul className="mt-6 flex-1 space-y-3">
+              {ANNUAL_FEATURES.map((f) => (
+                <li key={f} className="flex items-start gap-2.5 text-sm text-neutral-400">
+                  <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-400">
+                    <Check size={11} strokeWidth={2.5} />
+                  </span>
+                  {f}
+                </li>
+              ))}
             </ul>
             <AnnualNotifyForm />
           </div>
+
         </div>
 
-        <p className="mt-8 text-center text-sm text-slate-500">
+        {/* FAQ-like questions */}
+        <div className="mt-12 rounded-2xl border border-neutral-200/80 bg-white p-6 md:p-8 lg:mt-14">
+          <h2 className="mb-6 text-lg font-semibold text-[#2a2a2a] md:text-xl">Frequently asked questions</h2>
+          <div className="grid gap-5 md:grid-cols-2 lg:gap-7">
+            {[
+              {
+                q: 'Do I need an account to download free flags?',
+                a: 'Yes — a free account is required to download. Sign up with email or via Clerk auth.',
+              },
+              {
+                q: 'What payment processor handles purchases?',
+                a: 'Paddle acts as Merchant of Record. They handle billing, taxes, and receipts.',
+              },
+              {
+                q: 'Can I use flags in client projects?',
+                a: 'Free official flags include commercial use. Paid designs include a perpetual commercial license.',
+              },
+              {
+                q: 'What formats are included?',
+                a: 'Free flags: SVG, PNG, WebP. Paid designs: all of the above plus AI, EPS, and JPG where available.',
+              },
+            ].map(({ q, a }) => (
+              <div key={q} className="rounded-xl bg-neutral-50 p-4">
+                <p className="mb-1.5 text-sm font-semibold text-[#2a2a2a]">{q}</p>
+                <p className="text-sm leading-relaxed text-neutral-600">{a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="mt-8 text-center text-sm text-neutral-500">
           Questions? See{' '}
           <Link href="/licenses" className="font-medium text-[#2563eb] hover:underline">
             license terms
           </Link>{' '}
-          or your{' '}
+          or check your{' '}
           <Link href="/dashboard" className="font-medium text-[#2563eb] hover:underline">
-            dashboard
-          </Link>{' '}
-          for past purchases.
+            purchase history
+          </Link>.
         </p>
       </div>
     </main>

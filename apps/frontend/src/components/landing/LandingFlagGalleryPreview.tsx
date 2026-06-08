@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Shuffle, ArrowRight } from 'lucide-react';
 import { CountryHubFolderGrid } from '@/components/gallery/CountryHubFolderGrid';
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
@@ -60,6 +60,27 @@ export function LandingFlagGalleryPreview() {
   return (
     <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-10 md:py-14 lg:py-16">
       <div className="marketplace-shell">
+        {/* Section header */}
+        <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-blue)]">Explore the catalog</p>
+            <h2 className="mt-1.5 text-xl font-semibold tracking-tight text-[#2a2a2a] sm:text-2xl">
+              Popular country collections
+            </h2>
+          </div>
+          {!loading && !empty && !errored ? (
+            <button
+              type="button"
+              onClick={() => void load()}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-300 hover:bg-neutral-50 active:scale-95"
+              title="Shuffle collections"
+            >
+              <Shuffle size={15} aria-hidden />
+              Shuffle
+            </button>
+          ) : null}
+        </div>
+
         {loading ? (
           <ul
             className={marketplaceProductCardGridClasses}
@@ -105,13 +126,15 @@ export function LandingFlagGalleryPreview() {
         )}
 
         {!loading && !empty && !errored ? (
-          <div className="mt-8 flex justify-center md:mt-10">
+          <div className="mt-8 flex flex-col items-center gap-3 md:mt-10">
             <Link
               href="/gallery"
-              className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-10 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)]"
+              className="inline-flex min-h-12 items-center gap-2 justify-center rounded-xl bg-[var(--brand-blue)] px-10 py-3 text-base font-semibold text-white shadow-sm transition-all hover:bg-[var(--brand-blue-hover)] hover:gap-3"
             >
               Browse all countries
+              <ArrowRight size={17} aria-hidden />
             </Link>
+            <p className="text-xs text-neutral-500">200+ countries · Free official flags included</p>
           </div>
         ) : null}
       </div>

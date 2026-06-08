@@ -61,10 +61,10 @@ export function LandingCategoryStrip() {
             Country gallery
           </Link>
           <Link
-            href="/gallery"
+            href="/gallery?kind=historical"
             className="inline-flex min-h-12 shrink-0 snap-start items-center justify-center rounded-xl border border-neutral-300 bg-white px-5 py-3 text-center text-sm font-semibold text-[#2a2a2a] shadow-sm transition-colors hover:border-neutral-400 hover:bg-neutral-50 sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 sm:text-base md:flex-initial md:min-w-[10.5rem]"
           >
-            Country gallery
+            Historical flags
           </Link>
           <Link
             href="/assets"

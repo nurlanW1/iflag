@@ -37,17 +37,22 @@ export function EditorialHero({
       <div className="marketplace-shell relative z-10 pb-9 pt-8 sm:pb-11 sm:pt-10 lg:pb-14 lg:pt-12">
         <div className="max-w-xl md:max-w-xl lg:max-w-xl lg:pt-2">
           <div className="flex flex-col justify-center">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-neutral-600 sm:text-sm">
-              Editorial marketplace
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300/80 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-700 shadow-sm backdrop-blur-sm">
+                Editorial marketplace
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800 ring-1 ring-emerald-400/40">
+                200+ countries · Free flags
+              </span>
+            </div>
             <h1
               id={headingId}
-              className="mt-2 max-w-xl text-balance text-2xl font-semibold leading-[1.14] tracking-tight text-[var(--brand-blue)] drop-shadow-[0_1px_1px_rgba(255,255,255,0.55)] sm:mt-3 sm:text-[1.875rem] sm:leading-[1.12] md:text-[2rem] lg:text-[2.5rem]"
+              className="mt-3 max-w-xl text-balance text-2xl font-semibold leading-[1.14] tracking-tight text-[var(--brand-blue)] drop-shadow-[0_1px_1px_rgba(255,255,255,0.55)] sm:mt-4 sm:text-[1.875rem] sm:leading-[1.12] md:text-[2.125rem] lg:text-[2.625rem] lg:leading-[1.1]"
             >
-              A calm marketplace for flags &amp; symbols
+              Professional flag assets for every project
             </h1>
-            <p className="mt-3 max-w-lg text-sm leading-relaxed text-neutral-700 [text-shadow:0_1px_0_rgba(255,255,255,0.45)] sm:mt-4 sm:text-base">
-              Country marks, vectors, and archives — predictable licensing.
+            <p className="mt-3 max-w-lg text-sm leading-relaxed text-neutral-700 [text-shadow:0_1px_0_rgba(255,255,255,0.45)] sm:mt-4 sm:text-base lg:text-[1.0625rem]">
+              Official country flags, vector designs and archives — SVG, PNG, WebP formats with predictable commercial licensing.
             </p>
 
             <div
