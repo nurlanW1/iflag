@@ -372,7 +372,7 @@ function GalleryContent() {
                           ? t === 'free'
                             ? 'bg-emerald-600 text-white shadow-sm'
                             : t === 'premium'
-                            ? 'bg-violet-600 text-white shadow-sm'
+                            ? 'bg-amber-500 text-white shadow-sm'
                             : 'bg-stone-800 text-white shadow-sm'
                           : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
                       }`}
@@ -453,7 +453,7 @@ function GalleryContent() {
                       ? t === 'free'
                         ? 'bg-emerald-600 text-white'
                         : t === 'premium'
-                        ? 'bg-violet-600 text-white'
+                        ? 'bg-amber-500 text-white'
                         : 'bg-stone-800 text-white'
                       : 'bg-stone-50 text-stone-700 ring-1 ring-stone-200/90'
                   }`}
@@ -464,7 +464,7 @@ function GalleryContent() {
             </div>
             <button
               type="button"
-              className="flex min-h-12 w-full items-center justify-center rounded-xl bg-stone-900 py-3.5 text-base font-semibold text-white hover:bg-stone-800"
+              className="flex min-h-12 w-full items-center justify-center rounded-xl bg-[var(--brand-blue)] py-3.5 text-base font-semibold text-white shadow-sm hover:bg-[var(--brand-blue-hover)]"
               onClick={() => setFiltersOpen(false)}
             >
               Done
