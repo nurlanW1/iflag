@@ -10,10 +10,10 @@ export default async function DashboardDownloadsPage() {
 
   return (
     <div className="w-full min-w-0">
-      <h1 className="text-2xl font-black text-gray-900">Downloads</h1>
-      <p className="mt-1 text-sm text-gray-600">
+      <h1 className="text-2xl font-semibold tracking-tight text-[#2a2a2a]">Downloads</h1>
+      <p className="mt-1 text-sm text-neutral-500">
         A timeline of download activity. Per-file downloads are also available from{' '}
-        <Link href="/dashboard/purchases" className="font-medium text-[#2563eb] hover:underline">
+        <Link href="/dashboard/purchases" className="font-medium text-[var(--brand-blue)] hover:underline">
           Purchased files
         </Link>
         .
@@ -28,11 +28,11 @@ export default async function DashboardDownloadsPage() {
           />
         </div>
       ) : (
-        <ul className="mt-8 divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-white">
+        <ul className="mt-8 divide-y divide-neutral-100 rounded-2xl border border-neutral-200 bg-white">
           {downloads.map((d) => (
             <li key={d.id} className="px-6 py-4">
-              <p className="font-semibold text-gray-900">{d.assetLabel}</p>
-              <p className="text-sm text-gray-500">
+              <p className="font-semibold text-[#2a2a2a]">{d.assetLabel}</p>
+              <p className="text-sm text-neutral-500">
                 {d.tier === 'full' ? 'Full quality' : 'Preview'} · {d.downloadedAt || '—'}
               </p>
             </li>

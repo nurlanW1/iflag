@@ -25,12 +25,12 @@ export default async function DashboardProfilePage() {
 
   return (
     <div className="w-full min-w-0">
-      <h1 className="text-2xl font-black text-gray-900">Profile</h1>
-      <p className="mt-1 text-sm text-gray-600">Information from your signed-in account.</p>
+      <h1 className="text-2xl font-semibold tracking-tight text-[#2a2a2a]">Profile</h1>
+      <p className="mt-1 text-sm text-neutral-500">Information from your signed-in account.</p>
 
       <div className="mt-8 flex flex-col gap-6 sm:flex-row sm:items-start">
         {user.imageUrl ? (
-          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-sm">
+          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50 shadow-sm">
             {/* eslint-disable-next-line @next/next/no-img-element -- Clerk avatar URLs are external; avoid imagePatterns churn */}
             <img
               src={user.imageUrl}
@@ -42,28 +42,28 @@ export default async function DashboardProfilePage() {
           </div>
         ) : (
           <div
-            className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 text-sm font-medium text-gray-400"
+            className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 text-sm font-medium text-neutral-400"
             aria-hidden
           >
             No photo
           </div>
         )}
-        <dl className="min-w-0 flex-1 space-y-6 rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm">
+        <dl className="min-w-0 flex-1 space-y-6 rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-sm">
           <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">User id</dt>
-            <dd className="mt-1 break-all font-mono text-sm text-gray-900">{user.id}</dd>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-400">User id</dt>
+            <dd className="mt-1 break-all font-mono text-sm text-[#2a2a2a]">{user.id}</dd>
           </div>
           <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Email</dt>
-            <dd className="mt-1 text-base text-gray-900">{primaryEmail}</dd>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Email</dt>
+            <dd className="mt-1 text-base text-[#2a2a2a]">{primaryEmail}</dd>
           </div>
           <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Display name</dt>
-            <dd className="mt-1 text-base text-gray-900">{displayName}</dd>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Display name</dt>
+            <dd className="mt-1 text-base text-[#2a2a2a]">{displayName}</dd>
           </div>
           <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Email verified</dt>
-            <dd className="mt-1 text-base text-gray-900">{verified ? 'Yes' : 'No'}</dd>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Email verified</dt>
+            <dd className="mt-1 text-base text-[#2a2a2a]">{verified ? 'Yes' : 'No'}</dd>
           </div>
         </dl>
       </div>

@@ -6,8 +6,8 @@ import { PRICING_MARKETING } from '@/lib/marketing/pricing-config';
 export default async function DashboardSubscriptionPage() {
   return (
     <div className="w-full min-w-0">
-      <h1 className="text-2xl font-black text-gray-900">Billing</h1>
-      <p className="mt-1 text-sm text-gray-600">
+      <h1 className="text-2xl font-semibold tracking-tight text-[#2a2a2a]">Billing</h1>
+      <p className="mt-1 text-sm text-neutral-500">
         {PRICING_MARKETING.plansLine}. There are no subscription plans — each paid design is{' '}
         {PRICING_MARKETING.oneTimeShort} via Paddle.
       </p>

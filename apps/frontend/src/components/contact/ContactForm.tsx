@@ -25,23 +25,22 @@ export default function ContactForm() {
   };
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-[#fafaf9]">
       <AnimatePresence>
         {showNotification && (
           <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
-            className="fixed top-4 right-4 z-50 max-w-md rounded-lg border border-gray-200 bg-white p-4 shadow-xl"
+            className="fixed top-4 right-4 z-50 max-w-md rounded-2xl border border-emerald-100 bg-white p-4 shadow-xl"
           >
             <div className="flex items-start gap-3">
-              <CheckCircle className="mt-0.5 flex-shrink-0 text-green-500" size={20} />
+              <CheckCircle className="mt-0.5 flex-shrink-0 text-emerald-500" size={20} />
               <div className="flex-1">
-                <p className="mb-1 font-semibold text-black">Message recorded</p>
-                <p className="text-sm text-gray-600">
-                  This demo form does not send email yet. Wire it to your support inbox or ticket
-                  system, or contact us directly at{' '}
-                  <a href={`mailto:${contactEmail}`} className="font-medium text-[#2563eb] hover:underline">
+                <p className="mb-1 font-semibold text-[#2a2a2a]">Message recorded</p>
+                <p className="text-sm text-neutral-500">
+                  This demo form does not send email yet. Contact us directly at{' '}
+                  <a href={`mailto:${contactEmail}`} className="font-medium text-[var(--brand-blue)] hover:underline">
                     {contactEmail}
                   </a>
                   .
@@ -50,7 +49,7 @@ export default function ContactForm() {
               <button
                 type="button"
                 onClick={() => setShowNotification(false)}
-                className="flex-shrink-0 text-gray-400 transition-colors hover:text-gray-600"
+                className="flex-shrink-0 text-neutral-400 transition-colors hover:text-neutral-600"
                 aria-label="Close notification"
               >
                 <X size={18} />
@@ -61,12 +60,13 @@ export default function ContactForm() {
       </AnimatePresence>
 
       <PageShell className="py-14 sm:py-16">
-        <div className="mb-8 flex items-center gap-3">
-          <Flag size={32} className="text-[#2563eb]" />
-          <h1 className="text-4xl font-black text-black">Contact</h1>
+        <div className="mb-4 flex items-center gap-2">
+          <Flag size={18} className="text-[var(--brand-blue)]" strokeWidth={1.75} aria-hidden />
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-400">Contact</p>
         </div>
+        <h1 className="mb-8 text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:text-4xl">Get in touch</h1>
 
-        <p className="mb-10 text-sm text-gray-600">
+        <p className="mb-10 text-sm text-neutral-500">
           For legal notices, privacy requests, and refund questions, use the contact details below and
           reference our{' '}
           <Link href="/privacy-policy" className="font-medium text-[#2563eb] hover:underline">
@@ -85,31 +85,33 @@ export default function ContactForm() {
 
         <div className="grid gap-12 md:grid-cols-2">
           <div>
-            <h2 className="mb-6 text-2xl font-bold text-black">Get in touch</h2>
-            <p className="mb-8 text-gray-700">
+            <h2 className="mb-4 text-lg font-semibold text-[#2a2a2a]">Contact details</h2>
+            <p className="mb-8 text-sm leading-relaxed text-neutral-500">
               Questions about {SITE_NAME}, licensing, billing, or account access? We aim to respond to
-              routine inquiries within a reasonable time. [PLACEHOLDER: set your target response SLA,
-              business hours, and languages supported.]
+              routine inquiries within a reasonable time.
             </p>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="flex items-start gap-4">
-                <Mail className="mt-1 text-[#2563eb]" size={20} />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-blue-soft)]">
+                  <Mail className="h-4 w-4 text-[var(--brand-blue)]" aria-hidden />
+                </div>
                 <div>
-                  <h3 className="mb-1 font-semibold text-black">Email</h3>
-                  <a href={`mailto:${contactEmail}`} className="text-[#2563eb] hover:underline">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Email</p>
+                  <a href={`mailto:${contactEmail}`} className="mt-0.5 text-sm font-medium text-[var(--brand-blue)] hover:underline">
                     {contactEmail}
                   </a>
                 </div>
               </div>
 
               <div className="flex items-start gap-4">
-                <MessageSquare className="mt-1 text-[#2563eb]" size={20} />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-neutral-100">
+                  <MessageSquare className="h-4 w-4 text-neutral-500" aria-hidden />
+                </div>
                 <div>
-                  <h3 className="mb-1 font-semibold text-black">Postal / registered office</h3>
-                  <p className="text-gray-600">
-                    [PLACEHOLDER: only publish if required in your jurisdiction — legal entity name and
-                    address from your records; do not invent.]
+                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Postal address</p>
+                  <p className="mt-0.5 text-sm text-neutral-500">
+                    Available on request for legal matters.
                   </p>
                 </div>
               </div>
@@ -119,7 +121,7 @@ export default function ContactForm() {
           <div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="name" className="mb-2 block text-sm font-medium text-black">
+                <label htmlFor="name" className="mb-2 block text-sm font-medium text-[#2a2a2a]">
                   Name
                 </label>
                 <input
@@ -127,14 +129,14 @@ export default function ContactForm() {
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-[#2563eb] focus:outline-none"
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-[#2a2a2a] shadow-sm placeholder:text-neutral-400 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/15"
                   required
                   autoComplete="name"
                 />
               </div>
 
               <div>
-                <label htmlFor="email" className="mb-2 block text-sm font-medium text-black">
+                <label htmlFor="email" className="mb-2 block text-sm font-medium text-[#2a2a2a]">
                   Email
                 </label>
                 <input
@@ -142,14 +144,14 @@ export default function ContactForm() {
                   id="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-[#2563eb] focus:outline-none"
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-[#2a2a2a] shadow-sm placeholder:text-neutral-400 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/15"
                   required
                   autoComplete="email"
                 />
               </div>
 
               <div>
-                <label htmlFor="subject" className="mb-2 block text-sm font-medium text-black">
+                <label htmlFor="subject" className="mb-2 block text-sm font-medium text-[#2a2a2a]">
                   Subject
                 </label>
                 <input
@@ -157,13 +159,13 @@ export default function ContactForm() {
                   id="subject"
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-[#2563eb] focus:outline-none"
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-[#2a2a2a] shadow-sm placeholder:text-neutral-400 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/15"
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="message" className="mb-2 block text-sm font-medium text-black">
+                <label htmlFor="message" className="mb-2 block text-sm font-medium text-[#2a2a2a]">
                   Message
                 </label>
                 <textarea
@@ -171,16 +173,16 @@ export default function ContactForm() {
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   rows={5}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-[#2563eb] focus:outline-none"
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-[#2a2a2a] shadow-sm placeholder:text-neutral-400 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/15"
                   required
                 />
               </div>
 
               <button
                 type="submit"
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-6 py-3 font-semibold text-white transition-colors hover:bg-[#1d4ed8]"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-blue)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)]"
               >
-                <Send size={18} />
+                <Send size={16} aria-hidden />
                 Send message
               </button>
             </form>

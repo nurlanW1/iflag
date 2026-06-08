@@ -54,10 +54,10 @@ export default function HomeGalleryPreview() {
 
   if (loading) {
     return (
-      <section className="bg-white py-20 md:py-28 lg:py-32">
+      <section className="bg-[#fafaf9] py-20 md:py-28 lg:py-32">
         <div className="marketplace-shell">
           <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2563eb]"></div>
+            <div className="animate-spin rounded-full h-10 w-10 border-2 border-neutral-200 border-t-[var(--brand-blue)]"></div>
           </div>
         </div>
       </section>
@@ -65,7 +65,7 @@ export default function HomeGalleryPreview() {
   }
 
   return (
-    <section className="relative bg-white py-20 md:py-28 lg:py-32">
+    <section className="relative bg-[#fafaf9] py-20 md:py-28 lg:py-32">
       <div className="marketplace-shell">
         {/* Section Header */}
         <SectionReveal
@@ -74,10 +74,10 @@ export default function HomeGalleryPreview() {
           transition={{ duration: 0.6 }}
           className="mb-12 text-center md:mb-16 lg:mb-20"
         >
-          <h2 className="mx-auto mb-4 max-w-4xl text-3xl font-black tracking-tight text-gray-950 sm:mb-5 sm:text-4xl md:text-5xl lg:text-[2.75rem]">
+          <h2 className="mx-auto mb-4 max-w-4xl text-3xl font-semibold tracking-tight text-[#2a2a2a] sm:mb-5 sm:text-4xl md:text-5xl lg:text-[2.75rem]">
             Popular countries
           </h2>
-          <p className="mx-auto max-w-2xl text-pretty text-base font-medium leading-relaxed text-black/62 sm:text-lg md:text-xl">
+          <p className="mx-auto max-w-2xl text-pretty text-base leading-relaxed text-neutral-500 sm:text-lg">
             Dive into curated country hubs — previews update from the gallery API.
           </p>
         </SectionReveal>
@@ -89,7 +89,7 @@ export default function HomeGalleryPreview() {
               className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none z-10"
               style={{
                 background:
-                  'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 40%, rgba(255, 255, 255, 0.9) 70%, rgba(255, 255, 255, 1) 100%)',
+                  'linear-gradient(to bottom, rgba(250,250,249,0) 0%, rgba(250,250,249,0.6) 40%, rgba(250,250,249,0.95) 80%, rgba(250,250,249,1) 100%)',
               }}
             />
           )}
@@ -116,19 +116,15 @@ export default function HomeGalleryPreview() {
             <button
               type="button"
               onClick={handleShowMore}
-              className="group relative px-10 py-4 md:px-12 md:py-5 border-2 border-[#2563eb] rounded-full text-[#2563eb] font-bold text-base md:text-lg transition-all duration-300 hover:bg-[#2563eb] hover:text-white hover:shadow-lg hover:scale-105 active:scale-100"
+              className="rounded-xl border border-neutral-200 bg-white px-8 py-3 text-sm font-semibold text-[#2a2a2a] shadow-sm transition-all hover:border-[var(--brand-blue)]/40 hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue)] hover:shadow-md"
             >
-              <span className="relative z-10">Show More</span>
-              <motion.div
-                className="absolute inset-0 rounded-full bg-[#2563eb] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                initial={false}
-              />
+              Show more countries
             </button>
           ) : expanded && allCountries.length > PREVIEW_COUNT ? (
             <button
               type="button"
               onClick={() => setExpanded(false)}
-              className="px-10 py-4 md:px-12 md:py-5 border-2 border-[#1e40af]/20 rounded-full text-black/75 font-bold text-base md:text-lg transition-all duration-300 hover:border-[#2563eb]/40 hover:text-black"
+              className="rounded-xl border border-neutral-200 bg-white px-8 py-3 text-sm font-semibold text-neutral-500 shadow-sm transition-all hover:bg-neutral-50"
             >
               Show less
             </button>
