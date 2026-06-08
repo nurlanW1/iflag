@@ -115,7 +115,7 @@ export function ProductDetailPreviewColumn({
     <div className="grid gap-5 lg:grid-cols-[1fr_380px] lg:items-start">
       {/* LEFT — preview with checkered transparency background */}
       <div
-        className="flex min-h-[min(18rem,46vh)] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white lg:h-[min(500px,58vh)] lg:min-h-0"
+        className="flex min-h-[min(18rem,46vh)] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white lg:h-[min(500px,58vh)] lg:min-h-0"
         style={CHECKER_BG}
       >
         <div className="flex flex-1 min-h-0 items-center justify-center p-2">
@@ -141,16 +141,16 @@ export function ProductDetailPreviewColumn({
           )}
         </div>
         {/* ALPHA PREVIEW label */}
-        <div className="shrink-0 border-t border-gray-200/80 bg-black/[0.025] py-2.5 text-center">
-          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-gray-400">
-            Alpha Preview
+        <div className="shrink-0 border-t border-neutral-200/60 bg-neutral-50/60 py-2 text-center">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400">
+            Preview
           </span>
         </div>
       </div>
 
       {/* RIGHT — download panel, natural height */}
       <aside className="min-w-0 max-lg:w-full">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
           <NeonAssetDownloads
             cartProduct={cartProduct}
             files={dedupedFiles}

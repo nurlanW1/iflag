@@ -20,7 +20,7 @@ export default function SubscriptionsAccountPage() {
 
   if (!user) {
     return (
-      <main className="marketplace-shell min-h-screen py-16 text-center text-gray-600 sm:py-20">
+      <main className="marketplace-shell min-h-screen py-16 text-center text-neutral-400 sm:py-20">
         Redirecting…
       </main>
     );
@@ -29,18 +29,18 @@ export default function SubscriptionsAccountPage() {
   return (
     <main className="marketplace-shell w-full py-12 sm:py-16 lg:py-24">
       <div className="w-full min-w-0 max-w-2xl">
-        <h1 className="text-3xl font-black text-gray-900 lg:text-4xl">Your purchases</h1>
-        <p className="mt-2 text-sm text-gray-600">
+        <h1 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] lg:text-4xl">Your purchases</h1>
+        <p className="mt-2 text-sm text-neutral-500">
           {PRICING_MARKETING.plansLine}. We no longer sell monthly or weekly plans — each paid design is a{' '}
           {PRICING_MARKETING.oneTimeShort} one-time checkout.
         </p>
 
-        <div className="mt-8 rounded-2xl border border-[#2563eb]/25 bg-[#2563eb]/5 p-6">
+        <div className="mt-8 rounded-2xl border border-[var(--brand-blue)]/20 bg-[var(--brand-blue-soft)] p-6">
           <div className="flex flex-wrap items-center gap-2">
-            <ShoppingBag className="h-5 w-5 text-[#2563eb]" aria-hidden />
-            <h2 className="font-bold text-gray-900">Download access</h2>
+            <ShoppingBag className="h-5 w-5 text-[var(--brand-blue)]" aria-hidden />
+            <h2 className="font-semibold text-[#2a2a2a]">Download access</h2>
           </div>
-          <p className="mt-3 text-sm text-gray-700">
+          <p className="mt-3 text-sm text-neutral-500">
             Paid files you have bought appear under Purchased files. Official flat flags remain free in the gallery.
           </p>
         </div>
@@ -48,14 +48,14 @@ export default function SubscriptionsAccountPage() {
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Link
             href="/dashboard/purchases"
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--brand-blue)] px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-blue-hover)]"
           >
             Purchased files
             <ArrowRight className="h-4 w-4 opacity-90" aria-hidden />
           </Link>
           <Link
             href="/pricing"
-            className="inline-flex flex-1 items-center justify-center rounded-xl border-2 border-gray-200 bg-white px-5 py-3 text-center text-sm font-semibold text-gray-800 transition hover:border-[#2563eb] hover:text-[#2563eb]"
+            className="inline-flex flex-1 items-center justify-center rounded-xl border border-neutral-200 bg-white px-5 py-3 text-center text-sm font-semibold text-neutral-800 shadow-sm transition hover:bg-neutral-50"
           >
             Pricing
           </Link>
