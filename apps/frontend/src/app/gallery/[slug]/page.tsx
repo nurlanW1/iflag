@@ -372,6 +372,7 @@ export default function CountryHubPage() {
                       ),
                     ) ||
                     v.thumbnail ||
+                    webpCover ||
                     FLAG_THUMB_PLACEHOLDER_DATA_URL;
                   const videoFromFormat = v.formats
                     .map((f) => f.previewUrl?.trim())
@@ -436,7 +437,7 @@ export default function CountryHubPage() {
                                     el.src = rasterFallback;
                                     return;
                                   }
-                                  if (!isPremium && hasWebpCover && webpCover && el.src !== webpCover) {
+                                  if (webpCover && el.src !== webpCover) {
                                     el.src = webpCover;
                                     return;
                                   }
