@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { EditorialHero } from '@/components/landing/EditorialHero';
+import { GalleryFilterBar } from '@/components/landing/GalleryFilterBar';
 import { LandingCategoryStrip } from '@/components/landing/LandingCategoryStrip';
 import { LandingFlagGalleryPreview } from '@/components/landing/LandingFlagGalleryPreview';
 import { LandingTrustStrip } from '@/components/landing/LandingTrustStrip';
@@ -41,6 +42,8 @@ export default function HomePageClient() {
         onSearchQueryChange={setSearchQuery}
         onSubmitSearch={handleSearch}
       />
+
+      <GalleryFilterBar />
 
       {/* Browse by region */}
       <section className="shrink-0 border-t border-neutral-200/80 bg-white py-8 md:py-10 lg:py-12">
