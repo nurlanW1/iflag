@@ -221,7 +221,7 @@ export default function CountryHubPage() {
         </nav>
 
         {/* Two-column hero */}
-        <div className="mt-6 grid items-start gap-0 lg:grid-cols-[1fr_50%] lg:gap-8 xl:grid-cols-[1fr_52%]">
+        <div className="mt-6 grid items-start gap-0 lg:grid-cols-[1fr_54%] lg:gap-6 xl:grid-cols-[1fr_58%]">
 
           {/* ── Left column ── */}
           <div className="flex flex-col gap-2.5 pb-6 lg:pb-8">
@@ -257,40 +257,47 @@ export default function CountryHubPage() {
             {/* Badges */}
             <div className="flex flex-wrap gap-1.5">
               {data.country.region ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-600">
-                  🌎 {data.country.region}
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-600">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  {data.country.region}
                 </span>
               ) : null}
               {data.country.code ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-600">
-                  🏳 {data.country.code}
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-600">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                  {data.country.code}
                 </span>
               ) : null}
-              <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-600">
-                ✦ Sovereign
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-600">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Sovereign
               </span>
             </div>
 
             {/* Facts */}
             {facts && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-neutral-500">
-                <span>
-                  <span className="mr-1 text-neutral-400">Capital</span>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+                <span className="inline-flex items-center gap-1.5">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-neutral-400" aria-hidden><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  <span className="text-neutral-400">Capital</span>
                   <span className="font-semibold text-[#2a2a2a]">{facts.capital}</span>
                 </span>
-                <span className="hidden text-neutral-300 sm:inline">·</span>
-                <span>
-                  <span className="mr-1 text-neutral-400">Population</span>
+                <span className="hidden text-neutral-200 sm:inline">|</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-neutral-400" aria-hidden><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  <span className="text-neutral-400">Population</span>
                   <span className="font-semibold text-[#2a2a2a]">~{facts.population}</span>
                 </span>
-                <span className="hidden text-neutral-300 sm:inline">·</span>
-                <span>
-                  <span className="mr-1 text-neutral-400">Area</span>
+                <span className="hidden text-neutral-200 sm:inline">|</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-neutral-400" aria-hidden><path d="M3 3h7v7H3z"/><path d="M14 3h7v7h-7z"/><path d="M14 14h7v7h-7z"/><path d="M3 14h7v7H3z"/></svg>
+                  <span className="text-neutral-400">Area</span>
                   <span className="font-semibold text-[#2a2a2a]">{facts.area}</span>
                 </span>
-                <span className="hidden text-neutral-300 sm:inline">·</span>
-                <span>
-                  <span className="mr-1 text-neutral-400">Currency</span>
+                <span className="hidden text-neutral-200 sm:inline">|</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-neutral-400" aria-hidden><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                  <span className="text-neutral-400">Currency</span>
                   <span className="font-semibold text-[#2a2a2a]">{facts.currency}</span>
                 </span>
               </div>
