@@ -41,9 +41,9 @@ export function GalleryFilterBar() {
   };
 
   return (
-    <div className="border-b border-neutral-200 bg-[#fafaf9]">
-      <div className="marketplace-shell py-3 sm:py-4">
-        <div className="rounded-2xl border border-neutral-200 bg-white px-3 py-3 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.08)] sm:px-4">
+    <div className="w-full">
+      <div className="w-full">
+        <div className="rounded-2xl border border-white/15 bg-white px-3 py-3 shadow-[0_8px_32px_-4px_rgba(0,0,0,0.2)] sm:px-4">
           <form onSubmit={handleSearch} className="flex w-full flex-col gap-2.5">
             {/* Row 1: search + sort + view */}
             <div className="flex items-center gap-2">

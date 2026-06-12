@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 import {
   Download,
   Crown,
@@ -12,38 +11,22 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { EditorialHero } from '@/components/landing/EditorialHero';
-import { GalleryFilterBar } from '@/components/landing/GalleryFilterBar';
 import { LandingCategoryStrip } from '@/components/landing/LandingCategoryStrip';
 import { LandingFlagGalleryPreview } from '@/components/landing/LandingFlagGalleryPreview';
 import { LandingTrustStrip } from '@/components/landing/LandingTrustStrip';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import { useRevealInView } from '@/hooks/useRevealInView';
 import { SITE_NAME } from '@/lib/seo/site-config';
-import { buildHeroDestination } from '@/lib/landing/hero-categories';
-import { navigateGalleryCountrySearch } from '@/lib/gallery/gallery-search-navigation';
 import { HOME_REGION_HUB_TILES } from '@/lib/gallery/region-hub-tiles';
 import { ONE_TIME_STOCK, PRICING_MARKETING, formatPricingMoney } from '@/lib/marketing/pricing-config';
 
 export default function HomePageClient() {
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    void navigateGalleryCountrySearch(searchQuery);
-  };
-
   const oneTimePrice = formatPricingMoney(ONE_TIME_STOCK.displayCents);
 
   return (
     <main className="min-h-screen bg-[#fafaf9]">
 
-      <EditorialHero
-        searchQuery={searchQuery}
-        onSearchQueryChange={setSearchQuery}
-        onSubmitSearch={handleSearch}
-      />
-
-      <GalleryFilterBar />
+      <EditorialHero />
 
       {/* Browse by region */}
       <section className="shrink-0 border-t border-neutral-200/80 bg-white py-8 md:py-10 lg:py-12">
