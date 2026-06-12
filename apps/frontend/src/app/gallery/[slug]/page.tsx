@@ -277,27 +277,27 @@ export default function CountryHubPage() {
             {/* Facts */}
             {facts && (
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-                <span className="inline-flex items-center gap-1.5">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-neutral-400" aria-hidden><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                  <span className="text-neutral-400">Capital</span>
+                {/* Capital */}
+                <span className="inline-flex items-center gap-1.5" title="Capital">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-neutral-400" aria-label="Capital"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                   <span className="font-semibold text-[#2a2a2a]">{facts.capital}</span>
                 </span>
-                <span className="hidden text-neutral-200 sm:inline">|</span>
-                <span className="inline-flex items-center gap-1.5">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-neutral-400" aria-hidden><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                  <span className="text-neutral-400">Population</span>
+                <span className="hidden text-neutral-200 sm:inline">·</span>
+                {/* Population */}
+                <span className="inline-flex items-center gap-1.5" title="Population">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-neutral-400" aria-label="Population"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                   <span className="font-semibold text-[#2a2a2a]">~{facts.population}</span>
                 </span>
-                <span className="hidden text-neutral-200 sm:inline">|</span>
-                <span className="inline-flex items-center gap-1.5">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-neutral-400" aria-hidden><path d="M3 3h7v7H3z"/><path d="M14 3h7v7h-7z"/><path d="M14 14h7v7h-7z"/><path d="M3 14h7v7H3z"/></svg>
-                  <span className="text-neutral-400">Area</span>
+                <span className="hidden text-neutral-200 sm:inline">·</span>
+                {/* Area */}
+                <span className="inline-flex items-center gap-1.5" title="Area">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-neutral-400" aria-label="Area"><path d="M3 3h7v7H3z"/><path d="M14 3h7v7h-7z"/><path d="M14 14h7v7h-7z"/><path d="M3 14h7v7H3z"/></svg>
                   <span className="font-semibold text-[#2a2a2a]">{facts.area}</span>
                 </span>
-                <span className="hidden text-neutral-200 sm:inline">|</span>
-                <span className="inline-flex items-center gap-1.5">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-neutral-400" aria-hidden><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                  <span className="text-neutral-400">Currency</span>
+                <span className="hidden text-neutral-200 sm:inline">·</span>
+                {/* Currency */}
+                <span className="inline-flex items-center gap-1.5" title="Currency">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-neutral-400" aria-label="Currency"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                   <span className="font-semibold text-[#2a2a2a]">{facts.currency}</span>
                 </span>
               </div>

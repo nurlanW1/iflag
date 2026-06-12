@@ -233,9 +233,9 @@ function GalleryContent() {
         </div>
       </section>
 
-      <div className="sticky top-0 z-30 -mt-6 border-b border-stone-200/60 bg-stone-50/92 backdrop-blur-md">
+      <div className="sticky top-0 z-30 -mt-6 border-b border-neutral-200 bg-[#fafaf9]">
         <div className="marketplace-shell pt-5 pb-2 sm:pt-6 sm:pb-1">
-          <div className="rounded-2xl border border-stone-200/85 bg-white/98 px-3 py-3 shadow-[0_6px_24px_-12px_rgba(15,23,42,0.12)] ring-1 ring-stone-100/90 backdrop-blur-md sm:px-4 lg:shadow-[0_12px_36px_-18px_rgba(15,23,42,0.14)]">
+          <div className="rounded-2xl border border-neutral-200 bg-white px-3 py-3 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.08)] sm:px-4">
             <div className="flex w-full flex-col gap-2.5">
               {/* Row 1: search + mobile filters + sort + view */}
               <div className="flex items-center gap-2">
@@ -250,7 +250,7 @@ function GalleryContent() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search by country or ISO code…"
-                    className="w-full rounded-xl border border-stone-200 bg-stone-50/90 py-3 pl-11 pr-10 text-base text-stone-900 placeholder:text-stone-400 transition-all focus:border-[var(--brand-blue)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563eb]/22 sm:text-sm"
+                    className="w-full rounded-xl border border-neutral-200 bg-neutral-50 py-3 pl-11 pr-10 text-base text-neutral-900 placeholder:text-neutral-400 transition-all focus:border-[var(--brand-blue)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/15 sm:text-sm"
                   />
                   {searchQuery ? (
                     <button
@@ -265,7 +265,7 @@ function GalleryContent() {
                 </div>
                 <button
                   type="button"
-                  className="flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-stone-200 bg-stone-50/90 px-4 py-3 text-sm font-semibold text-stone-800 transition hover:bg-stone-100 min-[620px]:hidden"
+                  className="flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-100 min-[620px]:hidden"
                   onClick={() => setFiltersOpen(true)}
                   aria-expanded={filtersOpen}
                   aria-haspopup="dialog"
@@ -284,7 +284,7 @@ function GalleryContent() {
                       value={sortKey}
                       onChange={(e) => setSortKey(e.target.value as SortKey)}
                       aria-label="Sort countries"
-                      className="h-11 min-h-[44px] appearance-none rounded-xl border border-stone-200 bg-stone-50/90 px-3 py-2 pl-3 pr-10 text-xs font-semibold text-stone-800 transition-all hover:bg-white focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 md:min-w-[10.5rem]"
+                      className="h-11 min-h-[44px] appearance-none rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 pl-3 pr-10 text-xs font-semibold text-neutral-800 transition-all hover:bg-white focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/15 md:min-w-[10.5rem]"
                     >
                       {SORT_OPTIONS.map((opt) => (
                         <option key={opt.id} value={opt.id}>
