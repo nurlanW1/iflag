@@ -2,6 +2,7 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
@@ -42,7 +43,10 @@ export function PremiumAssetPreview({
   watermarkEnabled: watermarkEnabledProp,
 }: Props) {
   const uniq = [...new Set(previewUrls.filter((u) => typeof u === 'string' && u.trim()))];
-  const src = uniq[0] ?? '';
+  const [srcIndex, setSrcIndex] = useState(0);
+  useEffect(() => { setSrcIndex(0); }, [uniq[0]]);
+  const src = uniq[srcIndex] ?? '';
+  const handleImgError = () => { if (srcIndex < uniq.length - 1) setSrcIndex((i) => i + 1); };
   const watermarkEnabled = watermarkEnabledProp === true;
   const compact = density === 'compact';
   const showFooter =
@@ -89,6 +93,7 @@ export function PremiumAssetPreview({
                 referrerPolicy="no-referrer"
                 decoding="async"
                 draggable={false}
+                onError={handleImgError}
               />
             </ProductPreviewImage>
           ) : (
@@ -170,6 +175,7 @@ export function PremiumAssetPreview({
               sizes="(max-width:1024px) 100vw, min(1060px, 72vw)"
               priority
               className="relative z-0 object-contain p-[clamp(1.25rem,4vw,3rem)]"
+              onError={handleImgError}
             />
           </ProductPreviewImage>
         </div>
