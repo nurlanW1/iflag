@@ -71,7 +71,7 @@ export function EditorialHero({
         </div>
 
         {/* Search form — full width */}
-        <form onSubmit={onSubmitSearch} className="mt-5 w-full max-w-3xl lg:mt-8" role="search" aria-label="Search catalog">
+        <form onSubmit={onSubmitSearch} className="mt-5 w-full lg:mt-8" role="search" aria-label="Search catalog">
           <div className="flex w-full flex-col overflow-hidden rounded-xl border border-white/20 bg-white shadow-[0_12px_40px_-8px_rgba(0,0,0,0.25)] transition-[box-shadow] duration-300 focus-within:shadow-[0_16px_48px_-8px_rgba(0,0,0,0.32)] sm:flex-row sm:items-stretch">
             <div className="flex min-h-[3rem] flex-1 items-center gap-3 bg-white px-3.5 sm:min-h-[3.125rem] sm:px-4 lg:min-h-[3.25rem]">
               <Search className="h-5 w-5 shrink-0 text-neutral-400" aria-hidden />
