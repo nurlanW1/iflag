@@ -88,25 +88,22 @@ export function FlagColorPalette({ colors }: { colors: FlagColor[] }) {
 
   return (
     <div>
-      {/* Label + mode */}
-      <div className="mb-2 flex items-center gap-2">
-        <p className="text-[10px] font-semibold text-neutral-600">Flag Color Palette</p>
-        <div className="flex gap-0.5">
-          {(['hex', 'rgb', 'pms'] as Mode[]).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setMode(m)}
-              className={`rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider transition ${
-                mode === m
-                  ? 'bg-neutral-800 text-white'
-                  : 'text-neutral-400 hover:text-neutral-600'
-              }`}
-            >
-              {m}
-            </button>
-          ))}
-        </div>
+      {/* Mode toggle */}
+      <div className="mb-2 flex gap-0.5">
+        {(['hex', 'rgb', 'pms'] as Mode[]).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setMode(m)}
+            className={`rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider transition ${
+              mode === m
+                ? 'bg-neutral-800 text-white'
+                : 'text-neutral-400 hover:text-neutral-600'
+            }`}
+          >
+            {m}
+          </button>
+        ))}
       </div>
 
       {/* Swatches */}
