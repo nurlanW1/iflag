@@ -18,13 +18,20 @@ import { AdSenseScriptPlaceholder } from '@/components/ads/AdSensePlaceholder';
 import { AppToaster } from '@/components/AppToaster';
 import { PaddleInitializer } from '@/components/billing/PaddleInitializer';
 import { Suspense } from 'react';
-import { Inter } from 'next/font/google';
+import { Inter, Libre_Baskerville } from 'next/font/google';
 import type { ReactNode } from 'react';
 import type { Viewport } from 'next';
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+});
+
+const libreBaskerville = Libre_Baskerville({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-baskerville',
   display: 'swap',
 });
 
@@ -75,7 +82,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   );
 
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${libreBaskerville.variable}`} suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
         {/*
           AdSense: after approval, load your publisher script here with next/script, e.g.

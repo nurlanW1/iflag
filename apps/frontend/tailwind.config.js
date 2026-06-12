@@ -20,6 +20,14 @@ export default {
         light: '#f8f8f8',
       },
       fontFamily: {
+        baskerville: [
+          'Baskerville Old Face',
+          'var(--font-baskerville)',
+          'Libre Baskerville',
+          'Baskerville',
+          'Georgia',
+          'serif',
+        ],
         sans: [
           'Inter',
           'var(--font-inter)',

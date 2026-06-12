@@ -9,7 +9,6 @@ import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import { FlagVideoPreview } from '@/components/media/FlagVideoPreview';
 import { hrefLooksLikeFlagVideo, isFlagVideoFormat } from '@/lib/flag-video-formats';
 import { CountryDesignTierCrown } from '@/components/gallery/CountryDesignTierCrown';
-import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCover';
 import { shouldWatermarkFlagPreview } from '@/lib/gallery/flag-preview-watermark';
 import {
   FLAG_THUMB_PLACEHOLDER_DATA_URL,
@@ -21,6 +20,7 @@ import { hrefLooksLikeNonBrowserMaster, pickFormatPreviewUrl } from '@/lib/flag-
 import COUNTRY_FACTS from '../../../../content/countries/facts.json';
 import COUNTRY_COLORS from '../../../../content/countries/flag-colors.json';
 import { FlagColorPalette } from '@/components/gallery/FlagColorPalette';
+import { WorldMapPin } from '@/components/gallery/WorldMapPin';
 import type { FlagColor } from '@/components/gallery/FlagColorPalette';
 
 type CountryFact = { capital: string; population: string; area: string; currency: string };
@@ -60,13 +60,13 @@ interface CountryData {
 
 function DesignGridSkeleton() {
   return (
-    <ul className="grid grid-cols-1 gap-3.5 min-[380px]:grid-cols-2 sm:gap-4 md:grid-cols-3 md:gap-5 xl:grid-cols-4">
+    <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
       {Array.from({ length: 4 }).map((_, i) => (
-        <li key={i} className="list-none overflow-hidden rounded-2xl border border-slate-200/90 bg-white">
-          <div className="aspect-[4/3] animate-pulse bg-slate-100" />
+        <li key={i} className="list-none overflow-hidden rounded-2xl border border-neutral-200/90 bg-white">
+          <div className="aspect-[4/3] animate-pulse bg-neutral-100" />
           <div className="space-y-2 p-4">
-            <div className="h-4 w-3/4 animate-pulse rounded bg-slate-100" />
-            <div className="h-3 w-1/2 animate-pulse rounded bg-slate-50" />
+            <div className="h-4 w-3/4 animate-pulse rounded bg-neutral-100" />
+            <div className="h-3 w-1/2 animate-pulse rounded bg-neutral-50" />
           </div>
         </li>
       ))}
@@ -74,7 +74,6 @@ function DesignGridSkeleton() {
   );
 }
 
-/** Country folder hub: description + one card per design (`asset_group_key`). */
 export default function CountryHubPage() {
   const params = useParams();
   const slug = typeof params.slug === 'string' ? params.slug : '';
@@ -129,14 +128,14 @@ export default function CountryHubPage() {
   if (loading) {
     return (
       <main className="marketplace-shell min-h-screen bg-[#fafaf9] pb-16 pt-8 sm:pb-20 sm:pt-10">
-        <div className="h-4 w-32 animate-pulse rounded bg-slate-100" />
-        <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:justify-between">
-          <div className="flex-1 space-y-3">
-            <div className="h-3 w-24 animate-pulse rounded bg-slate-100" />
-            <div className="h-10 w-2/3 max-w-md animate-pulse rounded bg-slate-100" />
-            <div className="h-20 max-w-xl animate-pulse rounded bg-slate-50" />
+        <div className="h-4 w-32 animate-pulse rounded bg-neutral-100" />
+        <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_45%]">
+          <div className="space-y-4">
+            <div className="h-20 w-44 animate-pulse rounded-md bg-neutral-100" />
+            <div className="h-14 w-3/4 animate-pulse rounded bg-neutral-100" />
+            <div className="h-16 max-w-lg animate-pulse rounded bg-neutral-50" />
           </div>
-          <div className="aspect-[4/3] w-full max-w-sm animate-pulse rounded-2xl bg-slate-100" />
+          <div className="aspect-[3/2] animate-pulse rounded-xl bg-neutral-100" />
         </div>
         <section className="mt-10">
           <DesignGridSkeleton />
@@ -147,13 +146,13 @@ export default function CountryHubPage() {
 
   if (!data || loadError) {
     return (
-      <main className="min-h-screen bg-slate-50">
+      <main className="min-h-screen bg-[#fafaf9]">
         <div className="mx-auto max-w-lg px-4 py-24 text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400">
             <ImageOff size={24} aria-hidden />
           </div>
-          <p className="text-lg font-medium text-slate-900">Couldn&apos;t load this country folder</p>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="text-lg font-semibold text-[#2a2a2a]">Couldn&apos;t load this country folder</p>
+          <p className="mt-2 text-sm text-neutral-500">
             Check your connection or try again — flags load from the database and R2 storage.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -161,7 +160,7 @@ export default function CountryHubPage() {
               <button
                 type="button"
                 onClick={() => void loadCountryData(slug)}
-                className="inline-flex items-center gap-2 rounded-lg bg-[var(--brand-blue)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--brand-blue-hover)]"
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--brand-blue)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--brand-blue-hover)]"
               >
                 <RefreshCw size={16} aria-hidden />
                 Retry
@@ -169,7 +168,7 @@ export default function CountryHubPage() {
             ) : null}
             <Link
               href="/gallery"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[var(--brand-blue)] hover:underline"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--brand-blue)] hover:underline"
             >
               <ArrowLeft size={16} />
               Back to gallery
@@ -204,50 +203,57 @@ export default function CountryHubPage() {
   })();
 
   return (
-    <main className="marketplace-shell min-h-screen bg-[#fafaf9] pb-16 pt-8 sm:pb-20 sm:pt-10 lg:pb-24">
-      <nav className="flex items-center gap-2 text-xs font-medium text-slate-500">
-        <Link
-          href="/gallery"
-          className="group inline-flex items-center gap-1.5 transition-colors hover:text-slate-900"
-        >
-          <ArrowLeft
-            size={14}
-            strokeWidth={2}
-            className="transition-transform group-hover:-translate-x-0.5"
-          />
-          Gallery
-        </Link>
-        <span className="text-slate-300">/</span>
-        <span className="truncate text-slate-700">{pageTitle}</span>
-      </nav>
+    <main className="min-h-screen bg-[#fafaf9]">
+      {/* ── Hero section ── */}
+      <div className="marketplace-shell pt-8 sm:pt-10">
 
-      <header className="mt-4 border-b border-slate-200/80 pb-6 sm:mt-6 sm:pb-8 lg:pb-10">
-        <div className="flex items-start gap-5 lg:gap-8">
-          {/* Text column */}
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-              Country folder
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-2 text-xs font-medium text-neutral-400">
+          <Link
+            href="/gallery"
+            className="group inline-flex items-center gap-1.5 transition-colors hover:text-neutral-700"
+          >
+            <ArrowLeft size={13} strokeWidth={2} className="transition-transform group-hover:-translate-x-0.5" />
+            Gallery
+          </Link>
+          <span className="text-neutral-300">/</span>
+          <span className="truncate text-neutral-500">{pageTitle}</span>
+        </nav>
+
+        {/* Two-column hero */}
+        <div className="mt-6 grid items-start gap-0 lg:grid-cols-[1fr_50%] lg:gap-8 xl:grid-cols-[1fr_52%]">
+
+          {/* ── Left column ── */}
+          <div className="flex flex-col gap-4 pb-8 lg:pb-10">
+
+            {/* Small flag */}
+            {webpCover ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={webpCover}
+                alt={`${pageTitle} flag`}
+                className="rounded-[3px] object-contain shadow-[0_3px_16px_rgba(0,0,0,0.15)]"
+                style={{ width: 'auto', maxWidth: 200, height: 'auto', maxHeight: 130 }}
+                loading="eager"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                draggable={false}
+              />
+            ) : null}
+
+            {/* Country name — Baskerville serif */}
+            <h1
+              className="text-balance text-5xl font-normal leading-tight text-[#2a2a2a] sm:text-6xl lg:text-[4.5rem]"
+              style={{ fontFamily: "'Baskerville Old Face', 'Libre Baskerville', var(--font-baskerville), Georgia, serif" }}
+            >
+              {pageTitle}
+            </h1>
+
+            {/* Description */}
+            <p className="max-w-lg text-sm leading-relaxed text-neutral-500 sm:text-base">
+              {description}
             </p>
-            {/* Heading row — mobile flag inline right */}
-            <div className="flex items-start gap-3">
-              <h1 className="flex-1 text-balance text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
-                {pageTitle}
-              </h1>
-              {/* Mobile flag — natural size, shadow only */}
-              {webpCover ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={webpCover}
-                  alt={`${pageTitle} flag`}
-                  width={80}
-                  className="shrink-0 rounded-[3px] shadow-[0_3px_14px_rgba(0,0,0,0.16)] lg:hidden"
-                  loading="eager"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                  draggable={false}
-                />
-              ) : null}
-            </div>
+
             {/* Badges */}
             <div className="flex flex-wrap gap-1.5">
               {data.country.region ? (
@@ -264,222 +270,212 @@ export default function CountryHubPage() {
                 ✦ Sovereign
               </span>
             </div>
-            {/* Description */}
-            <p className="max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
-              {description}
-            </p>
-            {/* Country facts — inline, no panel */}
+
+            {/* Facts */}
             {facts && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-slate-500">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-neutral-500">
                 <span>
-                  <span className="mr-1 text-slate-400">Capital</span>
-                  <span className="font-semibold text-slate-700">{facts.capital}</span>
+                  <span className="mr-1 text-neutral-400">Capital</span>
+                  <span className="font-semibold text-[#2a2a2a]">{facts.capital}</span>
                 </span>
-                <span className="hidden text-slate-300 sm:inline">·</span>
+                <span className="hidden text-neutral-300 sm:inline">·</span>
                 <span>
-                  <span className="mr-1 text-slate-400">Population</span>
-                  <span className="font-semibold text-slate-700">~{facts.population}</span>
+                  <span className="mr-1 text-neutral-400">Population</span>
+                  <span className="font-semibold text-[#2a2a2a]">~{facts.population}</span>
                 </span>
-                <span className="hidden text-slate-300 sm:inline">·</span>
+                <span className="hidden text-neutral-300 sm:inline">·</span>
                 <span>
-                  <span className="mr-1 text-slate-400">Area</span>
-                  <span className="font-semibold text-slate-700">{facts.area}</span>
+                  <span className="mr-1 text-neutral-400">Area</span>
+                  <span className="font-semibold text-[#2a2a2a]">{facts.area}</span>
                 </span>
-                <span className="hidden text-slate-300 sm:inline">·</span>
+                <span className="hidden text-neutral-300 sm:inline">·</span>
                 <span>
-                  <span className="mr-1 text-slate-400">Currency</span>
-                  <span className="font-semibold text-slate-700">{facts.currency}</span>
+                  <span className="mr-1 text-neutral-400">Currency</span>
+                  <span className="font-semibold text-[#2a2a2a]">{facts.currency}</span>
                 </span>
               </div>
             )}
-          </div>
-          {/* Desktop: flag + color palette stacked */}
-          <div className="hidden shrink-0 flex-col gap-3 lg:flex" style={{ width: 220 }}>
-            {webpCover ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={webpCover}
-                alt={`${pageTitle} flag`}
-                width={220}
-                className="w-full rounded-[4px] shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
-                loading="eager"
-                decoding="async"
-                referrerPolicy="no-referrer"
-                draggable={false}
-              />
-            ) : null}
+
+            {/* Color palette — inline, no card */}
             {flagColors.length > 0 && (
-              <FlagColorPalette colors={flagColors} />
+              <div className="mt-2">
+                <FlagColorPalette colors={flagColors} />
+              </div>
             )}
+          </div>
+
+          {/* ── Right column: world map ── */}
+          <div className="hidden lg:flex lg:items-center lg:justify-center">
+            <WorldMapPin slug={data.country.slug} />
           </div>
         </div>
-        {/* Mobile color palette (below description) */}
-        {flagColors.length > 0 && (
-          <div className="mt-4 lg:hidden">
-            <FlagColorPalette colors={flagColors} />
-          </div>
-        )}
-      </header>
+      </div>
 
-      <section className="mt-10" aria-labelledby="designs-heading">
-        <h2 id="designs-heading" className="sr-only">
-          Flag designs for {pageTitle}
-        </h2>
-        {data.variants.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center text-slate-600">
-            No published designs for this country yet.
-          </p>
-        ) : (
-          <>
-            {/* Sort bar */}
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <p className="text-xs font-medium text-slate-500">
-                <span className="font-semibold text-slate-800">{sortedVariants.length}</span>{' '}
-                design{sortedVariants.length === 1 ? '' : 's'}
-              </p>
-              <div className="relative">
-                <select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value as 'newest' | 'popular' | 'price')}
-                  aria-label="Sort designs"
-                  className="h-9 appearance-none rounded-xl border border-slate-200 bg-white pl-3 pr-8 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20"
-                >
-                  <option value="newest">Newest</option>
-                  <option value="popular">Popular</option>
-                  <option value="price">Price</option>
-                </select>
-                <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden>▾</span>
-              </div>
-            </div>
-          <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
-            {sortedVariants.map((v) => {
-              const href = `/assets/${encodeURIComponent(v.productSlug)}`;
-              const isPremium =
-                v.isPremiumDesign ??
-                v.formats.some((f) => {
-                  const t = (f.premiumTier ?? 'free').toLowerCase();
-                  return t === 'paid' || t === 'freemium';
-                });
-              const showWatermark = shouldWatermarkFlagPreview({ isPremiumDesign: isPremium });
-              const fmtLabel = v.formats
-                .map((f) => f.format)
-                .filter(Boolean)
-                .slice(0, 4)
-                .join(' · ');
-              const thumb =
-                pickFormatPreviewUrl(
-                  v.formats.map((f) => ({
-                    format: f.formatCode ?? f.format,
-                    formatCode: f.formatCode,
-                    previewUrl: f.previewUrl,
-                  })),
-                  [v.thumbnail, webpCover].filter(
-                    (u): u is string => Boolean(u?.trim()) && !hrefLooksLikeNonBrowserMaster(u),
-                  ),
-                ) ||
-                v.thumbnail ||
-                FLAG_THUMB_PLACEHOLDER_DATA_URL;
-              const videoFromFormat = v.formats
-                .map((f) => f.previewUrl?.trim())
-                .find((u) => u && hrefLooksLikeFlagVideo(u));
-              const videoSrc = hrefLooksLikeFlagVideo(thumb)
-                ? thumb
-                : videoFromFormat || '';
-              const showVideo =
-                Boolean(videoSrc) ||
-                v.type.toLowerCase().includes('video') ||
-                v.formats.some((f) => isFlagVideoFormat(f.formatCode ?? f.format));
-              return (
-                <li key={v.id} className="list-none">
-                  <Link
-                    href={href}
-                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:border-slate-300 hover:shadow-md"
+      {/* ── Designs section ── */}
+      <div className="marketplace-shell border-t border-neutral-200/60 pb-16 pt-8 sm:pb-20 lg:pb-24">
+        <section aria-labelledby="designs-heading">
+          <h2 id="designs-heading" className="sr-only">
+            Flag designs for {pageTitle}
+          </h2>
+
+          {data.variants.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-neutral-200 bg-white px-6 py-12 text-center text-neutral-500">
+              No published designs for this country yet.
+            </p>
+          ) : (
+            <>
+              {/* Sort bar */}
+              <div className="mb-5 flex items-center justify-between gap-3">
+                <p className="text-xs font-medium text-neutral-500">
+                  <span className="font-semibold text-[#2a2a2a]">{sortedVariants.length}</span>{' '}
+                  design{sortedVariants.length === 1 ? '' : 's'}
+                </p>
+                <div className="relative">
+                  <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value as 'newest' | 'popular' | 'price')}
+                    aria-label="Sort designs"
+                    className="h-9 appearance-none rounded-xl border border-neutral-200 bg-white pl-3 pr-8 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50 focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/15"
                   >
-                    <div
-                      className={clsx(
-                        'relative bg-[#fafaf9]',
-                        showVideo ? 'aspect-video bg-stone-900' : 'aspect-[4/3]',
-                      )}
-                    >
-                      <CountryDesignTierCrown premium={isPremium} />
-                      {showVideo && videoSrc ? (
-                        <FlagVideoPreview
-                          src={videoSrc}
-                          title={v.name}
-                          poster={hrefLooksLikeFlagVideo(thumb) ? undefined : thumb}
-                          playOverlay
-                          hoverPreview
-                          className="absolute inset-0"
-                        />
-                      ) : (
-                        <ProductPreviewImage
-                          className="absolute inset-0"
-                          watermarkEnabled={showWatermark}
-                          protectEnabled={false}
+                    <option value="newest">Newest</option>
+                    <option value="popular">Popular</option>
+                    <option value="price">Price</option>
+                  </select>
+                  <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400" aria-hidden>▾</span>
+                </div>
+              </div>
+
+              <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+                {sortedVariants.map((v) => {
+                  const href = `/assets/${encodeURIComponent(v.productSlug)}`;
+                  const isPremium =
+                    v.isPremiumDesign ??
+                    v.formats.some((f) => {
+                      const t = (f.premiumTier ?? 'free').toLowerCase();
+                      return t === 'paid' || t === 'freemium';
+                    });
+                  const showWatermark = shouldWatermarkFlagPreview({ isPremiumDesign: isPremium });
+                  const fmtLabel = v.formats
+                    .map((f) => f.format)
+                    .filter(Boolean)
+                    .slice(0, 4)
+                    .join(' · ');
+                  const thumb =
+                    pickFormatPreviewUrl(
+                      v.formats.map((f) => ({
+                        format: f.formatCode ?? f.format,
+                        formatCode: f.formatCode,
+                        previewUrl: f.previewUrl,
+                      })),
+                      [v.thumbnail, webpCover].filter(
+                        (u): u is string => Boolean(u?.trim()) && !hrefLooksLikeNonBrowserMaster(u),
+                      ),
+                    ) ||
+                    v.thumbnail ||
+                    FLAG_THUMB_PLACEHOLDER_DATA_URL;
+                  const videoFromFormat = v.formats
+                    .map((f) => f.previewUrl?.trim())
+                    .find((u) => u && hrefLooksLikeFlagVideo(u));
+                  const videoSrc = hrefLooksLikeFlagVideo(thumb)
+                    ? thumb
+                    : videoFromFormat || '';
+                  const showVideo =
+                    Boolean(videoSrc) ||
+                    v.type.toLowerCase().includes('video') ||
+                    v.formats.some((f) => isFlagVideoFormat(f.formatCode ?? f.format));
+
+                  return (
+                    <li key={v.id} className="list-none">
+                      <Link
+                        href={href}
+                        className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:border-neutral-300 hover:shadow-md"
+                      >
+                        <div
+                          className={clsx(
+                            'relative bg-[#fafaf9]',
+                            showVideo ? 'aspect-video bg-neutral-900' : 'aspect-[4/3]',
+                          )}
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={thumb}
-                            alt={v.name}
-                            loading="lazy"
-                            decoding="async"
-                            referrerPolicy="no-referrer"
-                            draggable={false}
-                            className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-[1.02]"
-                            onError={(e) => {
-                              const el = e.currentTarget;
-                              el.onerror = null;
-                              const rasterFallback = pickFormatPreviewUrl(
-                                v.formats.map((f) => ({
-                                  format: f.formatCode ?? f.format,
-                                  formatCode: f.formatCode,
-                                  previewUrl: f.previewUrl,
-                                })),
-                                [webpCover].filter(Boolean) as string[],
-                              );
-                              if (rasterFallback && el.src !== rasterFallback) {
-                                el.src = rasterFallback;
-                                return;
-                              }
-                              if (!isPremium && hasWebpCover && webpCover && el.src !== webpCover) {
-                                el.src = webpCover;
-                                return;
-                              }
-                              el.src = flagThumbPlaceholderForFileId(v.id);
-                            }}
-                          />
-                        </ProductPreviewImage>
-                      )}
-                      <span className="absolute right-2 top-2 flex flex-col items-end gap-1">
-                        {showVideo ? (
-                          <span className="rounded-md bg-[#DF0024]/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
-                            Video
+                          <CountryDesignTierCrown premium={isPremium} />
+                          {showVideo && videoSrc ? (
+                            <FlagVideoPreview
+                              src={videoSrc}
+                              title={v.name}
+                              poster={hrefLooksLikeFlagVideo(thumb) ? undefined : thumb}
+                              playOverlay
+                              hoverPreview
+                              className="absolute inset-0"
+                            />
+                          ) : (
+                            <ProductPreviewImage
+                              className="absolute inset-0"
+                              watermarkEnabled={showWatermark}
+                              protectEnabled={false}
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={thumb}
+                                alt={v.name}
+                                loading="lazy"
+                                decoding="async"
+                                referrerPolicy="no-referrer"
+                                draggable={false}
+                                className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-[1.02]"
+                                onError={(e) => {
+                                  const el = e.currentTarget;
+                                  el.onerror = null;
+                                  const rasterFallback = pickFormatPreviewUrl(
+                                    v.formats.map((f) => ({
+                                      format: f.formatCode ?? f.format,
+                                      formatCode: f.formatCode,
+                                      previewUrl: f.previewUrl,
+                                    })),
+                                    [webpCover].filter(Boolean) as string[],
+                                  );
+                                  if (rasterFallback && el.src !== rasterFallback) {
+                                    el.src = rasterFallback;
+                                    return;
+                                  }
+                                  if (!isPremium && hasWebpCover && webpCover && el.src !== webpCover) {
+                                    el.src = webpCover;
+                                    return;
+                                  }
+                                  el.src = flagThumbPlaceholderForFileId(v.id);
+                                }}
+                              />
+                            </ProductPreviewImage>
+                          )}
+                          <span className="absolute right-2 top-2 flex flex-col items-end gap-1">
+                            {showVideo ? (
+                              <span className="rounded-md bg-[#DF0024]/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                                Video
+                              </span>
+                            ) : null}
+                            <span className="rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                              {v.formats.length} formats
+                            </span>
                           </span>
-                        ) : null}
-                        <span className="rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
-                          {v.formats.length} formats
-                        </span>
-                      </span>
-                    </div>
-                    <div className="flex flex-1 flex-col gap-1.5 p-4">
-                      <p className="line-clamp-2 text-[0.95rem] font-semibold leading-snug text-slate-900">
-                        {v.name}
-                      </p>
-                      <p className="line-clamp-1 text-[11px] font-medium uppercase tracking-wide text-slate-500">
-                        {v.type}
-                      </p>
-                      {fmtLabel ? (
-                        <p className="mt-auto line-clamp-2 text-[11px] text-slate-600">{fmtLabel}</p>
-                      ) : null}
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-          </>
-        )}
-      </section>
+                        </div>
+                        <div className="flex flex-1 flex-col gap-1.5 p-4">
+                          <p className="line-clamp-2 text-[0.95rem] font-semibold leading-snug text-[#2a2a2a]">
+                            {v.name}
+                          </p>
+                          <p className="line-clamp-1 text-[11px] font-medium uppercase tracking-wide text-neutral-500">
+                            {v.type}
+                          </p>
+                          {fmtLabel ? (
+                            <p className="mt-auto line-clamp-2 text-[11px] text-neutral-500">{fmtLabel}</p>
+                          ) : null}
+                        </div>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+        </section>
+      </div>
     </main>
   );
 }
