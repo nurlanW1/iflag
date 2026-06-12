@@ -221,7 +221,7 @@ export default function CountryHubPage() {
         </nav>
 
         {/* Two-column hero */}
-        <div className="mt-6 grid items-stretch gap-0 lg:grid-cols-[1fr_46%] lg:gap-6 xl:grid-cols-[1fr_48%]">
+        <div className="mt-6 grid items-stretch gap-0 lg:grid-cols-[1fr_38%] lg:gap-6 xl:grid-cols-[1fr_40%]">
 
           {/* ── Left column ── */}
           <div className="flex flex-col gap-2.5 pb-6 lg:pb-8">
