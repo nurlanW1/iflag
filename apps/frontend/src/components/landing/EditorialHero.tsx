@@ -70,61 +70,61 @@ export function EditorialHero({
                 </Link>
               ))}
             </div>
-
-            <form onSubmit={onSubmitSearch} className="mt-4 lg:mt-7" role="search" aria-label="Search catalog">
-              <div className="flex w-full flex-col overflow-hidden rounded-xl border border-neutral-200/90 bg-white shadow-[0_8px_32px_-12px_rgba(15,23,42,0.14)] transition-[border-color,box-shadow] duration-300 focus-within:border-neutral-300 focus-within:shadow-md sm:flex-row sm:items-stretch">
-                <div className="flex min-h-[3rem] flex-1 items-center gap-3 bg-white px-3.5 sm:min-h-[3.125rem] sm:px-4 lg:min-h-[3.25rem]">
-                  <Search className="h-5 w-5 shrink-0 text-neutral-400" aria-hidden />
-                  <label htmlFor={searchInputId} className="sr-only">
-                    Search
-                  </label>
-                  <input
-                    id={searchInputId}
-                    type="search"
-                    value={searchQuery}
-                    onChange={(e) => onSearchQueryChange(e.target.value)}
-                    placeholder="Country, format, or keyword…"
-                    autoComplete="off"
-                    className="min-w-0 flex-1 border-0 bg-white text-base text-[#2a2a2a] placeholder:text-neutral-400 focus:outline-none focus:ring-0"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="min-h-[3rem] w-full shrink-0 bg-[var(--brand-blue)] px-6 py-3 text-base font-semibold text-white transition-colors duration-200 hover:bg-[var(--brand-blue-hover)] sm:w-auto sm:min-h-[3.125rem] sm:rounded-none sm:rounded-br-xl sm:rounded-tr-xl sm:px-8 lg:min-h-[3.25rem]"
-                >
-                  Search
-                </button>
-              </div>
-
-              {/* Popular searches */}
-              <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
-                  Popular:
-                </span>
-                {(
-                  [
-                    { label: 'United States', slug: 'united-states' },
-                    { label: 'United Kingdom', slug: 'united-kingdom' },
-                    { label: 'Germany', slug: 'germany' },
-                    { label: 'Japan', slug: 'japan' },
-                    { label: 'France', slug: 'france' },
-                    { label: 'Canada', slug: 'canada' },
-                    { label: 'Brazil', slug: 'brazil' },
-                    { label: 'Australia', slug: 'australia' },
-                  ] as const
-                ).map(({ label, slug }) => (
-                  <Link
-                    key={slug}
-                    href={`/gallery/${slug}`}
-                    className="rounded-full border border-neutral-300/70 bg-white/80 px-2.5 py-0.5 text-[11px] font-medium text-neutral-700 shadow-sm backdrop-blur-sm transition-colors hover:border-[var(--brand-blue)]/40 hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue)]"
-                  >
-                    {label}
-                  </Link>
-                ))}
-              </div>
-            </form>
           </div>
         </div>
+
+        <form onSubmit={onSubmitSearch} className="mt-4 lg:mt-7" role="search" aria-label="Search catalog">
+          <div className="flex w-full flex-col overflow-hidden rounded-xl border border-neutral-200/90 bg-white shadow-[0_8px_32px_-12px_rgba(15,23,42,0.14)] transition-[border-color,box-shadow] duration-300 focus-within:border-neutral-300 focus-within:shadow-md sm:flex-row sm:items-stretch">
+            <div className="flex min-h-[3rem] flex-1 items-center gap-3 bg-white px-3.5 sm:min-h-[3.125rem] sm:px-4 lg:min-h-[3.25rem]">
+              <Search className="h-5 w-5 shrink-0 text-neutral-400" aria-hidden />
+              <label htmlFor={searchInputId} className="sr-only">
+                Search
+              </label>
+              <input
+                id={searchInputId}
+                type="search"
+                value={searchQuery}
+                onChange={(e) => onSearchQueryChange(e.target.value)}
+                placeholder="Country, format, or keyword…"
+                autoComplete="off"
+                className="min-w-0 flex-1 border-0 bg-white text-base text-[#2a2a2a] placeholder:text-neutral-400 focus:outline-none focus:ring-0"
+              />
+            </div>
+            <button
+              type="submit"
+              className="min-h-[3rem] w-full shrink-0 bg-[var(--brand-blue)] px-6 py-3 text-base font-semibold text-white transition-colors duration-200 hover:bg-[var(--brand-blue-hover)] sm:w-auto sm:min-h-[3.125rem] sm:rounded-none sm:rounded-br-xl sm:rounded-tr-xl sm:px-8 lg:min-h-[3.25rem]"
+            >
+              Search
+            </button>
+          </div>
+
+          {/* Popular searches */}
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
+              Popular:
+            </span>
+            {(
+              [
+                { label: 'United States', slug: 'united-states' },
+                { label: 'United Kingdom', slug: 'united-kingdom' },
+                { label: 'Germany', slug: 'germany' },
+                { label: 'Japan', slug: 'japan' },
+                { label: 'France', slug: 'france' },
+                { label: 'Canada', slug: 'canada' },
+                { label: 'Brazil', slug: 'brazil' },
+                { label: 'Australia', slug: 'australia' },
+              ] as const
+            ).map(({ label, slug }) => (
+              <Link
+                key={slug}
+                href={`/gallery/${slug}`}
+                className="rounded-full border border-neutral-300/70 bg-white/80 px-2.5 py-0.5 text-[11px] font-medium text-neutral-700 shadow-sm backdrop-blur-sm transition-colors hover:border-[var(--brand-blue)]/40 hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue)]"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+        </form>
       </div>
     </section>
   );
