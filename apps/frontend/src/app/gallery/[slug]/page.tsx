@@ -224,7 +224,7 @@ export default function CountryHubPage() {
         <div className="mt-6 grid items-start gap-0 lg:grid-cols-[1fr_50%] lg:gap-8 xl:grid-cols-[1fr_52%]">
 
           {/* ── Left column ── */}
-          <div className="flex flex-col gap-4 pb-8 lg:pb-10">
+          <div className="flex flex-col gap-2.5 pb-6 lg:pb-8">
 
             {/* Small flag */}
             {webpCover ? (

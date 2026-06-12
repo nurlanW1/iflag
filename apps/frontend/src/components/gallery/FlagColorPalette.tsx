@@ -89,7 +89,7 @@ export function FlagColorPalette({ colors }: { colors: FlagColor[] }) {
   return (
     <div>
       {/* Label + mode */}
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 flex items-center gap-2">
         <p className="text-[10px] font-semibold text-neutral-600">Flag Color Palette</p>
         <div className="flex gap-0.5">
           {(['hex', 'rgb', 'pms'] as Mode[]).map((m) => (

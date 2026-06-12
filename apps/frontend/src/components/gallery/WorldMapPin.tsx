@@ -1,6 +1,6 @@
 export function WorldMapPin({ slug: _ }: { slug: string }) {
   return (
-    <div className="w-full select-none">
+    <div className="w-full max-w-[480px] select-none">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/world_map.svg"
