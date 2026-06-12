@@ -221,7 +221,7 @@ export default function CountryHubPage() {
         </nav>
 
         {/* Two-column hero */}
-        <div className="mt-6 grid items-stretch gap-0 lg:grid-cols-[1fr_38%] lg:gap-6 xl:grid-cols-[1fr_40%]">
+        <div className="mt-6 grid items-start gap-0 lg:grid-cols-[1fr_38%] lg:gap-6 xl:grid-cols-[1fr_40%]">
 
           {/* ── Left column ── */}
           <div className="flex flex-col gap-2.5 pb-6 lg:pb-8">
@@ -312,7 +312,7 @@ export default function CountryHubPage() {
           </div>
 
           {/* ── Right column: world map ── */}
-          <div className="hidden lg:flex lg:items-center lg:overflow-hidden">
+          <div className="hidden lg:block lg:self-start">
             <WorldMapPin slug={data.country.slug} />
           </div>
         </div>
