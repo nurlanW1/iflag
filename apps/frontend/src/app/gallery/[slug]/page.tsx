@@ -305,7 +305,7 @@ export default function CountryHubPage() {
           </div>
 
           {/* ── Right column: world map ── */}
-          <div className="hidden lg:flex lg:items-center lg:justify-center">
+          <div className="hidden lg:block lg:self-start">
             <WorldMapPin slug={data.country.slug} />
           </div>
         </div>
