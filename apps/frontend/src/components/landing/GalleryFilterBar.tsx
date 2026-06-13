@@ -121,10 +121,10 @@ export function GalleryFilterBar() {
               key={id}
               type="button"
               onClick={() => go(id)}
-              className="group flex flex-col items-center gap-1.5 px-3 py-4 transition-all duration-150 hover:bg-neutral-50"
+              className="group flex flex-col items-center gap-1 px-3 py-2.5 transition-all duration-150 hover:bg-neutral-50"
             >
-              <span className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors duration-150 ${
-                active ? `${c.icon} bg-white ring-2 ${c.ring}` : 'bg-neutral-100 text-neutral-400 group-hover:bg-neutral-200 group-hover:text-neutral-600'
+              <span className={`transition-colors duration-150 ${
+                active ? c.icon : 'text-neutral-400 group-hover:text-neutral-600'
               }`}>
                 <Icon size={18} aria-hidden />
               </span>
