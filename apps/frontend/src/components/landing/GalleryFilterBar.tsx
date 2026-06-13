@@ -131,9 +131,6 @@ export function GalleryFilterBar() {
               <span className={`text-xs font-semibold leading-none transition-colors ${active ? c.icon : 'text-neutral-600'}`}>
                 {label}
               </span>
-              <span className="text-[10px] leading-none text-neutral-400">
-                {desc}
-              </span>
             </button>
           );
         })}
