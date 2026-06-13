@@ -44,9 +44,11 @@ type NavbarProps = {
 function NavbarCartIcon({
   variant = 'desktop',
   onNavigate,
+  hoverClass = 'hover:bg-[var(--brand-blue-soft)]',
 }: {
   variant?: 'desktop' | 'mobile';
   onNavigate?: () => void;
+  hoverClass?: string;
 }) {
   const { totalItems, ready } = useCart();
   const badge = ready && totalItems > 0 ? (totalItems > 99 ? '99+' : String(totalItems)) : null;
@@ -78,7 +80,7 @@ function NavbarCartIcon({
   return (
     <Link
       href="/cart"
-      className="relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg p-2 text-[var(--nav-link-text)] transition-colors hover:bg-white/15 hover:text-[var(--nav-link-hover)]"
+      className={`relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg p-2 text-[var(--nav-link-text)] transition-colors ${hoverClass} hover:text-[var(--nav-link-hover)]`}
       aria-label={ariaLabel}
       title="Shopping cart"
     >
@@ -99,6 +101,7 @@ const navLogin =
 
 export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
   const { user, logout } = useAuth();
+  const pathname = usePathname() ?? '/';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
@@ -120,19 +123,29 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
     };
   }, [mobileMenuOpen]);
 
+  // Blue hero mode: only on "/" when not scrolled
+  const isHero = pathname === '/' && !scrolled;
+
   const clerkAppearance = {
     elements: {
       avatarBox: 'h-11 w-11 lg:h-12 lg:w-12 ring-2 ring-[rgba(12,39,72,0.35)]',
     },
   } as const;
 
-  const shellClass = scrolled
-    ? 'border-white/15 shadow-[0_4px_24px_-6px_rgba(15,30,70,0.4)] backdrop-blur-md'
-    : 'border-white/10 shadow-[0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md';
+  const shellClass = isHero
+    ? 'border-white/10 backdrop-blur-md'
+    : scrolled
+      ? 'border-neutral-200 bg-white shadow-[0_4px_20px_-8px_rgba(30,58,95,0.12)] backdrop-blur-md'
+      : 'border-neutral-200/80 bg-white/95 shadow-[0_1px_0_rgba(30,58,95,0.06)] backdrop-blur-md';
 
-  const signUpClass = scrolled
-    ? 'inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg bg-white px-7 text-base font-semibold text-[var(--brand-blue)] shadow-md transition-all hover:bg-white/90'
-    : 'inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg border-2 border-white/70 px-7 text-base font-semibold text-white transition-all hover:border-white hover:bg-white/10';
+  const iconHover = isHero ? 'hover:bg-white/15' : 'hover:bg-[var(--brand-blue-soft)]';
+  const dividerBorder = isHero ? 'border-white/20' : 'border-neutral-200';
+  const skeletonBg = isHero ? 'bg-white/20' : 'bg-neutral-200/80';
+  const logoColor = isHero ? 'text-white' : 'text-[var(--brand-blue)]';
+
+  const signUpClass = isHero
+    ? 'inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg border-2 border-white/70 px-7 text-base font-semibold text-white transition-all hover:border-white hover:bg-white/10'
+    : 'inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg bg-[var(--brand-blue)] px-7 text-base font-semibold text-white shadow-md transition-colors hover:bg-[var(--brand-blue-hover)]';
 
   function DesktopAuthCluster() {
     return (
@@ -141,8 +154,8 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
 
         {user ? (
           <>
-            <NavbarCartIcon />
-            <div className="flex items-center gap-4 border-l border-white/20 pl-6">
+            <NavbarCartIcon hoverClass={iconHover} />
+            <div className={`flex items-center gap-4 border-l ${dividerBorder} pl-6`}>
               <Link
                 href="/dashboard"
                 className="flex max-w-[14rem] items-center gap-2.5 text-base font-semibold text-[var(--nav-link-text)] transition hover:text-[var(--nav-link-hover)]"
@@ -153,7 +166,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
               <button
                 type="button"
                 onClick={() => logout()}
-                className="rounded-lg p-2.5 text-[var(--nav-link-text)] opacity-85 transition hover:bg-white/15 hover:opacity-100 hover:text-[var(--nav-link-hover)]"
+                className={`rounded-lg p-2.5 text-[var(--nav-link-text)] opacity-85 transition ${iconHover} hover:opacity-100 hover:text-[var(--nav-link-hover)]`}
                 aria-label="Sign out"
               >
                 <LogOut size={22} aria-hidden />
@@ -164,15 +177,15 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
           <>
             <ClerkLoading>
               <div className="flex items-center gap-4" aria-hidden>
-                <div className="h-11 w-[4.5rem] animate-pulse rounded-lg bg-white/20" />
-                <div className="h-11 w-28 animate-pulse rounded-lg bg-white/20" />
-                <div className="h-11 w-11 animate-pulse rounded-full bg-white/20" />
+                <div className={`h-11 w-[4.5rem] animate-pulse rounded-lg ${skeletonBg}`} />
+                <div className={`h-11 w-28 animate-pulse rounded-lg ${skeletonBg}`} />
+                <div className={`h-11 w-11 animate-pulse rounded-full ${skeletonBg}`} />
               </div>
             </ClerkLoading>
             <ClerkLoaded>
               <Show when="signed-out">
                 <div className="flex items-center gap-4">
-                  <NavbarCartIcon />
+                  <NavbarCartIcon hoverClass={iconHover} />
                   <Link href={signInHref} className={`${navLogin} whitespace-nowrap`}>
                     Log in
                   </Link>
@@ -183,7 +196,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
               </Show>
               <Show when="signed-in">
                 <>
-                  <NavbarCartIcon />
+                  <NavbarCartIcon hoverClass={iconHover} />
                   <Link
                     href="/dashboard"
                     className="flex items-center gap-2 text-base font-semibold text-[var(--nav-link-text)] transition hover:text-[var(--nav-link-hover)]"
@@ -198,7 +211,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
           </>
         ) : (
           <div className="flex items-center gap-4">
-            <NavbarCartIcon />
+            <NavbarCartIcon hoverClass={iconHover} />
             <Link href={signInHref} className={navLogin}>
               Log in
             </Link>
@@ -217,9 +230,10 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
       aria-label="Primary"
       style={
         {
-          '--nav-link-text': 'rgba(255,255,255,0.88)',
-          '--nav-link-hover': '#ffffff',
-          backgroundColor: 'var(--brand-blue)',
+          '--nav-link-text': isHero ? 'rgba(255,255,255,0.88)' : '#334155',
+          '--nav-link-hover': isHero ? '#ffffff' : 'var(--brand-blue)',
+          backgroundColor: isHero ? 'var(--brand-blue)' : undefined,
+          transition: 'background-color 0.3s, color 0.3s',
         } as React.CSSProperties
       }
     >
@@ -232,18 +246,18 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
           >
             <Flag
               size={28}
-              className="h-7 w-7 shrink-0 text-white"
+              className={`h-7 w-7 shrink-0 ${logoColor}`}
               aria-hidden
               strokeWidth={1.75}
             />
-            <span className="truncate text-lg font-bold tracking-tight text-white">{SITE_NAME}</span>
+            <span className={`truncate text-lg font-bold tracking-tight ${logoColor}`}>{SITE_NAME}</span>
           </Link>
           <div className="flex shrink-0 items-center gap-0.5">
             <Link
               href="/gallery"
               aria-label="Search gallery"
               title="Country gallery"
-              className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-[var(--nav-link-text)] transition-colors hover:bg-white/15 hover:text-[var(--nav-link-hover)]"
+              className={`inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-[var(--nav-link-text)] transition-colors ${iconHover} hover:text-[var(--nav-link-hover)]`}
             >
               <Search size={22} aria-hidden strokeWidth={2} />
             </Link>
@@ -251,7 +265,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             <button
               type="button"
               onClick={() => setMobileMenuOpen((o) => !o)}
-              className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-[var(--nav-link-text)] transition hover:bg-white/15 hover:text-[var(--nav-link-hover)]"
+              className={`inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-[var(--nav-link-text)] transition ${iconHover} hover:text-[var(--nav-link-hover)]`}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-nav-menu"
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
@@ -264,8 +278,8 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
         {/* Tablets & desktop */}
         <div className="hidden min-h-[64px] flex-row items-center gap-4 py-3 md:flex lg:min-h-[72px] lg:gap-7 lg:py-4 xl:gap-8">
           <Link href="/" className="flex shrink-0 items-center gap-2 transition hover:opacity-90 lg:gap-3">
-            <Flag size={34} className="h-8 w-8 shrink-0 text-white lg:h-10 lg:w-10" aria-hidden strokeWidth={1.75} />
-            <span className="text-lg font-bold tracking-tight text-white lg:text-[1.65rem]">{SITE_NAME}</span>
+            <Flag size={34} className={`h-8 w-8 shrink-0 ${logoColor} lg:h-10 lg:w-10`} aria-hidden strokeWidth={1.75} />
+            <span className={`text-lg font-bold tracking-tight ${logoColor} lg:text-[1.65rem]`}>{SITE_NAME}</span>
           </Link>
 
           <nav
@@ -530,7 +544,7 @@ function AdminNavLink({
   return (
     <Link
       href="/admin"
-      className="inline-flex items-center gap-2 rounded-lg border-2 border-white/30 bg-white/10 px-4 py-2 text-base font-semibold text-white shadow-sm transition hover:border-white/60 hover:bg-white/20"
+      className="inline-flex items-center gap-2 rounded-lg border-2 border-[rgba(23,37,84,0.2)] bg-[var(--brand-blue-soft)] px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] shadow-sm transition hover:border-[var(--brand-blue)] hover:text-[var(--nav-link-hover)]"
       title="Admin panel"
       onClick={onNavigate}
     >
