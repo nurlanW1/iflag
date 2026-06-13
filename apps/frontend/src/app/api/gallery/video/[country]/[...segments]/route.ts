@@ -3,7 +3,8 @@
  * URL: /api/gallery/video/[country-slug]/[filename.ext]
  * Example: /api/gallery/video/algeria/Algeria_flag_waves_flagpole.mp4
  *
- * Supports HTTP range requests so browsers can seek through videos.
+ * Uses [...segments] catch-all so Next.js doesn't strip the .mp4 extension.
+ * Supports HTTP range requests for browser video seeking.
  */
 import { NextResponse } from 'next/server';
 import fs from 'fs';
@@ -45,14 +46,15 @@ function findCountryFolder(worldCountryPath: string, slug: string): string | nul
 
 export async function GET(
   request: Request,
-  context: { params: Promise<{ country: string; file: string }> },
+  context: { params: Promise<{ country: string; segments: string[] }> },
 ) {
   try {
-    const { country, file } = await context.params;
+    const { country, segments } = await context.params;
+    const file = segments.join('/');
 
     const safeCountry = path.basename(country);
     const safeFile = path.basename(file);
-    if (!safeFile || safeFile !== file || file.includes('..')) {
+    if (!safeFile || file.includes('..')) {
       return new NextResponse('Invalid params', { status: 403 });
     }
 

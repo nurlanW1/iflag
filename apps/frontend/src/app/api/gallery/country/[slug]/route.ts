@@ -275,6 +275,7 @@ export async function GET(
 
     const fromDb = await loadFromDatabase(slug);
     const diskVideos = loadDiskVideosForCountry(slug);
+    console.info(`[gallery/country] ${slug}: db=${fromDb?.variants.length ?? 0} diskVideos=${diskVideos.length}`);
 
     if (fromDb && fromDb.variants.length > 0) {
       const merged = diskVideos.length > 0
