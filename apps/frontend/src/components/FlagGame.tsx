@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
 
@@ -115,6 +116,9 @@ function buildQuestion(): { correct: Country; options: Country[] } {
 export function FlagGame({ onClose }: { onClose: () => void }) {
   const [{ correct, options }, setQuestion] = useState(buildQuestion);
   const [selected, setSelected] = useState<Country | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const next = useCallback(() => {
     setQuestion(buildQuestion());
@@ -132,7 +136,9 @@ export function FlagGame({ onClose }: { onClose: () => void }) {
   const answered = selected !== null;
   const isCorrectAnswer = selected?.code === correct.code;
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -260,6 +266,7 @@ export function FlagGame({ onClose }: { onClose: () => void }) {
           </button>
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 }
