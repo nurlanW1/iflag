@@ -72,7 +72,6 @@ export function GalleryFilterBar() {
 
   const go = (nextFormat: FormatId) => {
     setFormat(nextFormat);
-    router.push(buildHref(nextFormat, q));
   };
 
   return (
@@ -122,21 +121,17 @@ export function GalleryFilterBar() {
               key={id}
               type="button"
               onClick={() => go(id)}
-              className={`group flex flex-col items-center gap-1.5 px-3 py-4 transition-all duration-150 ${
-                active
-                  ? `${c.card} border-t-2 -mt-px`
-                  : 'bg-white hover:bg-neutral-50 border-t-2 border-transparent -mt-px'
-              }`}
+              className="group flex flex-col items-center gap-1.5 px-3 py-4 transition-all duration-150 hover:bg-neutral-50"
             >
-              <span className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
-                active ? `bg-white/70 ${c.icon}` : 'bg-neutral-100 text-neutral-500 group-hover:bg-neutral-200'
+              <span className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors duration-150 ${
+                active ? `${c.icon} bg-white ring-2 ${c.ring}` : 'bg-neutral-100 text-neutral-400 group-hover:bg-neutral-200 group-hover:text-neutral-600'
               }`}>
                 <Icon size={18} aria-hidden />
               </span>
-              <span className={`text-xs font-semibold leading-none ${active ? '' : 'text-neutral-700'}`}>
+              <span className={`text-xs font-semibold leading-none transition-colors ${active ? c.icon : 'text-neutral-600'}`}>
                 {label}
               </span>
-              <span className={`text-[10px] leading-none ${active ? 'opacity-70' : 'text-neutral-400'}`}>
+              <span className="text-[10px] leading-none text-neutral-400">
                 {desc}
               </span>
             </button>
