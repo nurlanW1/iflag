@@ -104,7 +104,7 @@ export function GalleryFilterBar() {
         </div>
         <button
           type="submit"
-          className="flex shrink-0 items-center gap-1.5 border-l border-neutral-100 bg-[var(--brand-blue)] px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--brand-blue-hover)]"
+          className="flex shrink-0 items-center gap-1.5 border-l border-neutral-100 bg-[#4f8ef7] px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#3b82f6]"
         >
           <span className="hidden sm:inline">Search</span>
           <ArrowRight size={15} aria-hidden />
