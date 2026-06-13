@@ -29,7 +29,7 @@ export default function HomePageClient() {
       <EditorialHero />
 
       {/* Browse by region */}
-      <section className="shrink-0 border-t border-neutral-200/80 bg-white py-8 md:py-10 lg:py-12">
+      <section className="shrink-0 border-t border-neutral-200/80 bg-white py-5 md:py-6 lg:py-7">
         <div className="marketplace-shell">
           <SectionReveal
             hidden={{ opacity: 0, y: 10 }}
@@ -87,7 +87,7 @@ export default function HomePageClient() {
       <LandingCategoryStrip />
 
       {/* Stats */}
-      <section className="relative overflow-hidden border-t border-neutral-200/80 bg-[#fafaf9] py-16 md:py-20 lg:py-24">
+      <section className="relative overflow-hidden border-t border-neutral-200/80 bg-[#fafaf9] py-10 md:py-12 lg:py-14">
         {/* Subtle grid texture */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.025]"
@@ -103,7 +103,7 @@ export default function HomePageClient() {
             hidden={{ opacity: 0, y: 12 }}
             visible={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="mb-10 text-center sm:mb-12"
+            className="mb-7 text-center sm:mb-8"
           >
             <h2 className="text-xl font-semibold tracking-tight text-[#2a2a2a] sm:text-2xl">
               Trusted by designers worldwide
@@ -137,13 +137,13 @@ export default function HomePageClient() {
       </section>
 
       {/* Simple pricing */}
-      <section className="border-t border-neutral-200/80 bg-white py-16 md:py-20 lg:py-24">
+      <section className="border-t border-neutral-200/80 bg-white py-10 md:py-12 lg:py-14">
         <div className="marketplace-shell">
           <SectionReveal
             hidden={{ opacity: 0, y: 14 }}
             visible={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
-            className="mb-10 text-center sm:mb-12"
+            className="mb-7 text-center sm:mb-8"
           >
             <div className="mb-4 inline-flex items-center gap-2.5 rounded-full border border-amber-200/80 bg-amber-50 px-4 py-2">
               <Crown size={16} className="text-amber-500" strokeWidth={1.75} aria-hidden />
@@ -222,7 +222,7 @@ export default function HomePageClient() {
       </section>
 
       {/* Final CTA */}
-      <section className="relative overflow-hidden border-t border-neutral-800/30 bg-[var(--brand-blue)] py-16 text-[#fafaf9] md:py-20 lg:py-24">
+      <section className="relative overflow-hidden border-t border-neutral-800/30 bg-[var(--brand-blue)] py-12 text-[#fafaf9] md:py-14 lg:py-16">
         {/* Noise/grain texture overlay */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.08]"

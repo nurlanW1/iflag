@@ -58,7 +58,7 @@ export function LandingFlagGalleryPreview() {
   const items = phase !== 'loading' && phase !== 'empty' && phase !== 'error' ? phase.items : [];
 
   return (
-    <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-10 md:py-14 lg:py-16">
+    <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-7 md:py-9 lg:py-10">
       <div className="marketplace-shell">
         {/* Section header */}
         <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
