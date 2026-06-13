@@ -137,7 +137,7 @@ export function FlagGame({ onClose }: { onClose: () => void }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/65 p-6 backdrop-blur-md"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -147,7 +147,7 @@ export function FlagGame({ onClose }: { onClose: () => void }) {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 20, opacity: 0 }}
         transition={{ type: 'spring', damping: 22, stiffness: 300 }}
-        className="relative w-full max-w-[22rem] rounded-2xl bg-white p-6 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.35)]"
+        className="relative w-full max-w-[28rem] rounded-2xl bg-white p-8 shadow-[0_32px_80px_-12px_rgba(0,0,0,0.45)]"
       >
         <button
           onClick={onClose}
@@ -157,15 +157,15 @@ export function FlagGame({ onClose }: { onClose: () => void }) {
           <X size={18} />
         </button>
 
-        <p className="mb-1 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-400">
+        <p className="mb-1 text-center text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-400">
           Flag Quiz
         </p>
-        <p className="mb-4 text-center text-sm font-semibold text-neutral-700">
+        <p className="mb-5 text-center text-base font-semibold text-neutral-700">
           Which country does this flag belong to?
         </p>
 
         {/* Flag image */}
-        <div className="mx-auto mb-4 flex h-[7.5rem] w-[13rem] items-center justify-center overflow-hidden rounded-xl shadow-[0_4px_16px_-4px_rgba(0,0,0,0.18)]">
+        <div className="mx-auto mb-6 flex h-[10rem] w-[17rem] items-center justify-center overflow-hidden rounded-xl shadow-[0_6px_24px_-4px_rgba(0,0,0,0.22)]">
           <img
             key={correct.code}
             src={`https://flagcdn.com/w320/${correct.code}.webp`}
@@ -186,7 +186,7 @@ export function FlagGame({ onClose }: { onClose: () => void }) {
               className="overflow-hidden"
             >
               <div
-                className={`flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold ${
+                className={`flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ${
                   isCorrectAnswer
                     ? 'bg-emerald-50 text-emerald-700'
                     : 'bg-red-50 text-red-600'
@@ -209,13 +209,13 @@ export function FlagGame({ onClose }: { onClose: () => void }) {
         </AnimatePresence>
 
         {/* Options 2×2 */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {options.map((option) => {
             const isSelected = selected?.code === option.code;
             const isCorrectOpt = option.code === correct.code;
 
             let cls =
-              'relative flex min-h-[3rem] items-center justify-center gap-1.5 rounded-xl border-2 px-2 py-2.5 text-xs font-semibold transition-all duration-150 text-center leading-tight ';
+              'relative flex min-h-[3.5rem] items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-3 text-sm font-semibold transition-all duration-150 text-center leading-tight ';
 
             if (!answered) {
               cls +=
@@ -248,7 +248,7 @@ export function FlagGame({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Footer */}
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-5 flex items-center justify-between">
           <span className="text-[10px] font-medium text-neutral-400">
             {COUNTRIES.length} countries
           </span>
