@@ -2,10 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Search, X, LayoutGrid, Rows3, ArrowRight,
-  FileCode2, Image, Clapperboard, Layers,
-} from 'lucide-react';
+import { Search, X, ArrowRight, FileCode2, Image, Clapperboard, Layers } from 'lucide-react';
 
 const FORMAT_TABS = [
   {
@@ -55,35 +52,27 @@ const COLOR_MAP: Record<string, { card: string; icon: string; ring: string }> = 
   rose:   { card: 'bg-rose-50   border-rose-200   text-rose-700',   icon: 'text-rose-500',   ring: 'ring-rose-400'   },
 };
 
-const SORT_OPTIONS = [
-  { id: 'name-asc',     label: 'Name · A → Z'  },
-  { id: 'name-desc',    label: 'Name · Z → A'  },
-  { id: 'designs-desc', label: 'Most designs'  },
-  { id: 'designs-asc',  label: 'Fewest designs'},
-] as const;
 
-function buildHref(format: FormatId, q: string, sort: string) {
+function buildHref(format: FormatId, q: string) {
   const p = new URLSearchParams();
   if (format !== 'all') p.set('format', format);
   if (q.trim()) p.set('q', q.trim());
-  if (sort !== 'name-asc') p.set('sort', sort);
   return `/gallery${p.size > 0 ? `?${p.toString()}` : ''}`;
 }
 
 export function GalleryFilterBar() {
   const router = useRouter();
   const [q, setQ]           = useState('');
-  const [sort, setSort]     = useState('name-asc');
   const [format, setFormat] = useState<FormatId>('all');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(buildHref(format, q, sort));
+    router.push(buildHref(format, q));
   };
 
   const go = (nextFormat: FormatId) => {
     setFormat(nextFormat);
-    router.push(buildHref(nextFormat, q, sort));
+    router.push(buildHref(nextFormat, q));
   };
 
   return (
@@ -145,37 +134,6 @@ export function GalleryFilterBar() {
               <X size={13} />
             </button>
           )}
-        </div>
-
-        {/* Sort */}
-        <div className="hidden shrink-0 border-l border-neutral-100 sm:block">
-          <div className="relative">
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              aria-label="Sort"
-              className="h-full appearance-none border-0 bg-transparent py-3.5 pl-4 pr-8 text-xs font-semibold text-neutral-600 focus:outline-none md:min-w-[9.5rem]"
-            >
-              {SORT_OPTIONS.map((o) => (
-                <option key={o.id} value={o.id}>{o.label}</option>
-              ))}
-            </select>
-            <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400" aria-hidden>▾</span>
-          </div>
-        </div>
-
-        {/* View toggle */}
-        <div className="hidden shrink-0 items-center gap-0.5 border-l border-neutral-100 px-2.5 sm:flex">
-          <button type="button" aria-label="Grid view"
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 transition-colors"
-          >
-            <LayoutGrid size={15} aria-hidden />
-          </button>
-          <button type="button" aria-label="List view"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
-          >
-            <Rows3 size={15} aria-hidden />
-          </button>
         </div>
 
         {/* Search CTA */}
