@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { RefreshCw, Shuffle, ArrowRight } from 'lucide-react';
+import { RefreshCw, ArrowRight } from 'lucide-react';
 import { CountryHubFolderGrid } from '@/components/gallery/CountryHubFolderGrid';
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
@@ -60,26 +60,6 @@ export function LandingFlagGalleryPreview() {
   return (
     <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-7 md:py-9 lg:py-10">
       <div className="marketplace-shell">
-        {/* Section header */}
-        <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-blue)]">Explore the catalog</p>
-            <h2 className="mt-1.5 text-xl font-semibold tracking-tight text-[#2a2a2a] sm:text-2xl">
-              Popular country collections
-            </h2>
-          </div>
-          {!loading && !empty && !errored ? (
-            <button
-              type="button"
-              onClick={() => void load()}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-300 hover:bg-neutral-50 active:scale-95"
-              title="Shuffle collections"
-            >
-              <Shuffle size={15} aria-hidden />
-              Shuffle
-            </button>
-          ) : null}
-        </div>
 
         {loading ? (
           <ul
