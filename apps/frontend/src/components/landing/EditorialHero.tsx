@@ -8,7 +8,7 @@ export function EditorialHero() {
 
   return (
     <section
-      className="relative overflow-hidden"
+      className="relative overflow-hidden -mt-[3.5rem] pt-[3.5rem] md:-mt-16 md:pt-16 lg:-mt-[4.5rem] lg:pt-[4.5rem]"
       style={{ background: 'var(--brand-blue)' }}
       aria-labelledby={headingId}
     >
