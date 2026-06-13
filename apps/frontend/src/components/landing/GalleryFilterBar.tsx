@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Search, X, LayoutGrid, Rows3, ArrowRight,
-  Crown, Tag, FileCode2, Image, Clapperboard,
-  Layers, Compass, Building2, Map, Globe2, Clock3,
+  FileCode2, Image, Clapperboard, Layers,
 } from 'lucide-react';
 
 const FORMAT_TABS = [
@@ -56,14 +55,6 @@ const COLOR_MAP: Record<string, { card: string; icon: string; ring: string }> = 
   rose:   { card: 'bg-rose-50   border-rose-200   text-rose-700',   icon: 'text-rose-500',   ring: 'ring-rose-400'   },
 };
 
-const KIND_TABS = [
-  { id: null,          label: 'All',         Icon: Compass   },
-  { id: 'independent', label: 'Independent', Icon: Building2 },
-  { id: 'us-states',   label: 'US States',   Icon: Map       },
-  { id: 'autonomy',    label: 'Autonomous',  Icon: Globe2    },
-  { id: 'historical',  label: 'Historical',  Icon: Clock3    },
-] as const;
-
 const SORT_OPTIONS = [
   { id: 'name-asc',     label: 'Name · A → Z'  },
   { id: 'name-desc',    label: 'Name · Z → A'  },
@@ -71,10 +62,9 @@ const SORT_OPTIONS = [
   { id: 'designs-asc',  label: 'Fewest designs'},
 ] as const;
 
-function buildHref(format: FormatId, kind: string | null, q: string, sort: string) {
+function buildHref(format: FormatId, q: string, sort: string) {
   const p = new URLSearchParams();
   if (format !== 'all') p.set('format', format);
-  if (kind) p.set('kind', kind);
   if (q.trim()) p.set('q', q.trim());
   if (sort !== 'name-asc') p.set('sort', sort);
   return `/gallery${p.size > 0 ? `?${p.toString()}` : ''}`;
@@ -85,21 +75,19 @@ export function GalleryFilterBar() {
   const [q, setQ]           = useState('');
   const [sort, setSort]     = useState('name-asc');
   const [format, setFormat] = useState<FormatId>('all');
-  const [type, setType]     = useState<'all' | 'free' | 'premium'>('all');
-  const [kind, setKind]     = useState<string | null>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(buildHref(format, kind, q, sort));
+    router.push(buildHref(format, q, sort));
   };
 
   const go = (nextFormat: FormatId) => {
     setFormat(nextFormat);
-    router.push(buildHref(nextFormat, kind, q, sort));
+    router.push(buildHref(nextFormat, q, sort));
   };
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl bg-white shadow-[0_16px_48px_-8px_rgba(0,0,0,0.22)]">
+    <div className="w-full overflow-hidden rounded-2xl bg-white ring-1 ring-white/40 shadow-[0_16px_48px_-8px_rgba(0,0,0,0.22)]">
 
       {/* ── Row 1: Format category cards ── */}
       <div className="grid grid-cols-5 divide-x divide-neutral-100">
@@ -200,69 +188,6 @@ export function GalleryFilterBar() {
         </button>
       </form>
 
-      {/* ── Row 3: secondary filters ── */}
-      <div className="flex flex-wrap items-center gap-x-0 border-t border-neutral-100 px-3 py-2">
-        {/* Kind */}
-        <div className="flex flex-wrap gap-0.5">
-          {KIND_TABS.map(({ id, label, Icon }) => {
-            const active = kind === id;
-            return (
-              <button
-                key={label}
-                type="button"
-                onClick={() => { setKind(id); router.push(buildHref(format, id, q, sort)); }}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
-                  active
-                    ? 'bg-[var(--brand-blue)] text-white'
-                    : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800'
-                }`}
-              >
-                <Icon size={12} aria-hidden />
-                {label}
-              </button>
-            );
-          })}
-        </div>
-
-        <span className="mx-2 h-4 w-px shrink-0 bg-neutral-200" aria-hidden />
-
-        {/* Type */}
-        <div className="flex gap-0.5">
-          <button
-            type="button"
-            onClick={() => setType('all')}
-            className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
-              type === 'all' ? 'bg-neutral-800 text-white' : 'text-neutral-500 hover:bg-neutral-100'
-            }`}
-          >
-            All types
-          </button>
-          <button
-            type="button"
-            onClick={() => setType('free')}
-            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
-              type === 'free'
-                ? 'bg-emerald-500 text-white'
-                : 'text-neutral-500 hover:bg-emerald-50 hover:text-emerald-700'
-            }`}
-          >
-            <Tag size={11} aria-hidden />
-            Free
-          </button>
-          <button
-            type="button"
-            onClick={() => setType('premium')}
-            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
-              type === 'premium'
-                ? 'bg-amber-500 text-white'
-                : 'text-neutral-500 hover:bg-amber-50 hover:text-amber-700'
-            }`}
-          >
-            <Crown size={11} aria-hidden />
-            Premium
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
