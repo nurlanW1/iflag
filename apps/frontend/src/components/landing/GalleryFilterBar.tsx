@@ -78,40 +78,8 @@ export function GalleryFilterBar() {
   return (
     <div className="w-full overflow-hidden rounded-2xl bg-white ring-1 ring-white/40 shadow-[0_16px_48px_-8px_rgba(0,0,0,0.22)]">
 
-      {/* ── Row 1: Format category cards ── */}
-      <div className="grid grid-cols-5 divide-x divide-neutral-100">
-        {FORMAT_TABS.map(({ id, label, desc, Icon, color }) => {
-          const active = format === id;
-          const c = COLOR_MAP[color];
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => go(id)}
-              className={`group flex flex-col items-center gap-1.5 px-3 py-4 transition-all duration-150 ${
-                active
-                  ? `${c.card} border-b-2`
-                  : 'bg-white hover:bg-neutral-50 border-b-2 border-transparent'
-              }`}
-            >
-              <span className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
-                active ? `bg-white/70 ${c.icon}` : 'bg-neutral-100 text-neutral-500 group-hover:bg-neutral-200'
-              }`}>
-                <Icon size={18} aria-hidden />
-              </span>
-              <span className={`text-xs font-semibold leading-none ${active ? '' : 'text-neutral-700'}`}>
-                {label}
-              </span>
-              <span className={`text-[10px] leading-none ${active ? 'opacity-70' : 'text-neutral-400'}`}>
-                {desc}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── Row 2: Search bar ── */}
-      <form onSubmit={handleSearch} className="flex items-center border-t border-neutral-100">
+      {/* ── Row 1: Search bar ── */}
+      <form onSubmit={handleSearch} className="flex items-center">
         <div className="relative flex-1">
           <Search
             className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
@@ -135,8 +103,6 @@ export function GalleryFilterBar() {
             </button>
           )}
         </div>
-
-        {/* Search CTA */}
         <button
           type="submit"
           className="flex shrink-0 items-center gap-1.5 border-l border-neutral-100 bg-[var(--brand-blue)] px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--brand-blue-hover)]"
@@ -145,6 +111,38 @@ export function GalleryFilterBar() {
           <ArrowRight size={15} aria-hidden />
         </button>
       </form>
+
+      {/* ── Row 2: Format category cards ── */}
+      <div className="grid grid-cols-5 divide-x divide-neutral-100 border-t border-neutral-100">
+        {FORMAT_TABS.map(({ id, label, desc, Icon, color }) => {
+          const active = format === id;
+          const c = COLOR_MAP[color];
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => go(id)}
+              className={`group flex flex-col items-center gap-1.5 px-3 py-4 transition-all duration-150 ${
+                active
+                  ? `${c.card} border-t-2 -mt-px`
+                  : 'bg-white hover:bg-neutral-50 border-t-2 border-transparent -mt-px'
+              }`}
+            >
+              <span className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
+                active ? `bg-white/70 ${c.icon}` : 'bg-neutral-100 text-neutral-500 group-hover:bg-neutral-200'
+              }`}>
+                <Icon size={18} aria-hidden />
+              </span>
+              <span className={`text-xs font-semibold leading-none ${active ? '' : 'text-neutral-700'}`}>
+                {label}
+              </span>
+              <span className={`text-[10px] leading-none ${active ? 'opacity-70' : 'text-neutral-400'}`}>
+                {desc}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
     </div>
   );
