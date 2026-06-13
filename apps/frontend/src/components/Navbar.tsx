@@ -18,11 +18,13 @@ import {
   ShoppingCart,
   LayoutGrid,
   Search,
+  Gamepad2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SITE_NAME } from '@/lib/seo/site-config';
 import { PageShell } from '@/components/layout';
+import { FlagGame } from '@/components/FlagGame';
 
 function useAuthPageLinks() {
   const pathname = usePathname() ?? '/';
@@ -99,6 +101,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [gameOpen, setGameOpen] = useState(false);
   const { signInHref, signUpHref } = useAuthPageLinks();
 
   useEffect(() => {
@@ -124,8 +127,8 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
   } as const;
 
   const shellClass = scrolled
-    ? 'border-white/15 bg-[var(--brand-blue)] shadow-[0_4px_24px_-6px_rgba(15,30,70,0.4)] backdrop-blur-md'
-    : 'border-white/10 bg-[var(--brand-blue)]/90 shadow-[0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md';
+    ? 'border-white/15 shadow-[0_4px_24px_-6px_rgba(15,30,70,0.4)] backdrop-blur-md'
+    : 'border-white/10 shadow-[0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md';
 
   function DesktopAuthCluster() {
     return (
@@ -218,6 +221,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
         {
           '--nav-link-text': 'rgba(255,255,255,0.88)',
           '--nav-link-hover': '#ffffff',
+          backgroundColor: 'var(--brand-blue)',
         } as React.CSSProperties
       }
     >
@@ -280,6 +284,14 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             <Link href="/gallery" className={navTextMd}>
               Collections
             </Link>
+            <button
+              type="button"
+              onClick={() => setGameOpen(true)}
+              className={`flex items-center gap-1.5 ${navTextMd}`}
+            >
+              <Gamepad2 size={16} className="shrink-0 opacity-80" aria-hidden />
+              Flag Game
+            </button>
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-3 lg:gap-5">
@@ -356,6 +368,14 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                     <LayoutGrid size={20} aria-hidden />
                     Collections
                   </Link>
+                  <button
+                    type="button"
+                    className="flex min-h-[3rem] w-full items-center gap-3 px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
+                    onClick={() => { setMobileMenuOpen(false); setGameOpen(true); }}
+                  >
+                    <Gamepad2 size={20} aria-hidden />
+                    Flag Game
+                  </button>
 
                   <NavbarAdminNav clerkUiEnabled={clerkUiEnabled} legacyUser={user} onNavigate={() => setMobileMenuOpen(false)} />
 
@@ -450,6 +470,10 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
           ) : null}
         </AnimatePresence>
       </PageShell>
+
+      <AnimatePresence>
+        {gameOpen && <FlagGame onClose={() => setGameOpen(false)} />}
+      </AnimatePresence>
     </nav>
   );
 }
