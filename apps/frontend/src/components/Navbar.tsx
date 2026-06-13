@@ -130,6 +130,10 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
     ? 'border-white/15 shadow-[0_4px_24px_-6px_rgba(15,30,70,0.4)] backdrop-blur-md'
     : 'border-white/10 shadow-[0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md';
 
+  const signUpClass = scrolled
+    ? 'inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg bg-white px-7 text-base font-semibold text-[var(--brand-blue)] shadow-md transition-all hover:bg-white/90'
+    : 'inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg border-2 border-white/70 px-7 text-base font-semibold text-white transition-all hover:border-white hover:bg-white/10';
+
   function DesktopAuthCluster() {
     return (
       <>
@@ -172,10 +176,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                   <Link href={signInHref} className={`${navLogin} whitespace-nowrap`}>
                     Log in
                   </Link>
-                  <Link
-                    href={signUpHref}
-                    className="inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg bg-white px-7 text-base font-semibold text-[var(--brand-blue)] shadow-md transition-colors hover:bg-white/90"
-                  >
+                  <Link href={signUpHref} className={signUpClass}>
                     Sign up
                   </Link>
                 </div>
@@ -201,10 +202,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             <Link href={signInHref} className={navLogin}>
               Log in
             </Link>
-            <Link
-              href={signUpHref}
-              className="inline-flex h-11 min-h-[44px] items-center justify-center rounded-lg bg-white px-7 text-base font-semibold text-[var(--brand-blue)] shadow-md transition-colors hover:bg-white/90"
-            >
+            <Link href={signUpHref} className={signUpClass}>
               Sign up
             </Link>
           </div>
