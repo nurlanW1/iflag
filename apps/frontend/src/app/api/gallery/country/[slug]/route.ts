@@ -87,7 +87,7 @@ function loadDiskVideosForCountry(countrySlug: string): VideoVariant[] {
         const stat = fs.statSync(filePath);
         fileSize = `${(stat.size / (1024 * 1024)).toFixed(2)} MB`;
       } catch { /* ignore */ }
-      const videoUrl = `/api/gallery/video?country=${encodeURIComponent(countrySlug)}&file=${encodeURIComponent(file)}`;
+      const videoUrl = `/api/gallery/video/${encodeURIComponent(countrySlug)}/${encodeURIComponent(file)}`;
       variants.push({
         id: fileId,
         productSlug: fileId,
@@ -201,7 +201,7 @@ function loadFromFlagStock(countrySlug: string) {
         fileSize = `${(stats.size / (1024 * 1024)).toFixed(2)} MB`;
       } catch { /* ignore */ }
 
-      const imageUrl = `/api/gallery/video?country=${encodeURIComponent(countrySlug)}&file=${encodeURIComponent(file)}`;
+      const imageUrl = `/api/gallery/video/${encodeURIComponent(countrySlug)}/${encodeURIComponent(file)}`;
       variants.push({
         id: fileId,
         productSlug: fileId,
