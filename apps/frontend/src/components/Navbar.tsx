@@ -76,7 +76,7 @@ function NavbarCartIcon({
   return (
     <Link
       href="/cart"
-      className="relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg p-2 text-[var(--nav-link-text)] transition-colors hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
+      className="relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg p-2 text-[var(--nav-link-text)] transition-colors hover:bg-white/15 hover:text-[var(--nav-link-hover)]"
       aria-label={ariaLabel}
       title="Shopping cart"
     >
@@ -123,10 +123,9 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
     },
   } as const;
 
-  /* Oq / och kulrang fon — sahifa `#fafaf9` dan ajralishi uchun */
   const shellClass = scrolled
-    ? 'border-neutral-200 bg-white shadow-[0_4px_20px_-8px_rgba(30,58,95,0.1)] backdrop-blur-md md:shadow-[0_8px_30px_-12px_rgba(30,58,95,0.12)]'
-    : 'border-neutral-200/80 bg-white/95 shadow-[0_1px_0_rgba(30,58,95,0.06)] backdrop-blur-md';
+    ? 'border-white/15 bg-[var(--brand-blue)] shadow-[0_4px_24px_-6px_rgba(15,30,70,0.4)] backdrop-blur-md'
+    : 'border-white/10 bg-[var(--brand-blue)]/90 shadow-[0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md';
 
   function DesktopAuthCluster() {
     return (
@@ -136,7 +135,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
         {user ? (
           <>
             <NavbarCartIcon />
-            <div className="flex items-center gap-4 border-l border-neutral-200 pl-6">
+            <div className="flex items-center gap-4 border-l border-white/20 pl-6">
               <Link
                 href="/dashboard"
                 className="flex max-w-[14rem] items-center gap-2.5 text-base font-semibold text-[var(--nav-link-text)] transition hover:text-[var(--nav-link-hover)]"
@@ -147,7 +146,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
               <button
                 type="button"
                 onClick={() => logout()}
-                className="rounded-lg p-2.5 text-[var(--nav-link-text)] opacity-85 transition hover:bg-[var(--brand-blue-soft)] hover:opacity-100 hover:text-[var(--nav-link-hover)]"
+                className="rounded-lg p-2.5 text-[var(--nav-link-text)] opacity-85 transition hover:bg-white/15 hover:opacity-100 hover:text-[var(--nav-link-hover)]"
                 aria-label="Sign out"
               >
                 <LogOut size={22} aria-hidden />
@@ -158,9 +157,9 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
           <>
             <ClerkLoading>
               <div className="flex items-center gap-4" aria-hidden>
-                <div className="h-11 w-[4.5rem] animate-pulse rounded-lg bg-neutral-200/80" />
-                <div className="h-11 w-28 animate-pulse rounded-lg bg-neutral-200/80" />
-                <div className="h-11 w-11 animate-pulse rounded-full bg-neutral-200/80" />
+                <div className="h-11 w-[4.5rem] animate-pulse rounded-lg bg-white/20" />
+                <div className="h-11 w-28 animate-pulse rounded-lg bg-white/20" />
+                <div className="h-11 w-11 animate-pulse rounded-full bg-white/20" />
               </div>
             </ClerkLoading>
             <ClerkLoaded>
@@ -172,7 +171,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                   </Link>
                   <Link
                     href={signUpHref}
-                    className="inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg bg-[var(--brand-blue)] px-7 text-base font-semibold text-white shadow-md transition-colors hover:bg-[var(--brand-blue-hover)]"
+                    className="inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg bg-white px-7 text-base font-semibold text-[var(--brand-blue)] shadow-md transition-colors hover:bg-white/90"
                   >
                     Sign up
                   </Link>
@@ -201,7 +200,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             </Link>
             <Link
               href={signUpHref}
-              className="inline-flex h-11 min-h-[44px] items-center justify-center rounded-lg bg-[var(--brand-blue)] px-7 text-base font-semibold text-white shadow-md transition-colors hover:bg-[var(--brand-blue-hover)]"
+              className="inline-flex h-11 min-h-[44px] items-center justify-center rounded-lg bg-white px-7 text-base font-semibold text-[var(--brand-blue)] shadow-md transition-colors hover:bg-white/90"
             >
               Sign up
             </Link>
@@ -215,6 +214,12 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
     <nav
       className={`sticky top-0 z-50 w-full border-b transition-[background-color,border-color,box-shadow] duration-300 supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)] ${shellClass}`}
       aria-label="Primary"
+      style={
+        {
+          '--nav-link-text': 'rgba(255,255,255,0.88)',
+          '--nav-link-hover': '#ffffff',
+        } as React.CSSProperties
+      }
     >
       <PageShell className="!py-0">
         {/* Phones: logo + search + cart + menu */}
@@ -225,18 +230,18 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
           >
             <Flag
               size={28}
-              className="h-7 w-7 shrink-0 text-[var(--brand-blue)]"
+              className="h-7 w-7 shrink-0 text-white"
               aria-hidden
               strokeWidth={1.75}
             />
-            <span className="truncate text-lg font-bold tracking-tight text-[var(--brand-blue)]">{SITE_NAME}</span>
+            <span className="truncate text-lg font-bold tracking-tight text-white">{SITE_NAME}</span>
           </Link>
           <div className="flex shrink-0 items-center gap-0.5">
             <Link
               href="/gallery"
               aria-label="Search gallery"
               title="Country gallery"
-              className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-[var(--nav-link-text)] transition-colors hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
+              className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-[var(--nav-link-text)] transition-colors hover:bg-white/15 hover:text-[var(--nav-link-hover)]"
             >
               <Search size={22} aria-hidden strokeWidth={2} />
             </Link>
@@ -244,7 +249,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             <button
               type="button"
               onClick={() => setMobileMenuOpen((o) => !o)}
-              className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-[var(--nav-link-text)] transition hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
+              className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-lg text-[var(--nav-link-text)] transition hover:bg-white/15 hover:text-[var(--nav-link-hover)]"
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-nav-menu"
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
@@ -257,8 +262,8 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
         {/* Tablets & desktop */}
         <div className="hidden min-h-[64px] flex-row items-center gap-4 py-3 md:flex lg:min-h-[72px] lg:gap-7 lg:py-4 xl:gap-8">
           <Link href="/" className="flex shrink-0 items-center gap-2 transition hover:opacity-90 lg:gap-3">
-            <Flag size={34} className="h-8 w-8 shrink-0 text-[var(--brand-blue)] lg:h-10 lg:w-10" aria-hidden strokeWidth={1.75} />
-            <span className="text-lg font-bold tracking-tight text-[var(--brand-blue)] lg:text-[1.65rem]">{SITE_NAME}</span>
+            <Flag size={34} className="h-8 w-8 shrink-0 text-white lg:h-10 lg:w-10" aria-hidden strokeWidth={1.75} />
+            <span className="text-lg font-bold tracking-tight text-white lg:text-[1.65rem]">{SITE_NAME}</span>
           </Link>
 
           <nav
@@ -306,6 +311,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                 exit={{ x: '100%' }}
                 transition={{ type: 'tween', duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="fixed inset-y-0 right-0 z-[61] flex w-[min(100%,300px)] max-w-[100vw] flex-col border-l border-neutral-200 bg-white shadow-[0_0_40px_-12px_rgba(30,58,95,0.35)] md:hidden"
+                style={{ '--nav-link-text': '#334155', '--nav-link-hover': '#1d4ed8' } as React.CSSProperties}
               >
                 <div className="flex shrink-0 items-center justify-between border-b border-neutral-100 px-4 py-3">
                   <span className="text-sm font-bold uppercase tracking-wide text-neutral-600">Navigate</span>
@@ -502,7 +508,7 @@ function AdminNavLink({
   return (
     <Link
       href="/admin"
-      className="inline-flex items-center gap-2 rounded-lg border-2 border-[rgba(23,37,84,0.28)] bg-[var(--brand-blue-soft)] px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] shadow-sm transition hover:border-[var(--nav-link-hover)] hover:text-[var(--nav-link-hover)]"
+      className="inline-flex items-center gap-2 rounded-lg border-2 border-white/30 bg-white/10 px-4 py-2 text-base font-semibold text-white shadow-sm transition hover:border-white/60 hover:bg-white/20"
       title="Admin panel"
       onClick={onNavigate}
     >
