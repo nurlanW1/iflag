@@ -9,6 +9,115 @@ import { fetchCountryGalleryFromDb } from '@/lib/server/gallery-from-db';
 
 export const dynamic = 'force-dynamic';
 
+const WORLD_COUNTRY_PATHS = [
+  'D:\\flagim\\Country\\world_country',
+  path.join(process.cwd(), '..', '..', 'Country', 'world_country'),
+  path.join(process.cwd(), '..', 'Country', 'world_country'),
+  path.join(process.cwd(), '..', '..', '..', 'Country', 'world_country'),
+];
+
+const VIDEO_EXTS = new Set(['.mp4', '.webm', '.mov']);
+
+function findWorldCountryPath(): string | null {
+  for (const p of WORLD_COUNTRY_PATHS) {
+    if (fs.existsSync(p)) return p;
+  }
+  return null;
+}
+
+function findCountryFolder(worldCountryPath: string, slug: string): string | null {
+  const norm = slug.toLowerCase().replace(/-/g, ' ');
+  try {
+    const entries = fs.readdirSync(worldCountryPath);
+    return entries.find((e) => e.toLowerCase() === norm) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+type VideoVariant = {
+  id: string;
+  productSlug: string;
+  name: string;
+  type: string;
+  thumbnail: string;
+  isPremiumDesign: boolean;
+  formats: Array<{
+    id: string;
+    format: string;
+    formatCode: string;
+    category: 'video';
+    file: string;
+    url: string;
+    previewUrl: string;
+    premiumTier: 'free' | 'paid';
+    downloadProtected: boolean;
+    size: string;
+    dimensions: string;
+  }>;
+};
+
+function loadDiskVideosForCountry(countrySlug: string): VideoVariant[] {
+  const worldCountryPath = findWorldCountryPath();
+  if (!worldCountryPath) return [];
+
+  const countryFolder = findCountryFolder(worldCountryPath, countrySlug);
+  if (!countryFolder) return [];
+
+  const countryDir = path.join(worldCountryPath, countryFolder);
+  const resolvedBase = path.resolve(worldCountryPath);
+  const variants: VideoVariant[] = [];
+
+  const scanDir = (dir: string, inFree: boolean) => {
+    if (!fs.existsSync(dir)) return;
+    let entries: string[];
+    try {
+      entries = fs.readdirSync(dir);
+    } catch {
+      return;
+    }
+    for (const file of entries) {
+      const ext = path.extname(file).toLowerCase();
+      if (!VIDEO_EXTS.has(ext)) continue;
+      const filePath = path.join(dir, file);
+      if (!path.resolve(filePath).startsWith(resolvedBase)) continue;
+      const fileId = `disk-video-${file.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
+      let fileSize = 'Unknown';
+      try {
+        const stat = fs.statSync(filePath);
+        fileSize = `${(stat.size / (1024 * 1024)).toFixed(2)} MB`;
+      } catch { /* ignore */ }
+      const videoUrl = `/api/gallery/video?country=${encodeURIComponent(countrySlug)}&file=${encodeURIComponent(file)}`;
+      variants.push({
+        id: fileId,
+        productSlug: fileId,
+        name: file.replace(/\.[^.]+$/, '').replace(/_/g, ' '),
+        type: 'video',
+        thumbnail: videoUrl,
+        isPremiumDesign: !inFree,
+        formats: [{
+          id: `${fileId}-${ext.slice(1)}`,
+          format: ext.slice(1).toUpperCase(),
+          formatCode: ext.slice(1),
+          category: 'video',
+          file,
+          url: videoUrl,
+          previewUrl: videoUrl,
+          premiumTier: inFree ? 'free' : 'paid',
+          downloadProtected: !inFree,
+          size: fileSize,
+          dimensions: 'Video',
+        }],
+      });
+    }
+  };
+
+  scanDir(countryDir, false);
+  scanDir(path.join(countryDir, 'free'), true);
+
+  return variants;
+}
+
 function filenameToCountryName(filename: string): string {
   let name = filename.replace(/_flag\.(jpg|jpeg)$/i, '');
   name = name.replace(/_/g, ' ');
@@ -43,22 +152,13 @@ async function loadFromDatabase(slug: string) {
 function loadFromFlagStock(countrySlug: string) {
   const countryName = slugToCountryName(countrySlug);
 
-  const possiblePaths = [
-    path.join(process.cwd(), '../../flag_stock'),
-    path.join(process.cwd(), '../../../flag_stock'),
-    'D:\\flagim\\iflag\\flag_stock',
-    path.join(process.cwd(), 'flag_stock'),
-    path.join(process.cwd(), '..', 'flag_stock'),
-    path.join(process.cwd(), '..', '..', 'flag_stock'),
-  ];
-
-  let flagStockPath: string | null = null;
-  for (const possiblePath of possiblePaths) {
-    if (fs.existsSync(possiblePath)) {
-      flagStockPath = possiblePath;
-      break;
-    }
-  }
+  const worldCountryPath = findWorldCountryPath();
+  const flagStockPath = worldCountryPath
+    ? (() => {
+        const folder = findCountryFolder(worldCountryPath, countrySlug);
+        return folder ? path.join(worldCountryPath, folder, 'free') : null;
+      })()
+    : null;
 
   if (!flagStockPath) {
     return null;
@@ -90,52 +190,40 @@ function loadFromFlagStock(countrySlug: string) {
 
     files.forEach((file) => {
       const lowerFile = file.toLowerCase();
-      if (lowerFile.endsWith('.jpg') || lowerFile.endsWith('.jpeg')) {
-        const fileCountryName = filenameToCountryName(file);
-        const fileCountrySlug = countryToSlug(fileCountryName);
+      if (!lowerFile.endsWith('.jpg') && !lowerFile.endsWith('.jpeg')) return;
 
-        if (
-          fileCountrySlug === countrySlug ||
-          fileCountryName.toLowerCase() === countryName.toLowerCase()
-        ) {
-          const fileId = file.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-          const filePath = path.join(flagStockPath!, file);
+      const fileId = file.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+      const filePath = path.join(flagStockPath!, file);
 
-          let fileSize = 'Unknown';
-          let dimensions = 'Original';
-          try {
-            const stats = fs.statSync(filePath);
-            const sizeInMB = (stats.size / (1024 * 1024)).toFixed(2);
-            fileSize = `${sizeInMB} MB`;
-          } catch {
-            // ignore
-          }
+      let fileSize = 'Unknown';
+      try {
+        const stats = fs.statSync(filePath);
+        fileSize = `${(stats.size / (1024 * 1024)).toFixed(2)} MB`;
+      } catch { /* ignore */ }
 
-          const imageUrl = `/api/gallery/image?file=${encodeURIComponent(file)}`;
-          variants.push({
-            id: fileId,
-            productSlug: fileId,
-            name: 'Standard Flag',
-            type: 'standard',
-            thumbnail: imageUrl,
-            formats: [
-              {
-                id: `${fileId}-jpg`,
-                format: 'JPG',
-                formatCode: 'jpg',
-                category: 'raster',
-                file: file,
-                url: imageUrl,
-                previewUrl: imageUrl,
-                premiumTier: 'free',
-                downloadProtected: false,
-                size: fileSize,
-                dimensions: dimensions,
-              },
-            ],
-          });
-        }
-      }
+      const imageUrl = `/api/gallery/video?country=${encodeURIComponent(countrySlug)}&file=${encodeURIComponent(file)}`;
+      variants.push({
+        id: fileId,
+        productSlug: fileId,
+        name: file.replace(/\.[^.]+$/, '').replace(/_/g, ' ') || 'Standard Flag',
+        type: 'standard',
+        thumbnail: imageUrl,
+        formats: [
+          {
+            id: `${fileId}-jpg`,
+            format: 'JPG',
+            formatCode: 'jpg',
+            category: 'raster',
+            file,
+            url: imageUrl,
+            previewUrl: imageUrl,
+            premiumTier: 'free',
+            downloadProtected: false,
+            size: fileSize,
+            dimensions: 'Original',
+          },
+        ],
+      });
     });
   } catch (err) {
     console.error(`Error reading directory ${flagStockPath}:`, err);
@@ -186,18 +274,30 @@ export async function GET(
     }
 
     const fromDb = await loadFromDatabase(slug);
+    const diskVideos = loadDiskVideosForCountry(slug);
+
     if (fromDb && fromDb.variants.length > 0) {
-      return NextResponse.json(fromDb, { headers: { 'Cache-Control': 'no-store' } });
+      const merged = diskVideos.length > 0
+        ? { ...fromDb, variants: [...fromDb.variants, ...diskVideos] }
+        : fromDb;
+      return NextResponse.json(merged, { headers: { 'Cache-Control': 'no-store' } });
     }
 
     const fromBackend = await fetchCountryGalleryFromBackendApi(slug);
     if (fromBackend && fromBackend.variants.length > 0) {
       console.info(`[gallery/country] served ${slug} from backend API fallback`);
-      return NextResponse.json(fromBackend, { headers: { 'Cache-Control': 'no-store' } });
+      const merged = diskVideos.length > 0
+        ? { ...fromBackend, variants: [...fromBackend.variants, ...diskVideos] }
+        : fromBackend;
+      return NextResponse.json(merged, { headers: { 'Cache-Control': 'no-store' } });
     }
 
     const fromDisk = loadFromFlagStock(slug);
     if (fromDisk) {
+      if (diskVideos.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (fromDisk.variants as any[]).push(...diskVideos);
+      }
       return NextResponse.json(fromDisk);
     }
 
