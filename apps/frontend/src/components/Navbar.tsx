@@ -133,7 +133,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
   } as const;
 
   const shellClass = isHero
-    ? 'border-white/10 backdrop-blur-md'
+    ? 'border-transparent'
     : scrolled
       ? 'border-neutral-200 bg-white shadow-[0_4px_20px_-8px_rgba(30,58,95,0.12)] backdrop-blur-md'
       : 'border-neutral-200/80 bg-white/95 shadow-[0_1px_0_rgba(30,58,95,0.06)] backdrop-blur-md';
@@ -232,7 +232,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
         {
           '--nav-link-text': isHero ? 'rgba(255,255,255,0.88)' : '#334155',
           '--nav-link-hover': isHero ? '#ffffff' : 'var(--brand-blue)',
-          backgroundColor: isHero ? 'var(--brand-blue)' : undefined,
+          backgroundColor: isHero ? 'transparent' : undefined,
           transition: 'background-color 0.3s, color 0.3s',
         } as React.CSSProperties
       }
