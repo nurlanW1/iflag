@@ -151,10 +151,10 @@ export function FlagGame({ onClose }: { onClose: () => void }) {
       >
         <button
           onClick={onClose}
-          className="absolute right-3 top-3 rounded-lg p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
+          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-neutral-800"
           aria-label="Close game"
         >
-          <X size={18} />
+          <X size={16} strokeWidth={2.5} />
         </button>
 
         <p className="mb-1 text-center text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-400">
