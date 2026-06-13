@@ -46,6 +46,26 @@ const nextConfig = {
       },
     ];
   },
+  async headers() {
+    const csp = [
+      "default-src 'self'",
+      // 'unsafe-eval' required by Clerk auth and Paddle billing SDKs
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https: blob:",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "img-src 'self' https: data: blob:",
+      "media-src 'self' https: blob:",
+      "connect-src 'self' https: wss: blob:",
+      "frame-src 'self' https://js.paddle.com https://buy.paddle.com https://*.clerk.accounts.dev https://accounts.clerk.dev",
+      "worker-src 'self' blob:",
+    ].join('; ');
+    return [
+      {
+        source: '/(.*)',
+        headers: [{ key: 'Content-Security-Policy', value: csp }],
+      },
+    ];
+  },
   /**
    * Monorepo: Turbopack can mis-infer workspace root as `src/app/` and crash with “Next.js package not found”.
    * @see https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory
@@ -68,7 +88,7 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
     /** Allow catalog SVG / vector previews through the image pipeline when optimization is enabled. */
     dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    contentSecurityPolicy: "default-src 'self'; sandbox;",
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 86_400,
