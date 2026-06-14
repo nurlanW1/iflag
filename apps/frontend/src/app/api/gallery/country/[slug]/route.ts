@@ -265,7 +265,8 @@ function loadFromFlagStock(countrySlug: string) {
   };
 }
 
-const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+const PREVIEWABLE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
+const ALL_FLAG_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg', '.eps', '.ai', '.pdf', '.psd']);
 
 async function loadFromR2(countrySlug: string) {
   const prefix = `flags/${countrySlug}/`;
@@ -289,7 +290,7 @@ async function loadFromR2(countrySlug: string) {
       id: string;
       format: string;
       formatCode: string;
-      category: 'raster';
+      category: 'raster' | 'vector';
       file: string;
       url: string;
       previewUrl: string;
@@ -302,25 +303,27 @@ async function loadFromR2(countrySlug: string) {
 
   for (const obj of objects) {
     const ext = path.extname(obj.key).toLowerCase();
-    if (!IMAGE_EXTS.has(ext)) continue;
+    if (!ALL_FLAG_EXTS.has(ext)) continue;
     const filename = obj.key.split('/').pop() ?? obj.key;
     const fileId = `r2-${obj.key.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
     const extCode = ext.slice(1);
     const url = `${r2Base}/${obj.key}`;
+    const isVector = ext === '.svg' || ext === '.eps' || ext === '.ai';
+    const isPreviewable = PREVIEWABLE_EXTS.has(ext);
     variants.push({
       id: fileId,
       productSlug: fileId,
       name: filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
-      type: 'standard',
-      thumbnail: url,
+      type: isVector ? 'vector' : 'standard',
+      thumbnail: isPreviewable ? url : '',
       formats: [{
         id: `${fileId}-${extCode}`,
         format: extCode.toUpperCase(),
         formatCode: extCode,
-        category: 'raster',
+        category: isVector ? 'vector' : 'raster',
         file: filename,
         url,
-        previewUrl: url,
+        previewUrl: isPreviewable ? url : '',
         premiumTier: 'free',
         downloadProtected: false,
         size: obj.size > 0 ? `${(obj.size / (1024 * 1024)).toFixed(2)} MB` : 'Unknown',
