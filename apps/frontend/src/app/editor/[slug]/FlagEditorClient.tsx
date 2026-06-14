@@ -1072,11 +1072,13 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
         </div>
 
         {/* ── Right properties panel ──────────────────────────────────────── */}
-        {selEl && (
-          <div className="flex shrink-0 flex-col overflow-y-auto"
-            style={{ width: 224, background: T.panel, borderLeft: `1px solid ${T.border}` }}>
-            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: T.border }}>
-              <span className="text-xs font-semibold capitalize" style={{ color: T.text }}>{selEl.kind}</span>
+        <div className="flex shrink-0 flex-col overflow-y-auto"
+          style={{ width: 224, background: T.panel, borderLeft: `1px solid ${T.border}` }}>
+          <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: T.border }}>
+            <span className="text-xs font-semibold capitalize" style={{ color: T.text }}>
+              {selEl ? selEl.kind : 'Properties'}
+            </span>
+            {selEl && (
               <button onClick={deleteSelected}
                 className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
                 style={{ color: '#ef4444' }}
@@ -1084,7 +1086,18 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                 <Trash2 size={13} />
               </button>
+            )}
+          </div>
+          {!selEl && (
+            <div className="flex flex-1 flex-col items-center justify-center gap-2 px-4 py-10"
+              style={{ color: T.textMuted }}>
+              <Layers size={28} style={{ opacity: 0.35 }} />
+              <p className="text-center text-xs leading-relaxed">
+                Select an element on the canvas to edit its properties
+              </p>
             </div>
+          )}
+          {selEl && (<>
 
             {/* Transform */}
             <section className="px-3 py-3 border-b" style={{ borderColor: T.border }}>
@@ -1191,8 +1204,8 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
                 </button>
               </div>
             </section>
-          </div>
-        )}
+          </>)}
+        </div>
       </div>
 
       {/* ── Status bar ──────────────────────────────────────────────────────── */}
