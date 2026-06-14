@@ -566,6 +566,24 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
       if (h.includes('w')) { newW = Math.max(20, orig.w - ldx); lcx = -(newW - orig.w) / 2; }
       if (h.includes('s')) { newH = Math.max(20, orig.h + ldy); lcy = (newH - orig.h) / 2; }
       if (h.includes('n')) { newH = Math.max(20, orig.h - ldy); lcy = -(newH - orig.h) / 2; }
+
+      // Shift → lock aspect ratio on corner handles
+      const isCorner = (h.includes('n') || h.includes('s')) && (h.includes('e') || h.includes('w'));
+      if (e.shiftKey && isCorner && orig.w > 0 && orig.h > 0) {
+        const ratio = orig.w / orig.h;
+        if (Math.abs(newW - orig.w) / orig.w >= Math.abs(newH - orig.h) / orig.h) {
+          // width dominates → fit height
+          const ch = Math.max(20, newW / ratio);
+          lcy = h.includes('n') ? -(ch - orig.h) / 2 : (ch - orig.h) / 2;
+          newH = ch;
+        } else {
+          // height dominates → fit width
+          const cw = Math.max(20, newH * ratio);
+          lcx = h.includes('w') ? -(cw - orig.w) / 2 : (cw - orig.w) / 2;
+          newW = cw;
+        }
+      }
+
       const gcx = lcx * cosR - lcy * sinR, gcy = lcx * sinR + lcy * cosR;
       setElements(prev => prev.map(el =>
         el.id === orig.id ? { ...el, w: newW, h: newH, x: orig.x + gcx, y: orig.y + gcy } : el
