@@ -2,10 +2,13 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { readdirSync } from 'fs';
+import { join } from 'path';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ProductBrowseSection } from '@/components/marketplace/ProductBrowseSection';
 import { CountryHubBrowseSection } from '@/components/gallery/CountryHubBrowseSection';
 import { FlagVideoBrowseSection } from '@/components/gallery/FlagVideoBrowseSection';
+import { CircleFlagsBrowseSection } from '@/components/gallery/CircleFlagsBrowseSection';
 import {
   categoryUsesCountryHubGrid,
   categoryUsesFlagVideoGallery,
@@ -60,12 +63,30 @@ export default async function CategoryPage({ params }: Props) {
     notFound();
   }
 
-  const useFlagVideos = categoryUsesFlagVideoGallery(category);
-  const useCountryHubs = !useFlagVideos && categoryUsesCountryHubGrid(category);
+  const useCircleFlags = category.kind === 'flag_icons';
+  const useFlagVideos = !useCircleFlags && categoryUsesFlagVideoGallery(category);
+  const useCountryHubs = !useCircleFlags && !useFlagVideos && categoryUsesCountryHubGrid(category);
   const products =
-    useFlagVideos || useCountryHubs ? [] : listPublishedProducts({ categoryId: category.id });
+    useCircleFlags || useFlagVideos || useCountryHubs ? [] : listPublishedProducts({ categoryId: category.id });
   const vis = visualsForCategoryKind(category.kind);
   const Icon = vis.Icon;
+
+  // Read circle-flag SVG file list at build/request time (server only)
+  let circleFlags: { code: string; label: string }[] = [];
+  if (useCircleFlags) {
+    const dir = join(process.cwd(), 'public', 'icons', 'flags', 'circle-flags');
+    try {
+      circleFlags = readdirSync(dir)
+        .filter(f => f.endsWith('.svg'))
+        .map(f => {
+          const code = f.replace(/\.svg$/, '');
+          return { code, label: code.toUpperCase() };
+        })
+        .sort((a, b) => a.code.localeCompare(b.code));
+    } catch {
+      circleFlags = [];
+    }
+  }
 
   return (
     <>
@@ -96,7 +117,9 @@ export default async function CategoryPage({ params }: Props) {
               </div>
             </div>
           </header>
-          {useFlagVideos ? (
+          {useCircleFlags ? (
+            <CircleFlagsBrowseSection flags={circleFlags} />
+          ) : useFlagVideos ? (
             <FlagVideoBrowseSection />
           ) : useCountryHubs ? (
             <CountryHubBrowseSection fetchPath={galleryApiPathForCategory(category)} />
