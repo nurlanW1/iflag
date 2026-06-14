@@ -53,34 +53,6 @@ export function LandingCategoryStrip() {
           </h2>
         </SectionReveal>
 
-        <div className="mb-8 flex snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain pb-2 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] sm:mb-10 sm:snap-none sm:flex-wrap sm:justify-center sm:overflow-visible sm:pb-0 md:gap-3.5">
-          <Link
-            href="/gallery"
-            className="inline-flex min-h-12 shrink-0 snap-start items-center justify-center rounded-xl bg-[var(--brand-blue)] px-5 py-3 text-center text-sm font-semibold text-[#fafaf9] shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)] sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 sm:text-base md:flex-initial md:min-w-[10.5rem]"
-          >
-            Country gallery
-          </Link>
-          <Link
-            href="/gallery?kind=historical"
-            className="inline-flex min-h-12 shrink-0 snap-start items-center justify-center rounded-xl border border-neutral-300 bg-white px-5 py-3 text-center text-sm font-semibold text-[#2a2a2a] shadow-sm transition-colors hover:border-neutral-400 hover:bg-neutral-50 sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 sm:text-base md:flex-initial md:min-w-[10.5rem]"
-          >
-            Historical flags
-          </Link>
-          <Link
-            href="/assets"
-            className="inline-flex min-h-12 shrink-0 snap-start items-center justify-center rounded-xl border border-neutral-300 bg-white px-5 py-3 text-center text-sm font-semibold text-[#2a2a2a] shadow-sm transition-colors hover:border-neutral-400 hover:bg-neutral-50 sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 sm:text-base md:flex-initial md:min-w-[10.5rem]"
-          >
-            All assets library
-          </Link>
-          <Link
-            href="/pricing"
-            className="inline-flex min-h-12 shrink-0 snap-start items-center justify-center rounded-xl border border-neutral-200 px-5 py-3 text-center text-sm font-semibold text-neutral-800 shadow-sm ring-1 ring-neutral-100 transition-colors hover:border-neutral-400 hover:bg-white sm:min-h-14 sm:w-auto sm:flex-1 sm:px-10 sm:text-base md:flex-initial md:min-w-[11rem]"
-            title="Paddle checkout"
-          >
-            Licenses &amp; pricing
-          </Link>
-        </div>
-
         <ul className="grid gap-4 xs:gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {approvedCats.map((c) => {
             const vis = visualsForCategoryKind(c.kind);
