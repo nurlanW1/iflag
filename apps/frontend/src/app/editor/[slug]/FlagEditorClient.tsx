@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, Undo2, Redo2, Download, X, Copy,
   Type, Bold, Italic, Trash2, ChevronUp, ChevronDown,
-  Layers, Palette, Gamepad2, FileText, Upload, ZoomIn, ZoomOut,
+  Layers, Palette, Gamepad2, FileText, Upload, FlipHorizontal2, FlipVertical2,
 } from 'lucide-react';
 import { countryCodeToName } from '@/lib/country-code-to-name';
 
@@ -53,6 +53,8 @@ interface CE {
   points?: number;   // star spikes count (3-20)
   sides?: number;    // polygon sides count (3-20)
   crescent?: number; // moon thinness (0=fat, 100=thin hilal)
+  flipH?: boolean;
+  flipV?: boolean;
 }
 
 type Panel = 'shapes' | 'import' | 'text' | 'colors' | 'layers';
@@ -127,6 +129,7 @@ function renderElement(
   ctx.globalAlpha = el.opacity;
   ctx.translate(el.x, el.y);
   ctx.rotate(rad(el.rot));
+  if (el.flipH || el.flipV) ctx.scale(el.flipH ? -1 : 1, el.flipV ? -1 : 1);
   ctx.fillStyle = el.fill;
   ctx.strokeStyle = el.stroke;
   ctx.lineWidth = el.sw;
@@ -319,9 +322,6 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
-  const [zoom, setZoom] = useState(1);
-  const zoomIn  = useCallback(() => setZoom(z => Math.min(4, parseFloat((z + 0.25).toFixed(2)))), []);
-  const zoomOut = useCallback(() => setZoom(z => Math.max(0.25, parseFloat((z - 0.25).toFixed(2)))), []);
 
   const [elements, setElements] = useState<CE[]>([]);
   const elementsRef = useRef<CE[]>([]);
@@ -494,9 +494,8 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   // ── Pointer (canvas) ────────────────────────────────────────────────────────
   const toLogical = useCallback((e: React.PointerEvent) => {
     const rect = canvasRef.current!.getBoundingClientRect();
-    const sc = scale * zoom;
-    return { x: (e.clientX - rect.left) / sc, y: (e.clientY - rect.top) / sc };
-  }, [scale, zoom]);
+    return { x: (e.clientX - rect.left) / scale, y: (e.clientY - rect.top) / scale };
+  }, [scale]);
 
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -535,18 +534,18 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
     if (!selEl) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     const rect = canvasRef.current!.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / (scale * zoom), py = (e.clientY - rect.top) / (scale * zoom);
+    const px = (e.clientX - rect.left) / scale, py = (e.clientY - rect.top) / scale;
     interRef.current = {
       kind: type, startX: px, startY: py, orig: { ...selEl }, handle: handleId,
       startAngle: type === 'rotate' ? deg(Math.atan2(py - selEl.y, px - selEl.x)) - selEl.rot : undefined,
     };
-  }, [selEl, scale, zoom]);
+  }, [selEl, scale]);
 
   const onOverlayMove = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
     const inter = interRef.current;
     if (!inter || inter.kind === 'move') return;
     const rect = canvasRef.current!.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / (scale * zoom), py = (e.clientY - rect.top) / (scale * zoom);
+    const px = (e.clientX - rect.left) / scale, py = (e.clientY - rect.top) / scale;
 
     if (inter.kind === 'rotate') {
       const angle = deg(Math.atan2(py - inter.orig.y, px - inter.orig.x));
@@ -572,7 +571,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
         el.id === orig.id ? { ...el, w: newW, h: newH, x: orig.x + gcx, y: orig.y + gcy } : el
       ));
     }
-  }, [scale, zoom]);
+  }, [scale]);
 
   const onOverlayUp = useCallback(() => {
     if (interRef.current && interRef.current.kind !== 'move') push(elementsRef.current);
@@ -619,6 +618,16 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   }, [selId, push]);
   const dupRef = useRef(duplicateSelected);
   useEffect(() => { dupRef.current = duplicateSelected; }, [duplicateSelected]);
+
+  const flipH = useCallback(() => {
+    if (!selId) return;
+    push(elementsRef.current.map(el => el.id === selId ? { ...el, flipH: !el.flipH } : el));
+  }, [selId, push]);
+
+  const flipV = useCallback(() => {
+    if (!selId) return;
+    push(elementsRef.current.map(el => el.id === selId ? { ...el, flipV: !el.flipV } : el));
+  }, [selId, push]);
 
   // ── Export ──────────────────────────────────────────────────────────────────
   const buildOffscreenCanvas = useCallback((hd = false) => {
@@ -726,7 +735,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
       )
     : ALL_COUNTRIES;
 
-  const sc = scale * zoom;
+  const sc = scale;
   const canvasW = CW * sc;
   const canvasH = CH * sc;
 
@@ -781,18 +790,8 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
           </span>
         </div>
 
-        {/* Center: zoom + undo/redo + duplicate */}
+        {/* Center: undo/redo + duplicate + flip */}
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0.5">
-          <button onClick={zoomOut} title="Zoom out"
-            className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors"
-            style={{ color: T.textSub }}><ZoomOut size={13} /></button>
-          <button onClick={() => setZoom(1)} title="Reset zoom"
-            className="w-10 text-center text-[11px] font-semibold rounded-md h-7 hover:bg-slate-100 transition-colors"
-            style={{ color: T.text }}>{Math.round(zoom * 100)}%</button>
-          <button onClick={zoomIn} title="Zoom in"
-            className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors"
-            style={{ color: T.textSub }}><ZoomIn size={13} /></button>
-          <span className="h-4 w-px mx-1.5 shrink-0" style={{ background: T.border }} />
           <button onClick={undo} title="Undo (Ctrl+Z)"
             className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors"
             style={{ color: T.textSub }}><Undo2 size={13} /></button>
@@ -803,6 +802,13 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
           <button onClick={duplicateSelected} title="Duplicate (Ctrl+D)" disabled={!selId}
             className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors disabled:opacity-30"
             style={{ color: T.textSub }}><Copy size={13} /></button>
+          <span className="h-4 w-px mx-1.5 shrink-0" style={{ background: T.border }} />
+          <button onClick={flipH} title="Flip horizontal" disabled={!selId}
+            className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors disabled:opacity-30"
+            style={{ color: T.textSub }}><FlipHorizontal2 size={13} /></button>
+          <button onClick={flipV} title="Flip vertical" disabled={!selId}
+            className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors disabled:opacity-30"
+            style={{ color: T.textSub }}><FlipVertical2 size={13} /></button>
         </div>
 
         {/* Right: BG + Export */}
