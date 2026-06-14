@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback, useEffect, useLayoutEffect } from 'react';
+import { useRef, useState, useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -14,13 +14,20 @@ import {
   Bold,
   Italic,
   Trash2,
+  Flag,
 } from 'lucide-react';
+import { countryCodeToName } from '@/lib/country-code-to-name';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
 const WATERMARK = 'flagswing.com';
 
-type ElementKind = 'text' | 'rect' | 'circle' | 'star' | 'overlay';
+// Sorted list of countries for the flag-icon picker
+const FLAG_ICON_LIST = Object.entries(countryCodeToName)
+  .map(([code, name]) => ({ code: code.toLowerCase(), upperCode: code, name }))
+  .sort((a, b) => a.name.localeCompare(b.name));
+
+type ElementKind = 'text' | 'rect' | 'circle' | 'star' | 'overlay' | 'flagIcon';
 
 interface CanvasElement {
   id: string;
@@ -33,10 +40,13 @@ interface CanvasElement {
   fontFamily?: string;
   fill?: string;
   fontStyle?: string;
-  // shape
+  // shape / flagIcon size
   width?: number;
   height?: number;
   radius?: number;
+  // flagIcon
+  iconCode?: string; // lowercase ISO e.g. "uz"
+  iconImg?: HTMLImageElement;
   // overlay
   opacity?: number;
   blendMode?: GlobalCompositeOperation;
@@ -51,7 +61,7 @@ function uid() {
   return Math.random().toString(36).slice(2);
 }
 
-type Tab = 'text' | 'shapes' | 'border' | 'overlay';
+type Tab = 'text' | 'shapes' | 'border' | 'overlay' | 'icons';
 
 // ── Canvas renderer (imperative, vanilla Konva-free) ──────────────────────────
 
@@ -155,6 +165,22 @@ function renderCanvas(
         ctx.stroke();
         ctx.setLineDash([]);
       }
+    } else if (el.kind === 'flagIcon' && el.iconImg) {
+      // Draw circle-flag icon clipped to a circle
+      const r = (el.radius ?? 40) * scale;
+      const cx = el.x * scale;
+      const cy = el.y * scale;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(el.iconImg, cx - r, cy - r, r * 2, r * 2);
+      if (el.id === selectedId && scale === 1) {
+        ctx.strokeStyle = '#7c3aed';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 3]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
     }
     ctx.restore();
   }
@@ -195,7 +221,7 @@ function hitTest(
     const hw = (el.width ?? 80) / 2, hh = (el.height ?? 80) / 2;
     return mx >= el.x - hw && mx <= el.x + hw && my >= el.y - hh && my <= el.y + hh;
   }
-  if (el.kind === 'circle' || el.kind === 'star') {
+  if (el.kind === 'circle' || el.kind === 'star' || el.kind === 'flagIcon') {
     const r = el.radius ?? 40;
     return Math.hypot(mx - el.x, my - el.y) <= r;
   }
@@ -232,6 +258,14 @@ export default function FlagEditorClient({
 
   // Shape tool
   const [shapeColor, setShapeColor] = useState('#ffffff');
+
+  // Flag icon picker
+  const [iconQuery, setIconQuery] = useState('');
+  const filteredIcons = useMemo(() => {
+    const q = iconQuery.trim().toLowerCase();
+    if (!q) return FLAG_ICON_LIST.slice(0, 40);
+    return FLAG_ICON_LIST.filter((c) => c.name.toLowerCase().includes(q) || c.code.includes(q)).slice(0, 40);
+  }, [iconQuery]);
 
   // Border
   const [borderStyle, setBorderStyle] = useState<(typeof BORDER_STYLES)[number]>('none');
@@ -384,6 +418,32 @@ export default function FlagEditorClient({
     setSelectedId(el.id);
   }
 
+  function addFlagIcon(code: string) {
+    const img = new window.Image();
+    img.src = `/icons/flags/circle-flags/${code}.svg`;
+    const el: CanvasElement = {
+      id: uid(),
+      kind: 'flagIcon',
+      x: CANVAS_W / 2,
+      y: CANVAS_H / 2,
+      radius: 50,
+      iconCode: code,
+      iconImg: img,
+    };
+    img.onload = () => {
+      setElements((prev) => {
+        const next = [...prev, el];
+        setHistory((h) => {
+          const newH = h.slice(0, histIdx + 1).concat([next]);
+          setHistIdx(newH.length - 1);
+          return newH;
+        });
+        return next;
+      });
+    };
+    setSelectedId(el.id);
+  }
+
   function deleteSelected() {
     if (!selectedId) return;
     pushHistory(elements.filter((e) => e.id !== selectedId));
@@ -443,6 +503,7 @@ export default function FlagEditorClient({
   const tabs: { id: Tab; label: string; Icon: React.ElementType }[] = [
     { id: 'text', label: 'Text', Icon: Type },
     { id: 'shapes', label: 'Shapes', Icon: Shapes },
+    { id: 'icons', label: 'Icons', Icon: Flag },
     { id: 'border', label: 'Border', Icon: Frame },
     { id: 'overlay', label: 'Overlay', Icon: Layers },
   ];
@@ -480,7 +541,7 @@ export default function FlagEditorClient({
           </div>
 
           {/* Tabs */}
-          <div className="grid grid-cols-4 border-b border-neutral-100">
+          <div className="grid grid-cols-5 border-b border-neutral-100">
             {tabs.map(({ id, label, Icon }) => (
               <button key={id} onClick={() => setActiveTab(id)} className={`flex flex-col items-center gap-1 py-3 text-[11px] font-semibold transition ${activeTab === id ? 'border-b-2 border-purple-500 text-purple-700' : 'text-neutral-400 hover:text-neutral-600'}`}>
                 <Icon size={16} aria-hidden />
@@ -536,6 +597,38 @@ export default function FlagEditorClient({
                   {([['★ Star', 'star'], ['● Circle', 'circle'], ['▬ Rect', 'rect']] as const).map(([label, kind]) => (
                     <button key={kind} onClick={() => addShape(kind)} className="col-span-1 rounded-xl border border-neutral-200 py-2.5 text-sm font-semibold text-neutral-700 hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700 transition">
                       {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ICONS */}
+            {activeTab === 'icons' && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-neutral-500">Circle flag icons</p>
+                <input
+                  type="search"
+                  value={iconQuery}
+                  onChange={(e) => setIconQuery(e.target.value)}
+                  placeholder="Search…"
+                  className="w-full rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+                />
+                <div className="grid max-h-64 grid-cols-4 gap-1.5 overflow-y-auto pr-1">
+                  {filteredIcons.map((c) => (
+                    <button
+                      key={c.code}
+                      onClick={() => addFlagIcon(c.code)}
+                      title={c.name}
+                      className="flex flex-col items-center gap-0.5 rounded-lg p-1 hover:bg-purple-50 transition"
+                    >
+                      <img
+                        src={`/icons/flags/circle-flags/${c.code}.svg`}
+                        alt={c.name}
+                        className="h-8 w-8 rounded-full object-cover"
+                        loading="lazy"
+                      />
+                      <span className="w-full truncate text-center text-[9px] text-neutral-500">{c.name.split(' ')[0]}</span>
                     </button>
                   ))}
                 </div>

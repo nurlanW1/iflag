@@ -5,35 +5,36 @@ import Link from 'next/link';
 import { Search, PenTool, ArrowRight } from 'lucide-react';
 import { countryCodeToName } from '@/lib/country-code-to-name';
 
-// Build list from ISO codes — lowercase slug matches circle-flags filenames
+// country-flag-icons/3x2 uses UPPERCASE codes (US.svg, UZ.svg)
+// editor slug uses lowercase
 const COUNTRIES = Object.entries(countryCodeToName)
-  .map(([code, name]) => ({ code: code.toLowerCase(), name }))
+  .map(([code, name]) => ({ code: code.toLowerCase(), upperCode: code, name }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
-function FlagCard({ code, name }: { code: string; name: string }) {
-  const flagSrc = `/icons/flags/circle-flags/${code}.svg`;
+function FlagCard({ code, upperCode, name }: { code: string; upperCode: string; name: string }) {
+  // Official rectangular 3:2 SVG from country-flag-icons
+  const flagSrc = `/flags/${upperCode}.svg`;
 
   return (
     <Link
       href={`/editor/${code}`}
       className="group relative flex flex-col items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm transition hover:border-purple-300 hover:shadow-md"
     >
-      {/* Flag image */}
-      <div className="relative h-16 w-16 overflow-hidden rounded-full ring-2 ring-neutral-100 group-hover:ring-purple-200 transition">
+      {/* Official rectangular flag */}
+      <div className="relative w-full overflow-hidden rounded-lg shadow-sm ring-1 ring-neutral-100 group-hover:ring-purple-200 transition" style={{ aspectRatio: '3/2' }}>
         <img
           src={flagSrc}
           alt={`${name} flag`}
           className="h-full w-full object-cover"
           loading="lazy"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = `https://flagcdn.com/w80/${code}.png`;
+            (e.target as HTMLImageElement).src = `https://flagcdn.com/w160/${code}.png`;
           }}
         />
       </div>
 
       <span className="text-center text-sm font-semibold text-neutral-700 leading-tight">{name}</span>
 
-      {/* Hover CTA */}
       <span className="flex items-center gap-1 text-xs font-medium text-purple-600 opacity-0 transition group-hover:opacity-100">
         Customize <ArrowRight size={12} />
       </span>
@@ -99,7 +100,7 @@ export default function EditorIndexClient() {
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-6 lg:gap-5">
           {filtered.map((c) => (
             <li key={c.code} className="list-none">
-              <FlagCard code={c.code} name={c.name} />
+              <FlagCard code={c.code} upperCode={c.upperCode} name={c.name} />
             </li>
           ))}
         </ul>
