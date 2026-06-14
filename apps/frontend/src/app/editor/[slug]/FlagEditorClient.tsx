@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, Undo2, Redo2, Download, X, Copy,
   Type, Bold, Italic, Trash2, ChevronUp, ChevronDown,
-  Layers, Palette, Gamepad2, FileText, Upload,
+  Layers, Palette, Gamepad2, FileText, Upload, ZoomIn, ZoomOut,
 } from 'lucide-react';
 import { countryCodeToName } from '@/lib/country-code-to-name';
 
@@ -319,6 +319,9 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [zoom, setZoom] = useState(1);
+  const zoomIn  = useCallback(() => setZoom(z => Math.min(4, parseFloat((z + 0.25).toFixed(2)))), []);
+  const zoomOut = useCallback(() => setZoom(z => Math.max(0.25, parseFloat((z - 0.25).toFixed(2)))), []);
 
   const [elements, setElements] = useState<CE[]>([]);
   const elementsRef = useRef<CE[]>([]);
@@ -491,8 +494,9 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   // ── Pointer (canvas) ────────────────────────────────────────────────────────
   const toLogical = useCallback((e: React.PointerEvent) => {
     const rect = canvasRef.current!.getBoundingClientRect();
-    return { x: (e.clientX - rect.left) / scale, y: (e.clientY - rect.top) / scale };
-  }, [scale]);
+    const sc = scale * zoom;
+    return { x: (e.clientX - rect.left) / sc, y: (e.clientY - rect.top) / sc };
+  }, [scale, zoom]);
 
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -531,18 +535,18 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
     if (!selEl) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     const rect = canvasRef.current!.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / scale, py = (e.clientY - rect.top) / scale;
+    const px = (e.clientX - rect.left) / (scale * zoom), py = (e.clientY - rect.top) / (scale * zoom);
     interRef.current = {
       kind: type, startX: px, startY: py, orig: { ...selEl }, handle: handleId,
       startAngle: type === 'rotate' ? deg(Math.atan2(py - selEl.y, px - selEl.x)) - selEl.rot : undefined,
     };
-  }, [selEl, scale]);
+  }, [selEl, scale, zoom]);
 
   const onOverlayMove = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
     const inter = interRef.current;
     if (!inter || inter.kind === 'move') return;
     const rect = canvasRef.current!.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / scale, py = (e.clientY - rect.top) / scale;
+    const px = (e.clientX - rect.left) / (scale * zoom), py = (e.clientY - rect.top) / (scale * zoom);
 
     if (inter.kind === 'rotate') {
       const angle = deg(Math.atan2(py - inter.orig.y, px - inter.orig.x));
@@ -568,7 +572,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
         el.id === orig.id ? { ...el, w: newW, h: newH, x: orig.x + gcx, y: orig.y + gcy } : el
       ));
     }
-  }, [scale]);
+  }, [scale, zoom]);
 
   const onOverlayUp = useCallback(() => {
     if (interRef.current && interRef.current.kind !== 'move') push(elementsRef.current);
@@ -722,8 +726,9 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
       )
     : ALL_COUNTRIES;
 
-  const canvasW = CW * scale;
-  const canvasH = CH * scale;
+  const sc = scale * zoom;
+  const canvasW = CW * sc;
+  const canvasH = CH * sc;
 
   // ── Shared input style ──────────────────────────────────────────────────────
   const inputCls = `w-full rounded-lg border px-2 py-1.5 text-xs outline-none focus:border-[${ACCENT}] focus:ring-1 focus:ring-[${ACCENT}]/20`;
@@ -761,20 +766,47 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
       style={{ top: navH, background: T.bg, fontFamily: 'system-ui, sans-serif', color: T.text }}
     >
       {/* ── Top bar ── */}
-      <div className="flex h-10 shrink-0 items-center gap-2 px-3 border-b"
+      <div className="relative flex h-10 shrink-0 items-center px-3 border-b"
         style={{ background: T.topbar, borderColor: T.border }}>
-        <Link href="/" className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-colors hover:bg-slate-100"
-          style={{ color: T.textSub }}>
-          <ArrowLeft size={13} /><span className="hidden sm:inline ml-0.5">Back</span>
-        </Link>
-        <span className="h-4 w-px shrink-0" style={{ background: T.border }} />
-        <span className="truncate text-xs font-semibold max-w-[110px] sm:max-w-xs" style={{ color: T.text }}>
-          {countryName}
-        </span>
-        <div className="ml-auto flex items-center gap-1">
-          <button onClick={undo} title="Undo (Ctrl+Z)" className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors" style={{ color: T.textSub }}><Undo2 size={13} /></button>
-          <button onClick={redo} title="Redo (Ctrl+Y)" className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors" style={{ color: T.textSub }}><Redo2 size={13} /></button>
-          <span className="h-4 w-px mx-1 shrink-0 hidden sm:block" style={{ background: T.border }} />
+
+        {/* Left: back + title */}
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <Link href="/" className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-colors hover:bg-slate-100"
+            style={{ color: T.textSub }}>
+            <ArrowLeft size={13} /><span className="hidden sm:inline ml-0.5">Back</span>
+          </Link>
+          <span className="h-4 w-px shrink-0" style={{ background: T.border }} />
+          <span className="truncate text-xs font-semibold max-w-[90px] sm:max-w-[180px]" style={{ color: T.text }}>
+            {countryName}
+          </span>
+        </div>
+
+        {/* Center: zoom + undo/redo + duplicate */}
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0.5">
+          <button onClick={zoomOut} title="Zoom out"
+            className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors"
+            style={{ color: T.textSub }}><ZoomOut size={13} /></button>
+          <button onClick={() => setZoom(1)} title="Reset zoom"
+            className="w-10 text-center text-[11px] font-semibold rounded-md h-7 hover:bg-slate-100 transition-colors"
+            style={{ color: T.text }}>{Math.round(zoom * 100)}%</button>
+          <button onClick={zoomIn} title="Zoom in"
+            className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors"
+            style={{ color: T.textSub }}><ZoomIn size={13} /></button>
+          <span className="h-4 w-px mx-1.5 shrink-0" style={{ background: T.border }} />
+          <button onClick={undo} title="Undo (Ctrl+Z)"
+            className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors"
+            style={{ color: T.textSub }}><Undo2 size={13} /></button>
+          <button onClick={redo} title="Redo (Ctrl+Y)"
+            className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors"
+            style={{ color: T.textSub }}><Redo2 size={13} /></button>
+          <span className="h-4 w-px mx-1.5 shrink-0" style={{ background: T.border }} />
+          <button onClick={duplicateSelected} title="Duplicate (Ctrl+D)" disabled={!selId}
+            className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors disabled:opacity-30"
+            style={{ color: T.textSub }}><Copy size={13} /></button>
+        </div>
+
+        {/* Right: BG + Export */}
+        <div className="ml-auto flex items-center gap-1 flex-1 justify-end">
           <label className="hidden sm:flex items-center gap-1 text-[11px] cursor-pointer" style={{ color: T.textSub }}>
             BG<input type="color" value={flagBg ? '#cccccc' : bgColor} disabled={!!flagBg}
               onChange={e => { setFlagBg(null); setBgColor(e.target.value); }}
@@ -1086,8 +1118,8 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
                     { lx: -el.w/2, ly: -el.h/2 }, { lx: el.w/2, ly: -el.h/2 },
                     { lx: el.w/2,  ly: el.h/2  }, { lx: -el.w/2, ly: el.h/2 },
                   ].map(({ lx, ly }) => ({
-                    x: (el.x + lx * cos - ly * sin) * scale,
-                    y: (el.y + lx * sin + ly * cos) * scale,
+                    x: (el.x + lx * cos - ly * sin) * sc,
+                    y: (el.y + lx * sin + ly * cos) * sc,
                   }));
                   return <polygon points={corners.map(c => `${c.x},${c.y}`).join(' ')}
                     fill="none" stroke={ACCENT} strokeWidth={1.5} strokeDasharray="5 3" />;
@@ -1095,14 +1127,14 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
 
                 {/* Rotate connector line */}
                 {(() => {
-                  const rp = getRotHandlePos(selEl, scale);
-                  const tp = getHandlePos(selEl, HANDLES[1], scale);
+                  const rp = getRotHandlePos(selEl, sc);
+                  const tp = getHandlePos(selEl, HANDLES[1], sc);
                   return <line x1={tp.x} y1={tp.y} x2={rp.x} y2={rp.y} stroke={ACCENT} strokeWidth={1.5} />;
                 })()}
 
                 {/* Rotate circle */}
                 {(() => {
-                  const rp = getRotHandlePos(selEl, scale);
+                  const rp = getRotHandlePos(selEl, sc);
                   return (
                     <circle cx={rp.x} cy={rp.y} r={7} fill="#fff" stroke={ACCENT} strokeWidth={2}
                       style={{ cursor: 'grab', pointerEvents: 'all' }}
@@ -1112,7 +1144,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
 
                 {/* Resize handles */}
                 {HANDLES.map(h => {
-                  const pos = getHandlePos(selEl, h, scale);
+                  const pos = getHandlePos(selEl, h, sc);
                   const cursors: Record<HandleId, string> = {
                     nw: 'nw-resize', n: 'n-resize', ne: 'ne-resize',
                     w: 'w-resize',                   e: 'e-resize',
@@ -1325,7 +1357,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
         <span style={{ color: T.border }}>|</span>
         <span>{CW} × {CH}px</span>
         <span style={{ color: T.border }}>|</span>
-        <span>{Math.round(scale * 100)}% zoom</span>
+        <span>{Math.round(sc * 100)}% zoom</span>
       </div>
     </div>
   );
