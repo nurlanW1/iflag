@@ -16,5 +16,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function FlagEditorPage({ params }: Props) {
   const { slug } = await params;
   const name = countryCodeToName[slug.toUpperCase()] ?? slug.toUpperCase();
-  return <FlagEditorClient slug={slug} countryName={name} />;
+  return <FlagEditorClient slug={slug} />;
 }

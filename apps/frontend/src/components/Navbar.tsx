@@ -310,10 +310,13 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             <button
               type="button"
               onClick={() => setGameOpen(true)}
-              className={`flex items-center gap-1.5 ${navTextMd}`}
+              className={`relative flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold tracking-tight transition-colors duration-200 ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'}`}
             >
-              <Gamepad2 size={16} className="shrink-0 opacity-80" aria-hidden />
+              <Gamepad2 size={14} className="shrink-0" aria-hidden />
               Flag Game
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold uppercase leading-none text-white">
+                NEW
+              </span>
             </button>
           </nav>
 
@@ -404,11 +407,14 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                   </Link>
                   <button
                     type="button"
-                    className="flex min-h-[3rem] w-full items-center gap-3 px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
+                    className="relative flex min-h-[3rem] w-full items-center gap-3 px-4 py-2 text-base font-semibold text-orange-700 hover:bg-orange-50"
                     onClick={() => { setMobileMenuOpen(false); setGameOpen(true); }}
                   >
                     <Gamepad2 size={20} aria-hidden />
                     Flag Game
+                    <span className="ml-auto flex h-5 items-center justify-center rounded-full bg-emerald-500 px-2 text-[10px] font-bold uppercase text-white">
+                      NEW
+                    </span>
                   </button>
 
                   <NavbarAdminNav clerkUiEnabled={clerkUiEnabled} legacyUser={user} onNavigate={() => setMobileMenuOpen(false)} />
