@@ -2,76 +2,71 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, X, ArrowRight, FileCode2, Image, Clapperboard, Layers } from 'lucide-react';
+import { Search, X, ArrowRight, FileCode2, Image, Clapperboard, Layers, Loader2 } from 'lucide-react';
 
 const FORMAT_TABS = [
-  {
-    id: 'all',
-    label: 'All',
-    desc: 'Every format',
-    Icon: Layers,
-    color: 'blue',
-  },
-  {
-    id: 'svg',
-    label: 'Vector',
-    desc: 'SVG & EPS',
-    Icon: FileCode2,
-    color: 'violet',
-  },
-  {
-    id: 'png',
-    label: 'PNG',
-    desc: 'Transparent',
-    Icon: Image,
-    color: 'emerald',
-  },
-  {
-    id: 'jpg',
-    label: 'JPG',
-    desc: 'Photo quality',
-    Icon: Image,
-    color: 'amber',
-  },
-  {
-    id: 'video',
-    label: 'Video',
-    desc: 'MP4 & WebM',
-    Icon: Clapperboard,
-    color: 'rose',
-  },
+  { id: 'all',   label: 'All',    desc: 'Every format',    Icon: Layers,      color: 'blue'    },
+  { id: 'svg',   label: 'Vector', desc: 'SVG & EPS',       Icon: FileCode2,   color: 'violet'  },
+  { id: 'png',   label: 'PNG',    desc: 'Transparent',     Icon: Image,       color: 'emerald' },
+  { id: 'jpg',   label: 'JPG',    desc: 'Photo quality',   Icon: Image,       color: 'amber'   },
+  { id: 'video', label: 'Video',  desc: 'MP4 & WebM',      Icon: Clapperboard,color: 'rose'    },
 ] as const;
 
 type FormatId = typeof FORMAT_TABS[number]['id'];
 
-const COLOR_MAP: Record<string, { card: string; icon: string; ring: string }> = {
-  blue:   { card: 'bg-blue-50   border-blue-200   text-blue-700',   icon: 'text-blue-500',   ring: 'ring-blue-400'   },
-  violet: { card: 'bg-violet-50 border-violet-200 text-violet-700', icon: 'text-violet-500', ring: 'ring-violet-400' },
-  emerald:{ card: 'bg-emerald-50 border-emerald-200 text-emerald-700', icon: 'text-emerald-500', ring: 'ring-emerald-400' },
-  amber:  { card: 'bg-amber-50  border-amber-200  text-amber-700',  icon: 'text-amber-500',  ring: 'ring-amber-400'  },
-  rose:   { card: 'bg-rose-50   border-rose-200   text-rose-700',   icon: 'text-rose-500',   ring: 'ring-rose-400'   },
+const COLOR_MAP: Record<string, { card: string; icon: string; ring: string; activeBg: string }> = {
+  blue:    { card: 'bg-blue-50   border-blue-200   text-blue-700',   icon: 'text-blue-500',    ring: 'ring-blue-400',    activeBg: '#3b82f6' },
+  violet:  { card: 'bg-violet-50 border-violet-200 text-violet-700', icon: 'text-violet-500',  ring: 'ring-violet-400',  activeBg: '#7c3aed' },
+  emerald: { card: 'bg-emerald-50 border-emerald-200 text-emerald-700', icon: 'text-emerald-500', ring: 'ring-emerald-400', activeBg: '#059669' },
+  amber:   { card: 'bg-amber-50  border-amber-200  text-amber-700',  icon: 'text-amber-500',   ring: 'ring-amber-400',   activeBg: '#d97706' },
+  rose:    { card: 'bg-rose-50   border-rose-200   text-rose-700',   icon: 'text-rose-500',    ring: 'ring-rose-400',    activeBg: '#e11d48' },
 };
-
-
-function buildHref(format: FormatId, q: string) {
-  const p = new URLSearchParams();
-  if (format !== 'all') p.set('format', format);
-  if (q.trim()) p.set('q', q.trim());
-  return `/gallery${p.size > 0 ? `?${p.toString()}` : ''}`;
-}
 
 export function GalleryFilterBar() {
   const router = useRouter();
   const [q, setQ]           = useState('');
   const [format, setFormat] = useState<FormatId>('all');
+  const [loading, setLoading] = useState(false);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(buildHref(format, q));
-  };
+    const query = q.trim();
 
-  const go = (nextFormat: FormatId) => {
-    setFormat(nextFormat);
+    if (!query) {
+      // No country typed — go to gallery with format filter
+      const p = new URLSearchParams();
+      if (format !== 'all') p.set('format', format);
+      router.push(`/gallery${p.size > 0 ? `?${p.toString()}` : ''}`);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Try to resolve exact country
+      const res = await fetch(
+        `/api/gallery/resolve-country?q=${encodeURIComponent(query)}`,
+        { cache: 'no-store' },
+      );
+      if (res.ok) {
+        const data = (await res.json()) as { slug?: string | null };
+        const slug = data.slug?.trim();
+        if (slug) {
+          const suffix = format !== 'all' ? `?format=${format}` : '';
+          router.push(`/gallery/${encodeURIComponent(slug)}${suffix}`);
+          return;
+        }
+      }
+    } catch {
+      // fall through to list search
+    } finally {
+      setLoading(false);
+    }
+
+    // Fallback: gallery list with query + format
+    const p = new URLSearchParams();
+    p.set('q', query);
+    if (format !== 'all') p.set('format', format);
+    router.push(`/gallery?${p.toString()}`);
   };
 
   return (
@@ -104,14 +99,17 @@ export function GalleryFilterBar() {
         </div>
         <button
           type="submit"
-          className="flex shrink-0 items-center gap-1.5 border-l border-neutral-100 bg-[#4f8ef7] px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#3b82f6]"
+          disabled={loading}
+          className="flex shrink-0 items-center gap-1.5 border-l border-neutral-100 bg-[#4f8ef7] px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#3b82f6] disabled:opacity-70"
         >
-          <span className="hidden sm:inline">Search</span>
-          <ArrowRight size={15} aria-hidden />
+          {loading
+            ? <Loader2 size={15} className="animate-spin" aria-hidden />
+            : <><span className="hidden sm:inline">Search</span><ArrowRight size={15} aria-hidden /></>
+          }
         </button>
       </form>
 
-      {/* ── Row 2: Format category cards ── */}
+      {/* ── Row 2: Format category tabs ── */}
       <div className="grid grid-cols-5 divide-x divide-neutral-100 border-t border-neutral-100">
         {FORMAT_TABS.map(({ id, label, desc, Icon, color }) => {
           const active = format === id;
@@ -120,15 +118,24 @@ export function GalleryFilterBar() {
             <button
               key={id}
               type="button"
-              onClick={() => go(id)}
-              className="group flex flex-col items-center gap-1 px-3 py-2.5 transition-all duration-150 hover:bg-neutral-50"
+              onClick={() => setFormat(id)}
+              title={desc}
+              className="group flex flex-col items-center gap-1 px-3 py-2.5 transition-all duration-150 hover:bg-neutral-50 relative"
             >
+              {active && (
+                <span
+                  className="absolute inset-x-0 bottom-0 h-0.5 rounded-t"
+                  style={{ background: c.activeBg }}
+                />
+              )}
               <span className={`transition-colors duration-150 ${
                 active ? c.icon : 'text-neutral-400 group-hover:text-neutral-600'
               }`}>
                 <Icon size={18} aria-hidden />
               </span>
-              <span className={`text-xs font-semibold leading-none transition-colors ${active ? c.icon : 'text-neutral-600'}`}>
+              <span className={`text-xs font-semibold leading-none transition-colors ${
+                active ? c.icon : 'text-neutral-600'
+              }`}>
                 {label}
               </span>
             </button>
