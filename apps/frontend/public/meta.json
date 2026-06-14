@@ -1,0 +1,10 @@
+{
+  "name": "Flagswing",
+  "short_name": "Flagswing",
+  "description": "Download country flags in SVG, PNG, EPS formats. Free flat flags + premium shapes, mockups, and historical flags. 250+ countries and territories.",
+  "url": "https://flagswing.com",
+  "logo": "https://flagswing.com/logo.png",
+  "og_image": "https://flagswing.com/og-image.png",
+  "locale": "en_US",
+  "type": "website"
+}
