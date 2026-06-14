@@ -52,7 +52,7 @@ interface CE {
   src?: string;  // data URL for imported images
 }
 
-type Panel = 'flags' | 'shapes' | 'import' | 'text' | 'colors' | 'layers' | null;
+type Panel = 'flags' | 'shapes' | 'import' | 'text' | 'colors' | 'layers';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function uid() { return Math.random().toString(36).slice(2, 10); }
@@ -331,7 +331,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
       rot: 0, fill: defFill, stroke: defStroke, sw: defSw, opacity: 1,
     };
     push([...elementsRef.current, el]);
-    setSelId(el.id); setPanel(null);
+    setSelId(el.id);
   }, [defFill, defStroke, defSw, push]);
 
   const addText = useCallback(() => {
@@ -344,7 +344,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
       text: defText, fontSize: defFontSize, fontFamily: defFont, bold: defBold, italic: defItalic,
     };
     push([...elementsRef.current, el]);
-    setSelId(el.id); setPanel(null);
+    setSelId(el.id);
   }, [defFill, defText, defFontSize, defFont, defBold, defItalic, push]);
 
   const loadFlag = useCallback((upper: string) => {
@@ -383,7 +383,6 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
           };
           push([...elementsRef.current, el]);
           setSelId(id);
-          setPanel(null);
         };
         img.src = src;
       };
@@ -622,7 +621,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
     const active = panel === id;
     return (
       <button
-        onClick={() => setPanel(p => p === id ? null : id)}
+        onClick={() => setPanel(id)}
         title={label ?? ''}
         className="flex flex-col items-center gap-1 rounded-xl py-2 px-1 w-full text-center transition-colors"
         style={{
@@ -771,11 +770,10 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
         </div>
 
         {/* ── Side panel ──────────────────────────────────────────────────── */}
-        {panel && (
-          <div
-            className="flex flex-col shrink-0 overflow-y-auto"
-            style={{ width: 248, background: T.panel, borderRight: `1px solid ${T.border}` }}
-          >
+        <div
+          className="flex flex-col shrink-0 overflow-y-auto"
+          style={{ width: 248, background: T.panel, borderRight: `1px solid ${T.border}` }}
+        >
             {/* Flags */}
             {panel === 'flags' && (
               <div className="flex flex-col gap-3 p-3">
@@ -993,7 +991,6 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
               </div>
             )}
           </div>
-        )}
 
         {/* ── Canvas area ──────────────────────────────────────────────────── */}
         <div ref={containerRef}
