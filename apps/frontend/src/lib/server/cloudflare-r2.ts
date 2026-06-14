@@ -3,7 +3,7 @@
  * Mirrors backend `storage/r2.ts` env names — never import from client components.
  */
 
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 export type FrontendR2Config = {
@@ -115,6 +115,42 @@ export async function getSignedR2GetUrl(
     console.error('[cloudflare-r2] getSignedUrl failed', e);
     return null;
   }
+}
+
+export type R2ListEntry = {
+  key: string;
+  size: number;
+  lastModified: Date | undefined;
+};
+
+/**
+ * Lists objects in R2 under a given prefix. Returns up to `maxKeys` entries.
+ */
+export async function listR2Objects(prefix: string, maxKeys = 1000): Promise<R2ListEntry[]> {
+  const cfg = loadR2ConfigFromEnv();
+  if (!cfg) return [];
+  const client = getClient(cfg);
+  const results: R2ListEntry[] = [];
+  let token: string | undefined;
+  do {
+    const cmd = new ListObjectsV2Command({
+      Bucket: cfg.bucketName,
+      Prefix: prefix.replace(/^\/+/, ''),
+      MaxKeys: Math.min(maxKeys - results.length, 1000),
+      ContinuationToken: token,
+    });
+    try {
+      const res = await client.send(cmd);
+      for (const obj of res.Contents ?? []) {
+        if (obj.Key) results.push({ key: obj.Key, size: obj.Size ?? 0, lastModified: obj.LastModified });
+      }
+      token = res.IsTruncated ? res.NextContinuationToken : undefined;
+    } catch (e) {
+      console.error('[cloudflare-r2] listR2Objects failed', e);
+      break;
+    }
+  } while (token && results.length < maxKeys);
+  return results;
 }
 
 /**

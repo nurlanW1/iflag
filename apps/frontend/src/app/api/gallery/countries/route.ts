@@ -113,7 +113,7 @@ function loadFromFlagStock(): GalleryCountrySummary[] {
 
     files.forEach((file) => {
       const lowerFile = file.toLowerCase();
-      if (!(lowerFile.endsWith('.jpg') || lowerFile.endsWith('.jpeg'))) return;
+      if (!(lowerFile.endsWith('.jpg') || lowerFile.endsWith('.jpeg') || lowerFile.endsWith('.png'))) return;
 
       const countryName = filenameToCountryName(file);
       const countrySlug = countryToSlug(countryName);

@@ -6,6 +6,7 @@ import { getDb } from '@/lib/server/db';
 import { buildCountryHubDescription } from '@/lib/gallery/country-hub-copy';
 import { fetchCountryGalleryFromBackendApi } from '@/lib/server/gallery-country-detail-fallback';
 import { fetchCountryGalleryFromDb } from '@/lib/server/gallery-from-db';
+import { getPublicR2PublicBaseUrl, listR2Objects } from '@/lib/server/cloudflare-r2';
 
 export const dynamic = 'force-dynamic';
 
@@ -190,7 +191,7 @@ function loadFromFlagStock(countrySlug: string) {
 
     files.forEach((file) => {
       const lowerFile = file.toLowerCase();
-      if (!lowerFile.endsWith('.jpg') && !lowerFile.endsWith('.jpeg')) return;
+      if (!lowerFile.endsWith('.jpg') && !lowerFile.endsWith('.jpeg') && !lowerFile.endsWith('.png')) return;
 
       const fileId = file.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
       const filePath = path.join(flagStockPath!, file);
@@ -202,6 +203,7 @@ function loadFromFlagStock(countrySlug: string) {
       } catch { /* ignore */ }
 
       const imageUrl = `/api/gallery/video/${encodeURIComponent(countrySlug)}/${encodeURIComponent(file)}`;
+      const extCode = path.extname(file).slice(1).toLowerCase() || 'jpg';
       variants.push({
         id: fileId,
         productSlug: fileId,
@@ -210,9 +212,9 @@ function loadFromFlagStock(countrySlug: string) {
         thumbnail: imageUrl,
         formats: [
           {
-            id: `${fileId}-jpg`,
-            format: 'JPG',
-            formatCode: 'jpg',
+            id: `${fileId}-${extCode}`,
+            format: extCode.toUpperCase(),
+            formatCode: extCode,
             category: 'raster',
             file,
             url: imageUrl,
@@ -263,6 +265,73 @@ function loadFromFlagStock(countrySlug: string) {
   };
 }
 
+const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+
+async function loadFromR2(countrySlug: string) {
+  const prefix = `flags/${countrySlug}/`;
+  const r2Base = getPublicR2PublicBaseUrl();
+  if (!r2Base) return [];
+
+  let objects;
+  try {
+    objects = await listR2Objects(prefix, 500);
+  } catch {
+    return [];
+  }
+
+  const variants: Array<{
+    id: string;
+    productSlug: string;
+    name: string;
+    type: string;
+    thumbnail: string;
+    formats: Array<{
+      id: string;
+      format: string;
+      formatCode: string;
+      category: 'raster';
+      file: string;
+      url: string;
+      previewUrl: string;
+      premiumTier: 'free';
+      downloadProtected: boolean;
+      size: string;
+      dimensions: string;
+    }>;
+  }> = [];
+
+  for (const obj of objects) {
+    const ext = path.extname(obj.key).toLowerCase();
+    if (!IMAGE_EXTS.has(ext)) continue;
+    const filename = obj.key.split('/').pop() ?? obj.key;
+    const fileId = `r2-${obj.key.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
+    const extCode = ext.slice(1);
+    const url = `${r2Base}/${obj.key}`;
+    variants.push({
+      id: fileId,
+      productSlug: fileId,
+      name: filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
+      type: 'standard',
+      thumbnail: url,
+      formats: [{
+        id: `${fileId}-${extCode}`,
+        format: extCode.toUpperCase(),
+        formatCode: extCode,
+        category: 'raster',
+        file: filename,
+        url,
+        previewUrl: url,
+        premiumTier: 'free',
+        downloadProtected: false,
+        size: obj.size > 0 ? `${(obj.size / (1024 * 1024)).toFixed(2)} MB` : 'Unknown',
+        dimensions: 'Original',
+      }],
+    });
+  }
+
+  return variants;
+}
+
 export async function GET(
   _request: Request,
   context: { params: Promise<{ slug: string }> }
@@ -273,13 +342,17 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid slug' }, { status: 400 });
     }
 
-    const fromDb = await loadFromDatabase(slug);
-    const diskVideos = loadDiskVideosForCountry(slug);
-    console.info(`[gallery/country] ${slug}: db=${fromDb?.variants.length ?? 0} diskVideos=${diskVideos.length}`);
+    const [fromDb, diskVideos, r2Variants] = await Promise.all([
+      loadFromDatabase(slug),
+      Promise.resolve(loadDiskVideosForCountry(slug)),
+      loadFromR2(slug),
+    ]);
+    console.info(`[gallery/country] ${slug}: db=${fromDb?.variants.length ?? 0} diskVideos=${diskVideos.length} r2=${r2Variants.length}`);
 
     if (fromDb && fromDb.variants.length > 0) {
-      const merged = diskVideos.length > 0
-        ? { ...fromDb, variants: [...fromDb.variants, ...diskVideos] }
+      const extra = [...diskVideos, ...r2Variants];
+      const merged = extra.length > 0
+        ? { ...fromDb, variants: [...fromDb.variants, ...extra] }
         : fromDb;
       return NextResponse.json(merged, { headers: { 'Cache-Control': 'no-store' } });
     }
@@ -287,19 +360,41 @@ export async function GET(
     const fromBackend = await fetchCountryGalleryFromBackendApi(slug);
     if (fromBackend && fromBackend.variants.length > 0) {
       console.info(`[gallery/country] served ${slug} from backend API fallback`);
-      const merged = diskVideos.length > 0
-        ? { ...fromBackend, variants: [...fromBackend.variants, ...diskVideos] }
+      const extra = [...diskVideos, ...r2Variants];
+      const merged = extra.length > 0
+        ? { ...fromBackend, variants: [...fromBackend.variants, ...extra] }
         : fromBackend;
       return NextResponse.json(merged, { headers: { 'Cache-Control': 'no-store' } });
     }
 
     const fromDisk = loadFromFlagStock(slug);
     if (fromDisk) {
-      if (diskVideos.length > 0) {
+      const extra = [...diskVideos, ...r2Variants];
+      if (extra.length > 0) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (fromDisk.variants as any[]).push(...diskVideos);
+        (fromDisk.variants as any[]).push(...extra);
       }
       return NextResponse.json(fromDisk);
+    }
+
+    if (r2Variants.length > 0) {
+      const countryName = slugToCountryName(slug);
+      const countryCode = getCountryCode(countryName);
+      return NextResponse.json({
+        country: {
+          name: countryName,
+          slug,
+          code: countryCode,
+          region: null,
+          description: buildCountryHubDescription({ name: countryName, slug, isoCode: countryCode, region: null, dbDescription: null, designCount: r2Variants.length, fileCount: r2Variants.length }),
+          cover_image_url: r2Variants[0]?.thumbnail ?? null,
+          has_webp_cover: false,
+          webp_cover_url: null,
+          file_count: r2Variants.length,
+          design_count: r2Variants.length,
+        },
+        variants: [...r2Variants, ...diskVideos],
+      });
     }
 
     return NextResponse.json({ error: 'Country not found' }, { status: 404 });
