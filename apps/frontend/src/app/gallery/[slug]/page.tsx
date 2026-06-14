@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, ImageOff, RefreshCw } from 'lucide-react';
+import { ArrowLeft, ImageOff, RefreshCw, PenTool } from 'lucide-react';
 import Link from 'next/link';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import { FlagVideoPreview } from '@/components/media/FlagVideoPreview';
@@ -309,6 +309,17 @@ export default function CountryHubPage() {
                 <FlagColorPalette colors={flagColors} />
               </div>
             )}
+
+            {/* Customize CTA */}
+            <div className="mt-3">
+              <Link
+                href={`/editor/${data.country.code?.toLowerCase() ?? data.country.slug}`}
+                className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 shadow-sm transition hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700"
+              >
+                <PenTool size={15} aria-hidden />
+                ✏️ Customize this flag
+              </Link>
+            </div>
           </div>
 
           {/* ── Right column: world map ── */}

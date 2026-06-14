@@ -19,6 +19,7 @@ import {
   LayoutGrid,
   Search,
   Gamepad2,
+  PenTool,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -296,6 +297,16 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             <Link href="/gallery" className={navTextMd}>
               Collections
             </Link>
+            <Link
+              href="/editor"
+              className={`relative flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold tracking-tight transition-colors duration-200 ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-purple-50 text-purple-700 hover:bg-purple-100'}`}
+            >
+              <PenTool size={14} className="shrink-0" aria-hidden />
+              Flag Editor
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold uppercase leading-none text-white">
+                NEW
+              </span>
+            </Link>
             <button
               type="button"
               onClick={() => setGameOpen(true)}
@@ -349,6 +360,17 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                   </button>
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain py-3">
+                  <Link
+                    href="/editor"
+                    className="relative flex min-h-[3rem] items-center gap-3 px-4 py-2 text-base font-semibold text-purple-700 hover:bg-purple-50"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <PenTool size={20} aria-hidden />
+                    Flag Editor
+                    <span className="ml-auto flex h-5 items-center justify-center rounded-full bg-emerald-500 px-2 text-[10px] font-bold uppercase text-white">
+                      NEW
+                    </span>
+                  </Link>
                   <Link
                     href="/gallery"
                     className="flex min-h-[3rem] items-center gap-3 px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"

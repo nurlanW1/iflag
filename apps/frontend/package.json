@@ -21,6 +21,8 @@
     "@typescript-eslint/parser": "^8.54.0",
     "axios": "^1.7.9",
     "country-flag-icons": "^1.6.12",
+    "konva": "^9.3.0",
+    "react-konva": "^18.2.10",
     "eslint": "^9.39.2",
     "flag-icons": "^7.5.0",
     "jose": "^6.2.2",
