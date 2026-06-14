@@ -106,5 +106,41 @@
     "displayOrder": 90,
     "createdAt": "2026-01-15T12:00:00.000Z",
     "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": "11111111-1111-4111-8111-111111111110",
+    "name": "Country coats of arms",
+    "slug": "country-coats",
+    "description": "Official national coats of arms and state emblems from countries around the world.",
+    "kind": "country_coats",
+    "isApproved": true,
+    "parentId": null,
+    "displayOrder": 91,
+    "createdAt": "2026-06-14T12:00:00.000Z",
+    "updatedAt": "2026-06-14T12:00:00.000Z"
+  },
+  {
+    "id": "11111111-1111-4111-8111-111111111111",
+    "name": "Historical coats of arms",
+    "slug": "historical-coats",
+    "description": "Coats of arms and heraldic emblems from historical states, dynasties and empires.",
+    "kind": "historical_coats",
+    "isApproved": true,
+    "parentId": null,
+    "displayOrder": 92,
+    "createdAt": "2026-06-14T12:00:00.000Z",
+    "updatedAt": "2026-06-14T12:00:00.000Z"
+  },
+  {
+    "id": "11111111-1111-4111-8111-111111111112",
+    "name": "Football club logos",
+    "slug": "football-clubs",
+    "description": "Crests and logos of professional football clubs from leagues around the world.",
+    "kind": "football_clubs",
+    "isApproved": true,
+    "parentId": null,
+    "displayOrder": 93,
+    "createdAt": "2026-06-14T12:00:00.000Z",
+    "updatedAt": "2026-06-14T12:00:00.000Z"
   }
 ]

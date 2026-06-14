@@ -12,6 +12,9 @@ export const categoryKindSchema = z.enum([
   'flag_mockups',
   'flag_videos',
   'flag_icons',
+  'country_coats',
+  'historical_coats',
+  'football_clubs',
   'other',
 ]);
 

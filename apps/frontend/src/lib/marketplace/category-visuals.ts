@@ -9,6 +9,9 @@ import {
   Landmark,
   LayoutTemplate,
   Sparkles,
+  Shield,
+  ShieldAlert,
+  Trophy,
 } from 'lucide-react';
 import type { CategoryKind } from '@/types/marketplace';
 
@@ -73,6 +76,24 @@ export function visualsForCategoryKind(kind: CategoryKind): CategoryCardVisual {
         Icon: ImageIcon,
         accent: CATEGORY_ICON_ACCENT,
         chip: 'Glyph sets',
+      };
+    case 'country_coats':
+      return {
+        Icon: Shield,
+        accent: CATEGORY_ICON_ACCENT,
+        chip: 'National emblems',
+      };
+    case 'historical_coats':
+      return {
+        Icon: ShieldAlert,
+        accent: CATEGORY_ICON_ACCENT,
+        chip: 'Historic emblems',
+      };
+    case 'football_clubs':
+      return {
+        Icon: Trophy,
+        accent: CATEGORY_ICON_ACCENT,
+        chip: 'Club crests',
       };
     case 'other':
       return {
