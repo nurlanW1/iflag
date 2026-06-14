@@ -51,7 +51,7 @@ const nextConfig = {
       "default-src 'self'",
       // 'unsafe-eval' required by Clerk auth and Paddle billing SDKs
       "script-src 'self' 'unsafe-eval' 'unsafe-inline' https: blob:",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.paddle.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' https: data: blob:",
       "media-src 'self' https: blob:",
