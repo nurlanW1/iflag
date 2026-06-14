@@ -107,7 +107,7 @@ export default async function CategoryPage({ params }: Props) {
               <span
                 className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl shadow-sm ${vis.accent}`}
               >
-                <Icon className="h-8 w-8" aria-hidden strokeWidth={2} />
+                <Icon className="h-8 w-8" aria-hidden />
               </span>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">{vis.chip}</p>

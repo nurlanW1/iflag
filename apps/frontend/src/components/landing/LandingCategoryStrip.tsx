@@ -69,7 +69,7 @@ export function LandingCategoryStrip() {
                       className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl shadow-sm ${vis.accent}`}
                       aria-hidden
                     >
-                      <Icon className="h-6 w-6" strokeWidth={2} />
+                      <Icon className="h-6 w-6" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
