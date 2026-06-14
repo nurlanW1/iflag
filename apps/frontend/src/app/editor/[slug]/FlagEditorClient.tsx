@@ -214,6 +214,76 @@ const ALL_COUNTRIES = Object.entries(countryCodeToName)
   .map(([code, name]) => ({ code: code.toLowerCase(), upper: code, name }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
+function ShapeIcon({ kind, color, size = 32 }: { kind: EKind; color: string; size?: number }) {
+  const v = `0 0 ${size} ${size}`;
+  const c = size / 2;
+  const r = size * 0.42;
+  const stroke = 'none';
+  const props = { fill: color, stroke };
+
+  if (kind === 'rect') return (
+    <svg viewBox={v} width={size} height={size}><rect x={size*0.12} y={size*0.22} width={size*0.76} height={size*0.56} rx={2} {...props} /></svg>
+  );
+  if (kind === 'circle') return (
+    <svg viewBox={v} width={size} height={size}><ellipse cx={c} cy={c} rx={r} ry={r} {...props} /></svg>
+  );
+  if (kind === 'triangle') return (
+    <svg viewBox={v} width={size} height={size}><polygon points={`${c},${size*0.1} ${size*0.9},${size*0.88} ${size*0.1},${size*0.88}`} {...props} /></svg>
+  );
+  if (kind === 'star') {
+    const spikes = 5, outerR = r, innerR = r * 0.42;
+    const pts = Array.from({ length: spikes * 2 }, (_, i) => {
+      const a = (Math.PI / spikes) * i - Math.PI / 2;
+      const rr = i % 2 === 0 ? outerR : innerR;
+      return `${c + Math.cos(a) * rr},${c + Math.sin(a) * rr}`;
+    }).join(' ');
+    return <svg viewBox={v} width={size} height={size}><polygon points={pts} {...props} /></svg>;
+  }
+  if (kind === 'diamond') return (
+    <svg viewBox={v} width={size} height={size}><polygon points={`${c},${size*0.08} ${size*0.9},${c} ${c},${size*0.92} ${size*0.1},${c}`} {...props} /></svg>
+  );
+  if (kind === 'polygon') {
+    const n = 6;
+    const pts = Array.from({ length: n }, (_, i) => {
+      const a = (2 * Math.PI / n) * i - Math.PI / 2;
+      return `${c + r * Math.cos(a)},${c + r * Math.sin(a)}`;
+    }).join(' ');
+    return <svg viewBox={v} width={size} height={size}><polygon points={pts} {...props} /></svg>;
+  }
+  if (kind === 'heart') {
+    const s = r * 0.9;
+    return (
+      <svg viewBox={v} width={size} height={size}>
+        <path d={`M${c} ${c+s*0.9} C${c-s*1.4} ${c+s*0.3} ${c-s*1.4} ${c-s*0.6} ${c} ${c-s*0.1} C${c+s*1.4} ${c-s*0.6} ${c+s*1.4} ${c+s*0.3} ${c} ${c+s*0.9}Z`} {...props} />
+      </svg>
+    );
+  }
+  if (kind === 'moon') {
+    return (
+      <svg viewBox={v} width={size} height={size}>
+        <path fillRule="evenodd" fill={color} stroke={stroke}
+          d={`M${c} ${c-r} A${r} ${r} 0 1 1 ${c} ${c+r} A${r} ${r} 0 1 1 ${c} ${c-r}Z M${c+r*0.32} ${c-r*0.72} A${r*0.72} ${r*0.72} 0 1 0 ${c+r*0.32} ${c+r*0.72} A${r*0.72} ${r*0.72} 0 1 0 ${c+r*0.32} ${c-r*0.72}Z`} />
+      </svg>
+    );
+  }
+  if (kind === 'arrow') {
+    const hw = size*0.44, hh = size*0.5, headW = hh*0.55, bodyH = hh*0.45;
+    const x0 = c - hw;
+    return (
+      <svg viewBox={v} width={size} height={size}>
+        <polygon points={[
+          `${x0},${c-bodyH/2}`,`${c+hw-headW},${c-bodyH/2}`,`${c+hw-headW},${c-hh}`,
+          `${c+hw},${c}`,`${c+hw-headW},${c+hh}`,`${c+hw-headW},${c+bodyH/2}`,`${x0},${c+bodyH/2}`,
+        ].join(' ')} {...props} />
+      </svg>
+    );
+  }
+  if (kind === 'line') return (
+    <svg viewBox={v} width={size} height={size}><rect x={size*0.06} y={c-2} width={size*0.88} height={4} rx={2} fill={color} /></svg>
+  );
+  return null;
+}
+
 const SHAPE_CATALOG: { kind: EKind; label: string }[] = [
   { kind: 'rect',    label: 'Rectangle' }, { kind: 'circle',  label: 'Circle'  },
   { kind: 'triangle',label: 'Triangle'  }, { kind: 'star',    label: 'Star'    },
@@ -865,14 +935,15 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
                   <input type="range" min={1} max={99} value={defCrescent}
                     onChange={e => setDefCrescent(Number(e.target.value))} />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-5 gap-1.5">
                   {SHAPE_CATALOG.map(s => (
-                    <button key={s.kind} onClick={() => addShape(s.kind)}
-                      className="rounded-xl py-3 text-xs font-medium transition-colors"
-                      style={{ background: T.inputBg, color: T.text, border: `1px solid ${T.border}` }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.color = ACCENT; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.text; }}>
-                      {s.label}
+                    <button key={s.kind} onClick={() => addShape(s.kind)} title={s.label}
+                      className="flex flex-col items-center justify-center gap-1 rounded-xl py-2.5 transition-all"
+                      style={{ background: T.inputBg, border: `1px solid ${T.border}`, aspectRatio: '1' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.background = T.selBg; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.background = T.inputBg; }}>
+                      <ShapeIcon kind={s.kind} color={defFill} size={28} />
+                      <span className="text-[9px] font-medium leading-none" style={{ color: T.textMuted }}>{s.label}</span>
                     </button>
                   ))}
                 </div>
