@@ -50,8 +50,9 @@ interface CE {
   bold?: boolean;
   italic?: boolean;
   src?: string;  // data URL for imported images
-  points?: number; // star spikes count (3-20)
-  sides?: number;  // polygon sides count (3-20)
+  points?: number;   // star spikes count (3-20)
+  sides?: number;    // polygon sides count (3-20)
+  crescent?: number; // moon thinness (0=fat, 100=thin hilal)
 }
 
 type Panel = 'flags' | 'shapes' | 'import' | 'text' | 'colors' | 'layers';
@@ -75,10 +76,13 @@ function drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: numb
   ctx.closePath();
 }
 
-function drawMoon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+function drawMoon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, crescent = 50) {
+  const t = crescent / 100;
+  const innerR = r * (0.45 + t * 0.50); // 0.45 (fat) → 0.95 (thin hilal)
+  const offset = r * (0.55 - t * 0.50); // 0.55 (fat) → 0.05 (thin hilal)
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2, false);
-  ctx.arc(cx + r * 0.32, cy, r * 0.72, 0, Math.PI * 2, true);
+  ctx.arc(cx + offset, cy, innerR, 0, Math.PI * 2, true);
   ctx.closePath();
 }
 
@@ -146,7 +150,7 @@ function renderElement(
     case 'heart':    drawHeart(ctx, 0, 0, r); break;
     case 'arrow':    drawArrow(ctx, 0, 0, el.w, el.h); break;
     case 'moon':
-      drawMoon(ctx, 0, 0, r);
+      drawMoon(ctx, 0, 0, r, el.crescent ?? 50);
       ctx.fill('evenodd');
       if (el.sw > 0) ctx.stroke();
       ctx.restore();
@@ -285,8 +289,9 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   const [defFill,     setDefFill]     = useState('#3b82f6');
   const [defStroke,   setDefStroke]   = useState('#1e40af');
   const [defSw,       setDefSw]       = useState(2);
-  const [defPoints,   setDefPoints]   = useState(5);
-  const [defSides,    setDefSides]    = useState(6);
+  const [defPoints,    setDefPoints]    = useState(5);
+  const [defSides,     setDefSides]     = useState(6);
+  const [defCrescent,  setDefCrescent]  = useState(50);
   const [defText,     setDefText]     = useState('Text');
   const [defFontSize, setDefFontSize] = useState(60);
   const [defFont,     setDefFont]     = useState('Arial');
@@ -347,12 +352,13 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
       x: CW / 2, y: CH / 2,
       w: kind === 'line' ? 200 : 120, h: kind === 'line' ? 4 : 120,
       rot: 0, fill: defFill, stroke: defStroke, sw: defSw, opacity: 1,
-      points: kind === 'star' ? defPoints : undefined,
-      sides: kind === 'polygon' ? defSides : undefined,
+      points:   kind === 'star'    ? defPoints   : undefined,
+      sides:    kind === 'polygon' ? defSides    : undefined,
+      crescent: kind === 'moon'    ? defCrescent : undefined,
     };
     push([...elementsRef.current, el]);
     setSelId(el.id);
-  }, [defFill, defStroke, defSw, defPoints, defSides, push]);
+  }, [defFill, defStroke, defSw, defPoints, defSides, defCrescent, push]);
 
   const addText = useCallback(() => {
     const el: CE = {
@@ -855,6 +861,9 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
                   <label className="text-xs font-medium" style={{ color: T.textSub }}>Polygon sides: {defSides}</label>
                   <input type="range" min={3} max={20} value={defSides}
                     onChange={e => setDefSides(Number(e.target.value))} />
+                  <label className="text-xs font-medium" style={{ color: T.textSub }}>Moon crescent: {defCrescent}%</label>
+                  <input type="range" min={1} max={99} value={defCrescent}
+                    onChange={e => setDefCrescent(Number(e.target.value))} />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {SHAPE_CATALOG.map(s => (
@@ -1166,6 +1175,15 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
                   <span className="text-[10px]" style={{ color: T.textMuted }}>Sides: {selEl.sides ?? 6}</span>
                   <input type="range" min={3} max={20} value={selEl.sides ?? 6}
                     onChange={e => updateSel({ sides: Number(e.target.value) })} />
+                </label>
+              )}
+              {selEl.kind === 'moon' && (
+                <label className="mt-2 flex flex-col gap-1">
+                  <span className="text-[10px]" style={{ color: T.textMuted }}>
+                    Crescent: {selEl.crescent ?? 50}% ({(selEl.crescent ?? 50) < 30 ? 'Fat' : (selEl.crescent ?? 50) > 70 ? 'Thin hilal' : 'Normal'})
+                  </span>
+                  <input type="range" min={1} max={99} value={selEl.crescent ?? 50}
+                    onChange={e => updateSel({ crescent: Number(e.target.value) })} />
                 </label>
               )}
             </section>
