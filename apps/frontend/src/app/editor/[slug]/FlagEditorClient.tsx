@@ -32,7 +32,7 @@ const T = {
 };
 
 type EKind = 'rect' | 'circle' | 'triangle' | 'star' | 'diamond'
-  | 'pentagon' | 'hexagon' | 'heart' | 'arrow' | 'line' | 'text' | 'image';
+  | 'pentagon' | 'hexagon' | 'polygon' | 'heart' | 'arrow' | 'line' | 'text' | 'image' | 'moon';
 
 interface CE {
   id: string;
@@ -50,6 +50,8 @@ interface CE {
   bold?: boolean;
   italic?: boolean;
   src?: string;  // data URL for imported images
+  points?: number; // star spikes count (3-20)
+  sides?: number;  // polygon sides count (3-20)
 }
 
 type Panel = 'flags' | 'shapes' | 'import' | 'text' | 'colors' | 'layers';
@@ -59,8 +61,8 @@ function uid() { return Math.random().toString(36).slice(2, 10); }
 function rad(d: number) { return d * Math.PI / 180; }
 function deg(r: number) { return r * 180 / Math.PI; }
 
-function drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  const spikes = 5, inner = r * 0.42;
+function drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, spikes = 5) {
+  const inner = r * 0.42;
   let toggle = false;
   ctx.beginPath();
   for (let i = 0; i < spikes * 2; i++) {
@@ -70,6 +72,13 @@ function drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: numb
             : ctx.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
     toggle = !toggle;
   }
+  ctx.closePath();
+}
+
+function drawMoon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2, false);
+  ctx.arc(cx + r * 0.32, cy, r * 0.72, 0, Math.PI * 2, true);
   ctx.closePath();
 }
 
@@ -129,12 +138,19 @@ function renderElement(
     case 'rect':     ctx.beginPath(); ctx.rect(-hw, -hh, el.w, el.h); break;
     case 'circle':   ctx.beginPath(); ctx.ellipse(0, 0, hw, hh, 0, 0, Math.PI * 2); break;
     case 'triangle': ctx.beginPath(); ctx.moveTo(0, -hh); ctx.lineTo(hw, hh); ctx.lineTo(-hw, hh); ctx.closePath(); break;
-    case 'star':     drawStar(ctx, 0, 0, r); break;
+    case 'star':     drawStar(ctx, 0, 0, r, el.points ?? 5); break;
     case 'diamond':  ctx.beginPath(); ctx.moveTo(0, -hh); ctx.lineTo(hw, 0); ctx.lineTo(0, hh); ctx.lineTo(-hw, 0); ctx.closePath(); break;
     case 'pentagon': drawNgon(ctx, 0, 0, r, 5); break;
     case 'hexagon':  drawNgon(ctx, 0, 0, r, 6); break;
+    case 'polygon':  drawNgon(ctx, 0, 0, r, el.sides ?? 6); break;
     case 'heart':    drawHeart(ctx, 0, 0, r); break;
     case 'arrow':    drawArrow(ctx, 0, 0, el.w, el.h); break;
+    case 'moon':
+      drawMoon(ctx, 0, 0, r);
+      ctx.fill('evenodd');
+      if (el.sw > 0) ctx.stroke();
+      ctx.restore();
+      return;
     case 'line':
       ctx.restore();
       ctx.save();
@@ -195,11 +211,11 @@ const ALL_COUNTRIES = Object.entries(countryCodeToName)
   .sort((a, b) => a.name.localeCompare(b.name));
 
 const SHAPE_CATALOG: { kind: EKind; label: string }[] = [
-  { kind: 'rect',    label: 'Rectangle' }, { kind: 'circle',   label: 'Circle'   },
-  { kind: 'triangle',label: 'Triangle'  }, { kind: 'star',     label: 'Star'     },
-  { kind: 'diamond', label: 'Diamond'   }, { kind: 'pentagon', label: 'Pentagon' },
-  { kind: 'hexagon', label: 'Hexagon'   }, { kind: 'heart',    label: 'Heart'    },
-  { kind: 'arrow',   label: 'Arrow'     }, { kind: 'line',     label: 'Line'     },
+  { kind: 'rect',    label: 'Rectangle' }, { kind: 'circle',  label: 'Circle'  },
+  { kind: 'triangle',label: 'Triangle'  }, { kind: 'star',    label: 'Star'    },
+  { kind: 'diamond', label: 'Diamond'   }, { kind: 'polygon', label: 'Polygon' },
+  { kind: 'heart',   label: 'Heart'     }, { kind: 'moon',    label: 'Moon'    },
+  { kind: 'arrow',   label: 'Arrow'     }, { kind: 'line',    label: 'Line'    },
 ];
 
 const PALETTE = [
@@ -269,6 +285,8 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   const [defFill,     setDefFill]     = useState('#3b82f6');
   const [defStroke,   setDefStroke]   = useState('#1e40af');
   const [defSw,       setDefSw]       = useState(2);
+  const [defPoints,   setDefPoints]   = useState(5);
+  const [defSides,    setDefSides]    = useState(6);
   const [defText,     setDefText]     = useState('Text');
   const [defFontSize, setDefFontSize] = useState(60);
   const [defFont,     setDefFont]     = useState('Arial');
@@ -329,10 +347,12 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
       x: CW / 2, y: CH / 2,
       w: kind === 'line' ? 200 : 120, h: kind === 'line' ? 4 : 120,
       rot: 0, fill: defFill, stroke: defStroke, sw: defSw, opacity: 1,
+      points: kind === 'star' ? defPoints : undefined,
+      sides: kind === 'polygon' ? defSides : undefined,
     };
     push([...elementsRef.current, el]);
     setSelId(el.id);
-  }, [defFill, defStroke, defSw, push]);
+  }, [defFill, defStroke, defSw, defPoints, defSides, push]);
 
   const addText = useCallback(() => {
     const el: CE = {
@@ -829,6 +849,12 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
                       onChange={e => setDefSw(Number(e.target.value))} className="flex-1" />
                     <span className="w-5 text-xs" style={{ color: T.textSub }}>{defSw}</span>
                   </div>
+                  <label className="text-xs font-medium" style={{ color: T.textSub }}>Star points: {defPoints}</label>
+                  <input type="range" min={3} max={20} value={defPoints}
+                    onChange={e => setDefPoints(Number(e.target.value))} />
+                  <label className="text-xs font-medium" style={{ color: T.textSub }}>Polygon sides: {defSides}</label>
+                  <input type="range" min={3} max={20} value={defSides}
+                    onChange={e => setDefSides(Number(e.target.value))} />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {SHAPE_CATALOG.map(s => (
@@ -1128,6 +1154,20 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
                 <input type="range" min={0} max={1} step={0.01} value={selEl.opacity}
                   onChange={e => updateSel({ opacity: Number(e.target.value) })} />
               </label>
+              {selEl.kind === 'star' && (
+                <label className="mt-2 flex flex-col gap-1">
+                  <span className="text-[10px]" style={{ color: T.textMuted }}>Points: {selEl.points ?? 5}</span>
+                  <input type="range" min={3} max={20} value={selEl.points ?? 5}
+                    onChange={e => updateSel({ points: Number(e.target.value) })} />
+                </label>
+              )}
+              {selEl.kind === 'polygon' && (
+                <label className="mt-2 flex flex-col gap-1">
+                  <span className="text-[10px]" style={{ color: T.textMuted }}>Sides: {selEl.sides ?? 6}</span>
+                  <input type="range" min={3} max={20} value={selEl.sides ?? 6}
+                    onChange={e => updateSel({ sides: Number(e.target.value) })} />
+                </label>
+              )}
             </section>
 
             {/* Appearance */}
