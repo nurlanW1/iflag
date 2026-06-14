@@ -3,9 +3,9 @@
 import { useRef, useState, useCallback, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import {
-  ArrowLeft, Undo2, Redo2, Download, X,
+  ArrowLeft, Undo2, Redo2, Download, X, Copy,
   Type, Bold, Italic, Trash2, ChevronUp, ChevronDown,
-  Flag, Layers, Palette, Gamepad2, FileText, Upload,
+  Layers, Palette, Gamepad2, FileText, Upload,
 } from 'lucide-react';
 import { countryCodeToName } from '@/lib/country-code-to-name';
 
@@ -55,7 +55,7 @@ interface CE {
   crescent?: number; // moon thinness (0=fat, 100=thin hilal)
 }
 
-type Panel = 'flags' | 'shapes' | 'import' | 'text' | 'colors' | 'layers';
+type Panel = 'shapes' | 'import' | 'text' | 'colors' | 'layers';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function uid() { return Math.random().toString(36).slice(2, 10); }
@@ -401,6 +401,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
       }
       if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
       if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
+      if (e.ctrlKey && e.key === 'd') { e.preventDefault(); dupRef.current?.(); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -600,6 +601,21 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
     setSelId(null);
   }, [selId, push]);
 
+  const duplicateSelected = useCallback(() => {
+    if (!selId) return;
+    const orig = elementsRef.current.find(e => e.id === selId);
+    if (!orig) return;
+    const copy: CE = { ...orig, id: uid(), x: orig.x + 16, y: orig.y + 16 };
+    if (orig.src) {
+      const img = imgCacheRef.current.get(orig.id);
+      if (img) imgCacheRef.current.set(copy.id, img);
+    }
+    push([...elementsRef.current, copy]);
+    setSelId(copy.id);
+  }, [selId, push]);
+  const dupRef = useRef(duplicateSelected);
+  useEffect(() => { dupRef.current = duplicateSelected; }, [duplicateSelected]);
+
   // ── Export ──────────────────────────────────────────────────────────────────
   const buildOffscreenCanvas = useCallback((hd = false) => {
     const sc = hd ? 4 : 1;
@@ -735,7 +751,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   }
 
   const PANEL_LABELS: Record<Panel, string> = {
-    flags: 'Flag Background', shapes: 'Shapes', import: 'Import Image',
+    shapes: 'Shapes', import: 'Import Image',
     text: 'Add Text', colors: 'Colors', layers: 'Layers',
   };
 
@@ -799,7 +815,6 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
         {/* ── Left rail (sm+) ── */}
         <nav className="hidden sm:flex flex-col items-center gap-0.5 py-2 px-1 shrink-0"
           style={{ width: 52, background: T.rail, borderRight: `1px solid ${T.border}` }}>
-          <RailBtn id="flags"  icon={<Flag size={16} />}     label="Flags"  />
           <RailBtn id="shapes" icon={<Gamepad2 size={16} />} label="Shapes" />
           <RailBtn id="import" icon={<Upload size={16} />}   label="Import" />
           <RailBtn id="text"   icon={<Type size={16} />}     label="Text"   />
@@ -836,35 +851,6 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
           </div>
           {/* Scrollable panel body */}
           <div className="flex-1 overflow-y-auto">
-            {/* Flags */}
-            {panel === 'flags' && (
-              <div className="flex flex-col gap-3 p-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: T.textMuted }}>
-                  Flag Background
-                </p>
-                <input type="search" placeholder="Search flags…" value={flagSearch}
-                  onChange={e => setFlagSearch(e.target.value)}
-                  className={inputCls} style={inputStyle} />
-                <div className="grid grid-cols-3 gap-1.5">
-                  {filteredFlags.slice(0, 60).map(c => (
-                    <button key={c.code} onClick={() => loadFlag(c.upper)} title={c.name}
-                      className="overflow-hidden rounded-lg transition"
-                      style={{ aspectRatio: '3/2', border: '2px solid transparent', outline: 'none' }}
-                      onMouseEnter={e => (e.currentTarget.style.borderColor = ACCENT)}
-                      onMouseLeave={e => (e.currentTarget.style.borderColor = 'transparent')}>
-                      <img src={`/flags/${c.upper}.svg`} alt={c.name}
-                        className="h-full w-full object-cover" loading="lazy"
-                        onError={ev => { (ev.target as HTMLImageElement).src = `https://flagcdn.com/w80/${c.code}.png`; }} />
-                    </button>
-                  ))}
-                </div>
-                {filteredFlags.length > 60 && (
-                  <p className="text-center text-xs" style={{ color: T.textMuted }}>
-                    Showing 60 of {filteredFlags.length} — refine search
-                  </p>
-                )}
-              </div>
-            )}
 
             {/* Shapes */}
             {panel === 'shapes' && (
@@ -1152,11 +1138,18 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
               {selEl ? selEl.kind : 'Properties'}
             </span>
             {selEl && (
-              <button onClick={deleteSelected}
-                className="flex h-6 w-6 items-center justify-center rounded-md transition-colors hover:bg-red-50"
-                style={{ color: '#ef4444' }}>
-                <Trash2 size={12} />
-              </button>
+              <div className="flex items-center gap-1">
+                <button onClick={duplicateSelected} title="Duplicate (Ctrl+D)"
+                  className="flex h-6 w-6 items-center justify-center rounded-md transition-colors hover:bg-slate-100"
+                  style={{ color: T.textSub }}>
+                  <Copy size={12} />
+                </button>
+                <button onClick={deleteSelected} title="Delete"
+                  className="flex h-6 w-6 items-center justify-center rounded-md transition-colors hover:bg-red-50"
+                  style={{ color: '#ef4444' }}>
+                  <Trash2 size={12} />
+                </button>
+              </div>
             )}
           </div>
           {!selEl && (
@@ -1305,12 +1298,11 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
       {/* ── Mobile bottom rail (sm hidden) ── */}
       <nav className="flex sm:hidden shrink-0 border-t" style={{ background: T.rail, borderColor: T.border }}>
         {([
-          { id: 'flags' as Panel, icon: <Flag size={17} />, label: 'Flags' },
           { id: 'shapes' as Panel, icon: <Gamepad2 size={17} />, label: 'Shapes' },
-          { id: 'import' as Panel, icon: <Upload size={17} />, label: 'Import' },
-          { id: 'text' as Panel, icon: <Type size={17} />, label: 'Text' },
-          { id: 'colors' as Panel, icon: <Palette size={17} />, label: 'Colors' },
-          { id: 'layers' as Panel, icon: <Layers size={17} />, label: 'Layers' },
+          { id: 'import' as Panel, icon: <Upload size={17} />,   label: 'Import' },
+          { id: 'text'   as Panel, icon: <Type size={17} />,     label: 'Text'   },
+          { id: 'colors' as Panel, icon: <Palette size={17} />,  label: 'Colors' },
+          { id: 'layers' as Panel, icon: <Layers size={17} />,   label: 'Layers' },
         ]).map(({ id, icon, label }) => {
           const active = panel === id && mobileOpen;
           return (
