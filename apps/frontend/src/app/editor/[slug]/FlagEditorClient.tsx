@@ -248,6 +248,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
 
   const [panel, setPanel]         = useState<Panel>('shapes');
   const [exportOpen, setExportOpen] = useState(false);
+  const [navH, setNavH] = useState(64);
   const [flagSearch, setFlagSearch] = useState('');
 
   const interRef = useRef<Inter | null>(null);
@@ -297,6 +298,16 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [selId, undo, redo, push]);
+
+  // Measure navbar height so editor starts below it
+  useEffect(() => {
+    const nav = document.querySelector('nav[aria-label="Primary"]');
+    if (!nav) return;
+    const obs = new ResizeObserver(() => setNavH(nav.getBoundingClientRect().height));
+    obs.observe(nav);
+    setNavH(nav.getBoundingClientRect().height);
+    return () => obs.disconnect();
+  }, []);
 
   // ── Add helpers ─────────────────────────────────────────────────────────────
   const addShape = useCallback((kind: EKind) => {
@@ -584,8 +595,8 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col"
-      style={{ background: T.bg, fontFamily: 'system-ui, sans-serif', color: T.text }}
+      className="fixed left-0 right-0 bottom-0 z-40 flex flex-col"
+      style={{ top: navH, background: T.bg, fontFamily: 'system-ui, sans-serif', color: T.text }}
     >
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
       <div
