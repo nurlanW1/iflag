@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, Undo2, Redo2, Download, Eye,
   Type, Bold, Italic, Trash2, ChevronUp, ChevronDown,
-  Flag, Layers, Palette, Gamepad2,
+  Flag, Layers, Palette, Gamepad2, FileText,
 } from 'lucide-react';
 import { countryCodeToName } from '@/lib/country-code-to-name';
 
@@ -247,6 +247,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   const [flagBg, setFlagBg]   = useState<HTMLImageElement | null>(null);
 
   const [panel, setPanel]         = useState<Panel>('shapes');
+  const [exportOpen, setExportOpen] = useState(false);
   const [flagSearch, setFlagSearch] = useState('');
 
   const interRef = useRef<Inter | null>(null);
@@ -448,7 +449,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   }, [selId, push]);
 
   // ── Export ──────────────────────────────────────────────────────────────────
-  const exportCanvas = useCallback((hd = false) => {
+  const buildOffscreenCanvas = useCallback((hd = false) => {
     const sc = hd ? 4 : 1;
     const off = document.createElement('canvas');
     off.width = CW * sc; off.height = CH * sc;
@@ -463,11 +464,87 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
       ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
       ctx.fillText('flagswing.com', CW - 12, CH - 12);
     }
+    return off;
+  }, [bgColor, flagBg]);
+
+  const exportCanvas = useCallback((hd = false) => {
+    const off = buildOffscreenCanvas(hd);
     const a = document.createElement('a');
     a.href = off.toDataURL('image/png');
     a.download = hd ? 'flag-hd.png' : 'flag-preview.png';
     a.click();
-  }, [bgColor, flagBg]);
+  }, [buildOffscreenCanvas]);
+
+  const exportPDF = useCallback(() => {
+    const off = buildOffscreenCanvas(true); // HD quality
+    const jpegDataUrl = off.toDataURL('image/jpeg', 0.92);
+    const b64 = jpegDataUrl.split(',')[1];
+    const raw = atob(b64);
+    const jpegBytes = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) jpegBytes[i] = raw.charCodeAt(i);
+
+    const imgW = off.width, imgH = off.height;
+    // A4 landscape in points (1pt = 1/72 inch): 841.89 × 595.28
+    const pdfW = 841.89;
+    const pdfH = Math.round((pdfW * imgH) / imgW * 100) / 100;
+
+    const enc = new TextEncoder();
+    const parts: Uint8Array[] = [];
+    const xref: number[] = [];
+    let pos = 0;
+
+    const write = (s: string) => {
+      const b = enc.encode(s); parts.push(b); pos += b.length;
+    };
+    const writeBin = (b: Uint8Array) => { parts.push(b); pos += b.length; };
+    const beginObj = (n: number) => { xref[n] = pos; write(`${n} 0 obj\n`); };
+    const endObj   = () => write('endobj\n');
+
+    write('%PDF-1.4\n%\xFF\xFF\xFF\xFF\n');
+
+    beginObj(1); write('<< /Type /Catalog /Pages 2 0 R >>\n'); endObj();
+    beginObj(2); write('<< /Type /Pages /Kids [3 0 R] /Count 1 >>\n'); endObj();
+    beginObj(3);
+    write(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pdfW} ${pdfH}]\n`);
+    write('   /Contents 4 0 R /Resources << /XObject << /Im1 5 0 R >> >> >>\n');
+    endObj();
+
+    const stream = enc.encode(`q ${pdfW} 0 0 ${pdfH} 0 0 cm /Im1 Do Q\n`);
+    beginObj(4);
+    write(`<< /Length ${stream.length} >>\nstream\n`);
+    writeBin(stream);
+    write('\nendstream\n'); endObj();
+
+    beginObj(5);
+    write(`<< /Type /XObject /Subtype /Image\n`);
+    write(`   /Width ${imgW} /Height ${imgH}\n`);
+    write(`   /ColorSpace /DeviceRGB /BitsPerComponent 8\n`);
+    write(`   /Filter /DCTDecode /Length ${jpegBytes.length} >>\nstream\n`);
+    writeBin(jpegBytes);
+    write('\nendstream\n'); endObj();
+
+    const xrefPos = pos;
+    write('xref\n');
+    write(`0 6\n`);
+    write('0000000000 65535 f \n');
+    for (let i = 1; i <= 5; i++) {
+      write(String(xref[i]).padStart(10, '0') + ' 00000 n \n');
+    }
+    write(`trailer\n<< /Size 6 /Root 1 0 R >>\n`);
+    write(`startxref\n${xrefPos}\n%%EOF\n`);
+
+    const total = parts.reduce((s, p) => s + p.length, 0);
+    const out = new Uint8Array(total);
+    let off2 = 0;
+    for (const p of parts) { out.set(p, off2); off2 += p.length; }
+
+    const blob = new Blob([out], { type: 'application/pdf' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'flag.pdf';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }, [buildOffscreenCanvas]);
 
   // ── Filtered flags ──────────────────────────────────────────────────────────
   const filteredFlags = flagSearch.trim()
@@ -576,13 +653,56 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
             <Eye size={13} /> Preview
           </button>
 
-          <button onClick={() => exportCanvas(true)}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-opacity"
-            style={{ background: ACCENT, color: '#fff' }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
-            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
-            <Download size={13} /> Export HD
-          </button>
+          {/* Export dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setExportOpen(o => !o)}
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-opacity"
+              style={{ background: ACCENT, color: '#fff' }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
+              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+            >
+              <Download size={13} /> Export <ChevronDown size={11} />
+            </button>
+            {exportOpen && (
+              <>
+                {/* backdrop */}
+                <div className="fixed inset-0 z-10" onClick={() => setExportOpen(false)} />
+                <div
+                  className="absolute right-0 top-full z-20 mt-1 w-44 rounded-xl border overflow-hidden"
+                  style={{ background: '#fff', borderColor: T.border, boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
+                >
+                  <button
+                    onClick={() => { exportCanvas(true); setExportOpen(false); }}
+                    className="flex w-full items-center gap-2.5 px-4 py-3 text-left text-xs font-medium transition-colors"
+                    style={{ color: T.text }}
+                    onMouseEnter={e => (e.currentTarget.style.background = T.hover)}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <Download size={14} style={{ color: ACCENT }} />
+                    <div>
+                      <div className="font-semibold">PNG (HD)</div>
+                      <div style={{ color: T.textMuted }}>3600 × 2400px</div>
+                    </div>
+                  </button>
+                  <div style={{ height: 1, background: T.border }} />
+                  <button
+                    onClick={() => { exportPDF(); setExportOpen(false); }}
+                    className="flex w-full items-center gap-2.5 px-4 py-3 text-left text-xs font-medium transition-colors"
+                    style={{ color: T.text }}
+                    onMouseEnter={e => (e.currentTarget.style.background = T.hover)}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <FileText size={14} style={{ color: '#ef4444' }} />
+                    <div>
+                      <div className="font-semibold">PDF (A4)</div>
+                      <div style={{ color: T.textMuted }}>Print ready</div>
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
