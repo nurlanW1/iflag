@@ -56,7 +56,7 @@ const nextConfig = {
       "img-src 'self' https: data: blob:",
       "media-src 'self' https: blob:",
       "connect-src 'self' https: wss: blob:",
-      "frame-src 'self' https://js.paddle.com https://buy.paddle.com https://*.clerk.accounts.dev https://accounts.clerk.dev",
+      "frame-src 'self' https://js.paddle.com https://buy.paddle.com https://*.clerk.accounts.dev https://accounts.clerk.dev https://challenges.cloudflare.com",
       "worker-src 'self' blob:",
     ].join('; ');
     return [
