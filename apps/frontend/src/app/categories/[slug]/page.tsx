@@ -71,21 +71,22 @@ export default async function CategoryPage({ params }: Props) {
   const vis = visualsForCategoryKind(category.kind);
   const Icon = vis.Icon;
 
-  // Read circle-flag SVG file list at build/request time (server only)
-  let circleFlags: { code: string; label: string }[] = [];
+  // Read flag icon lists at request time (server only)
+  let circleFlags: { code: string; label: string; src: string }[] = [];
+  let rectFlags:   { code: string; label: string; src: string }[] = [];
   if (useCircleFlags) {
-    const dir = join(process.cwd(), 'public', 'icons', 'flags', 'circle-flags');
     try {
-      circleFlags = readdirSync(dir)
+      circleFlags = readdirSync(join(process.cwd(), 'public', 'icons', 'flags', 'circle-flags'))
         .filter(f => f.endsWith('.svg'))
-        .map(f => {
-          const code = f.replace(/\.svg$/, '');
-          return { code, label: code.toUpperCase() };
-        })
+        .map(f => { const code = f.replace(/\.svg$/, ''); return { code, label: code.toUpperCase(), src: `/icons/flags/circle-flags/${code}.svg` }; })
         .sort((a, b) => a.code.localeCompare(b.code));
-    } catch {
-      circleFlags = [];
-    }
+    } catch { circleFlags = []; }
+    try {
+      rectFlags = readdirSync(join(process.cwd(), 'public', 'flags'))
+        .filter(f => f.endsWith('.svg'))
+        .map(f => { const code = f.replace(/\.svg$/, ''); return { code, label: code.toUpperCase(), src: `/flags/${code}.svg` }; })
+        .sort((a, b) => a.code.localeCompare(b.code));
+    } catch { rectFlags = []; }
   }
 
   return (
@@ -118,7 +119,7 @@ export default async function CategoryPage({ params }: Props) {
             </div>
           </header>
           {useCircleFlags ? (
-            <CircleFlagsBrowseSection flags={circleFlags} />
+            <CircleFlagsBrowseSection circleFlags={circleFlags} rectFlags={rectFlags} />
           ) : useFlagVideos ? (
             <FlagVideoBrowseSection />
           ) : useCountryHubs ? (

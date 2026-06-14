@@ -3,7 +3,7 @@
 import { useRef, useState, useCallback, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import {
-  ArrowLeft, Undo2, Redo2, Download,
+  ArrowLeft, Undo2, Redo2, Download, X,
   Type, Bold, Italic, Trash2, ChevronUp, ChevronDown,
   Flag, Layers, Palette, Gamepad2, FileText, Upload,
 } from 'lucide-react';
@@ -351,6 +351,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   const [exportOpen, setExportOpen] = useState(false);
   const [navH, setNavH] = useState(64);
   const [dragOver, setDragOver] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const imgCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
   const [flagSearch, setFlagSearch] = useState('');
 
@@ -733,143 +734,108 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
     );
   }
 
+  const PANEL_LABELS: Record<Panel, string> = {
+    flags: 'Flag Background', shapes: 'Shapes', import: 'Import Image',
+    text: 'Add Text', colors: 'Colors', layers: 'Layers',
+  };
+
   return (
     <div
-      className="fixed left-0 right-0 bottom-0 z-40 flex flex-col"
+      className="fixed left-0 right-0 bottom-0 z-40 flex flex-col overflow-hidden"
       style={{ top: navH, background: T.bg, fontFamily: 'system-ui, sans-serif', color: T.text }}
     >
-      {/* ── Top bar ─────────────────────────────────────────────────────────── */}
-      <div
-        className="flex h-12 items-center gap-3 px-4 shrink-0"
-        style={{ background: T.topbar, boxShadow: T.shadow }}
-      >
-        <Link
-          href="/editor"
-          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
-          style={{ color: T.textSub }}
-          onMouseEnter={e => (e.currentTarget.style.background = T.hover)}
-          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-        >
-          <ArrowLeft size={14} /> Back
+      {/* ── Top bar ── */}
+      <div className="flex h-10 shrink-0 items-center gap-2 px-3 border-b"
+        style={{ background: T.topbar, borderColor: T.border }}>
+        <Link href="/" className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-colors hover:bg-slate-100"
+          style={{ color: T.textSub }}>
+          <ArrowLeft size={13} /><span className="hidden sm:inline ml-0.5">Back</span>
         </Link>
-
-        <div className="h-5 w-px" style={{ background: T.border }} />
-        <span className="text-sm font-semibold" style={{ color: T.text }}>
-          {countryName} — Flag Editor
+        <span className="h-4 w-px shrink-0" style={{ background: T.border }} />
+        <span className="truncate text-xs font-semibold max-w-[110px] sm:max-w-xs" style={{ color: T.text }}>
+          {countryName}
         </span>
-
-        <div className="ml-auto flex items-center gap-2">
-          <button onClick={undo} title="Undo (Ctrl+Z)"
-            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
-            style={{ color: T.textSub }}
-            onMouseEnter={e => (e.currentTarget.style.background = T.hover)}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-            <Undo2 size={15} />
-          </button>
-          <button onClick={redo} title="Redo (Ctrl+Y)"
-            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
-            style={{ color: T.textSub }}
-            onMouseEnter={e => (e.currentTarget.style.background = T.hover)}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-            <Redo2 size={15} />
-          </button>
-
-          <div className="h-5 w-px mx-1" style={{ background: T.border }} />
-
-          <label className="flex items-center gap-1.5 text-xs" style={{ color: T.textSub }}>
-            BG
-            <input type="color" value={flagBg ? '#cccccc' : bgColor}
-              disabled={!!flagBg}
+        <div className="ml-auto flex items-center gap-1">
+          <button onClick={undo} title="Undo (Ctrl+Z)" className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors" style={{ color: T.textSub }}><Undo2 size={13} /></button>
+          <button onClick={redo} title="Redo (Ctrl+Y)" className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors" style={{ color: T.textSub }}><Redo2 size={13} /></button>
+          <span className="h-4 w-px mx-1 shrink-0 hidden sm:block" style={{ background: T.border }} />
+          <label className="hidden sm:flex items-center gap-1 text-[11px] cursor-pointer" style={{ color: T.textSub }}>
+            BG<input type="color" value={flagBg ? '#cccccc' : bgColor} disabled={!!flagBg}
               onChange={e => { setFlagBg(null); setBgColor(e.target.value); }}
-              className="h-6 w-8 cursor-pointer rounded border-0 p-0"
-            />
+              className="h-6 w-7 cursor-pointer rounded border-0 p-0" />
           </label>
-          {flagBg && (
-            <button onClick={() => setFlagBg(null)}
-              className="rounded-lg px-2 py-1 text-xs transition-colors"
-              style={{ color: T.textSub }}
-              onMouseEnter={e => (e.currentTarget.style.background = T.hover)}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-              Clear flag
-            </button>
-          )}
-
-          <div className="h-5 w-px mx-1" style={{ background: T.border }} />
-
-          {/* Export dropdown */}
+          {flagBg && <button onClick={() => setFlagBg(null)} className="hidden sm:block rounded-md px-2 py-1 text-[11px] hover:bg-slate-100 transition-colors" style={{ color: T.textSub }}>Clear</button>}
+          <span className="h-4 w-px mx-1 shrink-0" style={{ background: T.border }} />
           <div className="relative">
-            <button
-              onClick={() => setExportOpen(o => !o)}
-              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-opacity"
-              style={{ background: ACCENT, color: '#fff' }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-            >
-              <Download size={13} /> Export <ChevronDown size={11} />
+            <button onClick={() => setExportOpen(o => !o)}
+              className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold hover:opacity-85 transition-opacity"
+              style={{ background: ACCENT, color: '#fff' }}>
+              <Download size={11} /><span className="hidden sm:inline">Export</span><ChevronDown size={9} />
             </button>
-            {exportOpen && (
-              <>
-                {/* backdrop */}
-                <div className="fixed inset-0 z-10" onClick={() => setExportOpen(false)} />
-                <div
-                  className="absolute right-0 top-full z-20 mt-1 w-44 rounded-xl border overflow-hidden"
-                  style={{ background: '#fff', borderColor: T.border, boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
-                >
-                  <button
-                    onClick={() => { exportCanvas(true); setExportOpen(false); }}
-                    className="flex w-full items-center gap-2.5 px-4 py-3 text-left text-xs font-medium transition-colors"
-                    style={{ color: T.text }}
-                    onMouseEnter={e => (e.currentTarget.style.background = T.hover)}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    <Download size={14} style={{ color: ACCENT }} />
-                    <div>
-                      <div className="font-semibold">PNG (HD)</div>
-                      <div style={{ color: T.textMuted }}>3600 × 2400px</div>
-                    </div>
-                  </button>
-                  <div style={{ height: 1, background: T.border }} />
-                  <button
-                    onClick={() => { exportPDF(); setExportOpen(false); }}
-                    className="flex w-full items-center gap-2.5 px-4 py-3 text-left text-xs font-medium transition-colors"
-                    style={{ color: T.text }}
-                    onMouseEnter={e => (e.currentTarget.style.background = T.hover)}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    <FileText size={14} style={{ color: '#ef4444' }} />
-                    <div>
-                      <div className="font-semibold">PDF (A4)</div>
-                      <div style={{ color: T.textMuted }}>Print ready</div>
-                    </div>
-                  </button>
-                </div>
-              </>
-            )}
+            {exportOpen && (<>
+              <div className="fixed inset-0 z-10" onClick={() => setExportOpen(false)} />
+              <div className="absolute right-0 top-full z-20 mt-1 w-44 rounded-xl border overflow-hidden shadow-lg"
+                style={{ background: '#fff', borderColor: T.border }}>
+                <button onClick={() => { exportCanvas(true); setExportOpen(false); }}
+                  className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-xs font-medium hover:bg-slate-50 transition-colors" style={{ color: T.text }}>
+                  <Download size={13} style={{ color: ACCENT }} />
+                  <div><div className="font-semibold">PNG (HD)</div><div className="text-[10px]" style={{ color: T.textMuted }}>3600 × 2400px</div></div>
+                </button>
+                <div style={{ height: 1, background: T.border }} />
+                <button onClick={() => { exportPDF(); setExportOpen(false); }}
+                  className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-xs font-medium hover:bg-slate-50 transition-colors" style={{ color: T.text }}>
+                  <FileText size={13} style={{ color: '#ef4444' }} />
+                  <div><div className="font-semibold">PDF (A4)</div><div className="text-[10px]" style={{ color: T.textMuted }}>Print ready</div></div>
+                </button>
+              </div>
+            </>)}
           </div>
         </div>
       </div>
 
-      {/* ── Body ────────────────────────────────────────────────────────────── */}
-      <div className="flex flex-1 min-h-0">
+      {/* ── Body ── */}
+      <div className="relative flex flex-1 min-h-0 overflow-hidden">
 
-        {/* ── Left icon rail ───────────────────────────────────────────────── */}
-        <div
-          className="flex flex-col items-center gap-1 py-3 px-1.5 shrink-0"
-          style={{ width: 56, background: T.rail, borderRight: `1px solid ${T.border}` }}
-        >
-          <RailBtn id="flags"  icon={<Flag size={18} />}     label="Flags"  />
-          <RailBtn id="shapes" icon={<Gamepad2 size={18} />} label="Shapes" />
-          <RailBtn id="import" icon={<Upload size={18} />}   label="Import" />
-          <RailBtn id="text"   icon={<Type size={18} />}     label="Text"   />
-          <RailBtn id="colors" icon={<Palette size={18} />}  label="Colors" />
-          <RailBtn id="layers" icon={<Layers size={18} />}   label="Layers" />
-        </div>
+        {/* ── Left rail (sm+) ── */}
+        <nav className="hidden sm:flex flex-col items-center gap-0.5 py-2 px-1 shrink-0"
+          style={{ width: 52, background: T.rail, borderRight: `1px solid ${T.border}` }}>
+          <RailBtn id="flags"  icon={<Flag size={16} />}     label="Flags"  />
+          <RailBtn id="shapes" icon={<Gamepad2 size={16} />} label="Shapes" />
+          <RailBtn id="import" icon={<Upload size={16} />}   label="Import" />
+          <RailBtn id="text"   icon={<Type size={16} />}     label="Text"   />
+          <RailBtn id="colors" icon={<Palette size={16} />}  label="Colors" />
+          <RailBtn id="layers" icon={<Layers size={16} />}   label="Layers" />
+        </nav>
 
-        {/* ── Side panel ──────────────────────────────────────────────────── */}
-        <div
-          className="flex flex-col shrink-0 overflow-y-auto"
-          style={{ width: 248, background: T.panel, borderRight: `1px solid ${T.border}` }}
+        {/* ── Mobile backdrop ── */}
+        {mobileOpen && (
+          <div className="absolute inset-0 z-20 sm:hidden" style={{ background: 'rgba(0,0,0,0.38)' }}
+            onClick={() => setMobileOpen(false)} />
+        )}
+
+        {/* ── Left panel (absolute on mobile, static on sm+) ── */}
+        <aside
+          className={[
+            'flex flex-col shrink-0 overflow-hidden',
+            'absolute sm:relative z-30 sm:z-auto top-0 bottom-0 left-0',
+            'transition-transform duration-200 ease-in-out',
+            mobileOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0',
+          ].join(' ')}
+          style={{ width: 244, background: T.panel, borderRight: `1px solid ${T.border}` }}
         >
+          {/* Panel header */}
+          <div className="flex items-center justify-between px-3 py-2 border-b shrink-0" style={{ borderColor: T.border }}>
+            <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: T.textMuted }}>
+              {PANEL_LABELS[panel]}
+            </span>
+            <button onClick={() => setMobileOpen(false)}
+              className="sm:hidden flex h-6 w-6 items-center justify-center rounded-md hover:bg-slate-100 transition-colors"
+              style={{ color: T.textMuted }}>
+              <X size={12} />
+            </button>
+          </div>
+          {/* Scrollable panel body */}
+          <div className="flex-1 overflow-y-auto">
             {/* Flags */}
             {panel === 'flags' && (
               <div className="flex flex-col gap-3 p-3">
@@ -1097,10 +1063,11 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
               </div>
             )}
           </div>
+        </aside>
 
-        {/* ── Canvas area ──────────────────────────────────────────────────── */}
-        <div ref={containerRef}
-          className="relative flex flex-1 items-center justify-center"
+        {/* ── Canvas area ── */}
+        <main ref={containerRef}
+          className="relative flex flex-1 min-w-0 items-center justify-center p-3 sm:p-4"
           style={{ background: T.bg }}
         >
           <div className="relative" style={{ width: canvasW, height: canvasH }}>
@@ -1109,9 +1076,9 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
               width={CW} height={CH}
               style={{
                 display: 'block', width: canvasW, height: canvasH,
-                cursor: selEl ? 'move' : 'default',
-                borderRadius: 4,
-                boxShadow: '0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08)',
+                cursor: selEl ? 'move' : 'crosshair',
+                borderRadius: 6,
+                boxShadow: '0 0 0 1px rgba(0,0,0,0.07), 0 4px 20px rgba(0,0,0,0.10)',
               }}
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
@@ -1175,29 +1142,27 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
               </svg>
             )}
           </div>
-        </div>
+        </main>
 
-        {/* ── Right properties panel ──────────────────────────────────────── */}
-        <div className="flex shrink-0 flex-col overflow-y-auto"
-          style={{ width: 224, background: T.panel, borderLeft: `1px solid ${T.border}` }}>
-          <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: T.border }}>
-            <span className="text-xs font-semibold capitalize" style={{ color: T.text }}>
+        {/* ── Right properties panel (lg+) ── */}
+        <aside className="hidden lg:flex shrink-0 flex-col overflow-y-auto"
+          style={{ width: 216, background: T.panel, borderLeft: `1px solid ${T.border}` }}>
+          <div className="flex items-center justify-between px-3 py-2 border-b shrink-0" style={{ borderColor: T.border }}>
+            <span className="text-[10px] font-semibold uppercase tracking-widest capitalize" style={{ color: T.textMuted }}>
               {selEl ? selEl.kind : 'Properties'}
             </span>
             {selEl && (
               <button onClick={deleteSelected}
-                className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
-                style={{ color: '#ef4444' }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#fef2f2')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                <Trash2 size={13} />
+                className="flex h-6 w-6 items-center justify-center rounded-md transition-colors hover:bg-red-50"
+                style={{ color: '#ef4444' }}>
+                <Trash2 size={12} />
               </button>
             )}
           </div>
           {!selEl && (
             <div className="flex flex-1 flex-col items-center justify-center gap-2 px-4 py-10"
               style={{ color: T.textMuted }}>
-              <Layers size={28} style={{ opacity: 0.35 }} />
+              <Layers size={28} style={{ opacity: 0.3 }} />
               <p className="text-center text-xs leading-relaxed">
                 Select an element on the canvas to edit its properties
               </p>
@@ -1334,19 +1299,37 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
               </div>
             </section>
           </>)}
-        </div>
+        </aside>
       </div>
 
-      {/* ── Status bar ──────────────────────────────────────────────────────── */}
-      <div className="flex h-7 items-center gap-4 px-4 shrink-0 border-t text-[10px]"
+      {/* ── Mobile bottom rail (sm hidden) ── */}
+      <nav className="flex sm:hidden shrink-0 border-t" style={{ background: T.rail, borderColor: T.border }}>
+        {([
+          { id: 'flags' as Panel, icon: <Flag size={17} />, label: 'Flags' },
+          { id: 'shapes' as Panel, icon: <Gamepad2 size={17} />, label: 'Shapes' },
+          { id: 'import' as Panel, icon: <Upload size={17} />, label: 'Import' },
+          { id: 'text' as Panel, icon: <Type size={17} />, label: 'Text' },
+          { id: 'colors' as Panel, icon: <Palette size={17} />, label: 'Colors' },
+          { id: 'layers' as Panel, icon: <Layers size={17} />, label: 'Layers' },
+        ]).map(({ id, icon, label }) => {
+          const active = panel === id && mobileOpen;
+          return (
+            <button key={id}
+              onClick={() => { setPanel(id); setMobileOpen(prev => !(prev && panel === id)); }}
+              className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 transition-colors"
+              style={{ color: active ? ACCENT : T.textSub, background: active ? T.selBg : 'transparent' }}>
+              {icon}
+              <span className="text-[9px] font-medium">{label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* ── Status bar ── */}
+      <div className="hidden sm:flex h-6 items-center gap-4 px-4 shrink-0 border-t text-[10px]"
         style={{ background: T.statusBar, borderColor: T.border, color: T.textMuted }}>
         <span>{elements.length} element{elements.length !== 1 ? 's' : ''}</span>
-        {selEl && (
-          <>
-            <span style={{ color: T.border }}>|</span>
-            <span style={{ color: ACCENT }}>Selected: {selEl.kind}</span>
-          </>
-        )}
+        {selEl && (<><span style={{ color: T.border }}>|</span><span style={{ color: ACCENT }}>Selected: {selEl.kind}</span></>)}
         <span style={{ color: T.border }}>|</span>
         <span>{CW} × {CH}px</span>
         <span style={{ color: T.border }}>|</span>
