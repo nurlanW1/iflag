@@ -3,9 +3,9 @@
 import { useRef, useState, useCallback, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import {
-  ArrowLeft, Undo2, Redo2, Download, Eye,
+  ArrowLeft, Undo2, Redo2, Download,
   Type, Bold, Italic, Trash2, ChevronUp, ChevronDown,
-  Flag, Layers, Palette, Gamepad2, FileText,
+  Flag, Layers, Palette, Gamepad2, FileText, Upload,
 } from 'lucide-react';
 import { countryCodeToName } from '@/lib/country-code-to-name';
 
@@ -32,7 +32,7 @@ const T = {
 };
 
 type EKind = 'rect' | 'circle' | 'triangle' | 'star' | 'diamond'
-  | 'pentagon' | 'hexagon' | 'heart' | 'arrow' | 'line' | 'text';
+  | 'pentagon' | 'hexagon' | 'heart' | 'arrow' | 'line' | 'text' | 'image';
 
 interface CE {
   id: string;
@@ -49,9 +49,10 @@ interface CE {
   fontFamily?: string;
   bold?: boolean;
   italic?: boolean;
+  src?: string;  // data URL for imported images
 }
 
-type Panel = 'flags' | 'shapes' | 'text' | 'colors' | 'layers' | null;
+type Panel = 'flags' | 'shapes' | 'import' | 'text' | 'colors' | 'layers' | null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function uid() { return Math.random().toString(36).slice(2, 10); }
@@ -104,7 +105,11 @@ function drawArrow(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: num
   ctx.closePath();
 }
 
-function renderElement(ctx: CanvasRenderingContext2D, el: CE) {
+function renderElement(
+  ctx: CanvasRenderingContext2D,
+  el: CE,
+  imgCache?: Map<string, HTMLImageElement>,
+) {
   ctx.save();
   ctx.globalAlpha = el.opacity;
   ctx.translate(el.x, el.y);
@@ -115,6 +120,12 @@ function renderElement(ctx: CanvasRenderingContext2D, el: CE) {
   const hw = el.w / 2, hh = el.h / 2, r = Math.min(hw, hh);
 
   switch (el.kind) {
+    case 'image': {
+      const img = imgCache?.get(el.id);
+      if (img) ctx.drawImage(img, -hw, -hh, el.w, el.h);
+      ctx.restore();
+      return;
+    }
     case 'rect':     ctx.beginPath(); ctx.rect(-hw, -hh, el.w, el.h); break;
     case 'circle':   ctx.beginPath(); ctx.ellipse(0, 0, hw, hh, 0, 0, Math.PI * 2); break;
     case 'triangle': ctx.beginPath(); ctx.moveTo(0, -hh); ctx.lineTo(hw, hh); ctx.lineTo(-hw, hh); ctx.closePath(); break;
@@ -249,6 +260,8 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   const [panel, setPanel]         = useState<Panel>('shapes');
   const [exportOpen, setExportOpen] = useState(false);
   const [navH, setNavH] = useState(64);
+  const [dragOver, setDragOver] = useState(false);
+  const imgCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
   const [flagSearch, setFlagSearch] = useState('');
 
   const interRef = useRef<Inter | null>(null);
@@ -280,7 +293,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
     ctx.clearRect(0, 0, CW, CH);
     if (flagBg) { ctx.drawImage(flagBg, 0, 0, CW, CH); }
     else { ctx.fillStyle = bgColor; ctx.fillRect(0, 0, CW, CH); }
-    for (const el of elements) renderElement(ctx, el);
+    for (const el of elements) renderElement(ctx, el, imgCacheRef.current);
   }, [elements, bgColor, flagBg]);
 
   // ── Keyboard ────────────────────────────────────────────────────────────────
@@ -345,6 +358,38 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
       img2.onload = () => setFlagBg(img2);
     };
   }, []);
+
+  const importFiles = useCallback((files: FileList | File[]) => {
+    const allowed = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
+    Array.from(files).forEach(file => {
+      if (!allowed.includes(file.type)) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const src = ev.target?.result as string;
+        const img = new window.Image();
+        img.onload = () => {
+          const maxW = CW * 0.6;
+          const aspect = img.naturalWidth / img.naturalHeight;
+          const w = Math.min(maxW, img.naturalWidth);
+          const h = w / aspect;
+          const id = uid();
+          imgCacheRef.current.set(id, img);
+          const el: CE = {
+            id, kind: 'image',
+            x: CW / 2, y: CH / 2,
+            w, h, rot: 0,
+            fill: 'transparent', stroke: 'transparent', sw: 0, opacity: 1,
+            src,
+          };
+          push([...elementsRef.current, el]);
+          setSelId(id);
+          setPanel(null);
+        };
+        img.src = src;
+      };
+      reader.readAsDataURL(file);
+    });
+  }, [push]);
 
   // ── Pointer (canvas) ────────────────────────────────────────────────────────
   const toLogical = useCallback((e: React.PointerEvent) => {
@@ -468,7 +513,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
     ctx.scale(sc, sc);
     if (flagBg) ctx.drawImage(flagBg, 0, 0, CW, CH);
     else { ctx.fillStyle = bgColor; ctx.fillRect(0, 0, CW, CH); }
-    for (const el of elementsRef.current) renderElement(ctx, el);
+    for (const el of elementsRef.current) renderElement(ctx, el, imgCacheRef.current);
     if (!hd) {
       ctx.fillStyle = 'rgba(0,0,0,0.18)';
       ctx.font = 'bold 18px Arial';
@@ -656,14 +701,6 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
 
           <div className="h-5 w-px mx-1" style={{ background: T.border }} />
 
-          <button onClick={() => exportCanvas(false)}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium border transition-colors"
-            style={{ borderColor: T.border, color: T.textSub, background: 'transparent' }}
-            onMouseEnter={e => (e.currentTarget.style.background = T.hover)}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-            <Eye size={13} /> Preview
-          </button>
-
           {/* Export dropdown */}
           <div className="relative">
             <button
@@ -727,6 +764,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
         >
           <RailBtn id="flags"  icon={<Flag size={18} />}     label="Flags"  />
           <RailBtn id="shapes" icon={<Gamepad2 size={18} />} label="Shapes" />
+          <RailBtn id="import" icon={<Upload size={18} />}   label="Import" />
           <RailBtn id="text"   icon={<Type size={18} />}     label="Text"   />
           <RailBtn id="colors" icon={<Palette size={18} />}  label="Colors" />
           <RailBtn id="layers" icon={<Layers size={18} />}   label="Layers" />
@@ -850,6 +888,59 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
                   onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
                   Add Text
                 </button>
+              </div>
+            )}
+
+            {/* Import */}
+            {panel === 'import' && (
+              <div className="flex flex-col gap-3 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: T.textMuted }}>
+                  Import Image
+                </p>
+                {/* Drop zone */}
+                <label
+                  className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed cursor-pointer transition-colors"
+                  style={{
+                    minHeight: 160,
+                    borderColor: dragOver ? ACCENT : T.border,
+                    background: dragOver ? '#eff3ff' : T.inputBg,
+                  }}
+                  onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={e => {
+                    e.preventDefault();
+                    setDragOver(false);
+                    importFiles(e.dataTransfer.files);
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                    multiple
+                    className="sr-only"
+                    onChange={e => e.target.files && importFiles(e.target.files)}
+                  />
+                  <Upload size={28} style={{ color: dragOver ? ACCENT : T.textMuted }} />
+                  <div className="text-center px-2">
+                    <p className="text-xs font-semibold" style={{ color: dragOver ? ACCENT : T.text }}>
+                      Drop file here
+                    </p>
+                    <p className="text-[10px] mt-0.5" style={{ color: T.textMuted }}>
+                      or click to browse
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    {['PNG', 'JPG', 'SVG'].map(f => (
+                      <span key={f} className="rounded-md px-2 py-0.5 text-[10px] font-semibold"
+                        style={{ background: T.hover, color: T.textSub }}>
+                        {f}
+                      </span>
+                    ))}
+                  </div>
+                </label>
+                <p className="text-center text-[10px]" style={{ color: T.textMuted }}>
+                  Imported images appear as movable & resizable elements on the canvas
+                </p>
               </div>
             )}
 
