@@ -6,6 +6,12 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  if (slug === 'blank') {
+    return {
+      title: 'Flag Editor — Create from Scratch | Flagswing',
+      description: 'Design a custom flag from a blank canvas. Add text, shapes, and effects. Free preview, HD PNG export.',
+    };
+  }
   const name = countryCodeToName[slug.toUpperCase()] ?? slug.toUpperCase();
   return {
     title: `${name} Flag Editor — Add Text & Effects | Flagswing`,
@@ -15,6 +21,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function FlagEditorPage({ params }: Props) {
   const { slug } = await params;
-  const name = countryCodeToName[slug.toUpperCase()] ?? slug.toUpperCase();
   return <FlagEditorClient slug={slug} />;
 }

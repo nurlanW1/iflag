@@ -298,7 +298,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
               Collections
             </Link>
             <Link
-              href="/editor"
+              href="/editor/blank"
               className={`relative flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold tracking-tight transition-colors duration-200 ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-purple-50 text-purple-700 hover:bg-purple-100'}`}
             >
               <PenTool size={14} className="shrink-0" aria-hidden />
@@ -364,7 +364,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain py-3">
                   <Link
-                    href="/editor"
+                    href="/editor/blank"
                     className="relative flex min-h-[3rem] items-center gap-3 px-4 py-2 text-base font-semibold text-purple-700 hover:bg-purple-50"
                     onClick={() => setMobileMenuOpen(false)}
                   >
