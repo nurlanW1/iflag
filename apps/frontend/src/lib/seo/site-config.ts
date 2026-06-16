@@ -70,7 +70,7 @@ export function buildDefaultMetadata(): Metadata {
       url: origin,
       images: [
         {
-          url: '/og-image.png',
+          url: '/og-image.png?v=2',
           width: 1200,
           height: 630,
           alt: 'Flagswing — World Flag Asset Library',
@@ -81,7 +81,7 @@ export function buildDefaultMetadata(): Metadata {
       card: 'summary_large_image',
       title: `${SITE_NAME} — Flag Assets SVG PNG Free Download`,
       description: '250+ country flags. Free SVG + premium shapes.',
-      images: ['/og-image.png'],
+      images: ['/og-image.png?v=2'],
     },
     robots: {
       index: true,
