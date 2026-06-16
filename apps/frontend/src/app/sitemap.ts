@@ -30,6 +30,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${origin}/gallery?kind=historical`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${origin}/gallery?kind=organizations`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${origin}/gallery?kind=autonomy`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${origin}/flags/historical`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${origin}/flags/us-states`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${origin}/flags/autonomous`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${origin}/bundles`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${origin}/generate`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${origin}/editor`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
   ];
 
   // ── Dynamic country gallery pages ─────────────────────────────────────────
