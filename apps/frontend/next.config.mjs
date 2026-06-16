@@ -64,6 +64,10 @@ const nextConfig = {
         source: '/(.*)',
         headers: [{ key: 'Content-Security-Policy', value: csp }],
       },
+      {
+        source: '/og-image.png',
+        headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
+      },
     ];
   },
   /**
