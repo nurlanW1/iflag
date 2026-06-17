@@ -66,7 +66,7 @@ const nextConfig = {
       },
       {
         source: '/og-image.png',
-        headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }],
       },
     ];
   },
