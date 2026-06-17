@@ -65,7 +65,7 @@ const nextConfig = {
         headers: [{ key: 'Content-Security-Policy', value: csp }],
       },
       {
-        source: '/og-image.png',
+        source: '/og-image-v2.png',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }],
       },
     ];
