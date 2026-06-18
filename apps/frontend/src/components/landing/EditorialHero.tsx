@@ -41,22 +41,27 @@ export function EditorialHero() {
           backgroundSize: '28px 28px',
         }} />
       </div>
-      <div className="relative z-10 marketplace-shell flex flex-col items-center pb-6 pt-10 text-center sm:pt-12 lg:pt-16">
+      <div className="relative z-10 marketplace-shell flex flex-col items-center pb-5 pt-8 text-center sm:pb-7 sm:pt-11 lg:pb-10 lg:pt-16">
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.13em] text-white/90 backdrop-blur-sm sm:text-xs">
+          200+ countries · SVG · PNG · WebP
+        </div>
+
         {/* Heading */}
         <h1
           id={headingId}
-          className="mt-4 max-w-2xl text-balance text-2xl font-bold uppercase leading-[1.14] tracking-tight text-white sm:mt-5 sm:text-[1.875rem] sm:leading-[1.12] md:text-[2.125rem] lg:text-[2.625rem] lg:leading-[1.1]"
+          className="mt-3 max-w-[18ch] text-balance text-[1.625rem] font-bold uppercase leading-[1.13] tracking-tight text-white sm:mt-4 sm:max-w-2xl sm:text-[2rem] sm:leading-[1.12] md:text-[2.375rem] lg:mt-5 lg:text-[2.875rem] lg:leading-[1.1] xl:text-[3.25rem]"
         >
-          Professional flag assets for every project
+          Assets for every project
         </h1>
 
         {/* Subtext */}
-        <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/75 sm:mt-4 sm:text-base lg:text-[1.0625rem]">
-          Official country flags, vector designs and archives — SVG, PNG, WebP formats with predictable commercial licensing.
+        <p className="mt-2.5 max-w-[30ch] text-[0.8125rem] leading-relaxed text-white/70 sm:mt-3.5 sm:max-w-lg sm:text-[0.9375rem] lg:mt-4 lg:text-base lg:text-white/80">
+          Official country flags, vector designs and archives — SVG, PNG, WebP with predictable commercial licensing.
         </p>
 
         {/* Filter bar — inside blue section */}
-        <div className="mt-6 w-full pb-8 sm:mt-8 lg:mt-10 lg:pb-10">
+        <div className="mt-5 w-full pb-6 sm:mt-7 sm:pb-8 lg:mt-9 lg:pb-11">
           <GalleryFilterBar />
         </div>
       </div>

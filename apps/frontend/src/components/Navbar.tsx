@@ -278,51 +278,56 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
         </div>
 
         {/* Tablets & desktop */}
-        <div className="hidden min-h-[64px] flex-row items-center gap-4 py-3 md:flex lg:min-h-[72px] lg:gap-7 lg:py-4 xl:gap-8">
+        <div className="hidden min-h-[64px] flex-row items-center gap-2 py-3 md:flex lg:min-h-[72px] lg:gap-5 lg:py-4 xl:gap-7">
           <Link href="/" className="flex shrink-0 items-center gap-2 transition hover:opacity-90 lg:gap-3">
             <Flag size={34} className={`h-8 w-8 shrink-0 ${logoColor} lg:h-10 lg:w-10`} aria-hidden strokeWidth={1.75} />
             <span className={`text-lg font-bold tracking-tight ${logoColor} lg:text-[1.65rem]`}>{SITE_NAME}</span>
           </Link>
 
           <nav
-            className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-x-4 gap-y-1 lg:flex-none lg:justify-start lg:gap-x-8 xl:gap-x-9"
+            className="flex min-w-0 flex-1 flex-nowrap items-center justify-center gap-x-2 lg:flex-none lg:justify-start lg:gap-x-6 xl:gap-x-8"
             aria-label="Main navigation"
           >
-            <Link href="/pricing" className={`flex items-center gap-2 ${navTextMd}`} title={PRICING_MARKETING.plansLine}>
-              <Crown size={18} className="h-[18px] w-[18px] shrink-0 text-amber-500 lg:h-[19px] lg:w-[19px]" aria-hidden strokeWidth={1.75} />
+            <Link href="/pricing" className={`flex items-center gap-1 text-xs font-semibold tracking-tight text-[var(--nav-link-text)] transition-colors duration-200 hover:text-[var(--nav-link-hover)] lg:gap-2 lg:text-base`} title={PRICING_MARKETING.plansLine}>
+              <Crown size={15} className="shrink-0 text-amber-500 lg:h-[18px] lg:w-[18px]" aria-hidden strokeWidth={1.75} />
               Pricing
             </Link>
-            <Link href="/gallery" className={navTextMd}>
+            <Link href="/gallery" className="text-xs font-semibold tracking-tight text-[var(--nav-link-text)] transition-colors duration-200 hover:text-[var(--nav-link-hover)] lg:text-base">
               Collections
             </Link>
             <Link
               href="/editor/blank"
-              className={`relative flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold tracking-tight transition-colors duration-200 ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-purple-50 text-purple-700 hover:bg-purple-100'}`}
+              className={`relative flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold tracking-tight transition-colors duration-200 lg:gap-1.5 lg:px-3 lg:py-1 lg:text-sm ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-purple-50 text-purple-700 hover:bg-purple-100'}`}
             >
-              <PenTool size={14} className="shrink-0" aria-hidden />
-              Flag Editor
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold uppercase leading-none text-white">
+              <PenTool size={12} className="shrink-0 lg:hidden" aria-hidden />
+              <PenTool size={14} className="hidden shrink-0 lg:block" aria-hidden />
+              <span className="hidden sm:inline">Flag Editor</span>
+              <span className="sm:hidden">Editor</span>
+              <span className="absolute -right-1 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-emerald-500 px-0.5 text-[8px] font-bold uppercase leading-none text-white lg:h-4 lg:min-w-4 lg:px-1 lg:text-[9px]">
                 NEW
               </span>
             </Link>
             <button
               type="button"
               onClick={() => setGameOpen(true)}
-              className={`relative flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold tracking-tight transition-colors duration-200 ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'}`}
+              className={`relative flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold tracking-tight transition-colors duration-200 lg:gap-1.5 lg:px-3 lg:py-1 lg:text-sm ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'}`}
             >
-              <Gamepad2 size={14} className="shrink-0" aria-hidden />
-              Flag Game
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold uppercase leading-none text-white">
+              <Gamepad2 size={12} className="shrink-0 lg:hidden" aria-hidden />
+              <Gamepad2 size={14} className="hidden shrink-0 lg:block" aria-hidden />
+              <span className="hidden sm:inline">Flag Game</span>
+              <span className="sm:hidden">Game</span>
+              <span className="absolute -right-1 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-emerald-500 px-0.5 text-[8px] font-bold uppercase leading-none text-white lg:h-4 lg:min-w-4 lg:px-1 lg:text-[9px]">
                 NEW
               </span>
             </button>
             <Link
               href="/developers"
-              className={`relative flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold tracking-tight transition-colors duration-200 ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-sky-50 text-sky-700 hover:bg-sky-100'}`}
+              className={`relative hidden items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold tracking-tight transition-colors duration-200 min-[900px]:flex lg:gap-1.5 lg:px-3 lg:py-1 lg:text-sm ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-sky-50 text-sky-700 hover:bg-sky-100'}`}
             >
-              <Code2 size={14} className="shrink-0" aria-hidden />
+              <Code2 size={12} className="shrink-0 lg:hidden" aria-hidden />
+              <Code2 size={14} className="hidden shrink-0 lg:block" aria-hidden />
               Developers
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold uppercase leading-none text-white">
+              <span className="absolute -right-1 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-emerald-500 px-0.5 text-[8px] font-bold uppercase leading-none text-white lg:h-4 lg:min-w-4 lg:px-1 lg:text-[9px]">
                 NEW
               </span>
             </Link>

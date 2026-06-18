@@ -28,21 +28,21 @@ export default function HomePageClient() {
       <EditorialHero />
 
       {/* Browse by region */}
-      <section className="shrink-0 border-t border-neutral-200/80 bg-white py-5 md:py-6 lg:py-7">
+      <section className="shrink-0 border-t border-neutral-200/80 bg-white py-5 sm:py-6 lg:py-8">
         <div className="marketplace-shell">
           <SectionReveal
             hidden={{ opacity: 0, y: 10 }}
             visible={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="mb-4 sm:mb-5"
+            className="mb-3 sm:mb-4"
           >
-            <h2 className="text-lg font-semibold tracking-tight text-[#2a2a2a] sm:text-xl">
+            <h2 className="text-base font-semibold tracking-tight text-[#2a2a2a] sm:text-lg lg:text-xl">
               Explore the gallery by region
             </h2>
           </SectionReveal>
 
-          <div className="rounded-xl border border-neutral-200/90 bg-[#fafaf9] p-3 sm:p-4">
-            <div className="flex gap-2 overflow-x-auto overscroll-x-contain pb-0.5 [scrollbar-width:thin] sm:gap-2.5 lg:grid lg:grid-cols-8 lg:overflow-visible lg:pb-0">
+          <div className="rounded-xl border border-neutral-200/90 bg-[#fafaf9] p-2.5 sm:p-3 lg:p-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 lg:grid-cols-8">
               {HOME_REGION_HUB_TILES.map((cat, idx) => {
                 const CatIcon = cat.icon;
                 return (
@@ -51,23 +51,22 @@ export default function HomePageClient() {
                     hidden={{ opacity: 0, y: 6 }}
                     visible={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25, delay: idx * 0.02 }}
-                    className="min-w-[8.75rem] shrink-0 lg:min-w-0"
                   >
                     <Link
                       href={cat.href}
-                      className="group flex min-h-[3.25rem] w-full items-center gap-2 rounded-lg border border-neutral-200/90 bg-white px-2.5 py-2 shadow-sm transition-[box-shadow,background-color] duration-200 hover:bg-neutral-50 hover:shadow-md sm:min-h-[3.5rem] sm:gap-2.5 sm:px-3"
+                      className="group flex min-h-[3rem] w-full items-center gap-2 rounded-lg border border-neutral-200/90 bg-white px-2.5 py-2 shadow-sm transition-[box-shadow,background-color] duration-200 hover:bg-neutral-50 hover:shadow-md sm:min-h-[3.25rem] sm:gap-2 sm:px-2.5 lg:gap-2.5 lg:px-3"
                     >
                       <div
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md sm:h-9 sm:w-9"
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md sm:h-8 sm:w-8"
                         style={{ backgroundColor: cat.accent }}
                       >
-                        <CatIcon size={17} strokeWidth={1.75} className="text-white" aria-hidden />
+                        <CatIcon size={15} strokeWidth={1.75} className="text-white" aria-hidden />
                       </div>
-                      <span className="min-w-0 flex-1 truncate text-left text-xs font-semibold text-neutral-900 sm:text-[0.8125rem]">
+                      <span className="min-w-0 flex-1 truncate text-left text-xs font-semibold text-neutral-900">
                         {cat.name}
                       </span>
                       <ChevronRight
-                        className="h-3.5 w-3.5 shrink-0 text-neutral-400 transition-colors group-hover:text-neutral-700"
+                        className="h-3 w-3 shrink-0 text-neutral-400 transition-colors group-hover:text-neutral-700"
                         aria-hidden
                       />
                     </Link>
@@ -84,7 +83,7 @@ export default function HomePageClient() {
       <LandingCategoryStrip />
 
       {/* Stats */}
-      <section className="relative overflow-hidden border-t border-neutral-200/80 bg-[#fafaf9] py-10 md:py-12 lg:py-14">
+      <section className="relative overflow-hidden border-t border-neutral-200/80 bg-[#fafaf9] py-8 sm:py-10 lg:py-14">
         {/* Subtle grid texture */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.025]"
@@ -106,7 +105,7 @@ export default function HomePageClient() {
               Trusted by designers worldwide
             </h2>
           </SectionReveal>
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4 md:gap-8">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 md:gap-6">
             {[
               { number: '200+', label: 'Countries covered', sublabel: 'Official designs', icon: Globe2 },
               { number: '10K+', label: 'Flag assets', sublabel: 'SVG, PNG, WebP', icon: Flag },
@@ -119,13 +118,14 @@ export default function HomePageClient() {
                 visible={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, delay: idx * 0.06 }}
               >
-                <div className="flex flex-col items-center rounded-2xl border border-neutral-200/80 bg-white p-5 text-center shadow-[0_1px_4px_rgba(0,0,0,0.04)] sm:p-7">
-                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--brand-blue-soft)] text-[var(--brand-blue)]">
-                    <stat.icon size={22} strokeWidth={1.75} aria-hidden />
+                <div className="flex flex-col items-center rounded-xl border border-neutral-200/80 bg-white p-4 text-center shadow-[0_1px_4px_rgba(0,0,0,0.04)] sm:rounded-2xl sm:p-5 lg:p-7">
+                  <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-blue-soft)] text-[var(--brand-blue)] sm:mb-4 sm:h-12 sm:w-12">
+                    <stat.icon size={19} strokeWidth={1.75} aria-hidden className="sm:hidden" />
+                    <stat.icon size={22} strokeWidth={1.75} aria-hidden className="hidden sm:block" />
                   </div>
-                  <div className="mb-1 text-3xl font-bold tabular-nums tracking-tight text-[#2a2a2a] sm:text-4xl">{stat.number}</div>
-                  <div className="text-sm font-semibold text-neutral-800">{stat.label}</div>
-                  <div className="mt-0.5 text-xs text-neutral-500">{stat.sublabel}</div>
+                  <div className="mb-0.5 text-2xl font-bold tabular-nums tracking-tight text-[#2a2a2a] sm:text-3xl lg:text-4xl">{stat.number}</div>
+                  <div className="text-xs font-semibold text-neutral-800 sm:text-sm">{stat.label}</div>
+                  <div className="mt-0.5 hidden text-xs text-neutral-500 sm:block">{stat.sublabel}</div>
                 </div>
               </SectionReveal>
             ))}
@@ -134,7 +134,7 @@ export default function HomePageClient() {
       </section>
 
       {/* Simple pricing */}
-      <section className="border-t border-neutral-200/80 bg-white py-10 md:py-12 lg:py-14">
+      <section className="border-t border-neutral-200/80 bg-white py-8 sm:py-10 lg:py-14">
         <div className="marketplace-shell">
           <SectionReveal
             hidden={{ opacity: 0, y: 14 }}
@@ -219,7 +219,7 @@ export default function HomePageClient() {
       </section>
 
       {/* Final CTA */}
-      <section className="relative overflow-hidden border-t border-neutral-800/30 bg-[var(--brand-blue)] py-12 text-[#fafaf9] md:py-14 lg:py-16">
+      <section className="relative overflow-hidden border-t border-neutral-800/30 bg-[var(--brand-blue)] py-10 text-[#fafaf9] sm:py-12 lg:py-16">
         {/* Noise/grain texture overlay */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.08]"

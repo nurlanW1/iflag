@@ -70,28 +70,29 @@ export function GalleryFilterBar() {
   };
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl bg-white ring-1 ring-white/40 shadow-[0_16px_48px_-8px_rgba(0,0,0,0.22)]">
+    <div className="w-full overflow-hidden rounded-xl bg-white ring-1 ring-white/40 shadow-[0_16px_48px_-8px_rgba(0,0,0,0.22)] sm:rounded-2xl">
 
       {/* ── Row 1: Search bar ── */}
       <form onSubmit={handleSearch} className="flex items-center">
         <div className="relative flex-1">
           <Search
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
-            size={17} aria-hidden
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 sm:left-4"
+            size={16} aria-hidden
           />
           <input
             type="text"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search by country or ISO code…"
-            className="w-full border-0 bg-transparent py-3.5 pl-11 pr-4 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none"
+            aria-label="Search flags"
+            className="w-full border-0 bg-transparent py-3 pl-9 pr-3 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none sm:py-3.5 sm:pl-11 sm:pr-4"
           />
           {q && (
             <button
               type="button"
               onClick={() => setQ('')}
-              aria-label="Clear"
-              className="absolute right-3 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors"
+              aria-label="Clear search"
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors sm:right-3"
             >
               <X size={13} />
             </button>
@@ -100,7 +101,7 @@ export function GalleryFilterBar() {
         <button
           type="submit"
           disabled={loading}
-          className="flex shrink-0 items-center gap-1.5 border-l border-neutral-100 bg-[#4f8ef7] px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#3b82f6] disabled:opacity-70"
+          className="flex shrink-0 items-center gap-1.5 border-l border-neutral-100 bg-[#4f8ef7] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#3b82f6] disabled:opacity-70 sm:px-5 sm:py-3.5"
         >
           {loading
             ? <Loader2 size={15} className="animate-spin" aria-hidden />
@@ -120,7 +121,7 @@ export function GalleryFilterBar() {
               type="button"
               onClick={() => setFormat(id)}
               title={desc}
-              className="group flex flex-col items-center gap-1 px-3 py-2.5 transition-all duration-150 hover:bg-neutral-50 relative"
+              className="group relative flex flex-col items-center gap-0.5 px-1 py-2 transition-all duration-150 hover:bg-neutral-50 sm:gap-1 sm:px-2 sm:py-2.5"
             >
               {active && (
                 <span
@@ -131,12 +132,18 @@ export function GalleryFilterBar() {
               <span className={`transition-colors duration-150 ${
                 active ? c.icon : 'text-neutral-400 group-hover:text-neutral-600'
               }`}>
-                <Icon size={18} aria-hidden />
+                <Icon size={16} className="sm:hidden" aria-hidden />
+                <Icon size={18} className="hidden sm:block" aria-hidden />
               </span>
-              <span className={`text-xs font-semibold leading-none transition-colors ${
+              <span className={`text-[10px] font-semibold leading-none transition-colors sm:text-xs ${
                 active ? c.icon : 'text-neutral-600'
               }`}>
                 {label}
+              </span>
+              <span className={`hidden text-[10px] leading-none transition-colors md:block ${
+                active ? 'text-neutral-500' : 'text-neutral-400'
+              }`}>
+                {desc}
               </span>
             </button>
           );
