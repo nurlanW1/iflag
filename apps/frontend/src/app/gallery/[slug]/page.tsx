@@ -112,10 +112,10 @@ export default function CountryHubPage() {
   const [loadError, setLoadError] = useState(false);
   const [sortOrder, setSortOrder] = useState<'newest' | 'popular' | 'price'>('newest');
   const [ssImages, setSsImages] = useState<SSImage[]>([]);
-  const [ssPage, setSsPage] = useState(1);
   const [ssLoading, setSsLoading] = useState(false);
-  const [ssHasMore, setSsHasMore] = useState(true);
-  const ssSentinelRef = useRef<HTMLDivElement | null>(null);
+  const [ssHasMore, setSsHasMore] = useState(false);
+  const [ssFetched, setSsFetched] = useState(false);
+  const ssPageRef = useRef(1);
   const ssCountryRef = useRef<string>('');
 
   // Format filter from URL ?format=svg|png|jpg|video
@@ -155,59 +155,54 @@ export default function CountryHubPage() {
   }, [slug, loadCountryData]);
 
   // Fetch one page of Shutterstock results
-  const fetchSsPage = useCallback(async (countryName: string, page: number) => {
+  const fetchSsImages = useCallback(async (countryName: string, page: number) => {
+    if (ssLoading) return;
     setSsLoading(true);
     try {
-      const q = `${countryName} flag`;
-      // Use Next.js API route (same-origin) — avoids CORS + NEXT_PUBLIC_API_URL issues
-      const r = await fetch(
-        `/api/shutterstock/search?q=${encodeURIComponent(q)}&per_page=12&page=${page}`,
-      );
-      if (!r.ok) throw new Error('ss-fetch-failed');
-      const res = (await r.json()) as { results?: SSImage[] };
+      const q = encodeURIComponent(`${countryName} flag`);
+      const r = await fetch(`/api/shutterstock/search?q=${q}&per_page=12&page=${page}`);
+      const res = r.ok ? (await r.json()) as { results?: SSImage[] } : { results: [] };
       const batch = res.results ?? [];
-      setSsImages((prev) => (page === 1 ? batch : [...prev, ...batch]));
+      setSsImages((prev) => page === 1 ? batch : [...prev, ...batch]);
       setSsHasMore(batch.length === 12);
     } catch {
       setSsHasMore(false);
     } finally {
       setSsLoading(false);
+      setSsFetched(true);
     }
-  }, []);
+  }, [ssLoading]);
 
-  // Reset SS when country changes
+  // Trigger SS fetch when country data loads
   useEffect(() => {
-    if (!data?.country?.name) return;
-    const name = data.country.name;
+    const name = data?.country?.name;
+    if (!name) return;
     if (ssCountryRef.current === name) return;
     ssCountryRef.current = name;
+    ssPageRef.current = 1;
     setSsImages([]);
-    setSsPage(1);
-    setSsHasMore(true);
-    void fetchSsPage(name, 1);
-  }, [data?.country?.name, fetchSsPage]);
+    setSsFetched(false);
+    setSsHasMore(false);
+    void fetchSsImages(name, 1);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.country?.name]);
 
-  // Load next page when ssPage increments (skip page 1 — already loaded above)
-  useEffect(() => {
-    if (ssPage === 1) return;
-    if (!ssCountryRef.current) return;
-    void fetchSsPage(ssCountryRef.current, ssPage);
-  }, [ssPage, fetchSsPage]);
-
-  // IntersectionObserver — fire when sentinel enters viewport
-  useEffect(() => {
-    if (!ssSentinelRef.current) return;
+  // Callback ref for sentinel — triggers when element mounts/unmounts
+  const sentinelRef = useCallback((el: HTMLDivElement | null) => {
+    if (!el) return;
     const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting && ssHasMore && !ssLoading) {
-          setSsPage((p) => p + 1);
+      ([entry]) => {
+        if (entry?.isIntersecting && ssHasMore && !ssLoading) {
+          const nextPage = ssPageRef.current + 1;
+          ssPageRef.current = nextPage;
+          void fetchSsImages(ssCountryRef.current, nextPage);
         }
       },
-      { rootMargin: '300px' },
+      { rootMargin: '400px' },
     );
-    obs.observe(ssSentinelRef.current);
+    obs.observe(el);
     return () => obs.disconnect();
-  }, [ssHasMore, ssLoading]);
+  }, [ssHasMore, ssLoading, fetchSsImages]);
 
   const sortedVariants = useMemo(() => {
     if (!data?.variants) return [];
@@ -617,8 +612,8 @@ export default function CountryHubPage() {
                     })}
               </ul>
 
-              {/* ── Shutterstock section (after FW assets) ── */}
-              {(ssImages.length > 0 || ssLoading) && (
+              {/* ── Shutterstock section ── shown once fetch starts */}
+              {(ssLoading || ssFetched) && (
                 <div className="mt-10 border-t border-neutral-200/60 pt-8">
                   <div className="mb-5 flex items-center gap-2.5">
                     <h3 className="text-base font-semibold text-[#2a2a2a]">
@@ -629,34 +624,52 @@ export default function CountryHubPage() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
-                    {ssImages.map((img) => (
-                      <ShutterstockCard key={img.id} {...img} />
-                    ))}
-                  </div>
+                  {/* Loading skeleton */}
+                  {ssLoading && ssImages.length === 0 && (
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+                      {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="overflow-hidden rounded-2xl border border-neutral-200/90 bg-white">
+                          <div className="aspect-[4/3] animate-pulse bg-neutral-100" />
+                          <div className="space-y-2 p-4">
+                            <div className="h-3 w-3/4 animate-pulse rounded bg-neutral-100" />
+                            <div className="h-3 w-1/3 animate-pulse rounded bg-neutral-50" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-                  {/* Infinite scroll sentinel */}
-                  <div ref={ssSentinelRef} className="h-4" />
+                  {/* Results grid */}
+                  {ssImages.length > 0 && (
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+                      {ssImages.map((img) => (
+                        <ShutterstockCard key={img.id} {...img} />
+                      ))}
+                    </div>
+                  )}
 
-                  {/* Loading spinner */}
-                  {ssLoading && (
+                  {/* Infinite scroll sentinel (callback ref) */}
+                  {ssHasMore && <div ref={sentinelRef} className="h-2" />}
+
+                  {/* Load more spinner */}
+                  {ssLoading && ssImages.length > 0 && (
                     <div className="flex justify-center py-6">
-                      <svg
-                        className="h-6 w-6 animate-spin text-neutral-400"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        aria-label="Loading"
-                      >
+                      <svg className="h-6 w-6 animate-spin text-neutral-400" fill="none" viewBox="0 0 24 24" aria-hidden>
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                       </svg>
                     </div>
                   )}
 
-                  {!ssLoading && !ssHasMore && ssImages.length > 0 && (
-                    <p className="mt-4 text-center text-xs text-neutral-400">
-                      * Images from Shutterstock. Clicking opens Shutterstock for licensing.
+                  {ssFetched && !ssLoading && ssImages.length === 0 && (
+                    <p className="py-8 text-center text-sm text-neutral-400">
+                      No stock images found for {pageTitle}.
+                    </p>
+                  )}
+
+                  {ssFetched && !ssHasMore && ssImages.length > 0 && (
+                    <p className="mt-6 text-center text-xs text-neutral-400">
+                      * Images from Shutterstock — clicking opens Shutterstock for licensing.
                     </p>
                   )}
                 </div>
