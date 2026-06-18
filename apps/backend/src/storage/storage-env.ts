@@ -12,6 +12,37 @@
 
 import type { StorageConfig } from 'storage';
 
+function ensureHttpsUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
+function isCloudflareR2ApiEndpoint(url: string): boolean {
+  try {
+    const host = new URL(ensureHttpsUrl(url)).hostname.toLowerCase();
+    return host.endsWith('.r2.cloudflarestorage.com');
+  } catch {
+    return /\.r2\.cloudflarestorage\.com(?:\/|$)/i.test(url);
+  }
+}
+
+function normalizeR2Endpoint(rawEndpoint: string | undefined, accountId: string | undefined): string | undefined {
+  const fallback = accountId ? `https://${accountId}.r2.cloudflarestorage.com` : undefined;
+  const raw = rawEndpoint?.trim();
+  if (!raw || !isCloudflareR2ApiEndpoint(raw)) return fallback;
+
+  try {
+    const parsed = new URL(ensureHttpsUrl(raw));
+    parsed.pathname = '';
+    parsed.search = '';
+    parsed.hash = '';
+    return parsed.toString().replace(/\/+$/, '');
+  } catch {
+    return fallback;
+  }
+}
+
 export function resolveStorageProviderConfig(): StorageConfig {
   const useS3 = process.env.STORAGE_TYPE === 's3';
 
@@ -42,10 +73,10 @@ export function resolveStorageProviderConfig(): StorageConfig {
   const accountId =
     process.env.CLOUDFLARE_R2_ACCOUNT_ID?.trim() || process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
 
-  const endpoint =
-    process.env.CLOUDFLARE_R2_ENDPOINT?.trim()?.replace(/\/$/, '') ||
-    process.env.R2_ENDPOINT?.trim()?.replace(/\/$/, '') ||
-    (accountId ? `https://${accountId}.r2.cloudflarestorage.com` : undefined);
+  const endpoint = normalizeR2Endpoint(
+    process.env.CLOUDFLARE_R2_ENDPOINT?.trim() || process.env.R2_ENDPOINT?.trim(),
+    accountId
+  );
 
   const region = process.env.AWS_REGION?.trim() || 'auto';
 

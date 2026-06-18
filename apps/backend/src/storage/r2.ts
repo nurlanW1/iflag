@@ -46,12 +46,12 @@ function ensureHttpsUrl(raw: string): string {
   return `https://${trimmed}`;
 }
 
-function isPublicR2Url(url: string): boolean {
+function isCloudflareR2ApiEndpoint(url: string): boolean {
   try {
     const host = new URL(ensureHttpsUrl(url)).hostname.toLowerCase();
-    return host.endsWith('.r2.dev');
+    return host.endsWith('.r2.cloudflarestorage.com');
   } catch {
-    return /\.r2\.dev(?:\/|$)/i.test(url);
+    return /\.r2\.cloudflarestorage\.com(?:\/|$)/i.test(url);
   }
 }
 
@@ -59,7 +59,7 @@ function normalizeR2Endpoint(rawEndpoint: string | undefined, accountId: string)
   const fallback = `https://${accountId}.r2.cloudflarestorage.com`;
   const raw = rawEndpoint?.trim();
 
-  if (!raw || isPublicR2Url(raw)) {
+  if (!raw || !isCloudflareR2ApiEndpoint(raw)) {
     return fallback;
   }
 
@@ -70,12 +70,18 @@ function normalizeR2Endpoint(rawEndpoint: string | undefined, accountId: string)
     parsed.hash = '';
 
     const host = parsed.hostname.toLowerCase();
-    if (host.endsWith('.r2.dev')) return fallback;
+    if (!host.endsWith('.r2.cloudflarestorage.com')) return fallback;
 
     return parsed.toString().replace(/\/+$/, '');
   } catch {
     return fallback;
   }
+}
+
+function isTlsHandshakeFailure(error: unknown): boolean {
+  const message =
+    error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+  return /EPROTO|handshake failure|SSL alert number 40|ssl3_read_bytes/i.test(message);
 }
 
 export function loadR2ConfigFromEnv(): R2Config | null {
@@ -204,6 +210,11 @@ export async function uploadFileToR2(
     );
   } catch (e) {
     console.error('[r2] PutObject failed', { bucket: cfg.bucketName, key: objectKey, err: e });
+    if (isTlsHandshakeFailure(e)) {
+      throw new Error(
+        `R2 upload failed during TLS handshake. Check Railway env: CLOUDFLARE_R2_ENDPOINT/R2_ENDPOINT must be the S3 API endpoint (${cfg.endpoint}), not CLOUDFLARE_R2_PUBLIC_URL, *.r2.dev, or a CDN/custom public domain.`
+      );
+    }
     throw e;
   }
   return { key: objectKey, publicUrl: getPublicR2Url(cfg, objectKey) };

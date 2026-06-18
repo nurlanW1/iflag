@@ -14,6 +14,37 @@ export type FrontendR2Config = {
   endpoint: string;
 };
 
+function ensureHttpsUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
+function isCloudflareR2ApiEndpoint(url: string): boolean {
+  try {
+    const host = new URL(ensureHttpsUrl(url)).hostname.toLowerCase();
+    return host.endsWith('.r2.cloudflarestorage.com');
+  } catch {
+    return /\.r2\.cloudflarestorage\.com(?:\/|$)/i.test(url);
+  }
+}
+
+function normalizeR2Endpoint(rawEndpoint: string | undefined, accountId: string): string {
+  const fallback = `https://${accountId}.r2.cloudflarestorage.com`;
+  const raw = rawEndpoint?.trim();
+  if (!raw || !isCloudflareR2ApiEndpoint(raw)) return fallback;
+
+  try {
+    const parsed = new URL(ensureHttpsUrl(raw));
+    parsed.pathname = '';
+    parsed.search = '';
+    parsed.hash = '';
+    return parsed.toString().replace(/\/+$/, '');
+  } catch {
+    return fallback;
+  }
+}
+
 export function loadR2ConfigFromEnv(): FrontendR2Config | null {
   const accountId =
     process.env.CLOUDFLARE_R2_ACCOUNT_ID?.trim() ||
@@ -45,11 +76,10 @@ export function loadR2ConfigFromEnv(): FrontendR2Config | null {
     return null;
   }
 
-  const endpoint = (
-    process.env.CLOUDFLARE_R2_ENDPOINT?.trim() ||
-    process.env.R2_ENDPOINT?.trim() ||
-    `https://${accountId}.r2.cloudflarestorage.com`
-  ).replace(/\/+$/, '');
+  const endpoint = normalizeR2Endpoint(
+    process.env.CLOUDFLARE_R2_ENDPOINT?.trim() || process.env.R2_ENDPOINT?.trim(),
+    accountId
+  );
 
   return {
     accessKeyId,
