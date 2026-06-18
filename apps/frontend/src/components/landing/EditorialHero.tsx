@@ -9,7 +9,7 @@ export function EditorialHero() {
   return (
     <section
       className="relative overflow-hidden -mt-24 pt-24"
-      style={{ background: 'var(--brand-blue)' }}
+      style={{ background: '#0d1f6b' }}
       aria-labelledby={headingId}
     >
       {/* Abstract background — z-0, content is z-10 */}
