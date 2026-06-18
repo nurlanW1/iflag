@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { ArrowLeft, ImageOff, RefreshCw, Layers, FileCode2, Image as ImageIcon, Clapperboard } from 'lucide-react';
 import Link from 'next/link';
@@ -112,6 +112,11 @@ export default function CountryHubPage() {
   const [loadError, setLoadError] = useState(false);
   const [sortOrder, setSortOrder] = useState<'newest' | 'popular' | 'price'>('newest');
   const [ssImages, setSsImages] = useState<SSImage[]>([]);
+  const [ssPage, setSsPage] = useState(1);
+  const [ssLoading, setSsLoading] = useState(false);
+  const [ssHasMore, setSsHasMore] = useState(true);
+  const ssSentinelRef = useRef<HTMLDivElement | null>(null);
+  const ssCountryRef = useRef<string>('');
 
   // Format filter from URL ?format=svg|png|jpg|video
   const formatParam = (sp.get('format') ?? 'all') as FormatTabId;
@@ -149,16 +154,60 @@ export default function CountryHubPage() {
     if (slug) void loadCountryData(slug);
   }, [slug, loadCountryData]);
 
-  // Fetch Shutterstock images after country name is known
+  // Fetch one page of Shutterstock results
+  const fetchSsPage = useCallback(async (countryName: string, page: number) => {
+    setSsLoading(true);
+    try {
+      const q = `${countryName} flag`;
+      const apiUrl = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api').replace(/\/+$/, '');
+      const r = await fetch(
+        `${apiUrl}/shutterstock/search?q=${encodeURIComponent(q)}&per_page=12&page=${page}`,
+      );
+      if (!r.ok) throw new Error('ss-fetch-failed');
+      const res = (await r.json()) as { results?: SSImage[] };
+      const batch = res.results ?? [];
+      setSsImages((prev) => (page === 1 ? batch : [...prev, ...batch]));
+      setSsHasMore(batch.length === 12);
+    } catch {
+      setSsHasMore(false);
+    } finally {
+      setSsLoading(false);
+    }
+  }, []);
+
+  // Reset SS when country changes
   useEffect(() => {
     if (!data?.country?.name) return;
-    const q = `${data.country.name} flag`;
-    const apiUrl = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api').replace(/\/+$/, '');
-    fetch(`${apiUrl}/shutterstock/search?q=${encodeURIComponent(q)}&per_page=12`)
-      .then((r) => r.ok ? r.json() : Promise.reject())
-      .then((res: { results?: SSImage[] }) => setSsImages(res.results ?? []))
-      .catch(() => setSsImages([]));
-  }, [data?.country?.name]);
+    const name = data.country.name;
+    if (ssCountryRef.current === name) return;
+    ssCountryRef.current = name;
+    setSsImages([]);
+    setSsPage(1);
+    setSsHasMore(true);
+    void fetchSsPage(name, 1);
+  }, [data?.country?.name, fetchSsPage]);
+
+  // Load next page when ssPage increments (skip page 1 — already loaded above)
+  useEffect(() => {
+    if (ssPage === 1) return;
+    if (!ssCountryRef.current) return;
+    void fetchSsPage(ssCountryRef.current, ssPage);
+  }, [ssPage, fetchSsPage]);
+
+  // IntersectionObserver — fire when sentinel enters viewport
+  useEffect(() => {
+    if (!ssSentinelRef.current) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && ssHasMore && !ssLoading) {
+          setSsPage((p) => p + 1);
+        }
+      },
+      { rootMargin: '300px' },
+    );
+    obs.observe(ssSentinelRef.current);
+    return () => obs.disconnect();
+  }, [ssHasMore, ssLoading]);
 
   const sortedVariants = useMemo(() => {
     if (!data?.variants) return [];
@@ -569,24 +618,47 @@ export default function CountryHubPage() {
               </ul>
 
               {/* ── Shutterstock section (after FW assets) ── */}
-              {ssImages.length > 0 && (
-                <div className="mt-8">
-                  <div className="mb-4 flex items-center gap-2">
-                    <h3 className="text-sm font-medium text-gray-700">
+              {(ssImages.length > 0 || ssLoading) && (
+                <div className="mt-10 border-t border-neutral-200/60 pt-8">
+                  <div className="mb-5 flex items-center gap-2.5">
+                    <h3 className="text-base font-semibold text-[#2a2a2a]">
                       More {pageTitle} flag images
                     </h3>
-                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                    <span className="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-600 ring-1 ring-red-200">
                       Shutterstock
                     </span>
                   </div>
+
                   <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
                     {ssImages.map((img) => (
                       <ShutterstockCard key={img.id} {...img} />
                     ))}
                   </div>
-                  <p className="mt-3 text-xs text-gray-400">
-                    * Shutterstock images require separate licensing. Clicking opens Shutterstock.com
-                  </p>
+
+                  {/* Infinite scroll sentinel */}
+                  <div ref={ssSentinelRef} className="h-4" />
+
+                  {/* Loading spinner */}
+                  {ssLoading && (
+                    <div className="flex justify-center py-6">
+                      <svg
+                        className="h-6 w-6 animate-spin text-neutral-400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        aria-label="Loading"
+                      >
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                      </svg>
+                    </div>
+                  )}
+
+                  {!ssLoading && !ssHasMore && ssImages.length > 0 && (
+                    <p className="mt-4 text-center text-xs text-neutral-400">
+                      * Images from Shutterstock. Clicking opens Shutterstock for licensing.
+                    </p>
+                  )}
                 </div>
               )}
             </>

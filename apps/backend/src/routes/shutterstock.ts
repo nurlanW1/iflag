@@ -33,9 +33,10 @@ router.get('/search', async (req: Request, res: Response) => {
 
   try {
     const query = (req.query['q'] as string) || 'flag';
-    const perPage = Number(req.query['per_page']) || 12;
+    const perPage = Math.min(50, Number(req.query['per_page']) || 12);
+    const page = Math.max(1, Number(req.query['page']) || 1);
 
-    const cacheKey = `${query}|${perPage}`;
+    const cacheKey = `${query}|${perPage}|${page}`;
     const cached = cache.get(cacheKey);
     if (cached && Date.now() < cached.expiresAt) {
       res.json(cached.data);
@@ -54,7 +55,7 @@ router.get('/search', async (req: Request, res: Response) => {
     const response = await fetch(
       `https://api.shutterstock.com/v2/images/search` +
       `?query=${encodeURIComponent(query)}` +
-      `&per_page=${perPage}&sort=popular` +
+      `&per_page=${perPage}&page=${page}&sort=popular` +
       `&image_type=photo,illustration,vector`,
       {
         headers: {
