@@ -288,13 +288,6 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-x-4 gap-y-1 lg:flex-none lg:justify-start lg:gap-x-8 xl:gap-x-9"
             aria-label="Main navigation"
           >
-            <Link href="/developers" className={`relative flex items-center gap-1.5 ${navTextMd}`}>
-              <Code2 size={16} className="shrink-0" aria-hidden />
-              Developers
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold uppercase leading-none text-white">
-                NEW
-              </span>
-            </Link>
             <Link href="/pricing" className={`flex items-center gap-2 ${navTextMd}`} title={PRICING_MARKETING.plansLine}>
               <Crown size={18} className="h-[18px] w-[18px] shrink-0 text-amber-500 lg:h-[19px] lg:w-[19px]" aria-hidden strokeWidth={1.75} />
               Pricing
@@ -323,6 +316,16 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                 NEW
               </span>
             </button>
+            <Link
+              href="/developers"
+              className={`relative flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold tracking-tight transition-colors duration-200 ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-sky-50 text-sky-700 hover:bg-sky-100'}`}
+            >
+              <Code2 size={14} className="shrink-0" aria-hidden />
+              Developers
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold uppercase leading-none text-white">
+                NEW
+              </span>
+            </Link>
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-3 lg:gap-5">
@@ -388,17 +391,6 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                     Gallery
                   </Link>
                   <Link
-                    href="/developers"
-                    className="flex min-h-[3rem] items-center gap-3 px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Code2 size={20} aria-hidden />
-                    Developers
-                    <span className="ml-auto flex h-5 items-center justify-center rounded-full bg-emerald-500 px-2 text-[10px] font-bold uppercase text-white">
-                      NEW
-                    </span>
-                  </Link>
-                  <Link
                     href="/pricing"
                     className="flex min-h-[3rem] items-center gap-3 px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
                     onClick={() => setMobileMenuOpen(false)}
@@ -425,6 +417,17 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                       NEW
                     </span>
                   </button>
+                  <Link
+                    href="/developers"
+                    className="flex min-h-[3rem] items-center gap-3 px-4 py-2 text-base font-semibold text-sky-700 hover:bg-sky-50"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Code2 size={20} aria-hidden />
+                    Developers
+                    <span className="ml-auto flex h-5 items-center justify-center rounded-full bg-emerald-500 px-2 text-[10px] font-bold uppercase text-white">
+                      NEW
+                    </span>
+                  </Link>
 
                   <NavbarAdminNav clerkUiEnabled={clerkUiEnabled} legacyUser={user} onNavigate={() => setMobileMenuOpen(false)} />
 
