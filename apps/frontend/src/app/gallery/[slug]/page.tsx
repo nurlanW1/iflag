@@ -16,7 +16,7 @@ import {
 } from '@/lib/flag-thumbnail-fallback';
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
-import { env } from '@/lib/env';
+import { ShutterstockCard } from '@/components/flags/ShutterstockCard';
 import { hrefLooksLikeNonBrowserMaster, pickFormatPreviewUrl } from '@/lib/flag-preview-display';
 import COUNTRY_FACTS from '../../../../content/countries/facts.json';
 import COUNTRY_COLORS from '../../../../content/countries/flag-colors.json';
@@ -153,9 +153,10 @@ export default function CountryHubPage() {
   useEffect(() => {
     if (!data?.country?.name) return;
     const q = `${data.country.name} flag`;
-    fetch(`${env.apiUrl}/shutterstock/search?q=${encodeURIComponent(q)}&per_page=12`)
+    const apiUrl = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api').replace(/\/+$/, '');
+    fetch(`${apiUrl}/shutterstock/search?q=${encodeURIComponent(q)}&per_page=12`)
       .then((r) => r.ok ? r.json() : Promise.reject())
-      .then((res: { images?: SSImage[] }) => setSsImages(res.images ?? []))
+      .then((res: { results?: SSImage[] }) => setSsImages(res.results ?? []))
       .catch(() => setSsImages([]));
   }, [data?.country?.name]);
 
@@ -437,78 +438,9 @@ export default function CountryHubPage() {
                 </div>
               </div>
 
-              {(() => {
-                // Build interleaved list: every 4 FW items → 2 SS items
-                type GridItem =
-                  | { kind: 'fw'; v: typeof sortedVariants[number]; idx: number }
-                  | { kind: 'ss'; img: SSImage; key: string };
-
-                const items: GridItem[] = [];
-                let ssIdx = 0;
-                sortedVariants.forEach((v, i) => {
-                  items.push({ kind: 'fw', v, idx: i });
-                  if ((i + 1) % 4 === 0 && ssIdx < ssImages.length) {
-                    for (let k = 0; k < 2 && ssIdx < ssImages.length; k++, ssIdx++) {
-                      items.push({ kind: 'ss', img: ssImages[ssIdx], key: `ss-${ssImages[ssIdx].id}` });
-                    }
-                  }
-                });
-
-                return (
-                  <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
-                    {items.map((item) => {
-                      if (item.kind === 'ss') {
-                        const img = item.img;
-                        return (
-                          <li key={item.key} className="list-none">
-                            <a
-                              href={img.shutterUrl}
-                              target="_blank"
-                              rel="noopener noreferrer sponsored"
-                              className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:border-neutral-300 hover:shadow-md"
-                            >
-                              <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
-                                {/* SS badge */}
-                                <span className="absolute right-2 top-2 z-10 rounded-md bg-[#e00]/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
-                                  SS
-                                </span>
-                                {img.thumbUrl ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img
-                                    src={img.thumbUrl}
-                                    alt={img.description || 'Stock flag image'}
-                                    loading="lazy"
-                                    decoding="async"
-                                    draggable={false}
-                                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
-                                  />
-                                ) : (
-                                  <div className="flex h-full items-center justify-center text-neutral-300">
-                                    <ImageOff size={28} />
-                                  </div>
-                                )}
-                                {/* Hover overlay */}
-                                <div className="absolute inset-0 flex items-end justify-center bg-black/0 transition-all duration-200 group-hover:bg-black/30">
-                                  <span className="mb-3 translate-y-2 rounded-lg bg-white/90 px-3 py-1.5 text-[11px] font-bold text-neutral-900 opacity-0 backdrop-blur-sm transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
-                                    View on Shutterstock ↗
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex flex-1 flex-col gap-1 p-3">
-                                <p className="line-clamp-2 text-[0.875rem] font-medium leading-snug text-[#2a2a2a]">
-                                  {img.description || 'Flag stock photo'}
-                                </p>
-                                <p className="mt-auto text-[10px] font-medium uppercase tracking-wide text-neutral-400">
-                                  shutterstock
-                                </p>
-                              </div>
-                            </a>
-                          </li>
-                        );
-                      }
-
-                      // Flagswing card (unchanged logic)
-                      const { v } = item;
+              {/* ── Flagswing assets grid ── */}
+              <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+                    {sortedVariants.map((v) => {
                       const href = `/assets/${encodeURIComponent(v.productSlug)}`;
                       const isPremium =
                         v.isPremiumDesign ??
@@ -634,15 +566,28 @@ export default function CountryHubPage() {
                         </li>
                       );
                     })}
-                  </ul>
-                );
-              })()}
+              </ul>
 
-              {/* Disclaimer */}
+              {/* ── Shutterstock section (after FW assets) ── */}
               {ssImages.length > 0 && (
-                <p className="mt-4 text-center text-[11px] text-neutral-400">
-                  Some images are from Shutterstock. Clicking opens Shutterstock for licensing.
-                </p>
+                <div className="mt-8">
+                  <div className="mb-4 flex items-center gap-2">
+                    <h3 className="text-sm font-medium text-gray-700">
+                      More {pageTitle} flag images
+                    </h3>
+                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                      Shutterstock
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+                    {ssImages.map((img) => (
+                      <ShutterstockCard key={img.id} {...img} />
+                    ))}
+                  </div>
+                  <p className="mt-3 text-xs text-gray-400">
+                    * Shutterstock images require separate licensing. Clicking opens Shutterstock.com
+                  </p>
+                </div>
               )}
             </>
           )}

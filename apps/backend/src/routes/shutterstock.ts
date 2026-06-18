@@ -3,13 +3,11 @@ import express, { Request, Response } from 'express';
 const router = express.Router();
 
 // ── In-memory cache (1 hour TTL) ─────────────────────────────────────────────
-const CACHE_TTL_MS = 60 * 60 * 1000;
 const cache = new Map<string, { data: unknown; expiresAt: number }>();
+const CACHE_TTL_MS = 60 * 60 * 1000;
 
 // ── Rate limiter: 30 req/min per IP ─────────────────────────────────────────
 const rateBuckets = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 30;
-const RATE_WINDOW_MS = 60 * 1000;
 
 function checkRateLimit(req: Request, res: Response): boolean {
   const ip =
@@ -19,121 +17,87 @@ function checkRateLimit(req: Request, res: Response): boolean {
   const now = Date.now();
   const bucket = rateBuckets.get(ip);
   if (!bucket || now > bucket.resetAt) {
-    rateBuckets.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    rateBuckets.set(ip, { count: 1, resetAt: now + 60_000 });
     return true;
   }
   bucket.count += 1;
-  if (bucket.count > RATE_LIMIT) {
-    res.status(429).json({ error: 'Rate limit exceeded. Max 30 requests per minute.' });
+  if (bucket.count > 30) {
+    res.status(429).json({ results: [] });
     return false;
   }
   return true;
 }
 
-function getBasicAuth(): string | null {
-  const key = process.env.SHUTTERSTOCK_CONSUMER_KEY?.trim();
-  const secret = process.env.SHUTTERSTOCK_CONSUMER_SECRET?.trim();
-  if (!key || !secret) return null;
-  return Buffer.from(`${key}:${secret}`).toString('base64');
-}
-
-function buildAffiliateUrl(imageId: string): string {
-  return `https://www.shutterstock.com/image-photo/${imageId}?utm_source=flagswing&utm_medium=affiliate&utm_campaign=flaggallery`;
-}
-
-// GET /api/shutterstock/search?q=&page=1&per_page=20
 router.get('/search', async (req: Request, res: Response) => {
   if (!checkRateLimit(req, res)) return;
 
-  const q = String(req.query['q'] ?? '').trim();
-  const page = Math.max(1, parseInt(String(req.query['page'] ?? '1'), 10));
-  const perPage = Math.min(50, Math.max(1, parseInt(String(req.query['per_page'] ?? '20'), 10)));
-
-  if (!q) {
-    res.status(400).json({ error: 'Query parameter "q" is required.' });
-    return;
-  }
-
-  const cacheKey = `${q}|${page}|${perPage}`;
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() < cached.expiresAt) {
-    res.setHeader('X-Cache', 'HIT');
-    res.json(cached.data);
-    return;
-  }
-
-  const auth = getBasicAuth();
-  if (!auth) {
-    res.status(503).json({ error: 'Shutterstock credentials not configured.' });
-    return;
-  }
-
-  const baseUrl = process.env.SHUTTERSTOCK_BASE_URL ?? 'https://api.shutterstock.com';
-  const apiUrl = new URL('/v2/images/search', baseUrl);
-  apiUrl.searchParams.set('query', q);
-  apiUrl.searchParams.set('page', String(page));
-  apiUrl.searchParams.set('per_page', String(perPage));
-  apiUrl.searchParams.set('image_type', 'photo');
-  apiUrl.searchParams.set('safe', 'true');
-  apiUrl.searchParams.set('sort', 'popular');
-  apiUrl.searchParams.set('view', 'full');
-
   try {
-    const upstream = await fetch(apiUrl.toString(), {
-      headers: {
-        Authorization: `Basic ${auth}`,
-        Accept: 'application/json',
-      },
-    });
+    const query = (req.query['q'] as string) || 'flag';
+    const perPage = Number(req.query['per_page']) || 12;
 
-    if (!upstream.ok) {
-      const text = await upstream.text().catch(() => '');
-      console.error('[shutterstock] upstream error', upstream.status, text);
-      res.status(upstream.status).json({ error: 'Shutterstock API error.', upstream_status: upstream.status });
+    const cacheKey = `${query}|${perPage}`;
+    const cached = cache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) {
+      res.json(cached.data);
       return;
     }
 
-    const raw = (await upstream.json()) as {
+    const key = process.env.SHUTTERSTOCK_CONSUMER_KEY?.trim();
+    const secret = process.env.SHUTTERSTOCK_CONSUMER_SECRET?.trim();
+    if (!key || !secret) {
+      res.json({ results: [] });
+      return;
+    }
+
+    const auth = Buffer.from(`${key}:${secret}`).toString('base64');
+
+    const response = await fetch(
+      `https://api.shutterstock.com/v2/images/search` +
+      `?query=${encodeURIComponent(query)}` +
+      `&per_page=${perPage}&sort=popular` +
+      `&image_type=photo,illustration,vector`,
+      {
+        headers: {
+          Authorization: `Basic ${auth}`,
+          Accept: 'application/json',
+        },
+      },
+    );
+
+    if (!response.ok) {
+      console.error('[shutterstock] upstream error', response.status);
+      res.json({ results: [] });
+      return;
+    }
+
+    const data = (await response.json()) as {
       data?: Array<{
         id: string;
         description?: string;
         contributor?: { id: string };
         assets?: {
-          preview?: { url?: string };
           small_thumb?: { url?: string };
-          large_thumb?: { url?: string };
-          huge_thumb?: { url?: string };
+          preview?: { url?: string };
         };
       }>;
-      total_count?: number;
-      page?: number;
-      per_page?: number;
     };
 
-    const images = (raw.data ?? []).map((img) => ({
+    const results = (data.data ?? []).map((img) => ({
       id: img.id,
+      thumbUrl: img.assets?.small_thumb?.url ?? img.assets?.preview?.url ?? '',
       description: img.description ?? '',
-      thumbUrl:
-        img.assets?.small_thumb?.url ??
-        img.assets?.large_thumb?.url ??
-        img.assets?.preview?.url ??
-        '',
-      shutterUrl: buildAffiliateUrl(img.id),
+      contributor: img.contributor?.id ?? '',
+      shutterUrl:
+        `https://www.shutterstock.com/image/${img.id}` +
+        `?utm_source=flagswing&utm_medium=affiliate&utm_campaign=flaggallery`,
     }));
 
-    const response = {
-      images,
-      total: raw.total_count ?? 0,
-      page: raw.page ?? page,
-      per_page: raw.per_page ?? perPage,
-    };
-
-    cache.set(cacheKey, { data: response, expiresAt: Date.now() + CACHE_TTL_MS });
-    res.setHeader('X-Cache', 'MISS');
-    res.json(response);
-  } catch (err) {
-    console.error('[shutterstock] fetch failed:', err);
-    res.status(500).json({ error: 'Failed to fetch images from Shutterstock.' });
+    const payload = { results };
+    cache.set(cacheKey, { data: payload, expiresAt: Date.now() + CACHE_TTL_MS });
+    res.json(payload);
+  } catch (error) {
+    console.error('[shutterstock] API error:', error);
+    res.json({ results: [] });
   }
 });
 
