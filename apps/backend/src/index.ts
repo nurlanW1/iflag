@@ -14,6 +14,7 @@ import uploadRouter from './upload/upload.routes.js';
 import billingRouter, { paddleWebhookHandler } from './billing/billing.routes.js';
 import flagFilesUploadRouter from './admin/flag-files-upload.routes.js';
 import importR2AliasRouter from './admin/import-r2-alias.routes.js';
+import apiV1Router from './routes/api-v1.js';
 import pool from './db.js';
 
 /** Unwrap default interop; type `any` avoids TS merging with `typeof import(...)` (non-callable under NodeNext). */
@@ -153,6 +154,7 @@ app.use('/api/assets', assetRouter);
 app.use('/api/admin', adminRouter); // Admin routes (requires admin role)
 app.use('/api/admin/upload', uploadRouter); // Upload routes (requires admin role)
 app.use('/api/flags', flagsRouter); // Legacy endpoint
+app.use('/api/v1', apiV1Router);   // Public REST API v1
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
