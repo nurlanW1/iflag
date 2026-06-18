@@ -159,9 +159,9 @@ export default function CountryHubPage() {
     setSsLoading(true);
     try {
       const q = `${countryName} flag`;
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api').replace(/\/+$/, '');
+      // Use Next.js API route (same-origin) — avoids CORS + NEXT_PUBLIC_API_URL issues
       const r = await fetch(
-        `${apiUrl}/shutterstock/search?q=${encodeURIComponent(q)}&per_page=12&page=${page}`,
+        `/api/shutterstock/search?q=${encodeURIComponent(q)}&per_page=12&page=${page}`,
       );
       if (!r.ok) throw new Error('ss-fetch-failed');
       const res = (await r.json()) as { results?: SSImage[] };
