@@ -3,7 +3,7 @@ import { getDb } from '@/lib/server/db';
 
 export const runtime = 'nodejs';
 
-type WaitlistType = 'annual' | 'contributor' | 'newsletter' | 'new_flag';
+type WaitlistType = 'annual' | 'contributor' | 'newsletter' | 'new_flag' | 'npm-package' | 'figma-plugin';
 
 async function ensureTable(pool: ReturnType<typeof getDb>) {
   await pool.query(`
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'email and type required' }, { status: 400 });
   }
 
-  const validTypes: WaitlistType[] = ['annual', 'contributor', 'newsletter', 'new_flag'];
+  const validTypes: WaitlistType[] = ['annual', 'contributor', 'newsletter', 'new_flag', 'npm-package', 'figma-plugin'];
   if (!validTypes.includes(type)) {
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
   }
