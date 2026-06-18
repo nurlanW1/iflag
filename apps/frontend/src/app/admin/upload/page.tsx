@@ -23,6 +23,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { getClerkPublishableKey } from '@/lib/auth/clerk-env';
 import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
 import { COUNTRIES, type Country } from '@/lib/countries';
+import { getClientBackendApiBaseUrl } from '@/lib/auth/backend-url';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -526,10 +527,13 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
           description: fi.description,
         }));
 
-        const res = await fetch('/api/admin/flag-files/upload-v2', {
+        // Call Railway backend directly — bypasses Vercel proxy SSL issues
+        const backendBase = getClientBackendApiBaseUrl();
+        const uploadUrl = `${backendBase}/admin/flag-files/upload-v2`;
+
+        const res = await fetch(uploadUrl, {
           method: 'POST',
           body: fd,
-          credentials: 'include',
           headers: { Authorization: `Bearer ${token}` },
         });
 
