@@ -35,7 +35,12 @@ const libreBaskerville = Libre_Baskerville({
   display: 'swap',
 });
 
-export const metadata = buildDefaultMetadata();
+export const metadata = {
+  ...buildDefaultMetadata(),
+  other: {
+    'impact-site-verification': 'd080d108-7d67-4238-9f26-dc32a4ed96c7',
+  },
+};
 
 export const viewport: Viewport = {
   width: 'device-width',
