@@ -5,6 +5,7 @@ import {
   getUserById,
   resolveUserForVerifiedClerkBilling,
 } from './auth.service.js';
+import { verifyClerkAdminBearer } from './clerk-admin.server.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -25,27 +26,49 @@ function extractToken(req: Request): string | null {
   return null;
 }
 
-// Verify JWT token
+// Verify JWT token — also accepts Clerk session tokens when CLERK_SECRET_KEY is set.
 export async function authenticateToken(
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  try {
-    const token = extractToken(req);
+  const token = extractToken(req);
 
-    if (!token) {
-      res.status(401).json({ error: 'Authentication required' });
-      return;
+  if (!token) {
+    res.status(401).json({ error: 'Authentication required' });
+    return;
+  }
+
+  // Try Clerk first (preferred when CLERK_SECRET_KEY is configured)
+  const clerkSecretKey = process.env.CLERK_SECRET_KEY?.trim();
+  if (clerkSecretKey) {
+    try {
+      const payload = await verifyToken(token, { secretKey: clerkSecretKey });
+      if (payload?.sub) {
+        // Valid Clerk token — gate against admin allow-list
+        const gate = await verifyClerkAdminBearer(`Bearer ${token}`);
+        if (gate.ok) {
+          req.user = { userId: gate.userId, email: gate.email, role: 'admin' };
+          next();
+          return;
+        }
+        // Clerk token is valid but email not in admin allow-list
+        res.status(403).json({ error: 'Admin access required', code: 'forbidden' });
+        return;
+      }
+    } catch {
+      // Not a Clerk token — fall through to legacy JWT
     }
+  }
 
+  // Legacy app JWT path
+  try {
     const decoded = jwt.verify(token, JWT_SECRET) as {
       userId: string;
       email: string;
       role: string;
     };
 
-    // Verify user still exists and is active
     const user = await getUserById(decoded.userId);
     if (!user) {
       res.status(401).json({ error: 'User not found or inactive' });

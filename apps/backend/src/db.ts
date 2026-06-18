@@ -1,39 +1,36 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
+import { Pool } from 'pg';
 import type { Pool as PgPool } from 'pg';
-import ws from 'ws';
 
-/**
- * Lazy pool initialization — DATABASE_URL is read on first use,
- * AFTER dotenv has loaded env vars. Fixes ESM import-hoisting issue.
- *
- * Proxy correctly binds all method calls to the actual Pool instance.
- */
-neonConfig.webSocketConstructor = ws;
+let _pool: PgPool | undefined;
 
-let _pool: InstanceType<typeof Pool> | undefined;
-
-function getPool(): InstanceType<typeof Pool> {
+function getPool(): PgPool {
   if (!_pool) {
     const url = process.env.DATABASE_URL?.trim();
     if (!url || url.includes('localhost:5432/flagstock')) {
       console.warn('[db] DATABASE_URL not set or using placeholder — check .env');
     }
     const connectionString = url || 'postgresql://user:password@localhost:5432/flagstock';
-    _pool = new Pool({ connectionString, max: 10 });
-    _pool.on('error', (err: Error) => {
+    const isLocalhost = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
+    // Standard pg Pool. Replaced @neondatabase/serverless WebSocket pool which caused
+    // SSL handshake failures on Railway (long-running Node.js, not serverless).
+    _pool = new Pool({
+      connectionString,
+      ssl: isLocalhost ? undefined : { rejectUnauthorized: false },
+      max: 10,
+    });
+    (_pool as PgPool).on('error', (err: Error) => {
       console.error('[db] Pool error:', err.message);
     });
   }
   return _pool;
 }
 
-/** Proxy that binds all method calls to the lazily-created pool instance. */
 const pool = new Proxy({} as PgPool, {
   get(_target, prop: string | symbol) {
     const instance = getPool();
-    const val = (instance as any)[prop];
+    const val = (instance as unknown as Record<string | symbol, unknown>)[prop];
     if (typeof val === 'function') {
-      return val.bind(instance);
+      return (val as (...args: unknown[]) => unknown).bind(instance);
     }
     return val;
   },
