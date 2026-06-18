@@ -1,12 +1,6 @@
 'use client';
 
-/**
- * Admin upload: same-origin POST with `credentials: "include"` and
- * `Authorization: Bearer <Clerk session JWT>` from `useAuth().getToken()`.
- * Server verifies the JWT with Clerk (CLERK_SECRET_KEY) and checks admin allow-list.
- */
-
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@clerk/nextjs';
@@ -16,49 +10,349 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  FileUp,
-  ExternalLink,
+  X,
+  Search,
+  FileVideo,
+  FileImage,
+  File,
   ShieldOff,
+  ChevronDown,
   Database,
 } from 'lucide-react';
 import { Spinner } from '@/components/ui/Spinner';
 import { getClerkPublishableKey } from '@/lib/auth/clerk-env';
 import { clientClerkUserMatchesAdmin } from '@/lib/auth/admin-email';
+import { COUNTRIES, type Country } from '@/lib/countries';
 
-/** Same-origin only — never use NEXT_PUBLIC_API_URL or an external host (cookies won’t attach). */
-const UPLOAD_RELATIVE_PATH = '/api/admin/upload';
+// ─── Types ──────────────────────────────────────────────────────────────────
 
-const FORMATS = ['svg', 'png', 'jpg', 'jpeg', 'webp', 'pdf', 'eps', 'ai', 'psd'] as const;
-const PREMIUM = ['free', 'freemium', 'paid'] as const;
-/** Maps to Postgres `countries.category` CHECK constraint */
-const COUNTRY_CATEGORIES = [
-  { value: 'country', label: 'Country' },
-  { value: 'autonomy', label: 'Autonomy' },
-  { value: 'organization', label: 'Organization' },
-  { value: 'historical', label: 'Historical' },
-] as const;
+type FlagType = 'Flat' | 'Shape' | 'Mockup' | 'Video' | 'Historical';
+type ShapeVariant = 'Sphere' | 'Heart' | 'Star' | 'Circle' | 'Wave' | 'Map' | 'Diamond';
+type UploadStatus = 'pending' | 'uploading' | 'done' | 'error';
 
-type UploadResult = {
-  ok?: boolean;
-  success?: boolean;
-  file_url?: string;
-  file_key?: string;
-  file_name?: string;
-  format?: string;
-  country_slug?: string;
-  id?: string;
-  file?: { id: string; file_url: string; file_name: string; created_at: string; status: string };
+type FileItem = {
+  id: string;
+  file: File;
+  type: FlagType;
+  shape?: ShapeVariant;
+  isPremium: boolean;
+  price: number;
+  keywords: string;
+  description: string;
+  status: UploadStatus;
+  error?: string;
+  resultUrl?: string;
 };
 
-export default function AdminFlagBlobUploadPage() {
-  const clerkConfigured = Boolean(getClerkPublishableKey());
-  if (!clerkConfigured) {
-    return <AdminUploadFormContent />;
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function uid(): string {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+function getExt(filename: string): string {
+  return filename.split('.').pop()?.toLowerCase() ?? '';
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function detectType(filename: string): { type: FlagType; shape?: ShapeVariant } {
+  const n = filename.toLowerCase();
+  const ext = getExt(filename);
+  if (['mp4', 'mov', 'webm', 'avi'].includes(ext)) return { type: 'Video' };
+  if (n.includes('mockup')) return { type: 'Mockup' };
+  if (n.includes('historical') || n.includes('historic')) return { type: 'Historical' };
+  if (n.includes('sphere')) return { type: 'Shape', shape: 'Sphere' };
+  if (n.includes('heart')) return { type: 'Shape', shape: 'Heart' };
+  if (n.includes('star')) return { type: 'Shape', shape: 'Star' };
+  if (n.includes('circle')) return { type: 'Shape', shape: 'Circle' };
+  if (n.includes('wave') || n.includes('waving')) return { type: 'Shape', shape: 'Wave' };
+  if (n.includes('map')) return { type: 'Shape', shape: 'Map' };
+  if (n.includes('diamond')) return { type: 'Shape', shape: 'Diamond' };
+  return { type: 'Flat' };
+}
+
+function buildKeywords(country: Country): string {
+  const c = country.name.toLowerCase();
+  return [
+    `${c} flag svg download`,
+    `${c} flag png free`,
+    `${c} flag vector`,
+    `${country.code} flag`,
+    `${c} national flag`,
+    `download ${c} flag`,
+    `${c} flag eps`,
+    `${c} flag transparent`,
+  ].join(', ');
+}
+
+function buildDescription(country: Country, type: FlagType, shape?: string, ext?: string): string {
+  const c = country.name;
+  const fmt = ext?.toUpperCase() ?? 'SVG';
+  switch (type) {
+    case 'Shape':
+      if (shape === 'Sphere') return `${c} flag in sphere shape. 3D globe effect, transparent background.`;
+      if (shape === 'Heart') return `${c} flag in heart shape. Perfect for Independence Day designs.`;
+      if (shape === 'Star') return `${c} flag in star shape. Patriotic graphic element.`;
+      if (shape === 'Circle') return `${c} flag in circle shape. Rounded icon, transparent background.`;
+      if (shape === 'Wave') return `${c} flag in wave shape. Dynamic waving effect.`;
+      if (shape === 'Map') return `${c} flag mapped on country outline.`;
+      if (shape === 'Diamond') return `${c} flag in diamond shape. Geometric graphic element.`;
+      return `${c} flag in ${shape ?? 'custom'} shape.`;
+    case 'Mockup': return `${c} flag mockup on realistic surface. High-quality presentation template.`;
+    case 'Video': return `${c} flag waving video loop, 4K quality.`;
+    case 'Historical': return `Historical ${c} flag in ${fmt} format.`;
+    default: return `${c} national flag in ${fmt} format. Official flag of ${c} for free download.`;
   }
+}
+
+function makeFileItem(file: File, country: Country): FileItem {
+  const { type, shape } = detectType(file.name);
+  const ext = getExt(file.name);
+  return {
+    id: uid(),
+    file,
+    type,
+    shape,
+    isPremium: false,
+    price: 3,
+    keywords: buildKeywords(country),
+    description: buildDescription(country, type, shape, ext),
+    status: 'pending',
+  };
+}
+
+function getR2Path(countrySlug: string, file: File, type: FlagType): string {
+  const ext = getExt(file.name);
+  const folder =
+    type === 'Video' || ['mp4', 'mov', 'webm'].includes(ext)
+      ? 'video'
+      : type === 'Mockup'
+        ? 'mockup'
+        : ext;
+  return `flags/${countrySlug}/${folder}/${file.name}`;
+}
+
+const TYPE_OPTIONS: FlagType[] = ['Flat', 'Shape', 'Mockup', 'Video', 'Historical'];
+const SHAPE_OPTIONS: ShapeVariant[] = ['Sphere', 'Heart', 'Star', 'Circle', 'Wave', 'Map', 'Diamond'];
+
+// ─── Status icon ─────────────────────────────────────────────────────────────
+
+function StatusBadge({ status, error }: { status: UploadStatus; error?: string }) {
+  if (status === 'done') return <CheckCircle2 size={16} className="text-emerald-500" />;
+  if (status === 'uploading') return <Loader2 size={16} className="animate-spin text-blue-500" />;
+  if (status === 'error') return (
+    <span title={error} className="cursor-help">
+      <AlertCircle size={16} className="text-red-500" />
+    </span>
+  );
+  return null;
+}
+
+// ─── File card ───────────────────────────────────────────────────────────────
+
+function FileCard({
+  item,
+  country,
+  onUpdate,
+  onRemove,
+  disabled,
+}: {
+  item: FileItem;
+  country: Country;
+  onUpdate: (id: string, patch: Partial<FileItem>) => void;
+  onRemove: (id: string) => void;
+  disabled: boolean;
+}) {
+  const ext = getExt(item.file.name).toUpperCase();
+  const isVideo = item.type === 'Video';
+  const isShape = item.type === 'Shape';
+  const r2Path = getR2Path(country.slug, item.file, item.type);
+
+  const borderColor =
+    item.status === 'done'
+      ? 'border-emerald-200 bg-emerald-50/30'
+      : item.status === 'error'
+        ? 'border-red-200 bg-red-50/30'
+        : item.status === 'uploading'
+          ? 'border-blue-200 bg-blue-50/20'
+          : 'border-neutral-200 bg-white';
+
+  return (
+    <div className={`rounded-2xl border p-4 transition-colors ${borderColor}`}>
+      {/* Header */}
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2">
+          {isVideo ? (
+            <FileVideo size={18} className="shrink-0 text-red-500" />
+          ) : ['svg', 'png', 'jpg', 'jpeg', 'webp'].includes(ext.toLowerCase()) ? (
+            <FileImage size={18} className="shrink-0 text-blue-500" />
+          ) : (
+            <File size={18} className="shrink-0 text-gray-400" />
+          )}
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-[#2a2a2a]" title={item.file.name}>
+              {item.file.name}
+            </p>
+            <p className="text-xs text-gray-400">{formatBytes(item.file.size)}</p>
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <StatusBadge status={item.status} error={item.error} />
+          {!disabled && item.status !== 'done' && (
+            <button
+              onClick={() => onRemove(item.id)}
+              className="rounded-lg p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
+              aria-label="Remove file"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Format chip */}
+      <div className="mb-3">
+        <span className="inline-flex rounded-full bg-[var(--brand-blue)]/10 px-2.5 py-0.5 text-xs font-semibold text-[var(--brand-blue)]">
+          {ext}
+        </span>
+        <span className="ml-2 text-xs text-gray-500 font-mono">{r2Path}</span>
+      </div>
+
+      {item.status === 'error' && item.error && (
+        <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{item.error}</p>
+      )}
+      {item.status === 'done' && item.resultUrl && (
+        <a
+          href={item.resultUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-3 block text-xs font-medium text-emerald-700 underline"
+        >
+          View on R2 →
+        </a>
+      )}
+
+      {/* Metadata controls */}
+      <div className="grid grid-cols-2 gap-2">
+        {/* Type */}
+        <div>
+          <label className="mb-0.5 block text-xs font-semibold text-gray-500">Type</label>
+          <select
+            disabled={disabled}
+            value={item.type}
+            onChange={e => {
+              const t = e.target.value as FlagType;
+              onUpdate(item.id, {
+                type: t,
+                shape: t === 'Shape' ? (item.shape ?? 'Sphere') : undefined,
+                description: buildDescription(country, t, t === 'Shape' ? (item.shape ?? 'Sphere') : undefined, getExt(item.file.name)),
+              });
+            }}
+            className="w-full rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-xs focus:border-[var(--brand-blue)] focus:outline-none"
+          >
+            {TYPE_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+
+        {/* Shape (conditional) */}
+        {isShape ? (
+          <div>
+            <label className="mb-0.5 block text-xs font-semibold text-gray-500">Shape</label>
+            <select
+              disabled={disabled}
+              value={item.shape ?? 'Sphere'}
+              onChange={e => {
+                const s = e.target.value as ShapeVariant;
+                onUpdate(item.id, {
+                  shape: s,
+                  description: buildDescription(country, 'Shape', s, getExt(item.file.name)),
+                });
+              }}
+              className="w-full rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-xs focus:border-[var(--brand-blue)] focus:outline-none"
+            >
+              {SHAPE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        ) : (
+          <div />
+        )}
+
+        {/* Free/Premium toggle */}
+        <div className="col-span-2 flex items-center justify-between rounded-lg border border-neutral-200 px-3 py-2">
+          <span className="text-xs font-semibold text-gray-600">
+            {item.isPremium ? 'Premium' : 'Free'}
+          </span>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => onUpdate(item.id, { isPremium: !item.isPremium })}
+            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${
+              item.isPremium ? 'bg-[var(--brand-blue)]' : 'bg-gray-200'
+            }`}
+          >
+            <span
+              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                item.isPremium ? 'translate-x-4' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
+          {item.isPremium && (
+            <div className="ml-2 flex items-center gap-1">
+              <span className="text-xs text-gray-500">$</span>
+              <input
+                type="number"
+                min={0.5}
+                step={0.5}
+                disabled={disabled}
+                value={item.price}
+                onChange={e => onUpdate(item.id, { price: Number(e.target.value) || 3 })}
+                className="w-14 rounded border border-neutral-200 px-1.5 py-0.5 text-xs focus:outline-none focus:border-[var(--brand-blue)]"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Keywords */}
+        <div className="col-span-2">
+          <label className="mb-0.5 block text-xs font-semibold text-gray-500">Keywords</label>
+          <textarea
+            disabled={disabled}
+            rows={2}
+            value={item.keywords}
+            onChange={e => onUpdate(item.id, { keywords: e.target.value })}
+            className="w-full resize-none rounded-lg border border-neutral-200 px-2 py-1.5 text-xs focus:border-[var(--brand-blue)] focus:outline-none"
+          />
+        </div>
+
+        {/* Description */}
+        <div className="col-span-2">
+          <label className="mb-0.5 block text-xs font-semibold text-gray-500">Description</label>
+          <textarea
+            disabled={disabled}
+            rows={2}
+            value={item.description}
+            onChange={e => onUpdate(item.id, { description: e.target.value })}
+            className="w-full resize-none rounded-lg border border-neutral-200 px-2 py-1.5 text-xs focus:border-[var(--brand-blue)] focus:outline-none"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main export ─────────────────────────────────────────────────────────────
+
+export default function AdminFlagUploadPage() {
+  const clerkConfigured = Boolean(getClerkPublishableKey());
+  if (!clerkConfigured) return <AdminUploadFormContent />;
   return <AdminUploadClerkGate />;
 }
 
-/** Ensures Clerk session + allow-list before showing the upload form. */
 function AdminUploadClerkGate() {
   const router = useRouter();
   const { user, isLoaded, isSignedIn } = useUser();
@@ -71,18 +365,10 @@ function AdminUploadClerkGate() {
     }
   }, [isLoaded, isSignedIn, router]);
 
-  if (!isLoaded) {
+  if (!isLoaded || !isSignedIn) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <Spinner size="lg" label="Loading" />
-      </div>
-    );
-  }
-
-  if (!isSignedIn) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Spinner size="lg" label="Redirecting to sign-in" />
+        <Spinner size="lg" label={!isLoaded ? 'Loading' : 'Redirecting to sign-in'} />
       </div>
     );
   }
@@ -90,31 +376,14 @@ function AdminUploadClerkGate() {
   if (!clientClerkUserMatchesAdmin(user)) {
     return (
       <div className="marketplace-shell py-12">
-        <div
-          role="alert"
-          className="flex gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950"
-        >
-          <ShieldOff size={28} className="shrink-0" aria-hidden />
-          <div className="min-w-0">
+        <div role="alert" className="flex gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
+          <ShieldOff size={28} className="shrink-0" />
+          <div>
             <p className="text-lg font-bold">Access denied</p>
-            <p className="mt-2 text-sm opacity-90">
-              This upload page is restricted to administrators. Your signed-in email is not on the allow-list.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Link
-                href="/access-denied?reason=forbidden"
-                className="text-sm font-semibold text-[#1e40af] underline underline-offset-2 hover:text-[var(--brand-blue)]"
-              >
-                More about access
-              </Link>
-              <Link
-                href="/admin"
-                className="rounded-xl border border-amber-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-amber-100/80"
-              >
+            <p className="mt-2 text-sm opacity-90">This page is restricted to administrators.</p>
+            <div className="mt-4 flex gap-3">
+              <Link href="/admin" className="rounded-xl border border-amber-300 bg-white px-4 py-2 text-sm font-medium hover:bg-amber-100/80">
                 Back to admin
-              </Link>
-              <Link href="/" className="rounded-xl px-4 py-2 text-sm font-medium text-gray-600 hover:underline">
-                Home
               </Link>
             </div>
           </div>
@@ -126,549 +395,428 @@ function AdminUploadClerkGate() {
   return <AdminUploadFormContent getToken={getToken} />;
 }
 
-function AdminUploadFormContent({
-  getToken,
-}: {
-  getToken?: () => Promise<string | null>;
-}) {
-  const [file, setFile] = useState<File | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<UploadResult | null>(null);
+// ─── Upload form ──────────────────────────────────────────────────────────────
 
-  const [countryName, setCountryName] = useState('');
-  const [countrySlug, setCountrySlug] = useState('');
-  const [region, setRegion] = useState('');
-  const [countryCategory, setCountryCategory] = useState<(typeof COUNTRY_CATEGORIES)[number]['value']>(
-    'country'
-  );
-  const [flagTitle, setFlagTitle] = useState('');
-  const [format, setFormat] = useState<(typeof FORMATS)[number]>('svg');
-  const [premiumTier, setPremiumTier] = useState<(typeof PREMIUM)[number]>('free');
-  const [priceCents, setPriceCents] = useState(99);
-  const [tags, setTags] = useState('');
-  const [status, setStatus] = useState<'draft' | 'published'>('published');
+function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string | null> }) {
+  // Country search
+  const [query, setQuery] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [country, setCountry] = useState<Country | null>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
+  // File management
+  const [fileItems, setFileItems] = useState<FileItem[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Upload state
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSummary, setUploadSummary] = useState<{ success: number; error: number; prefix: string } | null>(null);
+
+  // Import R2
   const [r2Importing, setR2Importing] = useState(false);
-  const [r2Error, setR2Error] = useState<string | null>(null);
-  const [r2Stats, setR2Stats] = useState<{
-    scanned?: number;
-    inserted?: number;
-    updated?: number;
-    skipped?: number;
-    errors?: string[];
-  } | null>(null);
-  const [r2MaxObjects, setR2MaxObjects] = useState(5000);
+  const [r2Result, setR2Result] = useState<{ ok: boolean; message: string } | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  // Country search filtered
+  const filtered = query.trim().length < 1
+    ? []
+    : COUNTRIES.filter(c =>
+        c.name.toLowerCase().includes(query.toLowerCase()) ||
+        c.code.toLowerCase().includes(query.toLowerCase())
+      ).slice(0, 10);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, []);
+
+  function selectCountry(c: Country) {
+    setCountry(c);
+    setQuery(c.name);
+    setShowDropdown(false);
+    // Reset files when country changes
+    setFileItems([]);
+    setUploadSummary(null);
+  }
+
+  function addFiles(newFiles: FileList | File[]) {
+    if (!country) return;
+    const arr = Array.from(newFiles);
+    const items = arr.map(f => makeFileItem(f, country));
+    setFileItems(prev => [...prev, ...items]);
+  }
+
+  const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    setError(null);
-    setResult(null);
+    setIsDragging(false);
+    if (!country) return;
+    addFiles(e.dataTransfer.files);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country]);
 
-    if (!file) {
-      setError('Choose a flag file.');
-      return;
-    }
-    if (!countryName.trim() || !countrySlug.trim()) {
-      setError('Country name and slug are required.');
-      return;
-    }
-    if (!flagTitle.trim()) {
-      setError('Flag title/name is required.');
-      return;
-    }
+  function updateItem(id: string, patch: Partial<FileItem>) {
+    setFileItems(prev => prev.map(f => f.id === id ? { ...f, ...patch } : f));
+  }
 
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('country_name', countryName.trim());
-    fd.append('country_slug', countrySlug.trim().toLowerCase());
-    fd.append('region', region.trim());
-    fd.append('category', countryCategory);
-    fd.append('flag_title', flagTitle.trim());
-    fd.append('format', format);
-    fd.append('premium_tier', premiumTier);
-    fd.append('price_cents', String(Math.max(0, Math.round(priceCents))));
-    fd.append('tags', tags.trim());
-    fd.append('status', status);
+  function removeItem(id: string) {
+    setFileItems(prev => prev.filter(f => f.id !== id));
+  }
 
-    setSubmitting(true);
+  async function handleUploadAll() {
+    if (!country || fileItems.length === 0 || !getToken) return;
+
+    const token = await getToken();
+    if (!token) return;
+
+    setIsUploading(true);
+    setUploadSummary(null);
+    setFileItems(prev => prev.map(f => ({ ...f, status: 'uploading' as UploadStatus, error: undefined })));
+
     try {
-      let headers: HeadersInit | undefined;
-      if (getToken) {
-        const token = await getToken();
-        if (!token?.trim()) {
-          throw new Error('Not signed in');
-        }
-        headers = { Authorization: `Bearer ${token}` };
+      const fd = new FormData();
+      fd.append('countrySlug', country.slug);
+      fd.append('countryName', country.name);
+      fd.append('countryCode', country.code);
+      fd.append('metadata', JSON.stringify(
+        fileItems.map(fi => ({
+          type: fi.type,
+          shape: fi.shape,
+          isPremium: fi.isPremium,
+          price: fi.price,
+          keywords: fi.keywords,
+          description: fi.description,
+        }))
+      ));
+
+      for (const fi of fileItems) {
+        fd.append('files', fi.file, fi.file.name);
       }
 
-      const res = await fetch(UPLOAD_RELATIVE_PATH, {
+      const res = await fetch('/api/admin/flag-files/upload-batch', {
         method: 'POST',
         body: fd,
         credentials: 'include',
-        headers,
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const data = (await res.json().catch(() => ({}))) as UploadResult & {
+
+      const data = await res.json().catch(() => ({})) as {
+        ok?: boolean;
+        results?: Array<{ ok: boolean; fileName: string; fileUrl?: string; error?: string; r2Key?: string }>;
+        successCount?: number;
+        errorCount?: number;
+        r2Prefix?: string;
         error?: string;
-        detail?: string;
-        code?: string;
       };
 
-      if (!res.ok) {
-        const msg =
-          [data?.error, (data as { detail?: string }).detail].filter(Boolean).join(' — ') ||
-          `Upload failed (${res.status})`;
-        throw new Error(msg);
+      if (!res.ok && !data.results) {
+        setFileItems(prev => prev.map(f => ({
+          ...f,
+          status: 'error' as UploadStatus,
+          error: data.error ?? `Server error (${res.status})`,
+        })));
+        return;
       }
 
-      setResult(data as UploadResult);
-      setFile(null);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Upload failed';
-      setError(msg);
+      if (data.results) {
+        setFileItems(prev => prev.map((fi, i) => {
+          const r = data.results![i];
+          if (!r) return { ...fi, status: 'error' as UploadStatus };
+          return {
+            ...fi,
+            status: r.ok ? 'done' as UploadStatus : 'error' as UploadStatus,
+            error: r.error,
+            resultUrl: r.fileUrl,
+          };
+        }));
+
+        setUploadSummary({
+          success: data.successCount ?? 0,
+          error: data.errorCount ?? 0,
+          prefix: data.r2Prefix ?? `flags/${country.slug}/`,
+        });
+      }
+    } catch (err) {
+      setFileItems(prev => prev.map(f => ({
+        ...f,
+        status: 'error' as UploadStatus,
+        error: err instanceof Error ? err.message : 'Network error',
+      })));
     } finally {
-      setSubmitting(false);
+      setIsUploading(false);
     }
   }
 
   async function handleImportR2() {
-    setR2Error(null);
-    setR2Stats(null);
-    if (!getToken) {
-      setR2Error('Sign in is required to import.');
-      return;
-    }
+    if (!getToken) return;
     const token = await getToken();
-    if (!token?.trim()) {
-      setR2Error('Not signed in.');
-      return;
-    }
-    const max = Math.min(100_000, Math.max(1, Math.floor(Number(r2MaxObjects) || 5000)));
+    if (!token) return;
     setR2Importing(true);
+    setR2Result(null);
     try {
-      const res = await fetch(`/api/admin/import-r2?maxObjects=${max}`, {
+      const res = await fetch(`/api/admin/import-r2?maxObjects=25000`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include',
       });
-      const data = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        error?: string;
-        scanned?: number;
-        inserted?: number;
-        imported?: number;
-        updated?: number;
-        skipped?: number;
-        errors?: string[];
-      };
-      if (!res.ok) {
-        throw new Error(data.error || `Import failed (${res.status})`);
-      }
-      const insertedCount = typeof data.imported === 'number' ? data.imported : data.inserted;
-      setR2Stats({ ...data, inserted: insertedCount });
-    } catch (e: unknown) {
-      setR2Error(e instanceof Error ? e.message : 'Import failed');
+      const d = await res.json().catch(() => ({})) as { ok?: boolean; error?: string; inserted?: number; scanned?: number };
+      if (!res.ok) throw new Error(d.error ?? `Failed (${res.status})`);
+      setR2Result({ ok: true, message: `Scanned: ${d.scanned ?? '?'} · Inserted: ${d.inserted ?? '?'}` });
+    } catch (e) {
+      setR2Result({ ok: false, message: e instanceof Error ? e.message : 'Import failed' });
     } finally {
       setR2Importing(false);
     }
   }
 
-  const fieldClass =
-    'mt-1 w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-[#2a2a2a] shadow-sm outline-none transition focus:border-[var(--brand-blue)] focus:ring-2 focus:ring-[#2563eb]/25';
+  const pendingCount = fileItems.filter(f => f.status === 'pending').length;
+  const doneCount = fileItems.filter(f => f.status === 'done').length;
+  const errorCount = fileItems.filter(f => f.status === 'error').length;
+  const canUpload = !!country && fileItems.length > 0 && !isUploading && pendingCount > 0;
+
+  const fieldCls = 'w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm focus:border-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/20';
 
   return (
-    <div className="marketplace-shell">
-      <div className="mx-auto w-full min-w-0">
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <Link
-          href="/admin"
-          className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-        >
-          <ArrowLeft size={16} aria-hidden />
-          Admin home
-        </Link>
-      </div>
+    <div className="marketplace-shell py-8">
+      <div className="mx-auto w-full max-w-4xl min-w-0">
 
-      <div className="mb-8">
-        <div className="mb-3 flex items-center gap-3">
+        {/* Back link */}
+        <div className="mb-6">
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <ArrowLeft size={16} />
+            Admin home
+          </Link>
+        </div>
+
+        {/* Page heading */}
+        <div className="mb-8 flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-blue)]/10 text-[var(--brand-blue)]">
             <Upload size={24} />
           </div>
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-[#2a2a2a] md:text-4xl">Upload Flags</h1>
-            <p className="text-sm text-gray-600 md:text-base">
-              Stores files on **Cloudflare R2** and saves metadata to Neon (`country_flag_files`).
-            </p>
+            <h1 className="text-3xl font-semibold tracking-tight text-[#2a2a2a]">Upload Flags</h1>
+            <p className="text-sm text-gray-500">R2 storage · Neon DB · Multi-file batch upload</p>
           </div>
         </div>
-      </div>
 
-      {error ? (
-        <div
-          role="alert"
-          className="mb-6 flex gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-900"
-        >
-          <AlertCircle size={20} className="shrink-0" aria-hidden />
-          <p className="text-sm font-medium">{error}</p>
+        {/* ── STEP 1: Country selection ─────────────────────────────────── */}
+        <div className="mb-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand-blue)] text-xs font-bold text-white">1</span>
+            <h2 className="text-base font-semibold text-[#2a2a2a]">Select country</h2>
+          </div>
+
+          <div className="relative" ref={searchRef}>
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search country... Paraguay, Uzbekistan..."
+                value={query}
+                onChange={e => {
+                  setQuery(e.target.value);
+                  setShowDropdown(true);
+                  if (!e.target.value.trim()) setCountry(null);
+                }}
+                onFocus={() => query && setShowDropdown(true)}
+                className={`${fieldCls} pl-9 pr-9`}
+              />
+              {country && (
+                <button
+                  onClick={() => { setCountry(null); setQuery(''); setFileItems([]); setUploadSummary(null); }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:text-gray-700"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            {showDropdown && filtered.length > 0 && (
+              <ul className="absolute z-20 mt-1 w-full rounded-xl border border-neutral-200 bg-white py-1 shadow-lg">
+                {filtered.map(c => (
+                  <li key={c.code}>
+                    <button
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50"
+                      onMouseDown={() => selectCountry(c)}
+                    >
+                      <span className="font-medium">{c.name}</span>
+                      <span className="ml-auto rounded bg-gray-100 px-1.5 py-0.5 text-xs font-mono text-gray-500">{c.code.toUpperCase()}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Country info card */}
+          {country && (
+            <div className="mt-4 rounded-xl bg-gray-50 p-4 text-sm">
+              <div className="grid gap-1.5 sm:grid-cols-2">
+                <div><span className="text-gray-500">Country:</span> <strong>{country.name}</strong></div>
+                <div><span className="text-gray-500">Code:</span> <strong className="font-mono">{country.code.toUpperCase()}</strong></div>
+                <div><span className="text-gray-500">Slug:</span> <code className="rounded bg-black/5 px-1">{country.slug}</code></div>
+                <div><span className="text-gray-500">R2 folder:</span> <code className="rounded bg-black/5 px-1">flags/{country.slug}/</code></div>
+              </div>
+              <div className="mt-2 text-xs text-gray-500">
+                <span className="font-semibold">Keywords:</span>{' '}
+                <span className="italic">{country.name.toLowerCase()} flag svg download, {country.code} flag, ...</span>
+              </div>
+            </div>
+          )}
         </div>
-      ) : null}
 
-      {result?.ok || result?.success ? (
-        <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
-          <div className="flex items-start gap-2">
-            <CheckCircle2 size={22} className="shrink-0" aria-hidden />
-            <div className="min-w-0 flex-1">
-              <p className="font-bold">Uploaded successfully</p>
-              <p className="mt-1 text-xs opacity-80">
-                Storage: Cloudflare R2 · Row{' '}
-                <code className="rounded bg-black/5 px-1">{result.file?.id ?? result.id}</code>
-              </p>
-              {(() => {
-                const pub = result.file_url || result.file?.file_url;
-                const img =
-                  pub &&
-                  /\.(svg|png|jpe?g|webp)$/i.test(pub);
-                return pub && img ? (
-                  <div className="mt-4 rounded-xl border border-emerald-200/80 bg-white p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Preview</p>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={pub}
-                      alt=""
-                      className="mx-auto mt-3 max-h-72 w-auto max-w-full object-contain"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-                ) : pub ? (
-                  <p className="mt-3 text-sm text-stone-700">
-                    Preview is not shown for this file type (
-                    <strong>{result.format?.toUpperCase()}</strong>). Use{' '}
-                    <strong>Download file</strong> below.
-                  </p>
-                ) : null;
-              })()}
-              {result.file_key ? (
-                <p className="mt-3 break-all text-xs opacity-90">
-                  <span className="font-semibold">R2 key:</span>{' '}
-                  <code className="rounded bg-black/5 px-1">{result.file_key}</code>
+        {/* ── STEP 2: Drag & drop ──────────────────────────────────────── */}
+        <div className={`mb-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm transition-opacity ${!country ? 'pointer-events-none opacity-40' : ''}`}>
+          <div className="mb-4 flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand-blue)] text-xs font-bold text-white">2</span>
+            <h2 className="text-base font-semibold text-[#2a2a2a]">Add files</h2>
+          </div>
+
+          <div
+            onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={onDrop}
+            onClick={() => country && fileInputRef.current?.click()}
+            className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors ${
+              isDragging
+                ? 'border-[var(--brand-blue)] bg-[var(--brand-blue)]/5'
+                : 'border-neutral-200 hover:border-[var(--brand-blue)]/60 hover:bg-gray-50'
+            }`}
+          >
+            <Upload size={32} className={isDragging ? 'text-[var(--brand-blue)]' : 'text-gray-300'} />
+            <p className="mt-3 text-base font-semibold text-gray-700">
+              {country ? `Drop ${country.name} flag files here` : 'Select a country first'}
+            </p>
+            <p className="mt-1 text-xs text-gray-400">SVG · PNG · EPS · PDF · JPG · MP4 · MOV</p>
+            <button
+              type="button"
+              disabled={!country}
+              className="mt-4 rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-40"
+            >
+              Browse files
+            </button>
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            className="hidden"
+            accept=".svg,.png,.jpg,.jpeg,.webp,.pdf,.eps,.ai,.psd,.mp4,.mov,.webm"
+            onChange={e => e.target.files && addFiles(e.target.files)}
+          />
+        </div>
+
+        {/* ── STEP 3: File cards ───────────────────────────────────────── */}
+        {fileItems.length > 0 && country && (
+          <div className="mb-6">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand-blue)] text-xs font-bold text-white">3</span>
+                <h2 className="text-base font-semibold text-[#2a2a2a]">
+                  Files ({fileItems.length})
+                </h2>
+                {doneCount > 0 && <span className="text-xs font-semibold text-emerald-600">✓ {doneCount} done</span>}
+                {errorCount > 0 && <span className="text-xs font-semibold text-red-600">✗ {errorCount} failed</span>}
+              </div>
+              {!isUploading && pendingCount > 0 && (
+                <button
+                  onClick={() => setFileItems([])}
+                  className="text-xs text-gray-400 hover:text-red-500"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {fileItems.map(item => (
+                <FileCard
+                  key={item.id}
+                  item={item}
+                  country={country}
+                  onUpdate={updateItem}
+                  onRemove={removeItem}
+                  disabled={isUploading || item.status === 'done'}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Upload summary ───────────────────────────────────────────── */}
+        {uploadSummary && (
+          <div className={`mb-6 rounded-2xl border p-5 ${uploadSummary.error === 0 ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50'}`}>
+            <div className="flex items-start gap-3">
+              {uploadSummary.error === 0
+                ? <CheckCircle2 size={22} className="shrink-0 text-emerald-600" />
+                : <AlertCircle size={22} className="shrink-0 text-amber-600" />
+              }
+              <div>
+                <p className="font-bold text-[#2a2a2a]">
+                  {uploadSummary.error === 0 ? 'All files uploaded!' : `${uploadSummary.success} uploaded, ${uploadSummary.error} failed`}
                 </p>
-              ) : null}
-              <div className="mt-4 flex flex-wrap gap-3">
-                {(result.file?.id || result.id) && (
-                  <a
-                    href={`/api/download/${result.file?.id ?? result.id}`}
-                    className="inline-flex items-center rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
-                  >
-                    Download file (protected route)
-                  </a>
-                )}
-                {(result.file_url || result.file?.file_url) && (
-                  <a
-                    href={result.file_url || result.file?.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm font-semibold text-[#1e40af] underline underline-offset-2 hover:text-[var(--brand-blue)]"
-                  >
-                    Open public URL
-                    <ExternalLink size={14} aria-hidden />
-                  </a>
-                )}
+                <p className="mt-1 font-mono text-xs text-gray-600">R2: {uploadSummary.prefix}</p>
               </div>
             </div>
           </div>
-        </div>
-      ) : null}
-
-      <div className="mb-8 space-y-4 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
-            <Database size={20} aria-hidden />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-lg font-semibold text-[#2a2a2a]">Import R2 files</h2>
-            <p className="mt-1 text-sm text-gray-600">
-              Lists your Cloudflare R2 bucket and upserts rows into Neon <code className="rounded bg-black/5 px-1">country_flag_files</code>{' '}
-              (no duplicate <code className="rounded bg-black/5 px-1">file_key</code>). Requires the same R2 +{' '}
-              <code className="rounded bg-black/5 px-1">DATABASE_URL</code> env on the <strong>backend</strong> API. Allowed: admin email only.
-            </p>
-            <p className="mt-2 text-xs text-gray-500">
-              CLI (Railway or local after <code className="rounded bg-black/[0.06] px-1">npm run build</code>):{' '}
-              <code className="rounded bg-black/[0.06] px-1">cd apps/backend && npm run import:r2</code>
-            </p>
-          </div>
-        </div>
-        {getToken ? (
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <div>
-              <label htmlFor="r2_max" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-                Max objects
-              </label>
-              <input
-                id="r2_max"
-                type="number"
-                min={1}
-                max={100000}
-                value={r2MaxObjects}
-                onChange={(e) => setR2MaxObjects(Number(e.target.value) || 5000)}
-                className={fieldClass}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => void handleImportR2()}
-              disabled={r2Importing}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-700 disabled:opacity-60"
-            >
-              {r2Importing ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Database size={18} aria-hidden />}
-              {r2Importing ? 'Importing…' : 'Run import via API'}
-            </button>
-          </div>
-        ) : (
-          <p className="text-sm text-amber-800">Sign in with Clerk to use the API import button.</p>
         )}
-        {r2Error ? (
-          <p role="alert" className="text-sm font-medium text-red-700">
-            {r2Error}
-          </p>
-        ) : null}
-        {r2Stats && (r2Stats.inserted !== undefined || r2Stats.updated !== undefined) ? (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-950">
-            <p className="font-semibold">Import finished</p>
-            <ul className="mt-2 list-inside list-disc text-xs">
-              <li>Scanned: {r2Stats.scanned ?? '—'}</li>
-              <li>Inserted: {r2Stats.inserted ?? '—'}</li>
-              <li>Updated: {r2Stats.updated ?? '—'}</li>
-              <li>Skipped: {r2Stats.skipped ?? '—'}</li>
-            </ul>
-            {r2Stats.errors && r2Stats.errors.length > 0 ? (
-              <details className="mt-3">
-                <summary className="cursor-pointer text-xs font-medium">Error messages ({r2Stats.errors.length})</summary>
-                <ul className="mt-2 max-h-40 list-inside list-disc overflow-y-auto text-xs opacity-90">
-                  {r2Stats.errors.slice(0, 40).map((e, i) => (
-                    <li key={i}>{e}</li>
-                  ))}
-                </ul>
-              </details>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
 
-      <form
-        onSubmit={(e) => void handleSubmit(e)}
-        className="space-y-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8"
-      >
-        <fieldset className="grid gap-4 sm:grid-cols-2" disabled={submitting}>
-          <legend className="sr-only">Country context</legend>
-          <div className="sm:col-span-2">
-            <label htmlFor="country_name" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Country name
-            </label>
-            <input
-              id="country_name"
-              name="country_name"
-              required
-              maxLength={255}
-              autoComplete="off"
-              value={countryName}
-              onChange={(e) => setCountryName(e.target.value)}
-              className={fieldClass}
-              placeholder="e.g. Uzbekistan"
-            />
-          </div>
-          <div>
-            <label htmlFor="country_slug" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Country slug
-            </label>
-            <input
-              id="country_slug"
-              name="country_slug"
-              required
-              maxLength={255}
-              pattern="[a-z0-9]+(-[a-z0-9]+)*"
-              value={countrySlug}
-              onChange={(e) =>
-                setCountrySlug(
-                  e.target.value
-                    .toLowerCase()
-                    .trim()
-                    .replace(/\s+/g, '-')
-                )
-              }
-              className={fieldClass}
-              placeholder="e.g. uzbekistan"
-            />
-          </div>
-          <div>
-            <label htmlFor="region" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Region
-            </label>
-            <input
-              id="region"
-              name="region"
-              maxLength={100}
-              autoComplete="off"
-              value={region}
-              onChange={(e) => setRegion(e.target.value)}
-              className={fieldClass}
-              placeholder="Optional"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label htmlFor="category" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Category (country type)
-            </label>
-            <select
-              id="category"
-              name="category"
-              value={countryCategory}
-              onChange={(e) =>
-                setCountryCategory(e.target.value as (typeof COUNTRY_CATEGORIES)[number]['value'])
-              }
-              className={fieldClass}
-            >
-              {COUNTRY_CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </fieldset>
+        {/* ── STEP 4: Upload button ────────────────────────────────────── */}
+        {country && fileItems.length > 0 && (
+          <button
+            type="button"
+            disabled={!canUpload}
+            onClick={() => void handleUploadAll()}
+            className="mb-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[var(--brand-blue)] to-[var(--brand-blue-hover)] py-4 text-base font-semibold text-white shadow-lg shadow-[var(--brand-blue)]/20 transition hover:brightness-105 disabled:pointer-events-none disabled:opacity-50"
+          >
+            {isUploading
+              ? <><Loader2 className="animate-spin" size={20} /> Uploading {fileItems.length} file{fileItems.length !== 1 ? 's' : ''}…</>
+              : <><Upload size={20} /> Upload {pendingCount > 0 ? `${pendingCount} ` : ''}file{pendingCount !== 1 ? 's' : ''} to R2</>
+            }
+          </button>
+        )}
 
-        <fieldset className="grid gap-4 sm:grid-cols-2" disabled={submitting}>
-          <legend className="sr-only">Flag file metadata</legend>
-          <div className="sm:col-span-2">
-            <label htmlFor="flag_title" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Flag title / name
-            </label>
-            <input
-              id="flag_title"
-              name="flag_title"
-              required
-              maxLength={100}
-              value={flagTitle}
-              onChange={(e) => setFlagTitle(e.target.value)}
-              className={fieldClass}
-              placeholder="e.g. Standard flat"
-            />
-          </div>
-          <div>
-            <label htmlFor="format" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Format
-            </label>
-            <select
-              id="format"
-              value={format}
-              onChange={(e) => setFormat(e.target.value as (typeof FORMATS)[number])}
-              className={fieldClass}
-            >
-              {FORMATS.map((f) => (
-                <option key={f} value={f}>
-                  {f.toUpperCase()}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="premium_tier" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Premium tier
-            </label>
-            <select
-              id="premium_tier"
-              value={premiumTier}
-              onChange={(e) => setPremiumTier(e.target.value as (typeof PREMIUM)[number])}
-              className={fieldClass}
-            >
-              {PREMIUM.map((p) => (
-                <option key={p} value={p}>
-                  {p.charAt(0).toUpperCase() + p.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="price_cents" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Price (USD cents)
-            </label>
-            <input
-              id="price_cents"
-              name="price_cents"
-              type="number"
-              min={0}
-              step={1}
-              value={priceCents}
-              onChange={(e) => setPriceCents(Number(e.target.value) || 0)}
-              className={fieldClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="status" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Status
-            </label>
-            <select id="status" value={status} onChange={(e) => setStatus(e.target.value as 'draft' | 'published')} className={fieldClass}>
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
-          </div>
-          <div className="sm:col-span-2">
-            <label htmlFor="tags" className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Tags (comma-separated)
-            </label>
-            <input
-              id="tags"
-              name="tags"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              className={fieldClass}
-              placeholder="vector, svg, ..."
-            />
-          </div>
-        </fieldset>
-
-        <div>
-          <label className="flex cursor-pointer flex-col rounded-2xl border-2 border-dashed border-neutral-200 bg-gray-50/80 p-6 transition hover:border-[var(--brand-blue)]/60 hover:bg-white">
-            <span className="flex items-center gap-2 text-sm font-semibold text-[#2a2a2a]">
-              <FileUp size={18} className="text-[var(--brand-blue)]" aria-hidden />
-              Choose file
-            </span>
-            <span className="mt-2 text-xs text-gray-600">One upload per submission (PNG, SVG, …)</span>
-            <input
-              type="file"
-              disabled={submitting}
-              accept=".svg,.png,.jpg,.jpeg,.webp,.pdf,.eps,.ai,.psd"
-              className="mt-4 text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--brand-blue)] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                setFile(f ?? null);
-              }}
-            />
-            {file ? (
-              <p className="mt-3 truncate text-xs text-gray-800" title={file.name}>
-                Selected: <strong>{file.name}</strong> ({(file.size / 1024).toFixed(1)} KB)
+        {/* ── Import R2 (advanced) ─────────────────────────────────────── */}
+        <details className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <summary className="flex cursor-pointer items-center gap-3 p-5 select-none">
+            <Database size={18} className="text-sky-600" />
+            <span className="text-sm font-semibold text-[#2a2a2a]">Import existing R2 files to DB</span>
+            <ChevronDown size={14} className="ml-auto text-gray-400" />
+          </summary>
+          <div className="border-t border-neutral-100 px-5 pb-5 pt-4">
+            <p className="mb-3 text-xs text-gray-500">
+              Lists R2 bucket and upserts rows into <code className="rounded bg-black/5 px-1">country_flag_files</code> (no duplicates by <code className="rounded bg-black/5 px-1">file_key</code>).
+            </p>
+            {getToken ? (
+              <button
+                type="button"
+                onClick={() => void handleImportR2()}
+                disabled={r2Importing}
+                className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-700 disabled:opacity-60"
+              >
+                {r2Importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database size={16} />}
+                {r2Importing ? 'Importing…' : 'Run import via API'}
+              </button>
+            ) : (
+              <p className="text-sm text-amber-700">Sign in with Clerk to use this button.</p>
+            )}
+            {r2Result && (
+              <p className={`mt-3 text-sm font-medium ${r2Result.ok ? 'text-emerald-700' : 'text-red-700'}`}>
+                {r2Result.ok ? '✓ ' : '✗ '}{r2Result.message}
               </p>
-            ) : null}
-          </label>
-        </div>
+            )}
+          </div>
+        </details>
 
-        <button
-          type="submit"
-          disabled={submitting || !file}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[var(--brand-blue)] to-[var(--brand-blue-hover)] py-4 text-base font-semibold text-white shadow-lg shadow-[var(--brand-blue)]/20 transition hover:brightness-105 disabled:pointer-events-none disabled:opacity-50"
-        >
-          {submitting ? (
-            <>
-              <Loader2 className="animate-spin" size={20} aria-hidden />
-              Uploading…
-            </>
-          ) : (
-            <>
-              <Upload size={20} aria-hidden />
-              Upload
-            </>
-          )}
-        </button>
-      </form>
       </div>
     </div>
   );
