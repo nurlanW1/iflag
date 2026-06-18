@@ -173,7 +173,7 @@ router.get('/flags/search', async (req: Request, res: Response): Promise<void> =
 router.get('/flags/:code', async (req: Request, res: Response): Promise<void> => {
   if (!checkIpRateLimit(req, res)) return;
 
-  const code = req.params['code']?.toLowerCase().trim();
+  const code = String(req.params['code'] ?? '').toLowerCase().trim();
   if (!code || !/^[a-z]{2,3}$/.test(code)) {
     res.status(400).json({ error: 'Invalid country code. Use ISO 3166-1 alpha-2 (e.g. "uz").' });
     return;
