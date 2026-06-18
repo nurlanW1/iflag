@@ -288,9 +288,12 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-x-4 gap-y-1 lg:flex-none lg:justify-start lg:gap-x-8 xl:gap-x-9"
             aria-label="Main navigation"
           >
-            <Link href="/developers" className={`flex items-center gap-1.5 ${navTextMd}`}>
+            <Link href="/developers" className={`relative flex items-center gap-1.5 ${navTextMd}`}>
               <Code2 size={16} className="shrink-0" aria-hidden />
               Developers
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold uppercase leading-none text-white">
+                NEW
+              </span>
             </Link>
             <Link href="/pricing" className={`flex items-center gap-2 ${navTextMd}`} title={PRICING_MARKETING.plansLine}>
               <Crown size={18} className="h-[18px] w-[18px] shrink-0 text-amber-500 lg:h-[19px] lg:w-[19px]" aria-hidden strokeWidth={1.75} />
@@ -391,6 +394,9 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                   >
                     <Code2 size={20} aria-hidden />
                     Developers
+                    <span className="ml-auto flex h-5 items-center justify-center rounded-full bg-emerald-500 px-2 text-[10px] font-bold uppercase text-white">
+                      NEW
+                    </span>
                   </Link>
                   <Link
                     href="/pricing"
