@@ -155,6 +155,8 @@ function StatusBadge({ status, error }: { status: UploadStatus; error?: string }
 
 // ─── File card ───────────────────────────────────────────────────────────────
 
+const PREVIEWABLE_EXTS = new Set(['jpg', 'jpeg', 'png', 'webp', 'svg', 'gif']);
+
 function FileCard({
   item,
   country,
@@ -169,9 +171,19 @@ function FileCard({
   disabled: boolean;
 }) {
   const ext = getExt(item.file.name).toUpperCase();
+  const extLower = ext.toLowerCase();
   const isVideo = item.type === 'Video';
   const isShape = item.type === 'Shape';
+  const isPreviewable = PREVIEWABLE_EXTS.has(extLower);
   const r2Path = getR2Path(country.slug, item.file, item.type);
+
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!isPreviewable) return;
+    const url = URL.createObjectURL(item.file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [item.file, isPreviewable]);
 
   const borderColor =
     item.status === 'done'
@@ -184,12 +196,24 @@ function FileCard({
 
   return (
     <div className={`rounded-2xl border p-4 transition-colors ${borderColor}`}>
+      {/* Image preview */}
+      {isPreviewable && previewUrl && (
+        <div className="mb-3 flex h-32 items-center justify-center overflow-hidden rounded-xl bg-[repeating-conic-gradient(#e5e7eb_0%_25%,white_0%_50%)] bg-[length:16px_16px]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={previewUrl}
+            alt={item.file.name}
+            className="max-h-32 max-w-full object-contain"
+          />
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           {isVideo ? (
             <FileVideo size={18} className="shrink-0 text-red-500" />
-          ) : ['svg', 'png', 'jpg', 'jpeg', 'webp'].includes(ext.toLowerCase()) ? (
+          ) : isPreviewable ? (
             <FileImage size={18} className="shrink-0 text-blue-500" />
           ) : (
             <File size={18} className="shrink-0 text-gray-400" />
