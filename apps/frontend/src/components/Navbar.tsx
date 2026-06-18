@@ -21,7 +21,6 @@ import {
   Gamepad2,
   PenTool,
   Code2,
-  Images,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -332,14 +331,6 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                 NEW
               </span>
             </Link>
-            <Link
-              href="/stock"
-              className={`hidden items-center gap-1 text-xs font-semibold tracking-tight transition-colors duration-200 min-[1050px]:flex lg:gap-2 lg:text-base ${isHero ? 'text-white/88 hover:text-white' : 'text-[var(--nav-link-text)] hover:text-[var(--nav-link-hover)]'}`}
-            >
-              <Images size={13} className="shrink-0 lg:hidden" aria-hidden />
-              <Images size={16} className="hidden shrink-0 lg:block" aria-hidden />
-              Stock
-            </Link>
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-3 lg:gap-5">
@@ -442,15 +433,6 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                       NEW
                     </span>
                   </Link>
-                  <Link
-                    href="/stock"
-                    className="flex min-h-[3rem] items-center gap-3 px-4 py-2 text-base font-semibold text-[var(--nav-link-text)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--nav-link-hover)]"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Images size={20} aria-hidden />
-                    Stock Images
-                  </Link>
-
                   <NavbarAdminNav clerkUiEnabled={clerkUiEnabled} legacyUser={user} onNavigate={() => setMobileMenuOpen(false)} />
 
                   {user ? (

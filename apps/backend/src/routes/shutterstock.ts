@@ -37,14 +37,8 @@ function getBasicAuth(): string | null {
   return Buffer.from(`${key}:${secret}`).toString('base64');
 }
 
-function buildAffiliateUrl(imageId: string, query: string): string {
-  const baseUrl = 'https://www.shutterstock.com/image-photo';
-  const params = new URLSearchParams({
-    term: query,
-    image_type: 'photo',
-    lang: 'en',
-  });
-  return `${baseUrl}/${imageId}?${params.toString()}`;
+function buildAffiliateUrl(imageId: string): string {
+  return `https://www.shutterstock.com/image-photo/${imageId}?utm_source=flagswing&utm_medium=affiliate&utm_campaign=flaggallery`;
 }
 
 // GET /api/shutterstock/search?q=&page=1&per_page=20
@@ -81,6 +75,7 @@ router.get('/search', async (req: Request, res: Response) => {
   apiUrl.searchParams.set('per_page', String(perPage));
   apiUrl.searchParams.set('image_type', 'photo');
   apiUrl.searchParams.set('safe', 'true');
+  apiUrl.searchParams.set('sort', 'popular');
   apiUrl.searchParams.set('view', 'full');
 
   try {
@@ -105,6 +100,7 @@ router.get('/search', async (req: Request, res: Response) => {
         contributor?: { id: string };
         assets?: {
           preview?: { url?: string };
+          small_thumb?: { url?: string };
           large_thumb?: { url?: string };
           huge_thumb?: { url?: string };
         };
@@ -117,11 +113,12 @@ router.get('/search', async (req: Request, res: Response) => {
     const images = (raw.data ?? []).map((img) => ({
       id: img.id,
       description: img.description ?? '',
-      contributor: img.contributor?.id ?? '',
-      previewUrl: img.assets?.preview?.url ?? img.assets?.large_thumb?.url ?? '',
-      largeThumbUrl: img.assets?.large_thumb?.url ?? img.assets?.huge_thumb?.url ?? img.assets?.preview?.url ?? '',
-      affiliateUrl: buildAffiliateUrl(img.id, q),
-      source: 'shutterstock',
+      thumbUrl:
+        img.assets?.small_thumb?.url ??
+        img.assets?.large_thumb?.url ??
+        img.assets?.preview?.url ??
+        '',
+      shutterUrl: buildAffiliateUrl(img.id),
     }));
 
     const response = {

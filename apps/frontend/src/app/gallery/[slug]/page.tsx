@@ -16,6 +16,7 @@ import {
 } from '@/lib/flag-thumbnail-fallback';
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
+import { env } from '@/lib/env';
 import { hrefLooksLikeNonBrowserMaster, pickFormatPreviewUrl } from '@/lib/flag-preview-display';
 import COUNTRY_FACTS from '../../../../content/countries/facts.json';
 import COUNTRY_COLORS from '../../../../content/countries/flag-colors.json';
@@ -40,6 +41,13 @@ interface Variant {
     premiumTier?: string;
     previewUrl?: string;
   }>;
+}
+
+interface SSImage {
+  id: string;
+  description: string;
+  thumbUrl: string;
+  shutterUrl: string;
 }
 
 interface CountryData {
@@ -103,6 +111,7 @@ export default function CountryHubPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [sortOrder, setSortOrder] = useState<'newest' | 'popular' | 'price'>('newest');
+  const [ssImages, setSsImages] = useState<SSImage[]>([]);
 
   // Format filter from URL ?format=svg|png|jpg|video
   const formatParam = (sp.get('format') ?? 'all') as FormatTabId;
@@ -139,6 +148,16 @@ export default function CountryHubPage() {
   useEffect(() => {
     if (slug) void loadCountryData(slug);
   }, [slug, loadCountryData]);
+
+  // Fetch Shutterstock images after country name is known
+  useEffect(() => {
+    if (!data?.country?.name) return;
+    const q = `${data.country.name} flag`;
+    fetch(`${env.apiUrl}/shutterstock/search?q=${encodeURIComponent(q)}&per_page=12`)
+      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then((res: { images?: SSImage[] }) => setSsImages(res.images ?? []))
+      .catch(() => setSsImages([]));
+  }, [data?.country?.name]);
 
   const sortedVariants = useMemo(() => {
     if (!data?.variants) return [];
@@ -418,161 +437,217 @@ export default function CountryHubPage() {
                 </div>
               </div>
 
-              <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
-                {sortedVariants.map((v) => {
-                  const href = `/assets/${encodeURIComponent(v.productSlug)}`;
-                  const isPremium =
-                    v.isPremiumDesign ??
-                    v.formats.some((f) => {
-                      const t = (f.premiumTier ?? 'free').toLowerCase();
-                      return t === 'paid' || t === 'freemium';
-                    });
-                  const showWatermark = shouldWatermarkFlagPreview({ isPremiumDesign: isPremium });
-                  const fmtLabel = v.formats
-                    .map((f) => f.format)
-                    .filter(Boolean)
-                    .slice(0, 4)
-                    .join(' · ');
-                  const thumb =
-                    pickFormatPreviewUrl(
-                      v.formats.map((f) => ({
-                        format: f.formatCode ?? f.format,
-                        formatCode: f.formatCode,
-                        previewUrl: f.previewUrl,
-                      })),
-                      [v.thumbnail, webpCover].filter(
-                        (u): u is string => Boolean(u?.trim()) && !hrefLooksLikeNonBrowserMaster(u),
-                      ),
-                    ) ||
-                    v.thumbnail ||
-                    webpCover ||
-                    FLAG_THUMB_PLACEHOLDER_DATA_URL;
-                  const videoFromFormat = v.formats
-                    .map((f) => f.previewUrl?.trim())
-                    .find((u) => u && hrefLooksLikeFlagVideo(u));
-                  const videoSrc = hrefLooksLikeFlagVideo(thumb)
-                    ? thumb
-                    : videoFromFormat || '';
-                  const showVideo =
-                    Boolean(videoSrc) ||
-                    v.type.toLowerCase().includes('video') ||
-                    v.formats.some((f) => isFlagVideoFormat(f.formatCode ?? f.format));
+              {(() => {
+                // Build interleaved list: every 4 FW items → 2 SS items
+                type GridItem =
+                  | { kind: 'fw'; v: typeof sortedVariants[number]; idx: number }
+                  | { kind: 'ss'; img: SSImage; key: string };
 
-                  return (
-                    <li key={v.id} className="list-none">
-                      <Link
-                        href={href}
-                        className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:border-neutral-300 hover:shadow-md"
-                      >
-                        <div
-                          className={clsx(
-                            'relative bg-[#fafaf9]',
-                            showVideo ? 'aspect-video bg-neutral-900' : 'aspect-[4/3]',
-                          )}
-                        >
-                          <CountryDesignTierCrown premium={isPremium} />
-                          {showVideo && videoSrc ? (
-                            <FlagVideoPreview
-                              src={videoSrc}
-                              title={v.name}
-                              poster={hrefLooksLikeFlagVideo(thumb) ? undefined : thumb}
-                              playOverlay
-                              hoverPreview
-                              className="absolute inset-0"
-                            />
-                          ) : (
-                            <ProductPreviewImage
-                              className="absolute inset-0"
-                              watermarkEnabled={showWatermark}
-                              protectEnabled={false}
+                const items: GridItem[] = [];
+                let ssIdx = 0;
+                sortedVariants.forEach((v, i) => {
+                  items.push({ kind: 'fw', v, idx: i });
+                  if ((i + 1) % 4 === 0 && ssIdx < ssImages.length) {
+                    for (let k = 0; k < 2 && ssIdx < ssImages.length; k++, ssIdx++) {
+                      items.push({ kind: 'ss', img: ssImages[ssIdx], key: `ss-${ssImages[ssIdx].id}` });
+                    }
+                  }
+                });
+
+                return (
+                  <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+                    {items.map((item) => {
+                      if (item.kind === 'ss') {
+                        const img = item.img;
+                        return (
+                          <li key={item.key} className="list-none">
+                            <a
+                              href={img.shutterUrl}
+                              target="_blank"
+                              rel="noopener noreferrer sponsored"
+                              className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:border-neutral-300 hover:shadow-md"
                             >
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={thumb}
-                                alt={v.name}
-                                loading="lazy"
-                                decoding="async"
-                                referrerPolicy="no-referrer"
-                                draggable={false}
-                                className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-[1.02]"
-                                onError={(e) => {
-                                  const el = e.currentTarget;
-                                  el.onerror = null;
-                                  const rasterFallback = pickFormatPreviewUrl(
-                                    v.formats.map((f) => ({
-                                      format: f.formatCode ?? f.format,
-                                      formatCode: f.formatCode,
-                                      previewUrl: f.previewUrl,
-                                    })),
-                                    [webpCover].filter(Boolean) as string[],
-                                  );
-                                  if (rasterFallback && el.src !== rasterFallback) {
-                                    el.src = rasterFallback;
-                                    return;
-                                  }
-                                  if (webpCover && el.src !== webpCover) {
-                                    el.src = webpCover;
-                                    return;
-                                  }
-                                  el.src = flagThumbPlaceholderForFileId(v.id);
-                                }}
-                              />
-                            </ProductPreviewImage>
-                          )}
-                          <span className="absolute right-2 top-2 flex flex-col items-end gap-1">
-                            {showVideo ? (
-                              <span className="rounded-md bg-[#DF0024]/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
-                                Video
+                              <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
+                                {/* SS badge */}
+                                <span className="absolute right-2 top-2 z-10 rounded-md bg-[#e00]/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                                  SS
+                                </span>
+                                {img.thumbUrl ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={img.thumbUrl}
+                                    alt={img.description || 'Stock flag image'}
+                                    loading="lazy"
+                                    decoding="async"
+                                    draggable={false}
+                                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                                  />
+                                ) : (
+                                  <div className="flex h-full items-center justify-center text-neutral-300">
+                                    <ImageOff size={28} />
+                                  </div>
+                                )}
+                                {/* Hover overlay */}
+                                <div className="absolute inset-0 flex items-end justify-center bg-black/0 transition-all duration-200 group-hover:bg-black/30">
+                                  <span className="mb-3 translate-y-2 rounded-lg bg-white/90 px-3 py-1.5 text-[11px] font-bold text-neutral-900 opacity-0 backdrop-blur-sm transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
+                                    View on Shutterstock ↗
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex flex-1 flex-col gap-1 p-3">
+                                <p className="line-clamp-2 text-[0.875rem] font-medium leading-snug text-[#2a2a2a]">
+                                  {img.description || 'Flag stock photo'}
+                                </p>
+                                <p className="mt-auto text-[10px] font-medium uppercase tracking-wide text-neutral-400">
+                                  shutterstock
+                                </p>
+                              </div>
+                            </a>
+                          </li>
+                        );
+                      }
+
+                      // Flagswing card (unchanged logic)
+                      const { v } = item;
+                      const href = `/assets/${encodeURIComponent(v.productSlug)}`;
+                      const isPremium =
+                        v.isPremiumDesign ??
+                        v.formats.some((f) => {
+                          const t = (f.premiumTier ?? 'free').toLowerCase();
+                          return t === 'paid' || t === 'freemium';
+                        });
+                      const showWatermark = shouldWatermarkFlagPreview({ isPremiumDesign: isPremium });
+                      const fmtLabel = v.formats
+                        .map((f) => f.format)
+                        .filter(Boolean)
+                        .slice(0, 4)
+                        .join(' · ');
+                      const thumb =
+                        pickFormatPreviewUrl(
+                          v.formats.map((f) => ({
+                            format: f.formatCode ?? f.format,
+                            formatCode: f.formatCode,
+                            previewUrl: f.previewUrl,
+                          })),
+                          [v.thumbnail, webpCover].filter(
+                            (u): u is string => Boolean(u?.trim()) && !hrefLooksLikeNonBrowserMaster(u),
+                          ),
+                        ) ||
+                        v.thumbnail ||
+                        webpCover ||
+                        FLAG_THUMB_PLACEHOLDER_DATA_URL;
+                      const videoFromFormat = v.formats
+                        .map((f) => f.previewUrl?.trim())
+                        .find((u) => u && hrefLooksLikeFlagVideo(u));
+                      const videoSrc = hrefLooksLikeFlagVideo(thumb)
+                        ? thumb
+                        : videoFromFormat || '';
+                      const showVideo =
+                        Boolean(videoSrc) ||
+                        v.type.toLowerCase().includes('video') ||
+                        v.formats.some((f) => isFlagVideoFormat(f.formatCode ?? f.format));
+
+                      return (
+                        <li key={v.id} className="list-none">
+                          <Link
+                            href={href}
+                            className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:border-neutral-300 hover:shadow-md"
+                          >
+                            <div
+                              className={clsx(
+                                'relative bg-[#fafaf9]',
+                                showVideo ? 'aspect-video bg-neutral-900' : 'aspect-[4/3]',
+                              )}
+                            >
+                              <CountryDesignTierCrown premium={isPremium} />
+                              {showVideo && videoSrc ? (
+                                <FlagVideoPreview
+                                  src={videoSrc}
+                                  title={v.name}
+                                  poster={hrefLooksLikeFlagVideo(thumb) ? undefined : thumb}
+                                  playOverlay
+                                  hoverPreview
+                                  className="absolute inset-0"
+                                />
+                              ) : (
+                                <ProductPreviewImage
+                                  className="absolute inset-0"
+                                  watermarkEnabled={showWatermark}
+                                  protectEnabled={false}
+                                >
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src={thumb}
+                                    alt={v.name}
+                                    loading="lazy"
+                                    decoding="async"
+                                    referrerPolicy="no-referrer"
+                                    draggable={false}
+                                    className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-[1.02]"
+                                    onError={(e) => {
+                                      const el = e.currentTarget;
+                                      el.onerror = null;
+                                      const rasterFallback = pickFormatPreviewUrl(
+                                        v.formats.map((f) => ({
+                                          format: f.formatCode ?? f.format,
+                                          formatCode: f.formatCode,
+                                          previewUrl: f.previewUrl,
+                                        })),
+                                        [webpCover].filter(Boolean) as string[],
+                                      );
+                                      if (rasterFallback && el.src !== rasterFallback) {
+                                        el.src = rasterFallback;
+                                        return;
+                                      }
+                                      if (webpCover && el.src !== webpCover) {
+                                        el.src = webpCover;
+                                        return;
+                                      }
+                                      el.src = flagThumbPlaceholderForFileId(v.id);
+                                    }}
+                                  />
+                                </ProductPreviewImage>
+                              )}
+                              <span className="absolute right-2 top-2 flex flex-col items-end gap-1">
+                                {showVideo ? (
+                                  <span className="rounded-md bg-[#DF0024]/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                                    Video
+                                  </span>
+                                ) : null}
+                                <span className="rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                                  {v.formats.length} formats
+                                </span>
                               </span>
-                            ) : null}
-                            <span className="rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
-                              {v.formats.length} formats
-                            </span>
-                          </span>
-                        </div>
-                        <div className="flex flex-1 flex-col gap-1.5 p-4">
-                          <p className="line-clamp-2 text-[0.95rem] font-semibold leading-snug text-[#2a2a2a]">
-                            {v.name}
-                          </p>
-                          <p className="line-clamp-1 text-[11px] font-medium uppercase tracking-wide text-neutral-500">
-                            {v.type}
-                          </p>
-                          {fmtLabel ? (
-                            <p className="mt-auto line-clamp-2 text-[11px] text-neutral-500">{fmtLabel}</p>
-                          ) : null}
-                        </div>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
+                            </div>
+                            <div className="flex flex-1 flex-col gap-1.5 p-4">
+                              <p className="line-clamp-2 text-[0.95rem] font-semibold leading-snug text-[#2a2a2a]">
+                                {v.name}
+                              </p>
+                              <p className="line-clamp-1 text-[11px] font-medium uppercase tracking-wide text-neutral-500">
+                                {v.type}
+                              </p>
+                              {fmtLabel ? (
+                                <p className="mt-auto line-clamp-2 text-[11px] text-neutral-500">{fmtLabel}</p>
+                              ) : null}
+                            </div>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                );
+              })()}
+
+              {/* Disclaimer */}
+              {ssImages.length > 0 && (
+                <p className="mt-4 text-center text-[11px] text-neutral-400">
+                  Some images are from Shutterstock. Clicking opens Shutterstock for licensing.
+                </p>
+              )}
             </>
           )}
         </section>
 
-        {/* ── Shutterstock stock photos section ── */}
-        <div className="mt-12 rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-400">
-                Stock photography
-              </p>
-              <h3 className="mt-1 text-lg font-semibold text-[#2a2a2a]">
-                More {pageTitle} flag images
-              </h3>
-              <p className="mt-1 text-sm text-neutral-500">
-                Browse high-quality {pageTitle} flag photography on Shutterstock — perfect for editorial, print, and web projects.
-              </p>
-            </div>
-            <Link
-              href={`/stock?q=${encodeURIComponent(`${pageTitle} flag`)}`}
-              className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[var(--brand-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)]"
-            >
-              Browse on Shutterstock
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
-            </Link>
-          </div>
-        </div>
       </div>
     </main>
   );
