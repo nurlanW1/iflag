@@ -476,80 +476,63 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
 
     setIsUploading(true);
     setUploadSummary(null);
-    setFileItems(prev => prev.map(f => ({ ...f, status: 'uploading' as UploadStatus, error: undefined })));
 
-    try {
-      const fd = new FormData();
-      fd.append('countrySlug', country.slug);
-      fd.append('countryName', country.name);
-      fd.append('countryCode', country.code);
-      fd.append('metadata', JSON.stringify(
-        fileItems.map(fi => ({
+    const pending = fileItems.filter(f => f.status === 'pending');
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const fi of pending) {
+      // Mark this specific file as uploading
+      setFileItems(prev => prev.map(f =>
+        f.id === fi.id ? { ...f, status: 'uploading' as UploadStatus, error: undefined } : f
+      ));
+
+      try {
+        const fd = new FormData();
+        fd.append('file', fi.file, fi.file.name);
+        fd.append('countrySlug', country.slug);
+        fd.append('countryName', country.name);
+        fd.append('countryCode', country.code);
+        fd.append('metadata', JSON.stringify({
           type: fi.type,
           shape: fi.shape,
           isPremium: fi.isPremium,
           price: fi.price,
           keywords: fi.keywords,
           description: fi.description,
-        }))
-      ));
-
-      for (const fi of fileItems) {
-        fd.append('files', fi.file, fi.file.name);
-      }
-
-      const res = await fetch('/api/admin/flag-files/upload-batch', {
-        method: 'POST',
-        body: fd,
-        credentials: 'include',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await res.json().catch(() => ({})) as {
-        ok?: boolean;
-        results?: Array<{ ok: boolean; fileName: string; fileUrl?: string; error?: string; r2Key?: string }>;
-        successCount?: number;
-        errorCount?: number;
-        r2Prefix?: string;
-        error?: string;
-      };
-
-      if (!res.ok && !data.results) {
-        setFileItems(prev => prev.map(f => ({
-          ...f,
-          status: 'error' as UploadStatus,
-          error: data.error ?? `Server error (${res.status})`,
-        })));
-        return;
-      }
-
-      if (data.results) {
-        setFileItems(prev => prev.map((fi, i) => {
-          const r = data.results![i];
-          if (!r) return { ...fi, status: 'error' as UploadStatus };
-          return {
-            ...fi,
-            status: r.ok ? 'done' as UploadStatus : 'error' as UploadStatus,
-            error: r.error,
-            resultUrl: r.fileUrl,
-          };
         }));
 
-        setUploadSummary({
-          success: data.successCount ?? 0,
-          error: data.errorCount ?? 0,
-          prefix: data.r2Prefix ?? `flags/${country.slug}/`,
+        const res = await fetch('/api/admin/flag-files/upload-v2', {
+          method: 'POST',
+          body: fd,
+          credentials: 'include',
+          headers: { Authorization: `Bearer ${token}` },
         });
+
+        const data = await res.json().catch(() => ({})) as {
+          ok?: boolean; id?: string; fileUrl?: string; r2Key?: string; error?: string;
+        };
+
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error ?? `Server error (${res.status})`);
+        }
+
+        setFileItems(prev => prev.map(f =>
+          f.id === fi.id ? { ...f, status: 'done' as UploadStatus, resultUrl: data.fileUrl } : f
+        ));
+        successCount++;
+      } catch (err) {
+        setFileItems(prev => prev.map(f =>
+          f.id === fi.id
+            ? { ...f, status: 'error' as UploadStatus, error: err instanceof Error ? err.message : 'Failed' }
+            : f
+        ));
+        errorCount++;
       }
-    } catch (err) {
-      setFileItems(prev => prev.map(f => ({
-        ...f,
-        status: 'error' as UploadStatus,
-        error: err instanceof Error ? err.message : 'Network error',
-      })));
-    } finally {
-      setIsUploading(false);
     }
+
+    setUploadSummary({ success: successCount, error: errorCount, prefix: `flags/${country.slug}/` });
+    setIsUploading(false);
   }
 
   async function handleImportR2() {

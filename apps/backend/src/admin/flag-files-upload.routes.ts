@@ -289,6 +289,92 @@ router.post('/upload', upload.single('file'), async (req: express.Request, res: 
 });
 
 /**
+ * POST /upload-v2
+ * Single-file upload with new R2 key format: flags/{countrySlug}/{folder}/{filename}
+ * Drop-in replacement for /upload but uses structured folder paths.
+ */
+router.post('/upload-v2', upload.single('file'), async (req: express.Request, res: Response) => {
+  const gate = await verifyClerkAdminBearer(req.headers.authorization);
+  if (!gate.ok) return res.status(gate.status).json({ error: gate.error, code: gate.code });
+
+  let cfg;
+  try { cfg = requireR2Config(); } catch {
+    return res.status(503).json({ error: 'R2 not configured', code: 'r2_config' });
+  }
+
+  const file = req.file;
+  if (!file?.buffer) return res.status(400).json({ error: 'No file received.', code: 'validation' });
+
+  const countrySlug = String(req.body?.countrySlug ?? '').trim().toLowerCase();
+  const countryName = String(req.body?.countryName ?? '').trim();
+  const countryCode = String(req.body?.countryCode ?? '').trim().toLowerCase();
+  if (!countrySlug || !countryName) {
+    return res.status(400).json({ error: 'countrySlug and countryName are required.', code: 'validation' });
+  }
+
+  let meta: Record<string, unknown> = {};
+  try { meta = JSON.parse(String(req.body?.metadata ?? '{}')); } catch { meta = {}; }
+
+  const originalName = file.originalname;
+  const ext = extname(originalName).replace(/^\./, '').toLowerCase() || 'bin';
+  const flagType = String(meta.type ?? 'Flat');
+
+  const folder =
+    flagType === 'Video' || ['mp4', 'mov', 'webm', 'avi'].includes(ext) ? 'video'
+    : flagType === 'Mockup' ? 'mockup'
+    : ext;
+
+  const objectKey = `flags/${countrySlug}/${folder}/${originalName}`;
+  const mime = file.mimetype || 'application/octet-stream';
+
+  try {
+    const { id: countryId } = await resolveCountryId(countryName, countrySlug, null, 'country');
+    const { key, publicUrl } = await uploadFileToR2(file.buffer, objectKey, mime, cfg);
+    const checksum = sha256Hex(file.buffer);
+
+    const isPremium = meta.isPremium === true;
+    const premiumTier = isPremium ? 'paid' : 'free';
+    const priceCents = isPremium ? Math.round((Number(meta.price) || 3) * 100) : 0;
+    const shape = meta.shape ? String(meta.shape) : null;
+    const variantName = shape ? `${flagType} ${shape}` : flagType;
+
+    const imgLike = ['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(ext);
+    const previewUrl = imgLike ? publicUrl : null;
+    const dbFormat = FORMATS.includes(ext as Format) ? (ext as Format) : 'svg';
+    const keywords = String(meta.keywords ?? '').split(',').map(k => k.trim()).filter(Boolean).slice(0, 50);
+    const metaJson = JSON.stringify({
+      flag_type: flagType, shape, country_code: countryCode,
+      uploaded_via: 'admin_upload_v2', clerk_user_id: gate.userId,
+    });
+
+    const ins = await pool.query<{ id: string; file_url: string; file_key: string }>(
+      `INSERT INTO country_flag_files (
+        country_id, file_name, file_path, file_url, file_key, storage_provider,
+        file_size_bytes, mime_type, format, variant_name, ratio, premium_tier,
+        price_cents, tags, metadata, status, processing_status,
+        thumbnail_url, preview_url, checksum
+      ) VALUES (
+        $1,$2,$3,$4,$5,'r2',$6,$7,$8,$9,NULL,$10,$11,$12,$13::jsonb,'published','completed',$14,$15,$16
+      )
+      ON CONFLICT (file_key) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+      RETURNING id, file_url, file_key`,
+      [
+        countryId, basename(originalName, extname(originalName)), key, publicUrl, key,
+        file.size, mime, dbFormat, variantName, premiumTier,
+        priceCents, keywords, metaJson, previewUrl, previewUrl, checksum,
+      ]
+    );
+
+    return res.status(201).json({ ok: true, id: ins.rows[0]!.id, fileUrl: publicUrl, r2Key: key, fileName: originalName });
+  } catch (err: unknown) {
+    console.error('[upload-v2]', err);
+    const pgCode = isPgLikeError(err) && err.code ? String(err.code) : '';
+    if (pgCode === '23505') return res.status(409).json({ error: 'File already exists (duplicate key).', code: 'duplicate' });
+    return res.status(500).json({ error: err instanceof Error ? err.message : 'Upload failed', code: 'server_error' });
+  }
+});
+
+/**
  * POST /upload-batch
  * Multi-file upload with new R2 key format: flags/{countrySlug}/{folder}/{filename}
  * Folder is determined by file extension or explicit type (video/mockup).
