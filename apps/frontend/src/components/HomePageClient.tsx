@@ -219,7 +219,7 @@ export default function HomePageClient() {
       </section>
 
       {/* Final CTA */}
-      <section className="relative overflow-hidden border-t border-neutral-800/30 bg-[#0d1f6b] py-10 text-[#fafaf9] sm:py-12 lg:py-16">
+      <section className="relative overflow-hidden border-t border-neutral-800/30 bg-[var(--brand-blue)] py-10 text-[#fafaf9] sm:py-12 lg:py-16">
         {/* Noise/grain texture overlay */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.08]"
