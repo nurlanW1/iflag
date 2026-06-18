@@ -549,6 +549,30 @@ export default function CountryHubPage() {
             </>
           )}
         </section>
+
+        {/* ── Shutterstock stock photos section ── */}
+        <div className="mt-12 rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-sm sm:p-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-400">
+                Stock photography
+              </p>
+              <h3 className="mt-1 text-lg font-semibold text-[#2a2a2a]">
+                More {pageTitle} flag images
+              </h3>
+              <p className="mt-1 text-sm text-neutral-500">
+                Browse high-quality {pageTitle} flag photography on Shutterstock — perfect for editorial, print, and web projects.
+              </p>
+            </div>
+            <Link
+              href={`/stock?q=${encodeURIComponent(`${pageTitle} flag`)}`}
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[var(--brand-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)]"
+            >
+              Browse on Shutterstock
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+            </Link>
+          </div>
+        </div>
       </div>
     </main>
   );
