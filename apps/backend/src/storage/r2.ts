@@ -40,6 +40,44 @@ export type R2Config = {
 let cachedClient: S3Client | null = null;
 let cachedFor: string | null = null;
 
+function ensureHttpsUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
+function isPublicR2Url(url: string): boolean {
+  try {
+    const host = new URL(ensureHttpsUrl(url)).hostname.toLowerCase();
+    return host.endsWith('.r2.dev');
+  } catch {
+    return /\.r2\.dev(?:\/|$)/i.test(url);
+  }
+}
+
+function normalizeR2Endpoint(rawEndpoint: string | undefined, accountId: string): string {
+  const fallback = `https://${accountId}.r2.cloudflarestorage.com`;
+  const raw = rawEndpoint?.trim();
+
+  if (!raw || isPublicR2Url(raw)) {
+    return fallback;
+  }
+
+  try {
+    const parsed = new URL(ensureHttpsUrl(raw));
+    parsed.pathname = '';
+    parsed.search = '';
+    parsed.hash = '';
+
+    const host = parsed.hostname.toLowerCase();
+    if (host.endsWith('.r2.dev')) return fallback;
+
+    return parsed.toString().replace(/\/+$/, '');
+  } catch {
+    return fallback;
+  }
+}
+
 export function loadR2ConfigFromEnv(): R2Config | null {
   const accountId =
     process.env.CLOUDFLARE_R2_ACCOUNT_ID?.trim() ||
@@ -71,11 +109,10 @@ export function loadR2ConfigFromEnv(): R2Config | null {
     return null;
   }
 
-  const endpoint = (
-    process.env.CLOUDFLARE_R2_ENDPOINT?.trim() ||
-    process.env.R2_ENDPOINT?.trim() ||
-    `https://${accountId}.r2.cloudflarestorage.com`
-  ).replace(/\/+$/, '');
+  const endpoint = normalizeR2Endpoint(
+    process.env.CLOUDFLARE_R2_ENDPOINT?.trim() || process.env.R2_ENDPOINT?.trim(),
+    accountId
+  );
 
   return {
     accountId,

@@ -5,10 +5,29 @@ import { getClientBackendApiBaseUrl } from '@/lib/auth/backend-url';
 
 const API_BASE_URL = getClientBackendApiBaseUrl();
 
-function getAuthHeaders() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+async function getAdminBearerToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+
+  const clerkSession = (window as any).Clerk?.session;
+  if (typeof clerkSession?.getToken === 'function') {
+    try {
+      const clerkToken = await clerkSession.getToken();
+      if (typeof clerkToken === 'string' && clerkToken.trim()) {
+        return clerkToken;
+      }
+    } catch {
+      /* Fall back to legacy admin token below. */
+    }
+  }
+
+  const legacyToken = localStorage.getItem('accessToken');
+  return legacyToken?.trim() || null;
+}
+
+async function getAuthHeaders() {
+  const token = await getAdminBearerToken();
   return {
-    'Authorization': `Bearer ${token}`,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     'Content-Type': 'application/json',
   };
 }
@@ -17,7 +36,7 @@ export const adminApi = {
   // Dashboard
   async getStats() {
     const response = await fetch(`${API_BASE_URL}/admin/stats`, {
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch stats');
     return response.json();
@@ -30,7 +49,7 @@ export const adminApi = {
       if (value) params.append(key, value.toString());
     });
     const response = await fetch(`${API_BASE_URL}/admin/assets?${params.toString()}`, {
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch assets');
     return response.json();
@@ -38,18 +57,18 @@ export const adminApi = {
 
   async getAsset(id: string) {
     const response = await fetch(`${API_BASE_URL}/admin/assets/${id}`, {
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch asset');
     return response.json();
   },
 
   async uploadAssets(formData: FormData) {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const token = await getAdminBearerToken();
     const response = await fetch(`${API_BASE_URL}/admin/assets/upload`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         // Don't set Content-Type for FormData, browser will set it with boundary
       },
       body: formData,
@@ -64,7 +83,7 @@ export const adminApi = {
   async updateAsset(id: string, data: any) {
     const response = await fetch(`${API_BASE_URL}/admin/assets/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!response.ok) {
@@ -77,7 +96,7 @@ export const adminApi = {
   async toggleAssetStatus(id: string, enabled: boolean) {
     const response = await fetch(`${API_BASE_URL}/admin/assets/${id}/toggle`, {
       method: 'PATCH',
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
       body: JSON.stringify({ enabled }),
     });
     if (!response.ok) throw new Error('Failed to toggle status');
@@ -87,7 +106,7 @@ export const adminApi = {
   async deleteAsset(id: string) {
     const response = await fetch(`${API_BASE_URL}/admin/assets/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to delete asset');
     return response.json();
@@ -95,7 +114,7 @@ export const adminApi = {
 
   async getAssetStats(id: string) {
     const response = await fetch(`${API_BASE_URL}/admin/assets/${id}/stats`, {
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch stats');
     return response.json();
@@ -104,7 +123,7 @@ export const adminApi = {
   // Categories & Tags
   async getCategories() {
     const response = await fetch(`${API_BASE_URL}/admin/categories`, {
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch categories');
     return response.json();
@@ -112,7 +131,7 @@ export const adminApi = {
 
   async getTags() {
     const response = await fetch(`${API_BASE_URL}/admin/tags`, {
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch tags');
     return response.json();
@@ -121,7 +140,7 @@ export const adminApi = {
   // Subscriptions
   async getSubscriptions() {
     const response = await fetch(`${API_BASE_URL}/admin/subscriptions`, {
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch subscriptions');
     return response.json();
@@ -134,7 +153,7 @@ export const adminApi = {
       if (value) params.append(key, value.toString());
     });
     const response = await fetch(`${API_BASE_URL}/admin/countries?${params.toString()}`, {
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) {
       const error = await response.json();
@@ -145,7 +164,7 @@ export const adminApi = {
 
   async getCountry(id: string) {
     const response = await fetch(`${API_BASE_URL}/admin/countries/${id}`, {
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) {
       const error = await response.json();
@@ -157,7 +176,7 @@ export const adminApi = {
   async createCountry(data: any) {
     const response = await fetch(`${API_BASE_URL}/admin/countries`, {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!response.ok) {
@@ -170,7 +189,7 @@ export const adminApi = {
   async updateCountry(id: string, data: any) {
     const response = await fetch(`${API_BASE_URL}/admin/countries/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!response.ok) {
@@ -183,7 +202,7 @@ export const adminApi = {
   async deleteCountry(id: string) {
     const response = await fetch(`${API_BASE_URL}/admin/countries/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) {
       const error = await response.json();
@@ -195,7 +214,7 @@ export const adminApi = {
   async restoreCountry(id: string) {
     const response = await fetch(`${API_BASE_URL}/admin/countries/${id}/restore`, {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) {
       const error = await response.json();
@@ -211,7 +230,7 @@ export const adminApi = {
       if (value) params.append(key, value.toString());
     });
     const response = await fetch(`${API_BASE_URL}/admin/countries/${countryId}/flags?${params.toString()}`, {
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) {
       const error = await response.json();
@@ -221,11 +240,11 @@ export const adminApi = {
   },
 
   async uploadFlagFile(countryId: string, formData: FormData) {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const token = await getAdminBearerToken();
     const response = await fetch(`${API_BASE_URL}/admin/countries/${countryId}/flags`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: formData,
     });
@@ -239,7 +258,7 @@ export const adminApi = {
   async updateFlagFile(flagId: string, data: any) {
     const response = await fetch(`${API_BASE_URL}/admin/countries/flags/${flagId}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!response.ok) {
@@ -252,7 +271,7 @@ export const adminApi = {
   async deleteFlagFile(flagId: string) {
     const response = await fetch(`${API_BASE_URL}/admin/countries/flags/${flagId}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) {
       const error = await response.json();
