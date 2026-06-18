@@ -3,6 +3,9 @@ import Link from 'next/link';
 import { Download, Heart, CreditCard, Settings } from 'lucide-react';
 import { SITE_NAME } from '@/lib/seo/site-config';
 
+// All account pages require auth — never statically pre-render
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: `My Account | ${SITE_NAME}`,
   robots: { index: false },
