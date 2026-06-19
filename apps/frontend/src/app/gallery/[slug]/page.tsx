@@ -91,6 +91,7 @@ const FORMAT_TABS = [
   { id: 'video', label: 'Video',  Icon: Clapperboard, match: (f: string) => /mp4|webm|mov|video/i.test(f) },
 ] as const;
 type FormatTabId = typeof FORMAT_TABS[number]['id'];
+const SHUTTERSTOCK_PAGE_SIZE = 24;
 
 function variantMatchesFormat(v: Variant, fmtId: FormatTabId): boolean {
   if (fmtId === 'all') return true;
@@ -160,11 +161,11 @@ export default function CountryHubPage() {
     setSsLoading(true);
     try {
       const q = encodeURIComponent(`${countryName} national flag`);
-      const r = await fetch(`/api/shutterstock/search?q=${q}&per_page=12&page=${page}`);
-      const res = r.ok ? (await r.json()) as { results?: SSImage[] } : { results: [] };
+      const r = await fetch(`/api/shutterstock/search?q=${q}&per_page=${SHUTTERSTOCK_PAGE_SIZE}&page=${page}`);
+      const res = r.ok ? (await r.json()) as { results?: SSImage[]; hasMore?: boolean } : { results: [] };
       const batch = res.results ?? [];
       setSsImages((prev) => page === 1 ? batch : [...prev, ...batch]);
-      setSsHasMore(batch.length === 12);
+      setSsHasMore(Boolean(res.hasMore && batch.length > 0));
     } catch {
       setSsHasMore(false);
     } finally {

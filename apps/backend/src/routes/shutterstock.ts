@@ -12,13 +12,32 @@ type ShutterstockImage = {
   contributor?: { id: string };
   assets?: {
     small_thumb?: { url?: string };
+    large_thumb?: { url?: string };
+    huge_thumb?: { url?: string };
+    mosaic?: { url?: string };
     preview?: { url?: string };
+    preview_600?: { url?: string };
+    preview_1000?: { url?: string };
+    preview_1500?: { url?: string };
   };
 };
 
 function isFlagRelatedImage(img: ShutterstockImage): boolean {
   const description = img.description?.toLowerCase() ?? '';
   return /\b(flag|flags|banner|national flag)\b/.test(description);
+}
+
+function pickBestPreviewUrl(img: ShutterstockImage): string {
+  return (
+    img.assets?.preview_1000?.url ??
+    img.assets?.preview_600?.url ??
+    img.assets?.preview?.url ??
+    img.assets?.huge_thumb?.url ??
+    img.assets?.mosaic?.url ??
+    img.assets?.large_thumb?.url ??
+    img.assets?.small_thumb?.url ??
+    ''
+  );
 }
 
 // ── Rate limiter: 30 req/min per IP ─────────────────────────────────────────
@@ -89,11 +108,14 @@ router.get('/search', async (req: Request, res: Response) => {
       return;
     }
 
-    const data = (await response.json()) as { data?: ShutterstockImage[] };
+    const data = (await response.json()) as {
+      data?: ShutterstockImage[];
+      total_count?: number;
+    };
 
     const results = (data.data ?? []).filter(isFlagRelatedImage).map((img) => ({
       id: img.id,
-      thumbUrl: img.assets?.small_thumb?.url ?? img.assets?.preview?.url ?? '',
+      thumbUrl: pickBestPreviewUrl(img),
       description: img.description ?? '',
       contributor: img.contributor?.id ?? '',
       shutterUrl:
@@ -101,7 +123,11 @@ router.get('/search', async (req: Request, res: Response) => {
         `?utm_source=flagswing&utm_medium=affiliate&utm_campaign=flaggallery`,
     }));
 
-    const payload = { results };
+    const hasMore =
+      typeof data.total_count === 'number'
+        ? page * perPage < data.total_count
+        : results.length === perPage;
+    const payload = { results, hasMore };
     cache.set(cacheKey, { data: payload, expiresAt: Date.now() + CACHE_TTL_MS });
     res.json(payload);
   } catch (error) {
