@@ -46,6 +46,7 @@ function GalleryCell({
           countryName={country.name}
           coverUrl={country.webp_cover_url ?? country.thumbnail}
           hasWebpCover={country.has_webp_cover}
+          countryCode={country.code}
           imageClassName="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
         />
       </div>

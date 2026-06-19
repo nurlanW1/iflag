@@ -95,6 +95,7 @@ function ContinentBlock({
                     countryName={country.name}
                     coverUrl={country.webp_cover_url ?? country.thumbnail}
                     hasWebpCover={country.has_webp_cover}
+                    countryCode={country.code}
                     imageClassName="h-full w-full object-contain"
                   />
                 </div>

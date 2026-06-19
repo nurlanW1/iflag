@@ -57,6 +57,7 @@ export function CountryHubFolderGrid({
                   countryName={country.name}
                   coverUrl={country.webp_cover_url ?? country.thumbnail}
                   hasWebpCover={country.has_webp_cover}
+                  countryCode={country.code}
                   imageClassName="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03] [filter:drop-shadow(0_2px_8px_rgba(0,0,0,0.13))]"
                 />
                 {country.code ? (
@@ -94,6 +95,7 @@ export function CountryHubFolderGrid({
                 countryName={country.name}
                 coverUrl={country.webp_cover_url ?? country.thumbnail}
                 hasWebpCover={country.has_webp_cover}
+                countryCode={country.code}
                 imageClassName="h-full w-full object-contain"
               />
             </div>
