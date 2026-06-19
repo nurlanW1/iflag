@@ -1,4 +1,4 @@
-import { getFreepikSearchUrl } from '@/lib/affiliates';
+import { getMagnificSearchUrl } from '@/lib/affiliates';
 
 interface PartnerLinksProps {
   countryName: string;
@@ -6,7 +6,6 @@ interface PartnerLinksProps {
 
 export function PartnerLinks({ countryName }: PartnerLinksProps) {
   const query = `${countryName} flag`;
-  const freepikUrl = getFreepikSearchUrl(query);
 
   return (
     <div className="mt-10 border-t border-neutral-200/60 pt-8">
@@ -20,17 +19,15 @@ export function PartnerLinks({ countryName }: PartnerLinksProps) {
       </div>
 
       <a
-        href={freepikUrl}
+        href={getMagnificSearchUrl(query)}
         target="_blank"
         rel="noopener noreferrer sponsored"
         className="group flex items-center gap-4 rounded-2xl border border-neutral-200/90 bg-white px-5 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md"
       >
-        {/* Logo */}
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#1273eb] text-[11px] font-extrabold tracking-tight text-white shadow-sm">
           FP
         </div>
 
-        {/* Text */}
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold text-[#2a2a2a]">
             Freepik — {countryName} flag vectors &amp; photos
@@ -40,7 +37,6 @@ export function PartnerLinks({ countryName }: PartnerLinksProps) {
           </div>
         </div>
 
-        {/* Arrow */}
         <span className="ml-2 shrink-0 text-sm text-neutral-400 transition-transform duration-200 group-hover:translate-x-0.5">
           ↗
         </span>
