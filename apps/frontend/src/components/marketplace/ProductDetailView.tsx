@@ -15,6 +15,7 @@ import type { Product } from '@/types/marketplace';
 
 import { CountryDesignVariantRibbon } from '@/components/marketplace/CountryDesignVariantRibbon';
 import { GalleryVariantsRow } from '@/components/marketplace/GalleryVariantsRow';
+import { ShutterstockSection } from '@/components/flags/ShutterstockSection';
 import { listPublishedProducts } from '@/services/marketplace';
 
 type Props = {
@@ -240,6 +241,10 @@ export function ProductDetailView({ slug, product }: Props) {
             )}
 
           {tagTrail}
+
+          {countryDisplayName && (
+            <ShutterstockSection countryName={countryDisplayName} />
+          )}
         </div>
       </main>
     </>
