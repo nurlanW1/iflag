@@ -16,13 +16,10 @@ interface Props {
   countryName: string;
 }
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/+$/, '');
-
 async function fetchPexels(countryName: string): Promise<FreeStockImage[]> {
   try {
-    const res = await fetch(
-      `${API_BASE}/pexels/search?q=${encodeURIComponent(countryName + ' flag')}&per_page=6`,
-    );
+    const q = encodeURIComponent(`${countryName} flag`);
+    const res = await fetch(`/api/pexels/search?q=${q}&per_page=6`);
     const data = res.ok ? await res.json() : {};
     return (data.results ?? []) as FreeStockImage[];
   } catch {
@@ -32,9 +29,8 @@ async function fetchPexels(countryName: string): Promise<FreeStockImage[]> {
 
 async function fetchPixabay(countryName: string): Promise<FreeStockImage[]> {
   try {
-    const res = await fetch(
-      `${API_BASE}/pixabay/search?q=${encodeURIComponent(countryName + ' flag')}&per_page=6`,
-    );
+    const q = encodeURIComponent(`${countryName} flag`);
+    const res = await fetch(`/api/pixabay/search?q=${q}&per_page=6`);
     const data = res.ok ? await res.json() : {};
     return (data.results ?? []) as FreeStockImage[];
   } catch {
