@@ -3,11 +3,6 @@ export const AFFILIATE_LINKS = {
   shutterstock_base: 'https://www.shutterstock.com',
 } as const;
 
-export function getMagnificSearchUrl(query: string): string {
-  return (
-    `${AFFILIATE_LINKS.magnific}?redirect=` +
-    encodeURIComponent(
-      `https://www.freepik.com/search?format=search&query=${encodeURIComponent(query)}`,
-    )
-  );
+export function getFreepikSearchUrl(query: string): string {
+  return `https://www.freepik.com/search?format=search&query=${encodeURIComponent(query)}`;
 }
