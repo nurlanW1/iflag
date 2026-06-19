@@ -7,8 +7,8 @@ import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 
 /* ── Speeds (seconds for one full cycle) ── */
-const ROW_SPEEDS = [38, 45, 32] as const;
-const ROW_DIRS = ['left', 'right', 'left'] as const;
+const ROW_SPEEDS = [42, 55, 35, 48, 38] as const;
+const ROW_DIRS = ['left', 'right', 'left', 'right', 'left'] as const;
 
 function FlagCard({ country }: { country: GalleryCountrySummary }) {
   return (
@@ -90,7 +90,7 @@ export function LandingFlagGalleryPreview() {
     return (
       <section className="overflow-hidden border-t border-neutral-200/85 bg-[#fafaf9] py-6">
         <div className="space-y-2.5">
-          {[1, 2, 3].map((r) => (
+          {[1, 2, 3, 4, 5].map((r) => (
             <div key={r} className="flex gap-2.5 px-4">
               {Array.from({ length: 12 }).map((_, i) => (
                 <div
@@ -105,12 +105,14 @@ export function LandingFlagGalleryPreview() {
     );
   }
 
-  /* Split into 3 balanced rows */
-  const third = Math.ceil(countries.length / 3);
+  /* Split into 5 balanced rows */
+  const fifth = Math.ceil(countries.length / 5);
   const rows: GalleryCountrySummary[][] = [
-    countries.slice(0, third),
-    countries.slice(third, third * 2),
-    countries.slice(third * 2),
+    countries.slice(0, fifth),
+    countries.slice(fifth, fifth * 2),
+    countries.slice(fifth * 2, fifth * 3),
+    countries.slice(fifth * 3, fifth * 4),
+    countries.slice(fifth * 4),
   ];
 
   return (

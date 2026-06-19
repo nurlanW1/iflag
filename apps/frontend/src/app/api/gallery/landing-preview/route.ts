@@ -5,6 +5,7 @@ import {
   applyGalleryDisplayNames,
   fetchGalleryCountriesFromDb,
 } from '@/lib/server/gallery-from-db';
+import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 
 /** Fisher–Yates shuffle (random preview order each request). */
 function shuffle<T>(items: T[]): T[] {
@@ -17,14 +18,58 @@ function shuffle<T>(items: T[]): T[] {
 }
 
 /**
- * Landing gallery preview: same Neon/backing query as `/api/gallery/countries` (published + usable `file_url`).
- * - Default: random 24-tile preview.
- * - `?full=1`: full list (home “Explore Our Flag Collection”), sorted by country name.
+ * Fetch ALL countries from the countries table — no flag-file requirement.
+ * Countries without uploads will use flagcdn.com via CountryHubFolderCover.
+ */
+async function fetchAllCountries(): Promise<GalleryCountrySummary[]> {
+  const pool = getDb();
+  const res = await pool.query<{
+    id: string;
+    name: string;
+    slug: string;
+    iso_alpha_2: string | null;
+  }>(
+    `SELECT id::text AS id, name, slug, NULLIF(trim(iso_alpha_2::text), '') AS iso_alpha_2
+     FROM countries
+     WHERE trim(name) <> '' AND trim(slug) <> ''
+     ORDER BY lower(trim(name)), name`
+  );
+
+  return res.rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    slug: r.slug,
+    code: r.iso_alpha_2 ?? null,
+    thumbnail_url: '',
+    flag_count: 0,
+    design_count: 0,
+    thumbnail: '',
+    count: 0,
+    has_webp_cover: false,
+    webp_cover_url: null,
+  }));
+}
+
+/**
+ * Landing gallery preview:
+ * - Default: random 24-tile preview (published countries with covers only).
+ * - `?full=1`: ALL countries for the marquee belt — uses flagcdn.com for countries without R2 uploads.
  */
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const full = searchParams.get('full') === '1';
+
+    if (full) {
+      if (!process.env.DATABASE_URL?.trim()) {
+        return NextResponse.json({ countries: [] }, { status: 200 });
+      }
+      const all = await fetchAllCountries();
+      return NextResponse.json(
+        { countries: all },
+        { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } },
+      );
+    }
 
     const rowsBuilt =
       process.env.DATABASE_URL?.trim() ?
@@ -32,19 +77,10 @@ export async function GET(request: Request) {
       : [];
 
     const rows = filterLandingCountryFolders(applyGalleryDisplayNames(rowsBuilt));
-
     const sorted = [...rows].sort((a, b) => a.name.localeCompare(b.name));
 
-    if (full) {
-      return NextResponse.json(
-        { countries: sorted },
-        { headers: { 'Cache-Control': 'no-store' } },
-      );
-    }
-
-    const limit = 24;
     return NextResponse.json(
-      { countries: shuffle(sorted).slice(0, limit) },
+      { countries: shuffle(sorted).slice(0, 24) },
       { headers: { 'Cache-Control': 'no-store' } },
     );
   } catch (error) {
