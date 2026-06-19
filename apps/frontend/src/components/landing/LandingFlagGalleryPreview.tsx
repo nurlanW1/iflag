@@ -6,9 +6,8 @@ import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCove
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 
-/* ── Speeds (seconds for one full cycle) ── */
+/* ── Speeds (seconds for one full cycle) — all rows go left ── */
 const ROW_SPEEDS = [42, 55, 35, 48, 38] as const;
-const ROW_DIRS = ['left', 'right', 'left', 'right', 'left'] as const;
 
 function FlagCard({ country }: { country: GalleryCountrySummary }) {
   return (
@@ -38,26 +37,33 @@ function FlagCard({ country }: { country: GalleryCountrySummary }) {
 
 function MarqueeRow({
   items,
-  direction,
   speed,
   slow,
 }: {
   items: GalleryCountrySummary[];
-  direction: 'left' | 'right';
   speed: number;
   slow: boolean;
 }) {
-  /* Duplicate for seamless loop */
+  const trackRef = useRef<HTMLDivElement>(null);
   const doubled = [...items, ...items];
+
+  /* Smooth speed change via Web Animations API — no jump */
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    for (const anim of el.getAnimations()) {
+      anim.playbackRate = slow ? 0.5 : 1;
+    }
+  }, [slow]);
 
   return (
     <div className="flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_80px,black_calc(100%-80px),transparent)]">
       <div
+        ref={trackRef}
         className="flex gap-2.5 py-0.5"
         style={{
-          animation: `marquee-${direction} ${slow ? speed * 2 : speed}s linear infinite`,
+          animation: `marquee-left ${speed}s linear infinite`,
           willChange: 'transform',
-          transition: 'animation-duration 0.6s ease',
         }}
       >
         {doubled.map((country, i) => (
@@ -86,7 +92,6 @@ export function LandingFlagGalleryPreview() {
   }, []);
 
   if (!ready || countries.length === 0) {
-    /* Skeleton — 3 rows of grey bars */
     return (
       <section className="overflow-hidden border-t border-neutral-200/85 bg-[#fafaf9] py-6">
         <div className="space-y-2.5">
@@ -105,7 +110,6 @@ export function LandingFlagGalleryPreview() {
     );
   }
 
-  /* Split into 5 balanced rows */
   const fifth = Math.ceil(countries.length / 5);
   const rows: GalleryCountrySummary[][] = [
     countries.slice(0, fifth),
@@ -126,16 +130,11 @@ export function LandingFlagGalleryPreview() {
           <MarqueeRow
             key={idx}
             items={row}
-            direction={ROW_DIRS[idx] ?? 'left'}
             speed={ROW_SPEEDS[idx] ?? 38}
             slow={slow}
           />
         ))}
       </div>
-
-      <p className="mt-4 text-center text-xs text-neutral-400">
-        {countries.length}+ countries · Free official flags included
-      </p>
     </section>
   );
 }

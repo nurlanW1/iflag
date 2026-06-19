@@ -29,9 +29,12 @@ async function fetchAllCountries(): Promise<GalleryCountrySummary[]> {
     slug: string;
     iso_alpha_2: string | null;
   }>(
-    `SELECT id::text AS id, name, slug, NULLIF(trim(iso_alpha_2::text), '') AS iso_alpha_2
+    `SELECT id::text AS id, name, slug, trim(iso_alpha_2) AS iso_alpha_2
      FROM countries
-     WHERE trim(name) <> '' AND trim(slug) <> ''
+     WHERE iso_alpha_2 IS NOT NULL
+       AND length(trim(iso_alpha_2)) = 2
+       AND trim(name) <> ''
+       AND trim(slug) <> ''
      ORDER BY lower(trim(name)), name`
   );
 
