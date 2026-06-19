@@ -16,15 +16,23 @@ export async function GET(req: NextRequest) {
   }
 
   const apiKey = process.env.PIXABAY_API_KEY?.trim();
-  if (!apiKey) return NextResponse.json({ results: [] });
+  if (!apiKey) {
+    console.error('[pixabay] PIXABAY_API_KEY is not set');
+    return NextResponse.json({ results: [] });
+  }
 
   try {
-    const response = await fetch(
-      `https://pixabay.com/api/?key=${apiKey}&q=${encodeURIComponent(q)}&image_type=photo&per_page=${perPage}`,
-      { next: { revalidate: 0 } },
-    );
+    const url =
+      `https://pixabay.com/api/?key=${apiKey}` +
+      `&q=${encodeURIComponent(q)}&image_type=photo&per_page=${perPage}&safesearch=true`;
 
-    if (!response.ok) return NextResponse.json({ results: [] });
+    const response = await fetch(url, { next: { revalidate: 0 } });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      console.error('[pixabay] upstream error:', response.status, text);
+      return NextResponse.json({ results: [] });
+    }
 
     const data = (await response.json()) as {
       hits?: Array<{
@@ -33,22 +41,33 @@ export async function GET(req: NextRequest) {
         user: string;
         pageURL: string;
         webformatURL: string;
+        previewURL: string;
+        largeImageURL: string;
       }>;
+      error?: string;
     };
+
+    if (data.error) {
+      console.error('[pixabay] API error:', data.error);
+      return NextResponse.json({ results: [] });
+    }
 
     const results = (data.hits ?? []).map((img) => ({
       id: `pixabay-${img.id}`,
-      thumbUrl: img.webformatURL,
+      thumbUrl: img.largeImageURL || img.webformatURL || img.previewURL,
       description: img.tags,
       photographer: img.user,
       sourceUrl: img.pageURL,
       source: 'pixabay' as const,
     }));
 
+    console.log(`[pixabay] q="${q}" → ${results.length} results`);
+
     const payload = { results };
     cache.set(cacheKey, { data: payload, expiresAt: Date.now() + 30 * 60 * 1000 });
     return NextResponse.json(payload);
-  } catch {
+  } catch (err) {
+    console.error('[pixabay] fetch error:', err);
     return NextResponse.json({ results: [] });
   }
 }
