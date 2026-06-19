@@ -17,6 +17,7 @@ import {
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
 import { ShutterstockCard } from '@/components/flags/ShutterstockCard';
+import { PartnerLinks } from '@/components/affiliates/PartnerLinks';
 import { hrefLooksLikeNonBrowserMaster, pickFormatPreviewUrl } from '@/lib/flag-preview-display';
 import COUNTRY_FACTS from '../../../../content/countries/facts.json';
 import COUNTRY_COLORS from '../../../../content/countries/flag-colors.json';
@@ -685,6 +686,11 @@ export default function CountryHubPage() {
           )}
         </section>
 
+      </div>
+
+      {/* ── Affiliate partner links ── */}
+      <div className="marketplace-shell pb-12">
+        <PartnerLinks countryName={pageTitle} />
       </div>
     </main>
   );
