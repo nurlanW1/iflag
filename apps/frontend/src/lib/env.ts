@@ -23,7 +23,7 @@ export const env = {
   siteUrl: optional('NEXT_PUBLIC_SITE_URL', 'https://flagswing.com').replace(/\/+$/, ''),
 
   /** Support / contact email shown in footer and legal pages */
-  contactEmail: optional('NEXT_PUBLIC_CONTACT_EMAIL', 'support@flagswing.com'),
+  contactEmail: optional('NEXT_PUBLIC_CONTACT_EMAIL', 'nurlanrahmonqulov@gmail.com'),
 
   /** Clerk publishable key — NEXT_PUBLIC_* so it's safe in the browser */
   clerkPublishableKey: optional('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'),

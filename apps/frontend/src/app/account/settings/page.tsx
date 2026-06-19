@@ -2,9 +2,11 @@
 
 import { useUser } from '@clerk/nextjs';
 import { ExternalLink } from 'lucide-react';
+import { getPublicContactEmail } from '@/lib/legal/legal-placeholders';
 
 export default function SettingsPage() {
   const { user } = useUser();
+  const contactEmail = getPublicContactEmail();
 
   const email = user?.primaryEmailAddress?.emailAddress ?? '—';
 
@@ -40,8 +42,8 @@ export default function SettingsPage() {
         <h2 className="text-sm font-semibold text-red-700">Danger zone</h2>
         <p className="mt-1 text-xs text-red-500">
           To delete your account, please contact{' '}
-          <a href="mailto:support@flagswing.com" className="underline">
-            support@flagswing.com
+          <a href={`mailto:${contactEmail}`} className="underline">
+            {contactEmail}
           </a>
           .
         </p>

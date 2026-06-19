@@ -27,12 +27,30 @@ export default function Footer() {
   const contactEmail = getPublicContactEmail();
   const [email, setEmail] = useState('');
   const [showNotification, setShowNotification] = useState(false);
+  const [newsletterState, setNewsletterState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) {
+    const nextEmail = email.trim();
+    if (nextEmail) {
+      setNewsletterState('sending');
+      try {
+        const res = await fetch('/api/waitlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: nextEmail, type: 'newsletter' }),
+        });
+
+        if (!res.ok) {
+          throw new Error('Could not subscribe.');
+        }
+
+        setNewsletterState('sent');
+        setEmail('');
+      } catch {
+        setNewsletterState('error');
+      }
       setShowNotification(true);
-      setEmail('');
     }
   };
 
@@ -49,9 +67,13 @@ export default function Footer() {
             <div className="flex items-start gap-3">
               <CheckCircle className="mt-0.5 shrink-0 text-emerald-600" size={20} aria-hidden />
               <div className="flex-1">
-                <p className="mb-1 text-sm font-semibold text-[#2a2a2a]">Subscribed</p>
+                <p className="mb-1 text-sm font-semibold text-[#2a2a2a]">
+                  {newsletterState === 'error' ? 'Subscription failed' : 'Subscribed'}
+                </p>
                 <p className="text-sm leading-snug text-neutral-600">
-                  Thank you for subscribing to our newsletter.
+                  {newsletterState === 'error'
+                    ? `Please email ${contactEmail} and we will add you manually.`
+                    : 'Thank you for subscribing to our newsletter.'}
                 </p>
               </div>
               <button
@@ -232,9 +254,10 @@ export default function Footer() {
                 />
                 <button
                   type="submit"
-                  className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)] sm:w-auto"
+                  disabled={newsletterState === 'sending'}
+                  className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-xl bg-[var(--brand-blue)] px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
-                  Subscribe
+                  {newsletterState === 'sending' ? 'Subscribing...' : 'Subscribe'}
                 </button>
               </div>
             </form>

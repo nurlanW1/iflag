@@ -2,18 +2,19 @@
  * Legal / trust page placeholders — replace with your finalized details.
  * Do not invent registration numbers, addresses, or entity IDs.
  *
- * Optional: set `NEXT_PUBLIC_CONTACT_EMAIL` for mailto links site-wide.
+ * Owner support email shown in contact, footer, FAQ, and legal pages.
  */
 
 import { SITE_NAME } from '@/lib/seo/site-config';
+
+export const DEFAULT_PUBLIC_CONTACT_EMAIL = 'nurlanrahmonqulov@gmail.com';
 
 export const LEGAL_TEMPLATE_NOTICE =
   'Bracketed text such as [PLACEHOLDER: …] must be replaced with your accurate details. This template is not legal advice; have qualified counsel review it for your markets and products.';
 
 /** Public support / contact email shown in footers and legal pages. */
 export function getPublicContactEmail(): string {
-  const v = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim();
-  return v || 'support@flagswing.com';
+  return DEFAULT_PUBLIC_CONTACT_EMAIL;
 }
 
 export const P = {

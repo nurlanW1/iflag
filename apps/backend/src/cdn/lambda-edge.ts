@@ -25,7 +25,7 @@ exports.handler = async (event: any) => {
   const token = tokenMatch ? decodeURIComponent(tokenMatch[1]) : null;
 
   // Get configuration from environment
-  const allowedDomains = (process.env.ALLOWED_DOMAINS || 'flagstock.com,www.flagstock.com')
+  const allowedDomains = (process.env.ALLOWED_DOMAINS || 'flagswing.com,www.flagswing.com')
     .split(',')
     .map((d: string) => d.trim());
   
@@ -61,7 +61,7 @@ exports.handler = async (event: any) => {
           },
         };
       }
-    } catch (error) {
+    } catch {
       return {
         status: '403',
         statusDescription: 'Forbidden',

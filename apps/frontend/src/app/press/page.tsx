@@ -1,7 +1,10 @@
 import { Flag, Download, FileText, Image as ImageIcon, Mail, ArrowRight } from 'lucide-react';
+import { getPublicContactEmail } from '@/lib/legal/legal-placeholders';
 import { SITE_NAME } from '@/lib/seo/site-config';
 
 export default function PressPage() {
+  const contactEmail = getPublicContactEmail();
+
   return (
     <main className="min-h-screen bg-[#fafaf9]">
       {/* Hero */}
@@ -82,10 +85,10 @@ export default function PressPage() {
               </div>
             </div>
             <a
-              href="mailto:press@flagstock.com"
+              href={`mailto:${contactEmail}`}
               className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[var(--brand-blue)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)]"
             >
-              press@flagstock.com
+              {contactEmail}
               <ArrowRight className="h-4 w-4" aria-hidden />
             </a>
           </div>

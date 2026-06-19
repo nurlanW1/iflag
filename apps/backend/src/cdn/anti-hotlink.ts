@@ -147,9 +147,9 @@ export const cloudfrontAntiHotlink = async (event: any) => {
 
   const config: HotlinkConfig = {
     allowedDomains: [
-      process.env.ALLOWED_DOMAIN || 'flagstock.com',
-      'www.flagstock.com',
-      'admin.flagstock.com',
+      process.env.ALLOWED_DOMAIN || 'flagswing.com',
+      'www.flagswing.com',
+      'admin.flagswing.com',
     ],
     requireToken: process.env.REQUIRE_TOKEN === 'true',
     tokenSecret: process.env.TOKEN_SECRET || '',
@@ -184,9 +184,9 @@ export const cloudflareAntiHotlink = async (request: Request): Promise<Response>
 
   const config: HotlinkConfig = {
     allowedDomains: [
-      'flagstock.com',
-      'www.flagstock.com',
-      'admin.flagstock.com',
+      'flagswing.com',
+      'www.flagswing.com',
+      'admin.flagswing.com',
     ],
     requireToken: false, // Can be enabled if needed
     tokenSecret: '', // Set via environment variable

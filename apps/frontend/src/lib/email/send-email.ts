@@ -22,6 +22,7 @@ export type SendEmailParams = {
   to: string | string[];
   subject: string;
   html: string;
+  replyTo?: string;
   idempotencyKey?: string;
   tags?: { name: string; value: string }[];
 };
@@ -62,6 +63,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
       to: parsedTo.data,
       subject,
       html,
+      ...(params.replyTo?.trim() ? { replyTo: params.replyTo.trim() } : {}),
       ...(params.tags?.length ? { tags: params.tags } : {}),
     },
     params.idempotencyKey?.trim()

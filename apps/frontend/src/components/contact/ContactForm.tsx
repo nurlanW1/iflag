@@ -17,11 +17,35 @@ export default function ContactForm() {
     message: '',
   });
   const [showNotification, setShowNotification] = useState(false);
+  const [submitState, setSubmitState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [submitMessage, setSubmitMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setShowNotification(true);
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    setSubmitState('sending');
+    setSubmitMessage('');
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Message could not be sent.');
+      }
+
+      setSubmitState('sent');
+      setSubmitMessage(data.message || `Message sent to ${contactEmail}.`);
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (err) {
+      setSubmitState('error');
+      setSubmitMessage(err instanceof Error ? err.message : 'Message could not be sent.');
+    } finally {
+      setShowNotification(true);
+    }
   };
 
   return (
@@ -37,13 +61,21 @@ export default function ContactForm() {
             <div className="flex items-start gap-3">
               <CheckCircle className="mt-0.5 flex-shrink-0 text-emerald-500" size={20} />
               <div className="flex-1">
-                <p className="mb-1 font-semibold text-[#2a2a2a]">Message recorded</p>
+                <p className="mb-1 font-semibold text-[#2a2a2a]">
+                  {submitState === 'sent' ? 'Message sent' : 'Message not sent'}
+                </p>
                 <p className="text-sm text-neutral-500">
-                  This demo form does not send email yet. Contact us directly at{' '}
-                  <a href={`mailto:${contactEmail}`} className="font-medium text-[var(--brand-blue)] hover:underline">
-                    {contactEmail}
-                  </a>
-                  .
+                  {submitState === 'sent' ? (
+                    submitMessage
+                  ) : (
+                    <>
+                      {submitMessage || 'Automatic delivery failed.'} Contact us directly at{' '}
+                      <a href={`mailto:${contactEmail}`} className="font-medium text-[var(--brand-blue)] hover:underline">
+                        {contactEmail}
+                      </a>
+                      .
+                    </>
+                  )}
                 </p>
               </div>
               <button
@@ -180,10 +212,11 @@ export default function ContactForm() {
 
               <button
                 type="submit"
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-blue)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)]"
+                disabled={submitState === 'sending'}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-blue)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-blue-hover)] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Send size={16} aria-hidden />
-                Send message
+                {submitState === 'sending' ? 'Sending...' : 'Send message'}
               </button>
             </form>
           </div>

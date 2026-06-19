@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
+import { getPublicContactEmail } from '@/lib/legal/legal-placeholders';
 
 type FaqItem = { q: string; a: React.ReactNode };
 type FaqSection = { id: string; title: string; items: FaqItem[] };
 
-const FAQ_SECTIONS: FaqSection[] = [
+function getFaqSections(contactEmail: string): FaqSection[] {
+  return [
   {
     id: 'general',
     title: 'General',
@@ -62,10 +64,10 @@ const FAQ_SECTIONS: FaqSection[] = [
           <>
             Yes with Premium license (up to 500 units). For bulk orders:{' '}
             <a
-              href="mailto:hello@flagswing.com"
+              href={`mailto:${contactEmail}`}
               className="font-medium text-[var(--brand-blue)] underline-offset-2 hover:underline"
             >
-              hello@flagswing.com
+              {contactEmail}
             </a>
           </>
         ),
@@ -86,10 +88,10 @@ const FAQ_SECTIONS: FaqSection[] = [
           <>
             Corrupted file or wrong delivery — yes, within 7 days. Email{' '}
             <a
-              href="mailto:support@flagswing.com"
+              href={`mailto:${contactEmail}`}
               className="font-medium text-[var(--brand-blue)] underline-offset-2 hover:underline"
             >
-              support@flagswing.com
+              {contactEmail}
             </a>{' '}
             with your order ID.
           </>
@@ -119,7 +121,8 @@ const FAQ_SECTIONS: FaqSection[] = [
       },
     ],
   },
-];
+  ];
+}
 
 function AccordionItem({
   q,
@@ -162,6 +165,8 @@ function AccordionItem({
 
 export default function FaqPage() {
   const [openKey, setOpenKey] = useState<string | null>(null);
+  const contactEmail = getPublicContactEmail();
+  const faqSections = getFaqSections(contactEmail);
 
   const toggle = (key: string) =>
     setOpenKey((cur) => (cur === key ? null : key));
@@ -190,7 +195,7 @@ export default function FaqPage() {
 
       {/* FAQ sections */}
       <div className="mx-auto max-w-2xl space-y-8">
-        {FAQ_SECTIONS.map((section) => (
+        {faqSections.map((section) => (
           <section key={section.id} aria-labelledby={`faq-${section.id}`}>
             <h2
               id={`faq-${section.id}`}
