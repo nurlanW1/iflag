@@ -5,6 +5,21 @@ export const dynamic = 'force-dynamic';
 // Simple in-memory cache (server-side, 1 hour)
 const cache = new Map<string, { data: unknown; expiresAt: number }>();
 
+type ShutterstockImage = {
+  id: string;
+  description?: string;
+  assets?: {
+    small_thumb?: { url?: string };
+    large_thumb?: { url?: string };
+    preview?: { url?: string };
+  };
+};
+
+function isFlagRelatedImage(img: ShutterstockImage): boolean {
+  const description = img.description?.toLowerCase() ?? '';
+  return /\b(flag|flags|banner|national flag)\b/.test(description);
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const q = searchParams.get('q')?.trim() || 'flag';
@@ -65,19 +80,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ results: [] });
     }
 
-    const data = (await response.json()) as {
-      data?: Array<{
-        id: string;
-        description?: string;
-        assets?: {
-          small_thumb?: { url?: string };
-          large_thumb?: { url?: string };
-          preview?: { url?: string };
-        };
-      }>;
-    };
+    const data = (await response.json()) as { data?: ShutterstockImage[] };
 
-    const results = (data.data ?? []).map((img) => ({
+    const results = (data.data ?? []).filter(isFlagRelatedImage).map((img) => ({
       id: img.id,
       thumbUrl:
         img.assets?.large_thumb?.url ??

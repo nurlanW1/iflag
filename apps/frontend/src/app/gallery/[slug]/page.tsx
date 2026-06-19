@@ -159,7 +159,7 @@ export default function CountryHubPage() {
     if (ssLoading) return;
     setSsLoading(true);
     try {
-      const q = encodeURIComponent(`${countryName} flag`);
+      const q = encodeURIComponent(`${countryName} national flag`);
       const r = await fetch(`/api/shutterstock/search?q=${q}&per_page=12&page=${page}`);
       const res = r.ok ? (await r.json()) as { results?: SSImage[] } : { results: [] };
       const batch = res.results ?? [];
@@ -184,7 +184,6 @@ export default function CountryHubPage() {
     setSsFetched(false);
     setSsHasMore(false);
     void fetchSsImages(name, 1);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.country?.name]);
 
   // Callback ref for sentinel — triggers when element mounts/unmounts
@@ -282,7 +281,6 @@ export default function CountryHubPage() {
     data.country.slug,
   );
 
-  const hasWebpCover = Boolean(data.country.has_webp_cover);
   const webpCover = data.country.webp_cover_url?.trim() || data.country.cover_image_url?.trim() || '';
 
   const facts: CountryFact | null = countryFacts[data.country.slug] ?? null;

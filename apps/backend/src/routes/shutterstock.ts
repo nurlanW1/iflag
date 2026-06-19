@@ -6,6 +6,21 @@ const router = express.Router();
 const cache = new Map<string, { data: unknown; expiresAt: number }>();
 const CACHE_TTL_MS = 60 * 60 * 1000;
 
+type ShutterstockImage = {
+  id: string;
+  description?: string;
+  contributor?: { id: string };
+  assets?: {
+    small_thumb?: { url?: string };
+    preview?: { url?: string };
+  };
+};
+
+function isFlagRelatedImage(img: ShutterstockImage): boolean {
+  const description = img.description?.toLowerCase() ?? '';
+  return /\b(flag|flags|banner|national flag)\b/.test(description);
+}
+
 // ── Rate limiter: 30 req/min per IP ─────────────────────────────────────────
 const rateBuckets = new Map<string, { count: number; resetAt: number }>();
 
@@ -74,19 +89,9 @@ router.get('/search', async (req: Request, res: Response) => {
       return;
     }
 
-    const data = (await response.json()) as {
-      data?: Array<{
-        id: string;
-        description?: string;
-        contributor?: { id: string };
-        assets?: {
-          small_thumb?: { url?: string };
-          preview?: { url?: string };
-        };
-      }>;
-    };
+    const data = (await response.json()) as { data?: ShutterstockImage[] };
 
-    const results = (data.data ?? []).map((img) => ({
+    const results = (data.data ?? []).filter(isFlagRelatedImage).map((img) => ({
       id: img.id,
       thumbUrl: img.assets?.small_thumb?.url ?? img.assets?.preview?.url ?? '',
       description: img.description ?? '',
