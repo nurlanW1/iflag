@@ -164,8 +164,16 @@ export default function CountryHubPage() {
       const r = await fetch(`/api/shutterstock/search?q=${q}&per_page=${SHUTTERSTOCK_PAGE_SIZE}&page=${page}`);
       const res = r.ok ? (await r.json()) as { results?: SSImage[]; hasMore?: boolean } : { results: [] };
       const batch = res.results ?? [];
-      setSsImages((prev) => page === 1 ? batch : [...prev, ...batch]);
-      setSsHasMore(Boolean(res.hasMore && batch.length > 0));
+      setSsImages((prev) => {
+        const combined = page === 1 ? batch : [...prev, ...batch];
+        const seen = new Set<string>();
+        return combined.filter((img) => {
+          if (seen.has(img.id)) return false;
+          seen.add(img.id);
+          return true;
+        });
+      });
+      setSsHasMore(Boolean(res.hasMore));
     } catch {
       setSsHasMore(false);
     } finally {

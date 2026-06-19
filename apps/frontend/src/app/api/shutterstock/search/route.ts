@@ -38,6 +38,26 @@ function pickBestPreviewUrl(img: ShutterstockImage): string {
   );
 }
 
+function buildFlagSearchQueries(query: string): string[] {
+  const subject = query
+    .replace(/\bnational\b/gi, ' ')
+    .replace(/\bflags?\b/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const country = subject || query.trim() || 'flag';
+  return Array.from(
+    new Set([
+      `${country} flag`,
+      `${country} waving flag`,
+      `${country} flag background`,
+      `${country} flag vector`,
+      `${country} national flag`,
+      `${country} flag icon`,
+      `${country} flag illustration`,
+    ]),
+  );
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const q = searchParams.get('q')?.trim() || 'flag';
@@ -76,10 +96,15 @@ export async function GET(req: NextRequest) {
   const auth = Buffer.from(`${key}:${secret}`).toString('base64');
 
   try {
+    const searchQueries = buildFlagSearchQueries(q);
+    const queryIndex = (page - 1) % searchQueries.length;
+    const upstreamPage = Math.floor((page - 1) / searchQueries.length) + 1;
+    const searchQuery = searchQueries[queryIndex] ?? q;
+
     const url = new URL('https://api.shutterstock.com/v2/images/search');
-    url.searchParams.set('query', q);
+    url.searchParams.set('query', searchQuery);
     url.searchParams.set('per_page', String(perPage));
-    url.searchParams.set('page', String(page));
+    url.searchParams.set('page', String(upstreamPage));
     url.searchParams.set('sort', 'popular');
     url.searchParams.append('image_type', 'photo');
     url.searchParams.append('image_type', 'illustration');
@@ -114,7 +139,7 @@ export async function GET(req: NextRequest) {
 
     const hasMore =
       typeof data.total_count === 'number'
-        ? page * perPage < data.total_count
+        ? page < searchQueries.length || upstreamPage * perPage < data.total_count
         : results.length === perPage;
     const payload = { results, hasMore };
     cache.set(cacheKey, { data: payload, expiresAt: Date.now() + 60 * 60 * 1000 });
