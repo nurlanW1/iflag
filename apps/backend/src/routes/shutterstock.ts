@@ -52,18 +52,21 @@ router.get('/search', async (req: Request, res: Response) => {
 
     const auth = Buffer.from(`${key}:${secret}`).toString('base64');
 
-    const response = await fetch(
-      `https://api.shutterstock.com/v2/images/search` +
-      `?query=${encodeURIComponent(query)}` +
-      `&per_page=${perPage}&page=${page}&sort=popular` +
-      `&image_type=photo,illustration,vector`,
-      {
-        headers: {
-          Authorization: `Basic ${auth}`,
-          Accept: 'application/json',
-        },
+    const url = new URL('https://api.shutterstock.com/v2/images/search');
+    url.searchParams.set('query', query);
+    url.searchParams.set('per_page', String(perPage));
+    url.searchParams.set('page', String(page));
+    url.searchParams.set('sort', 'popular');
+    url.searchParams.append('image_type', 'photo');
+    url.searchParams.append('image_type', 'illustration');
+    url.searchParams.append('image_type', 'vector');
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Basic ${auth}`,
+        Accept: 'application/json',
       },
-    );
+    });
 
     if (!response.ok) {
       console.error('[shutterstock] upstream error', response.status);

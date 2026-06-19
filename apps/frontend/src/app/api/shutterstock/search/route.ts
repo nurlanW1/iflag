@@ -43,13 +43,16 @@ export async function GET(req: NextRequest) {
   const auth = Buffer.from(`${key}:${secret}`).toString('base64');
 
   try {
-    const url =
-      `https://api.shutterstock.com/v2/images/search` +
-      `?query=${encodeURIComponent(q)}` +
-      `&per_page=${perPage}&page=${page}&sort=popular` +
-      `&image_type=photo%2Cillustration%2Cvector`;
+    const url = new URL('https://api.shutterstock.com/v2/images/search');
+    url.searchParams.set('query', q);
+    url.searchParams.set('per_page', String(perPage));
+    url.searchParams.set('page', String(page));
+    url.searchParams.set('sort', 'popular');
+    url.searchParams.append('image_type', 'photo');
+    url.searchParams.append('image_type', 'illustration');
+    url.searchParams.append('image_type', 'vector');
 
-    const response = await fetch(url, {
+    const response = await fetch(url.toString(), {
       headers: {
         Authorization: `Basic ${auth}`,
         Accept: 'application/json',
