@@ -5,9 +5,10 @@ import {
   applyGalleryDisplayNames,
   fetchGalleryCountriesFromDb,
 } from '@/lib/server/gallery-from-db';
+import { COUNTRIES } from '@/lib/countries';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 
-/** Fisher–Yates shuffle (random preview order each request). */
+/** Fisher–Yates shuffle */
 function shuffle<T>(items: T[]): T[] {
   const out = [...items];
   for (let i = out.length - 1; i > 0; i--) {
@@ -17,46 +18,29 @@ function shuffle<T>(items: T[]): T[] {
   return out;
 }
 
-/**
- * Fetch ALL countries from the countries table — no flag-file requirement.
- * Countries without uploads will use flagcdn.com via CountryHubFolderCover.
- */
-async function fetchAllCountries(): Promise<GalleryCountrySummary[]> {
-  const pool = getDb();
-  const res = await pool.query<{
-    id: string;
-    name: string;
-    slug: string;
-    iso_alpha_2: string | null;
-  }>(
-    `SELECT id::text AS id, name, slug, trim(iso_alpha_2) AS iso_alpha_2
-     FROM countries
-     WHERE iso_alpha_2 IS NOT NULL
-       AND length(trim(iso_alpha_2)) = 2
-       AND trim(name) <> ''
-       AND trim(slug) <> ''
-     ORDER BY lower(trim(name)), name`
-  );
-
-  return res.rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    slug: r.slug,
-    code: r.iso_alpha_2 ?? null,
-    thumbnail_url: '',
-    flag_count: 0,
-    design_count: 0,
-    thumbnail: '',
-    count: 0,
-    has_webp_cover: false,
-    webp_cover_url: null,
-  }));
+/** Static list of all ISO countries — used for marquee belt (no DB dependency). */
+function allCountriesStatic(): GalleryCountrySummary[] {
+  return [...COUNTRIES]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((c) => ({
+      id: `static:${c.slug}`,
+      name: c.name,
+      slug: c.slug,
+      code: c.code.toUpperCase(),
+      thumbnail_url: '',
+      flag_count: 0,
+      design_count: 0,
+      thumbnail: '',
+      count: 0,
+      has_webp_cover: false,
+      webp_cover_url: null,
+    }));
 }
 
 /**
  * Landing gallery preview:
- * - Default: random 24-tile preview (published countries with covers only).
- * - `?full=1`: ALL countries for the marquee belt — uses flagcdn.com for countries without R2 uploads.
+ * - Default: random 24-tile preview (published countries with covers).
+ * - `?full=1`: ALL ISO countries for the marquee belt via flagcdn.com — no DB needed.
  */
 export async function GET(request: Request) {
   try {
@@ -64,13 +48,9 @@ export async function GET(request: Request) {
     const full = searchParams.get('full') === '1';
 
     if (full) {
-      if (!process.env.DATABASE_URL?.trim()) {
-        return NextResponse.json({ countries: [] }, { status: 200 });
-      }
-      const all = await fetchAllCountries();
       return NextResponse.json(
-        { countries: all },
-        { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } },
+        { countries: allCountriesStatic() },
+        { headers: { 'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800' } },
       );
     }
 
