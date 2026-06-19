@@ -9,6 +9,7 @@ import { ProductBrowseSection } from '@/components/marketplace/ProductBrowseSect
 import { CountryHubBrowseSection } from '@/components/gallery/CountryHubBrowseSection';
 import { FlagVideoBrowseSection } from '@/components/gallery/FlagVideoBrowseSection';
 import { CircleFlagsBrowseSection } from '@/components/gallery/CircleFlagsBrowseSection';
+import { CategoryStockSection } from '@/components/flags/CategoryStockSection';
 import {
   categoryUsesCountryHubGrid,
   categoryUsesFlagVideoGallery,
@@ -134,6 +135,7 @@ export default async function CategoryPage({ params }: Props) {
               <ProductBrowseSection fixedCategorySlug={category.slug} syncUrl={false} />
             </Suspense>
           )}
+          <CategoryStockSection key={category.slug} categoryName={category.name} categoryKind={category.kind} />
           <section className="mt-12 border-t border-neutral-200 pt-8" aria-labelledby="related-hubs-heading">
             <h2 id="related-hubs-heading" className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-neutral-400">
               Explore more
