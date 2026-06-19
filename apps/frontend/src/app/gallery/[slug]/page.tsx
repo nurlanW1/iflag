@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import { ArrowLeft, ImageOff, RefreshCw, Layers, FileCode2, Image as ImageIcon, Clapperboard } from 'lucide-react';
+import { ArrowLeft, ImageOff, RefreshCw, Layers, FileCode2, Image as ImageIcon, Clapperboard, BadgeCheck, Camera, Gift, Shuffle } from 'lucide-react';
 import Link from 'next/link';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import { FlagVideoPreview } from '@/components/media/FlagVideoPreview';
@@ -17,7 +17,6 @@ import {
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
 import { ShutterstockCard } from '@/components/flags/ShutterstockCard';
-import { FreeStockSection } from '@/components/flags/FreeStockSection';
 import { PartnerLinks } from '@/components/affiliates/PartnerLinks';
 import { hrefLooksLikeNonBrowserMaster, pickFormatPreviewUrl } from '@/lib/flag-preview-display';
 import COUNTRY_FACTS from '../../../../content/countries/facts.json';
@@ -45,11 +44,18 @@ interface Variant {
   }>;
 }
 
-interface SSImage {
+type StockSource = 'shutterstock' | 'pixabay' | 'pexels';
+type StockFilterId = 'all' | 'free' | 'vector' | 'photo' | 'video' | 'png' | 'jpg' | 'icon';
+
+interface StockImage {
   id: string;
   description: string;
   thumbUrl: string;
-  shutterUrl: string;
+  shutterUrl?: string;
+  sourceUrl?: string;
+  source: StockSource;
+  licenseType?: 'free' | 'paid';
+  mediaType?: StockFilterId;
 }
 
 interface CountryData {
@@ -93,7 +99,18 @@ const FORMAT_TABS = [
   { id: 'video', label: 'Video',  Icon: Clapperboard, match: (f: string) => /mp4|webm|mov|video/i.test(f) },
 ] as const;
 type FormatTabId = typeof FORMAT_TABS[number]['id'];
-const SHUTTERSTOCK_PAGE_SIZE = 24;
+const STOCK_PAGE_SIZE = 12;
+
+const STOCK_FILTERS = [
+  { id: 'all', label: 'All', Icon: Shuffle },
+  { id: 'free', label: 'Free', Icon: Gift },
+  { id: 'vector', label: 'Vector', Icon: FileCode2 },
+  { id: 'photo', label: 'Photo', Icon: Camera },
+  { id: 'video', label: 'Video', Icon: Clapperboard },
+  { id: 'png', label: 'PNG', Icon: ImageIcon },
+  { id: 'jpg', label: 'JPG', Icon: ImageIcon },
+  { id: 'icon', label: 'Icon', Icon: BadgeCheck },
+] as const;
 
 function variantMatchesFormat(v: Variant, fmtId: FormatTabId): boolean {
   if (fmtId === 'all') return true;
@@ -105,6 +122,31 @@ function variantMatchesFormat(v: Variant, fmtId: FormatTabId): boolean {
   return v.formats.some(f => tab.match(f.formatCode ?? f.format ?? ''));
 }
 
+function interleaveStockGroups(groups: StockImage[][]): StockImage[] {
+  const output: StockImage[] = [];
+  const max = Math.max(0, ...groups.map((group) => group.length));
+  const seen = new Set<string>();
+
+  for (let i = 0; i < max; i += 1) {
+    for (const group of groups) {
+      const item = group[i];
+      if (!item) continue;
+      const key = `${item.source}:${item.id}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      output.push(item);
+    }
+  }
+
+  return output;
+}
+
+function sourceAllowedForFilter(source: StockSource, filter: StockFilterId): boolean {
+  if (filter === 'free') return source !== 'shutterstock';
+  if (filter === 'video') return source === 'pexels';
+  return true;
+}
+
 export default function CountryHubPage() {
   const params = useParams();
   const sp = useSearchParams();
@@ -114,12 +156,13 @@ export default function CountryHubPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [sortOrder, setSortOrder] = useState<'newest' | 'popular' | 'price'>('newest');
-  const [ssImages, setSsImages] = useState<SSImage[]>([]);
-  const [ssLoading, setSsLoading] = useState(false);
-  const [ssHasMore, setSsHasMore] = useState(false);
-  const [ssFetched, setSsFetched] = useState(false);
-  const ssPageRef = useRef(1);
-  const ssCountryRef = useRef<string>('');
+  const [stockImages, setStockImages] = useState<StockImage[]>([]);
+  const [stockLoading, setStockLoading] = useState(false);
+  const [stockHasMore, setStockHasMore] = useState(false);
+  const [stockFetched, setStockFetched] = useState(false);
+  const [stockFilter, setStockFilter] = useState<StockFilterId>('all');
+  const stockPageRef = useRef(1);
+  const stockCountryRef = useRef<string>('');
 
   // Format filter from URL ?format=svg|png|jpg|video
   const formatParam = (sp.get('format') ?? 'all') as FormatTabId;
@@ -157,62 +200,75 @@ export default function CountryHubPage() {
     if (slug) void loadCountryData(slug);
   }, [slug, loadCountryData]);
 
-  // Fetch one page of Shutterstock results
-  const fetchSsImages = useCallback(async (countryName: string, page: number) => {
-    if (ssLoading) return;
-    setSsLoading(true);
+  const fetchStockImages = useCallback(async (countryName: string, page: number, filter: StockFilterId) => {
+    setStockLoading(true);
     try {
       const q = encodeURIComponent(`${countryName} national flag`);
-      const r = await fetch(`/api/shutterstock/search?q=${q}&per_page=${SHUTTERSTOCK_PAGE_SIZE}&page=${page}`);
-      const res = r.ok ? (await r.json()) as { results?: SSImage[]; hasMore?: boolean } : { results: [] };
-      const batch = res.results ?? [];
-      setSsImages((prev) => {
-        const combined = page === 1 ? batch : [...prev, ...batch];
+      const endpoints: StockSource[] = (['shutterstock', 'pixabay', 'pexels'] as StockSource[]).filter((source) =>
+        sourceAllowedForFilter(source, filter),
+      );
+      const settled = await Promise.allSettled(
+        endpoints.map(async (source) => {
+          const r = await fetch(`/api/${source}/search?q=${q}&per_page=${STOCK_PAGE_SIZE}&page=${page}&filter=${filter}`);
+          const res = r.ok
+            ? (await r.json()) as { results?: StockImage[]; hasMore?: boolean }
+            : { results: [], hasMore: false };
+          return { source, results: res.results ?? [], hasMore: Boolean(res.hasMore) };
+        }),
+      );
+      const batches = settled
+        .map((item) => (item.status === 'fulfilled' ? item.value : null))
+        .filter((item): item is { source: StockSource; results: StockImage[]; hasMore: boolean } => Boolean(item));
+      const mixed = interleaveStockGroups(batches.map((batch) => batch.results));
+
+      setStockImages((prev) => {
+        const combined = page === 1 ? mixed : [...prev, ...mixed];
         const seen = new Set<string>();
         return combined.filter((img) => {
-          if (seen.has(img.id)) return false;
-          seen.add(img.id);
+          const key = `${img.source}:${img.id}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
           return true;
         });
       });
-      setSsHasMore(Boolean(res.hasMore));
+      setStockHasMore(batches.some((batch) => batch.hasMore));
     } catch {
-      setSsHasMore(false);
+      setStockHasMore(false);
     } finally {
-      setSsLoading(false);
-      setSsFetched(true);
+      setStockLoading(false);
+      setStockFetched(true);
     }
-  }, [ssLoading]);
+  }, []);
 
-  // Trigger SS fetch when country data loads
   useEffect(() => {
     const name = data?.country?.name;
     if (!name) return;
-    if (ssCountryRef.current === name) return;
-    ssCountryRef.current = name;
-    ssPageRef.current = 1;
-    setSsImages([]);
-    setSsFetched(false);
-    setSsHasMore(false);
-    void fetchSsImages(name, 1);
-  }, [data?.country?.name]);
+    const requestKey = `${name}|${stockFilter}`;
+    if (stockCountryRef.current === requestKey) return;
+    stockCountryRef.current = requestKey;
+    stockPageRef.current = 1;
+    setStockImages([]);
+    setStockFetched(false);
+    setStockHasMore(false);
+    void fetchStockImages(name, 1, stockFilter);
+  }, [data?.country?.name, stockFilter, fetchStockImages]);
 
   // Callback ref for sentinel — triggers when element mounts/unmounts
   const sentinelRef = useCallback((el: HTMLDivElement | null) => {
     if (!el) return;
     const obs = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting && ssHasMore && !ssLoading) {
-          const nextPage = ssPageRef.current + 1;
-          ssPageRef.current = nextPage;
-          void fetchSsImages(ssCountryRef.current, nextPage);
+        if (entry?.isIntersecting && stockHasMore && !stockLoading && data?.country?.name) {
+          const nextPage = stockPageRef.current + 1;
+          stockPageRef.current = nextPage;
+          void fetchStockImages(data.country.name, nextPage, stockFilter);
         }
       },
       { rootMargin: '400px' },
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, [ssHasMore, ssLoading, fetchSsImages]);
+  }, [stockHasMore, stockLoading, fetchStockImages, data?.country?.name, stockFilter]);
 
   const sortedVariants = useMemo(() => {
     if (!data?.variants) return [];
@@ -621,20 +677,43 @@ export default function CountryHubPage() {
                     })}
               </ul>
 
-              {/* ── Shutterstock section ── shown once fetch starts */}
-              {(ssLoading || ssFetched) && (
+              {/* Mixed stock section */}
+              {(stockLoading || stockFetched) && (
                 <div className="mt-10 border-t border-neutral-200/60 pt-8">
-                  <div className="mb-5 flex items-center gap-2.5">
-                    <h3 className="text-base font-semibold text-[#2a2a2a]">
-                      More {pageTitle} flag images
-                    </h3>
-                    <span className="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-600 ring-1 ring-red-200">
-                      Shutterstock
-                    </span>
+                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <h3 className="text-base font-semibold text-[#2a2a2a]">
+                        More {pageTitle} flag images
+                      </h3>
+                      <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-semibold text-neutral-700 ring-1 ring-neutral-200">
+                        Shutterstock + Pixabay + Pexels
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5" aria-label="Filter stock images">
+                      {STOCK_FILTERS.map(({ id, label, Icon }) => {
+                        const active = stockFilter === id;
+                        return (
+                          <button
+                            key={id}
+                            type="button"
+                            title={`Show ${label.toLowerCase()} stock results`}
+                            onClick={() => setStockFilter(id)}
+                            className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+                              active
+                                ? 'bg-[#111827] text-white shadow-sm'
+                                : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                            }`}
+                          >
+                            <Icon size={12} aria-hidden />
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Loading skeleton */}
-                  {ssLoading && ssImages.length === 0 && (
+                  {stockLoading && stockImages.length === 0 && (
                     <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
                       {Array.from({ length: 8 }).map((_, i) => (
                         <div key={i} className="overflow-hidden rounded-2xl border border-neutral-200/90 bg-white">
@@ -649,19 +728,19 @@ export default function CountryHubPage() {
                   )}
 
                   {/* Results grid */}
-                  {ssImages.length > 0 && (
+                  {stockImages.length > 0 && (
                     <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
-                      {ssImages.map((img) => (
-                        <ShutterstockCard key={img.id} {...img} />
+                      {stockImages.map((img) => (
+                        <ShutterstockCard key={`${img.source}-${img.id}`} {...img} />
                       ))}
                     </div>
                   )}
 
                   {/* Infinite scroll sentinel (callback ref) */}
-                  {ssHasMore && <div ref={sentinelRef} className="h-2" />}
+                  {stockHasMore && <div ref={sentinelRef} className="h-2" />}
 
                   {/* Load more spinner */}
-                  {ssLoading && ssImages.length > 0 && (
+                  {stockLoading && stockImages.length > 0 && (
                     <div className="flex justify-center py-6">
                       <svg className="h-6 w-6 animate-spin text-neutral-400" fill="none" viewBox="0 0 24 24" aria-hidden>
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -670,15 +749,15 @@ export default function CountryHubPage() {
                     </div>
                   )}
 
-                  {ssFetched && !ssLoading && ssImages.length === 0 && (
+                  {stockFetched && !stockLoading && stockImages.length === 0 && (
                     <p className="py-8 text-center text-sm text-neutral-400">
                       No stock images found for {pageTitle}.
                     </p>
                   )}
 
-                  {ssFetched && !ssHasMore && ssImages.length > 0 && (
+                  {stockFetched && !stockHasMore && stockImages.length > 0 && (
                     <p className="mt-6 text-center text-xs text-neutral-400">
-                      * Images from Shutterstock — clicking opens Shutterstock for licensing.
+                      * Stock images open on their original provider. Shutterstock items require licensing; Pixabay and Pexels items are free-provider results.
                     </p>
                   )}
                 </div>
@@ -687,11 +766,6 @@ export default function CountryHubPage() {
           )}
         </section>
 
-      </div>
-
-      {/* ── Free stock section (Pexels + Pixabay) ── */}
-      <div className="marketplace-shell">
-        <FreeStockSection countryName={pageTitle} />
       </div>
 
       {/* ── Affiliate partner links ── */}

@@ -58,11 +58,25 @@ const nextConfig = {
       "connect-src 'self' https: wss: blob:",
       "frame-src 'self' https://js.paddle.com https://buy.paddle.com https://*.clerk.accounts.dev https://accounts.clerk.dev https://challenges.cloudflare.com",
       "worker-src 'self' blob:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self' https://*.clerk.accounts.dev https://accounts.clerk.dev https://buy.paddle.com",
+      "frame-ancestors 'none'",
+      'upgrade-insecure-requests',
     ].join('; ');
+    const securityHeaders = [
+      { key: 'Content-Security-Policy', value: csp },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'X-Frame-Options', value: 'DENY' },
+      { key: 'X-DNS-Prefetch-Control', value: 'on' },
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(self)' },
+      { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
+    ];
     return [
       {
         source: '/(.*)',
-        headers: [{ key: 'Content-Security-Policy', value: csp }],
+        headers: securityHeaders,
       },
       {
         source: '/og-image-v2.png',

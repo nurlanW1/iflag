@@ -8,6 +8,7 @@ const cache = new Map<string, { data: unknown; expiresAt: number }>();
 type ShutterstockImage = {
   id: string;
   description?: string;
+  media_type?: string;
   assets?: {
     small_thumb?: { url?: string };
     large_thumb?: { url?: string };
@@ -19,6 +20,18 @@ type ShutterstockImage = {
     preview_1500?: { url?: string };
   };
 };
+
+type StockFilter = 'all' | 'free' | 'vector' | 'photo' | 'video' | 'png' | 'jpg' | 'icon';
+const ALLOWED_FILTERS = new Set<StockFilter>(['all', 'free', 'vector', 'photo', 'video', 'png', 'jpg', 'icon']);
+
+function cleanQuery(value: string | null): string {
+  const q = (value ?? 'flag').replace(/[^\p{L}\p{N}\s+-]/gu, ' ').replace(/\s+/g, ' ').trim();
+  return q.slice(0, 80) || 'flag';
+}
+
+function stockFilter(value: string | null): StockFilter {
+  return ALLOWED_FILTERS.has(value as StockFilter) ? (value as StockFilter) : 'all';
+}
 
 function isFlagRelatedImage(img: ShutterstockImage): boolean {
   const description = img.description?.toLowerCase() ?? '';
@@ -38,13 +51,17 @@ function pickBestPreviewUrl(img: ShutterstockImage): string {
   );
 }
 
-function buildFlagSearchQueries(query: string): string[] {
+function buildFlagSearchQueries(query: string, filter: StockFilter): string[] {
   const subject = query
     .replace(/\bnational\b/gi, ' ')
     .replace(/\bflags?\b/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
   const country = subject || query.trim() || 'flag';
+  if (filter === 'vector') return [`${country} flag vector`, `${country} national flag vector`, `${country} flag illustration`];
+  if (filter === 'icon') return [`${country} flag icon`, `${country} icon vector`, `${country} flag symbol`];
+  if (filter === 'png') return [`${country} flag png`, `${country} flag transparent`, `${country} flag vector`];
+  if (filter === 'jpg' || filter === 'photo') return [`${country} flag photo`, `${country} waving flag`, `${country} flag background`];
   return Array.from(
     new Set([
       `${country} flag`,
@@ -58,13 +75,31 @@ function buildFlagSearchQueries(query: string): string[] {
   );
 }
 
+function imageTypesForFilter(filter: StockFilter): string[] {
+  if (filter === 'vector' || filter === 'icon' || filter === 'png') return ['vector', 'illustration'];
+  if (filter === 'photo' || filter === 'jpg') return ['photo'];
+  return ['photo', 'illustration', 'vector'];
+}
+
+function mediaTypeForFilter(filter: StockFilter, img: ShutterstockImage): string {
+  if (filter !== 'all' && filter !== 'free') return filter;
+  const description = img.description?.toLowerCase() ?? '';
+  if (/\b(vector|illustration|icon)\b/.test(description) || img.media_type === 'vector') return 'vector';
+  return 'photo';
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
-  const q = searchParams.get('q')?.trim() || 'flag';
-  const perPage = Math.min(50, Number(searchParams.get('per_page')) || 12);
-  const page = Math.max(1, Number(searchParams.get('page')) || 1);
+  const q = cleanQuery(searchParams.get('q'));
+  const filter = stockFilter(searchParams.get('filter'));
+  const perPage = Math.min(50, Math.max(1, Number(searchParams.get('per_page')) || 12));
+  const page = Math.min(50, Math.max(1, Number(searchParams.get('page')) || 1));
 
-  const cacheKey = `${q}|${perPage}|${page}`;
+  if (filter === 'free' || filter === 'video') {
+    return NextResponse.json({ results: [], hasMore: false });
+  }
+
+  const cacheKey = `${q}|${filter}|${perPage}|${page}`;
   const cached = cache.get(cacheKey);
   if (cached && Date.now() < cached.expiresAt) {
     return NextResponse.json(cached.data);
@@ -79,7 +114,7 @@ export async function GET(req: NextRequest) {
     if (backendUrl) {
       try {
         const r = await fetch(
-          `${backendUrl}/shutterstock/search?q=${encodeURIComponent(q)}&per_page=${perPage}&page=${page}`,
+          `${backendUrl}/shutterstock/search?q=${encodeURIComponent(q)}&per_page=${perPage}&page=${page}&filter=${filter}`,
           { next: { revalidate: 0 } },
         );
         if (r.ok) {
@@ -96,7 +131,7 @@ export async function GET(req: NextRequest) {
   const auth = Buffer.from(`${key}:${secret}`).toString('base64');
 
   try {
-    const searchQueries = buildFlagSearchQueries(q);
+    const searchQueries = buildFlagSearchQueries(q, filter);
     const queryIndex = (page - 1) % searchQueries.length;
     const upstreamPage = Math.floor((page - 1) / searchQueries.length) + 1;
     const searchQuery = searchQueries[queryIndex] ?? q;
@@ -106,9 +141,7 @@ export async function GET(req: NextRequest) {
     url.searchParams.set('per_page', String(perPage));
     url.searchParams.set('page', String(upstreamPage));
     url.searchParams.set('sort', 'popular');
-    url.searchParams.append('image_type', 'photo');
-    url.searchParams.append('image_type', 'illustration');
-    url.searchParams.append('image_type', 'vector');
+    imageTypesForFilter(filter).forEach((type) => url.searchParams.append('image_type', type));
 
     const response = await fetch(url.toString(), {
       headers: {
@@ -132,6 +165,9 @@ export async function GET(req: NextRequest) {
       id: img.id,
       thumbUrl: pickBestPreviewUrl(img),
       description: img.description ?? '',
+      source: 'shutterstock' as const,
+      licenseType: 'paid' as const,
+      mediaType: mediaTypeForFilter(filter, img),
       shutterUrl:
         `https://www.shutterstock.com/image-photo/${img.id}` +
         `?utm_source=flagswing&utm_medium=affiliate&utm_campaign=flaggallery`,
