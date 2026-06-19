@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ShutterstockCard } from '@/components/flags/ShutterstockCard';
+import { FreeStockSection } from '@/components/flags/FreeStockSection';
 import { PartnerLinks } from '@/components/affiliates/PartnerLinks';
 
 interface SSImage {
@@ -130,6 +131,8 @@ export function ShutterstockSection({ countryName }: Props) {
           )}
         </div>
       )}
+
+      <FreeStockSection countryName={countryName} />
 
       <PartnerLinks countryName={countryName} />
     </>

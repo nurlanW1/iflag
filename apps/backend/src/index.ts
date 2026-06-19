@@ -16,6 +16,8 @@ import flagFilesUploadRouter from './admin/flag-files-upload.routes.js';
 import importR2AliasRouter from './admin/import-r2-alias.routes.js';
 import apiV1Router from './routes/api-v1.js';
 import shutterstockRouter from './routes/shutterstock.js';
+import pexelsRouter from './routes/pexels.js';
+import pixabayRouter from './routes/pixabay.js';
 import pool from './db.js';
 
 /** Unwrap default interop; type `any` avoids TS merging with `typeof import(...)` (non-callable under NodeNext). */
@@ -157,6 +159,8 @@ app.use('/api/admin/upload', uploadRouter); // Upload routes (requires admin rol
 app.use('/api/flags', flagsRouter); // Legacy endpoint
 app.use('/api/v1', apiV1Router);   // Public REST API v1
 app.use('/api/shutterstock', shutterstockRouter); // Shutterstock image proxy
+app.use('/api/pexels', pexelsRouter);             // Pexels free stock photos
+app.use('/api/pixabay', pixabayRouter);           // Pixabay free stock photos
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

@@ -17,6 +17,7 @@ import {
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import { resolveGalleryDisplayName } from '@/lib/gallery-display-name';
 import { ShutterstockCard } from '@/components/flags/ShutterstockCard';
+import { FreeStockSection } from '@/components/flags/FreeStockSection';
 import { PartnerLinks } from '@/components/affiliates/PartnerLinks';
 import { hrefLooksLikeNonBrowserMaster, pickFormatPreviewUrl } from '@/lib/flag-preview-display';
 import COUNTRY_FACTS from '../../../../content/countries/facts.json';
@@ -686,6 +687,11 @@ export default function CountryHubPage() {
           )}
         </section>
 
+      </div>
+
+      {/* ── Free stock section (Pexels + Pixabay) ── */}
+      <div className="marketplace-shell">
+        <FreeStockSection countryName={pageTitle} />
       </div>
 
       {/* ── Affiliate partner links ── */}
