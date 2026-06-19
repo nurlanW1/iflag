@@ -23,6 +23,7 @@ import COUNTRY_FACTS from '../../../../content/countries/facts.json';
 import COUNTRY_COLORS from '../../../../content/countries/flag-colors.json';
 import { FlagColorPalette } from '@/components/gallery/FlagColorPalette';
 import { WorldMapPin } from '@/components/gallery/WorldMapPin';
+import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCover';
 import type { FlagColor } from '@/components/gallery/FlagColorPalette';
 
 type CountryFact = { capital: string; population: string; area: string; currency: string };
@@ -389,20 +390,20 @@ export default function CountryHubPage() {
           {/* ── Left column ── */}
           <div className="flex flex-col gap-2.5 pb-6 lg:pb-8">
 
-            {/* Small flag */}
-            {webpCover ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={webpCover}
-                alt={`${pageTitle} flag`}
-                className="rounded-[3px] object-contain shadow-[0_3px_16px_rgba(0,0,0,0.15)]"
-                style={{ width: 'auto', maxWidth: 200, height: 'auto', maxHeight: 130 }}
-                loading="eager"
-                decoding="async"
-                referrerPolicy="no-referrer"
-                draggable={false}
+            {/* Small flag — same papka preview as gallery grid */}
+            <div
+              className="rounded-[3px] shadow-[0_3px_16px_rgba(0,0,0,0.15)] overflow-hidden"
+              style={{ width: 200, height: 130 }}
+            >
+              <CountryHubFolderCover
+                countryName={pageTitle}
+                coverUrl={webpCover || null}
+                hasWebpCover={data.country.has_webp_cover ?? !!webpCover}
+                countryCode={data.country.code ?? null}
+                imageClassName="object-contain p-2"
+                priority
               />
-            ) : null}
+            </div>
 
             {/* Country name — Baskerville serif */}
             <h1
