@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { getCountryCode } from '@/lib/country-mapping';
+import { COUNTRIES } from '@/lib/countries';
 import { getDb } from '@/lib/server/db';
 import { buildCountryHubDescription } from '@/lib/gallery/country-hub-copy';
 import { fetchCountryGalleryFromBackendApi } from '@/lib/server/gallery-country-detail-fallback';
@@ -137,6 +138,40 @@ function slugToCountryName(slug: string): string {
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+}
+
+function canonicalCountryForSlug(slug: string) {
+  return COUNTRIES.find((country) => country.slug.toLowerCase() === slug.toLowerCase()) ?? null;
+}
+
+function emptyCountryHub(slug: string) {
+  const canonical = canonicalCountryForSlug(slug);
+  const countryName = canonical?.name ?? slugToCountryName(slug);
+  const countryCode = canonical?.code.toUpperCase() ?? getCountryCode(countryName);
+  const coverUrl = canonical ? `/flags/${canonical.code.toLowerCase()}.svg` : null;
+  return {
+    country: {
+      name: countryName,
+      slug: canonical?.slug ?? slug,
+      code: countryCode,
+      region: null,
+      description: buildCountryHubDescription({
+        name: countryName,
+        slug: canonical?.slug ?? slug,
+        isoCode: countryCode,
+        region: null,
+        dbDescription: null,
+        designCount: 0,
+        fileCount: 0,
+      }),
+      cover_image_url: coverUrl,
+      has_webp_cover: Boolean(coverUrl),
+      webp_cover_url: coverUrl,
+      file_count: 0,
+      design_count: 0,
+    },
+    variants: [],
+  };
 }
 
 async function loadFromDatabase(slug: string) {
@@ -398,6 +433,11 @@ export async function GET(
         },
         variants: [...r2Variants, ...diskVideos],
       });
+    }
+
+    const fallbackHub = emptyCountryHub(slug);
+    if (canonicalCountryForSlug(slug)) {
+      return NextResponse.json(fallbackHub, { headers: { 'Cache-Control': 'no-store' } });
     }
 
     return NextResponse.json({ error: 'Country not found' }, { status: 404 });

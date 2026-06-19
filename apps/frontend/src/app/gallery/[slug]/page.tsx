@@ -677,6 +677,8 @@ export default function CountryHubPage() {
                       );
                     })}
               </ul>
+            </>
+          )}
 
               {/* Mixed stock section */}
               {(stockLoading || stockFetched) && (
@@ -763,8 +765,6 @@ export default function CountryHubPage() {
                   )}
                 </div>
               )}
-            </>
-          )}
         </section>
 
       </div>

@@ -137,7 +137,11 @@ export function filterGalleryCountryFolders(
   countries: GalleryCountrySummary[],
 ): GalleryCountrySummary[] {
   return mergeCanonicalCountryHubs(countries).filter((c) => {
-    if ((c.flag_count ?? 0) < 1) return false;
+    if (!c.is_fallback_country && (c.flag_count ?? 0) < 1) return false;
+    if (c.is_fallback_country) {
+      const thumb = c.webp_cover_url ?? c.thumbnail ?? '';
+      return Boolean(thumb.trim()) && !isPackFallbackFlagThumbnail(thumb);
+    }
     if (!c.has_webp_cover) return false;
     const webp = c.webp_cover_url?.trim() ?? '';
     if (!webp) return false;

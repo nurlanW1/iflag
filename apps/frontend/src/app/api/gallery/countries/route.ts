@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { getCountryCode } from '@/lib/country-mapping';
+import { COUNTRIES } from '@/lib/countries';
 import { getDb } from '@/lib/server/db';
 import {
   applyGalleryDisplayNames,
@@ -40,6 +41,41 @@ function mergeStockOnlyIntoDb(dbList: GalleryCountrySummary[], stockList: Galler
     (c) => !seen.has(c.slug.toLowerCase()) && !isPackFallbackFlagThumbnail(c.thumbnail),
   );
   return mergeCanonicalCountryHubs([...dbList, ...extra]);
+}
+
+function canonicalCountryFallbacks(): GalleryCountrySummary[] {
+  return COUNTRIES.map((country) => {
+    const code = country.code.toUpperCase();
+    const thumbnail = `/flags/${country.code.toLowerCase()}.svg`;
+    return {
+      id: `canonical-country:${country.slug}`,
+      name: country.name,
+      slug: country.slug,
+      code,
+      flag_count: 0,
+      design_count: 0,
+      count: 0,
+      has_webp_cover: true,
+      webp_cover_url: thumbnail,
+      thumbnail_url: thumbnail,
+      thumbnail,
+      is_fallback_country: true,
+    };
+  });
+}
+
+function mergeMissingCanonicalCountries(list: GalleryCountrySummary[]): GalleryCountrySummary[] {
+  const existing = mergeCanonicalCountryHubs(list);
+  const seen = new Set<string>();
+  for (const country of existing) {
+    if (country.code?.trim()) seen.add(`code:${country.code.trim().toUpperCase()}`);
+    seen.add(`slug:${country.slug.trim().toLowerCase()}`);
+  }
+  const missing = canonicalCountryFallbacks().filter((country) => {
+    const byCode = country.code ? seen.has(`code:${country.code.toUpperCase()}`) : false;
+    return !byCode && !seen.has(`slug:${country.slug.toLowerCase()}`);
+  });
+  return mergeCanonicalCountryHubs([...existing, ...missing]);
 }
 
 function finalizeCountryHubList(
@@ -171,8 +207,9 @@ export async function GET(request: Request) {
 
         // Region / taxonomy filters: DB only (flag_stock rows have no region metadata).
         if (filters != null) {
+          const list = filters.region ? mergeMissingCanonicalCountries(fromDb) : fromDb;
           return NextResponse.json(
-            { countries: finalizeCountryHubList(fromDb, filters) },
+            { countries: finalizeCountryHubList(list, filters) },
             { headers: { 'Cache-Control': 'no-store' } },
           );
         }
@@ -180,7 +217,7 @@ export async function GET(request: Request) {
           const merged =
             mergeLegacyFlagStock ? mergeStockOnlyIntoDb(fromDb, stockCountries) : fromDb;
           return NextResponse.json(
-            { countries: finalizeCountryHubList(merged, filters) },
+            { countries: finalizeCountryHubList(mergeMissingCanonicalCountries(merged), filters) },
             { headers: { 'Cache-Control': 'no-store' } },
           );
         }
@@ -193,7 +230,7 @@ export async function GET(request: Request) {
           const merged =
             mergeLegacyFlagStock ? mergeStockOnlyIntoDb(fromBackend, stockCountries) : fromBackend;
           return NextResponse.json(
-            { countries: finalizeCountryHubList(merged, filters) },
+            { countries: finalizeCountryHubList(mergeMissingCanonicalCountries(merged), filters) },
             { headers: { 'Cache-Control': 'no-store' } },
           );
         }
@@ -212,14 +249,18 @@ export async function GET(request: Request) {
             ? mergeStockOnlyIntoDb(fromBackend, stockCountries)
             : fromBackend;
         return NextResponse.json(
-          { countries: finalizeCountryHubList(merged, filters) },
+          { countries: finalizeCountryHubList(mergeMissingCanonicalCountries(merged), filters) },
           { headers: { 'Cache-Control': 'no-store' } },
         );
       }
     }
 
     if (filters != null) {
-      return NextResponse.json({ countries: [] }, { headers: { 'Cache-Control': 'no-store' } });
+      const list = filters.region ? mergeMissingCanonicalCountries([]) : [];
+      return NextResponse.json(
+        { countries: finalizeCountryHubList(list, filters) },
+        { headers: { 'Cache-Control': 'no-store' } },
+      );
     }
 
     if (stockCountries.length === 0) {
@@ -227,7 +268,7 @@ export async function GET(request: Request) {
     }
 
     const stockOnlyReal = stockCountries.filter((c) => !isPackFallbackFlagThumbnail(c.thumbnail));
-    return NextResponse.json({ countries: finalizeCountryHubList(stockOnlyReal, null) });
+    return NextResponse.json({ countries: finalizeCountryHubList(mergeMissingCanonicalCountries(stockOnlyReal), null) });
   } catch (error) {
     console.error('Error loading countries:', error);
     return NextResponse.json({ countries: [] }, { status: 500 });
