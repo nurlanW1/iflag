@@ -40,7 +40,7 @@ function PaddleAutoOpen() {
       if (window.Paddle?.Checkout) {
         window.Paddle.Checkout.open({
           transactionId: ptxn,
-          settings: { successUrl: '/thank-you' },
+          settings: { successUrl: `${window.location.origin}/thank-you` },
         });
       }
     };
@@ -67,8 +67,7 @@ export function PaddleInitializer() {
               checkout: {
                 settings: {
                   displayMode: 'overlay',
-                  // After payment, redirect to thank-you page
-                  successUrl: '/thank-you',
+                  successUrl: `${window.location.origin}/thank-you`,
                 },
               },
             });
