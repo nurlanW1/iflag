@@ -40,12 +40,12 @@ function MarqueeRow({
   items,
   direction,
   speed,
-  paused,
+  slow,
 }: {
   items: GalleryCountrySummary[];
   direction: 'left' | 'right';
   speed: number;
-  paused: boolean;
+  slow: boolean;
 }) {
   /* Duplicate for seamless loop */
   const doubled = [...items, ...items];
@@ -55,9 +55,9 @@ function MarqueeRow({
       <div
         className="flex gap-2.5 py-0.5"
         style={{
-          animation: `marquee-${direction} ${speed}s linear infinite`,
-          animationPlayState: paused ? 'paused' : 'running',
+          animation: `marquee-${direction} ${slow ? speed * 2 : speed}s linear infinite`,
           willChange: 'transform',
+          transition: 'animation-duration 0.6s ease',
         }}
       >
         {doubled.map((country, i) => (
@@ -70,7 +70,7 @@ function MarqueeRow({
 
 export function LandingFlagGalleryPreview() {
   const [countries, setCountries] = useState<GalleryCountrySummary[]>([]);
-  const [paused, setPaused] = useState(false);
+  const [slow, setSlow] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -118,8 +118,8 @@ export function LandingFlagGalleryPreview() {
   return (
     <section
       className="overflow-hidden border-t border-neutral-200/85 bg-[#fafaf9] py-6"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onMouseEnter={() => setSlow(true)}
+      onMouseLeave={() => setSlow(false)}
     >
       <div className="space-y-2.5">
         {rows.map((row, idx) => (
@@ -128,7 +128,7 @@ export function LandingFlagGalleryPreview() {
             items={row}
             direction={ROW_DIRS[idx] ?? 'left'}
             speed={ROW_SPEEDS[idx] ?? 38}
-            paused={paused}
+            slow={slow}
           />
         ))}
       </div>
