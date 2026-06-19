@@ -101,6 +101,9 @@ function parseGalleryListFilters(searchParams: URLSearchParams): GalleryCountryL
     autonomy: 'autonomy',
     historical: 'historical',
     'historical-flag': 'historical',
+    football: 'football',
+    'football-club': 'football',
+    'football-clubs': 'football',
   };
 
   const dbCategory = kindRaw ? kindMap[kindRaw] : undefined;

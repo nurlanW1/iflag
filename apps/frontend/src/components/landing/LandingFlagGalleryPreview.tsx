@@ -7,7 +7,7 @@ import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 
 /* ── Speeds (seconds for one full cycle) — all rows go left ── */
-const ROW_SPEEDS = [42, 55, 35, 48, 38] as const;
+const ROW_SPEEDS = [160, 200, 140, 180, 155] as const;
 
 function FlagCard({ country }: { country: GalleryCountrySummary }) {
   return (

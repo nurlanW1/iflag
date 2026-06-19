@@ -34,7 +34,7 @@ export type { GalleryCountrySummary };
 /** Narrow gallery list — matches `countries.region` / `countries.category` in Postgres. */
 export type GalleryCountryListFilters = {
   region?: string | null;
-  dbCategory?: 'country' | 'autonomy' | 'organization' | 'historical' | null;
+  dbCategory?: 'country' | 'autonomy' | 'organization' | 'historical' | 'football' | null;
 };
 
 export type GalleryPremiumTier = 'free' | 'freemium' | 'paid';
