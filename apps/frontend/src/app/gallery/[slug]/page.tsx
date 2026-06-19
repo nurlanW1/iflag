@@ -203,12 +203,13 @@ export default function CountryHubPage() {
   const fetchStockImages = useCallback(async (countryName: string, page: number, filter: StockFilterId) => {
     setStockLoading(true);
     try {
-      const q = encodeURIComponent(`${countryName} national flag`);
       const endpoints: StockSource[] = (['shutterstock', 'pixabay', 'pexels'] as StockSource[]).filter((source) =>
         sourceAllowedForFilter(source, filter),
       );
       const settled = await Promise.allSettled(
         endpoints.map(async (source) => {
+          const query = source === 'shutterstock' ? `${countryName} national flag` : `${countryName} flag`;
+          const q = encodeURIComponent(query);
           const r = await fetch(`/api/${source}/search?q=${q}&per_page=${STOCK_PAGE_SIZE}&page=${page}&filter=${filter}`);
           const res = r.ok
             ? (await r.json()) as { results?: StockImage[]; hasMore?: boolean }
