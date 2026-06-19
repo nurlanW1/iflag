@@ -73,8 +73,23 @@ export function CheckoutButtonClerk({
         onAlreadyPurchased?.();
         return;
       }
-      // Extract transaction ID from Paddle checkout URL (?_ptxn=txn_...)
-      // and open as overlay instead of redirecting to production domain.
+      // Extract _ptxn from checkout URL and open Paddle overlay directly.
+      // This avoids the successUrl validation error on Initialize().
+      try {
+        const ptxn = new URL(result.url).searchParams.get('_ptxn');
+        if (ptxn && window.Paddle?.Checkout) {
+          window.Paddle.Checkout.open({
+            transactionId: ptxn,
+            settings: {
+              displayMode: 'overlay',
+              successUrl: `${window.location.origin}/thank-you`,
+            },
+          });
+          return;
+        }
+      } catch {
+        // fall through to redirect
+      }
       window.location.href = result.url;
     } catch {
       setError('Network error — please try again');

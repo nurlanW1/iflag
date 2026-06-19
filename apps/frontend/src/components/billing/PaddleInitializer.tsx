@@ -40,7 +40,10 @@ function PaddleAutoOpen() {
       if (window.Paddle?.Checkout) {
         window.Paddle.Checkout.open({
           transactionId: ptxn,
-          settings: { successUrl: `${window.location.origin}/thank-you` },
+          settings: {
+            displayMode: 'overlay',
+            successUrl: `${window.location.origin}/thank-you`,
+          },
         });
       }
     };
@@ -64,12 +67,6 @@ export function PaddleInitializer() {
           if (window.Paddle && CLIENT_TOKEN) {
             window.Paddle.Initialize({
               token: CLIENT_TOKEN,
-              checkout: {
-                settings: {
-                  displayMode: 'overlay',
-                  successUrl: `${window.location.origin}/thank-you`,
-                },
-              },
             });
           }
         }}
