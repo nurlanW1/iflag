@@ -47,7 +47,7 @@ export function ShutterstockCard({
         <span
           className={clsx(
             'pointer-events-none absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-lg shadow-[0_1px_4px_rgba(15,23,42,0.18)] ring-1 ring-black/10',
-            isPremium ? 'bg-amber-400 text-amber-950' : 'bg-sky-500 text-white',
+            isPremium ? 'bg-amber-400 text-amber-950' : 'bg-emerald-500 text-white',
           )}
           title={tierLabel}
         >
