@@ -25,7 +25,6 @@ import {
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SITE_NAME } from '@/lib/seo/site-config';
-import { PageShell } from '@/components/layout';
 import { FlagGame } from '@/components/FlagGame';
 
 function useAuthPageLinks() {
@@ -96,8 +95,6 @@ function NavbarCartIcon({
   );
 }
 
-const navTextMd =
-  'text-sm font-semibold tracking-tight text-[var(--nav-link-text)] transition-colors duration-200 hover:text-[var(--nav-link-hover)] lg:text-base';
 const navLogin =
   'text-base font-semibold tracking-tight text-[var(--nav-link-text)] underline-offset-4 transition-colors duration-200 hover:text-[var(--nav-link-hover)] hover:underline';
 
@@ -127,6 +124,13 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
 
   // Blue hero mode: only on "/" when not scrolled
   const isHero = pathname === '/' && !scrolled;
+  const useFullWidthChrome =
+    pathname === '/editor' ||
+    pathname.startsWith('/editor/') ||
+    pathname === '/dashboard' ||
+    pathname.startsWith('/dashboard/') ||
+    pathname === '/admin' ||
+    pathname.startsWith('/admin/');
 
   const clerkAppearance = {
     elements: {
@@ -148,6 +152,9 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
   const signUpClass = isHero
     ? 'inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg border-2 border-white/70 px-7 text-base font-semibold text-white transition-all hover:border-white hover:bg-white/10'
     : 'inline-flex h-11 min-h-[44px] min-w-[8rem] items-center justify-center rounded-lg bg-[var(--brand-blue)] px-7 text-base font-semibold text-white shadow-md transition-colors hover:bg-[var(--brand-blue-hover)]';
+  const navInnerClass = useFullWidthChrome
+    ? 'w-full px-2 sm:px-3 lg:px-4 2xl:px-5'
+    : 'marketplace-shell !py-0';
 
   function DesktopAuthCluster() {
     return (
@@ -239,7 +246,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
         } as React.CSSProperties
       }
     >
-      <PageShell className="!py-0">
+      <div className={navInnerClass}>
         {/* Phones: logo + search + cart + menu */}
         <div className="flex items-center justify-between gap-2 py-2.5 md:hidden">
           <Link
@@ -525,7 +532,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
             </>
           ) : null}
         </AnimatePresence>
-      </PageShell>
+      </div>
 
       <AnimatePresence>
         {gameOpen && <FlagGame onClose={() => setGameOpen(false)} />}
