@@ -304,7 +304,7 @@ const PREVIEWABLE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
 const ALL_FLAG_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg', '.eps', '.ai', '.pdf', '.psd', '.mp4', '.webm', '.mov']);
 const R2_DIRECT_MAX_OBJECTS = Math.min(
   20_000,
-  Math.max(500, Number(process.env.R2_COUNTRY_DIRECT_MAX_OBJECTS ?? 5_000) || 5_000),
+  Math.max(500, Number(process.env.R2_COUNTRY_DIRECT_MAX_OBJECTS ?? 20_000) || 20_000),
 );
 
 function titleCaseWords(input: string): string {
@@ -321,6 +321,10 @@ function addCandidateKey(out: Set<string>, raw: string | null | undefined) {
   out.add(value);
 }
 
+function compactCountryKey(raw: string | null | undefined): string {
+  return raw?.trim().toLowerCase().replace(/[^a-z0-9]+/g, '') ?? '';
+}
+
 function r2CountryPrefixCandidates(countrySlug: string): string[] {
   const canonical = canonicalCountryForSlug(countrySlug);
   const countryName = canonical?.name ?? slugToCountryName(countrySlug);
@@ -333,6 +337,10 @@ function r2CountryPrefixCandidates(countrySlug: string): string[] {
   addCandidateKey(keys, countryName);
   addCandidateKey(keys, countryName.toLowerCase());
   addCandidateKey(keys, countryName.replace(/\s+/g, '-').toLowerCase());
+  addCandidateKey(keys, compactCountryKey(countryName));
+  addCandidateKey(keys, compactCountryKey(countrySlug));
+  addCandidateKey(keys, countryName.replace(/\s+/g, ''));
+  addCandidateKey(keys, titleCaseWords(spacedSlug).replace(/\s+/g, ''));
   addCandidateKey(keys, spacedSlug);
   addCandidateKey(keys, titleCaseWords(spacedSlug));
   addCandidateKey(keys, code.toLowerCase());

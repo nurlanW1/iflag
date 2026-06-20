@@ -1,5 +1,6 @@
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 import { isPackFallbackFlagThumbnail } from '@/lib/server/gallery-from-db';
+import { COUNTRIES } from '@/lib/countries';
 
 /** Slug aliases → canonical country hub slug (lowercase). */
 export const COUNTRY_SLUG_SEARCH_ALIASES: Record<string, string> = {
@@ -19,6 +20,8 @@ export const COUNTRY_SLUG_SEARCH_ALIASES: Record<string, string> = {
   'republic-of-korea': 'south-korea',
   rok: 'south-korea',
   southkorea: 'south-korea',
+  srilanka: 'sri-lanka',
+  ceylon: 'sri-lanka',
 };
 
 export const ISO_TO_COUNTRY_HUB_SLUG: Record<string, string> = {
@@ -29,6 +32,16 @@ export const ISO_TO_COUNTRY_HUB_SLUG: Record<string, string> = {
   KR: 'south-korea',
   KP: 'north-korea',
 };
+
+function compactKey(s: string): string {
+  return s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+const COMPACT_COUNTRY_HUB_SLUGS = new Map<string, string>();
+for (const country of COUNTRIES) {
+  COMPACT_COUNTRY_HUB_SLUGS.set(compactKey(country.slug), country.slug);
+  COMPACT_COUNTRY_HUB_SLUGS.set(compactKey(country.name), country.slug);
+}
 
 /** Slugs that look like imported file stems, not country folders. */
 export function slugLooksLikeFileAsset(slug: string): boolean {
@@ -49,6 +62,8 @@ export function canonicalHubSlug(row: Pick<GalleryCountrySummary, 'slug' | 'code
   const raw = row.slug.trim().toLowerCase();
   const aliased = COUNTRY_SLUG_SEARCH_ALIASES[raw];
   if (aliased) return aliased;
+  const compact = COMPACT_COUNTRY_HUB_SLUGS.get(compactKey(raw));
+  if (compact) return compact;
   const iso = row.code?.trim().toUpperCase();
   if (iso && ISO_TO_COUNTRY_HUB_SLUG[iso]) return ISO_TO_COUNTRY_HUB_SLUG[iso];
   return raw;

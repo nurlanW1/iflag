@@ -27,6 +27,7 @@ const SLUG_ALIASES: Record<string, string> = {
   'republic-of-korea': 'south-korea',
   rok: 'south-korea',
   southkorea: 'south-korea',
+  ceylon: 'sri-lanka',
 };
 
 /** ISO-3166 alpha-2 → canonical slug (subset; DB iso match is preferred). */
@@ -53,6 +54,10 @@ export type CountrySlugIndex = {
 
 function normSlug(s: string): string {
   return s.trim().toLowerCase().replace(/^-+|-+$/g, '');
+}
+
+function compactKey(s: string): string {
+  return normSlug(s).replace(/[^a-z0-9]+/g, '');
 }
 
 function tokensFromSlug(slug: string): string[] {
@@ -94,6 +99,8 @@ export async function loadCountrySlugIndex(pool: Pool): Promise<CountrySlugIndex
     const nameKey = country.name.toLowerCase();
     byName.set(nameKey, slug);
     byName.set(nameKey.replace(/\s+/g, '-'), slug);
+    byName.set(compactKey(nameKey), slug);
+    byName.set(compactKey(slug), slug);
     byName.set(slug, slug);
   }
 
@@ -111,6 +118,10 @@ export async function loadCountrySlugIndex(pool: Pool): Promise<CountrySlugIndex
       if (!byName.has(nameKey)) byName.set(nameKey, slug);
       const hyphenName = nameKey.replace(/\s+/g, '-');
       if (!byName.has(hyphenName)) byName.set(hyphenName, slug);
+      const compactName = compactKey(nameKey);
+      if (compactName && !byName.has(compactName)) byName.set(compactName, slug);
+      const compactSlug = compactKey(slug);
+      if (compactSlug && !byName.has(compactSlug)) byName.set(compactSlug, slug);
     }
   }
 
@@ -146,7 +157,7 @@ export function resolveCanonicalCountrySlugWithIndex(
   }
 
   const humanized = raw.replace(/-/g, ' ');
-  const byName = index.byName.get(humanized) ?? index.byName.get(raw);
+  const byName = index.byName.get(humanized) ?? index.byName.get(raw) ?? index.byName.get(compactKey(raw));
   if (byName) return byName;
 
   const slugified = slugifySegment(humanized, 96);

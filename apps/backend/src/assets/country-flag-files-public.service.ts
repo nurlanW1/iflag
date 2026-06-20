@@ -110,8 +110,8 @@ export async function listPublishedCountryFlagFiles(
   limit: number;
   hasMore: boolean;
 }> {
-  const defaultLimit = filters.country_slug?.trim() ? 200 : 24;
-  const maxLimit = filters.country_slug?.trim() ? 500 : 100;
+  const defaultLimit = filters.country_slug?.trim() ? 1000 : 24;
+  const maxLimit = filters.country_slug?.trim() ? 10000 : 100;
   const limit = Math.min(maxLimit, Math.max(1, filters.limit ?? defaultLimit));
   const page = Math.max(1, filters.page ?? 1);
   const offset = (page - 1) * limit;

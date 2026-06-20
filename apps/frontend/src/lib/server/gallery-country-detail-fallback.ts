@@ -95,7 +95,7 @@ export async function fetchCountryGalleryFromBackendApi(
   if (!resolved.ok) return null;
 
   const q = encodeURIComponent(slug.trim());
-  const url = joinBackendApiPath(resolved.baseUrl, `/assets?country_slug=${q}&limit=500`);
+  const url = joinBackendApiPath(resolved.baseUrl, `/assets?country_slug=${q}&limit=10000`);
   let rows: BackendFlagRow[] = [];
   try {
     const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(15_000) });

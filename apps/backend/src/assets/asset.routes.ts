@@ -22,7 +22,7 @@ const PREVIEWABLE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
 const FLAG_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg', '.eps', '.ai', '.pdf', '.psd', '.mp4', '.webm', '.mov']);
 const R2_DIRECT_COUNTRY_MAX_OBJECTS = Math.min(
   20_000,
-  Math.max(500, Number(process.env.R2_COUNTRY_DIRECT_MAX_OBJECTS ?? 10_000) || 10_000),
+  Math.max(500, Number(process.env.R2_COUNTRY_DIRECT_MAX_OBJECTS ?? 20_000) || 20_000),
 );
 
 function r2PublicUrlFromKey(publicUrlBase: string, key: string): string {
@@ -48,6 +48,10 @@ function addCandidateKey(out: Set<string>, raw: string | null | undefined) {
   if (value) out.add(value);
 }
 
+function compactCountryKey(raw: string | null | undefined): string {
+  return raw?.trim().toLowerCase().replace(/[^a-z0-9]+/g, '') ?? '';
+}
+
 function r2CountryPrefixCandidates(slugRaw: string): string[] {
   const slug = slugRaw.trim().toLowerCase();
   const canonical = getCanonicalCountryBySlug(slug) ?? (slug.length === 2 ? getCanonicalCountryByIso(slug) : null);
@@ -61,6 +65,10 @@ function r2CountryPrefixCandidates(slugRaw: string): string[] {
   addCandidateKey(keys, name);
   addCandidateKey(keys, name.toLowerCase());
   addCandidateKey(keys, name.replace(/\s+/g, '-').toLowerCase());
+  addCandidateKey(keys, compactCountryKey(name));
+  addCandidateKey(keys, compactCountryKey(slug));
+  addCandidateKey(keys, name.replace(/\s+/g, ''));
+  addCandidateKey(keys, titleCaseWords(spacedSlug).replace(/\s+/g, ''));
   addCandidateKey(keys, spacedSlug);
   addCandidateKey(keys, titleCaseWords(spacedSlug));
   addCandidateKey(keys, code.toLowerCase());
