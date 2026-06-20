@@ -15,6 +15,8 @@ import billingRouter, { paddleWebhookHandler } from './billing/billing.routes.js
 import flagFilesUploadRouter from './admin/flag-files-upload.routes.js';
 import importR2AliasRouter from './admin/import-r2-alias.routes.js';
 import apiV1Router from './routes/api-v1.js';
+import { runR2Import } from './scripts/import-r2-files.js';
+import { requireR2Config } from './storage/r2.js';
 import shutterstockRouter from './routes/shutterstock.js';
 import pexelsRouter from './routes/pexels.js';
 import pixabayRouter from './routes/pixabay.js';
@@ -194,6 +196,30 @@ try {
     console.log(`[startup] NODE_ENV=${process.env.NODE_ENV || 'development'}`);
     if (!process.env.DATABASE_URL?.trim()) {
       console.warn('[startup] WARNING: DATABASE_URL is unset — /health will fail until configured.');
+    }
+
+    // Background R2 → DB sync: picks up files uploaded directly to R2 (e.g. via Cloudflare dashboard)
+    const R2_SYNC_INTERVAL_MS = 10 * 60 * 1000; // every 10 minutes
+    let r2SyncRunning = false;
+    try {
+      requireR2Config();
+      setInterval(async () => {
+        if (r2SyncRunning) return;
+        r2SyncRunning = true;
+        try {
+          const stats = await runR2Import({ maxObjects: 10_000, pool });
+          if (stats.inserted > 0 || stats.updated > 0) {
+            console.log(`[r2-sync] inserted=${stats.inserted} updated=${stats.updated} scanned=${stats.scanned}`);
+          }
+        } catch (err) {
+          console.error('[r2-sync] sync error:', err);
+        } finally {
+          r2SyncRunning = false;
+        }
+      }, R2_SYNC_INTERVAL_MS);
+      console.log(`[startup] R2 background sync enabled — runs every ${R2_SYNC_INTERVAL_MS / 60_000} min`);
+    } catch {
+      console.log('[startup] R2 background sync disabled (R2 env not configured)');
     }
   });
 
