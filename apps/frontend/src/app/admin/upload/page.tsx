@@ -442,6 +442,9 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
   const [r2Importing, setR2Importing] = useState(false);
   const [r2Result, setR2Result] = useState<{ ok: boolean; message: string } | null>(null);
 
+  // Auto-sync status after upload
+  const [autoSyncStatus, setAutoSyncStatus] = useState<'idle' | 'syncing' | 'done' | 'error'>('idle');
+
   // Country search filtered
   const filtered = query.trim().length < 1
     ? []
@@ -465,9 +468,9 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
     setCountry(c);
     setQuery(c.name);
     setShowDropdown(false);
-    // Reset files when country changes
     setFileItems([]);
     setUploadSummary(null);
+    setAutoSyncStatus('idle');
   }
 
   function addFiles(newFiles: FileList | File[]) {
@@ -501,6 +504,7 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
 
     setIsUploading(true);
     setUploadSummary(null);
+    setAutoSyncStatus('idle');
 
     const pending = fileItems.filter(f => f.status === 'pending');
     let successCount = 0;
@@ -561,6 +565,10 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
 
     setUploadSummary({ success: successCount, error: errorCount, prefix: `flags/${country.slug}/` });
     setIsUploading(false);
+
+    if (successCount > 0) {
+      void handleAutoSyncCountry(country.slug);
+    }
   }
 
   async function handleImportR2() {
@@ -582,6 +590,22 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
       setR2Result({ ok: false, message: e instanceof Error ? e.message : 'Import failed' });
     } finally {
       setR2Importing(false);
+    }
+  }
+
+  async function handleAutoSyncCountry(slug: string) {
+    if (!getToken) return;
+    const token = await getToken();
+    if (!token) return;
+    setAutoSyncStatus('syncing');
+    try {
+      const res = await fetch(
+        `/api/admin/import-r2?prefix=${encodeURIComponent(`flags/${slug}/`)}&maxObjects=500`,
+        { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' },
+      );
+      setAutoSyncStatus(res.ok ? 'done' : 'error');
+    } catch {
+      setAutoSyncStatus('error');
     }
   }
 
@@ -642,7 +666,7 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
               />
               {country && (
                 <button
-                  onClick={() => { setCountry(null); setQuery(''); setFileItems([]); setUploadSummary(null); }}
+                  onClick={() => { setCountry(null); setQuery(''); setFileItems([]); setUploadSummary(null); setAutoSyncStatus('idle'); }}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:text-gray-700"
                 >
                   <X size={14} />
@@ -776,6 +800,21 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
                   {uploadSummary.error === 0 ? 'All files uploaded!' : `${uploadSummary.success} uploaded, ${uploadSummary.error} failed`}
                 </p>
                 <p className="mt-1 font-mono text-xs text-gray-600">R2: {uploadSummary.prefix}</p>
+                {autoSyncStatus === 'syncing' && (
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-sky-700">
+                    <Loader2 size={12} className="animate-spin" /> Syncing to gallery…
+                  </p>
+                )}
+                {autoSyncStatus === 'done' && (
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-emerald-700">
+                    <CheckCircle2 size={12} /> Gallery synced — files are now visible on the site
+                  </p>
+                )}
+                {autoSyncStatus === 'error' && (
+                  <p className="mt-1.5 text-xs text-amber-700">
+                    Auto-sync failed — use &quot;Import existing R2 files to DB&quot; below
+                  </p>
+                )}
               </div>
             </div>
           </div>
