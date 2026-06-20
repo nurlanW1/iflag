@@ -98,6 +98,9 @@ function parseGalleryListFilters(searchParams: URLSearchParams): GalleryCountryL
   const kindMap: Partial<Record<string, NonNullable<GalleryCountryListFilters['dbCategory']>>> = {
     organization: 'organization',
     organizations: 'organization',
+    'us-states': 'us-states',
+    'us-state': 'us-states',
+    states: 'us-states',
     autonomy: 'autonomy',
     historical: 'historical',
     'historical-flag': 'historical',

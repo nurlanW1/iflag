@@ -34,7 +34,7 @@ export type { GalleryCountrySummary };
 /** Narrow gallery list — matches `countries.region` / `countries.category` in Postgres. */
 export type GalleryCountryListFilters = {
   region?: string | null;
-  dbCategory?: 'country' | 'autonomy' | 'organization' | 'historical' | 'football' | null;
+  dbCategory?: 'country' | 'us-states' | 'autonomy' | 'organization' | 'historical' | 'football' | null;
 };
 
 export type GalleryPremiumTier = 'free' | 'freemium' | 'paid';
@@ -310,6 +310,26 @@ async function fetchGalleryCountriesFromDbOnce(
      WHERE (
          $1::text IS NULL
          OR lower(trim(coalesce(c.category::text, 'country'))) = lower(trim($1))
+         OR (
+           lower(trim($1)) = 'us-states'
+           AND lower(trim(c.slug::text)) IN (
+             'us-states',
+             'us-state',
+             'usstates',
+             'usstate',
+             'use-states',
+             'use-state',
+             'usestates',
+             'usestate',
+             'usa-states',
+             'usa-state',
+             'usastates',
+             'usastate',
+             'u-s-states',
+             'united-states-states',
+             'american-states'
+           )
+         )
        )
      ORDER BY ${countriesOrder}`,
     [catParam],

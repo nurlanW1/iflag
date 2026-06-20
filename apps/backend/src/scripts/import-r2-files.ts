@@ -297,14 +297,32 @@ async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | nu
   const sl = slug.toLowerCase().trim();
   if (!sl) return null;
   const canonical = getCanonicalCountryForSlug(sl);
+  const category = sl === 'us-states' ? 'us-states' : 'country';
 
   const found = await pool.query<{ id: string }>(
     'SELECT id FROM countries WHERE lower(trim(slug)) = lower(trim($1)) LIMIT 1',
     [sl]
   );
-  if (found.rows[0]?.id) return found.rows[0].id;
+  if (found.rows[0]?.id) {
+    await pool.query(
+      `UPDATE countries
+       SET category = $1,
+           status = COALESCE(NULLIF(trim(status::text), ''), 'published'),
+           published_at = COALESCE(published_at, CURRENT_TIMESTAMP),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2::uuid
+         AND (
+           lower(trim(COALESCE(category::text, ''))) IS DISTINCT FROM lower(trim($1))
+           OR lower(trim(COALESCE(status::text, ''))) IS DISTINCT FROM 'published'
+           OR published_at IS NULL
+         )`,
+      [category, found.rows[0].id],
+    );
+    return found.rows[0].id;
+  }
 
   const displayName =
+    sl === 'us-states' ? 'US States' :
     canonical?.name ||
     humanizeSlug(sl.replace(/[^\p{L}\p{N}\s-]/gu, ' ')).replace(/\s+/g, ' ').trim().slice(0, 250) ||
     humanizeSlug(sl).slice(0, 250);
@@ -330,12 +348,12 @@ async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | nu
          SET slug = $1,
              name = $2,
              iso_alpha_2 = COALESCE(NULLIF(trim(iso_alpha_2::text), ''), $3),
-             category = COALESCE(NULLIF(trim(category::text), ''), 'country'),
+             category = COALESCE(NULLIF(trim(category::text), ''), $5),
              status = COALESCE(NULLIF(trim(status::text), ''), 'published'),
              published_at = COALESCE(published_at, CURRENT_TIMESTAMP),
              updated_at = CURRENT_TIMESTAMP
          WHERE id = $4::uuid`,
-        [sl, displayName, isoAlpha2, existingId],
+        [sl, displayName, isoAlpha2, existingId, category],
       );
       return existingId;
     }
@@ -343,9 +361,9 @@ async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | nu
 
   await pool.query(
     `INSERT INTO countries (name, slug, iso_alpha_2, category, status, published_at)
-     VALUES ($1, $2, $3, 'country', 'published', CURRENT_TIMESTAMP)
+     VALUES ($1, $2, $3, $4, 'published', CURRENT_TIMESTAMP)
      ON CONFLICT (slug) DO NOTHING`,
-    [displayName, sl, isoAlpha2]
+    [displayName, sl, isoAlpha2, category]
   );
 
   const sel = await pool.query<{ id: string }>(

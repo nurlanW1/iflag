@@ -353,6 +353,16 @@ function r2CountryPrefixCandidates(countrySlug: string): string[] {
     addCandidateKey(keys, 'rok');
     addCandidateKey(keys, 'ROK');
   }
+  if (countrySlug.toLowerCase() === 'us-states') {
+    addCandidateKey(keys, 'US States');
+    addCandidateKey(keys, 'U.S. States');
+    addCandidateKey(keys, 'USA States');
+    addCandidateKey(keys, 'Usa States');
+    addCandidateKey(keys, 'United States States');
+    addCandidateKey(keys, 'American States');
+    addCandidateKey(keys, 'use states');
+    addCandidateKey(keys, 'USE States');
+  }
 
   const prefixes = new Set<string>();
   for (const key of keys) {

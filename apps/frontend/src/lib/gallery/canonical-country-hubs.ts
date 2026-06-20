@@ -22,6 +22,20 @@ export const COUNTRY_SLUG_SEARCH_ALIASES: Record<string, string> = {
   southkorea: 'south-korea',
   srilanka: 'sri-lanka',
   ceylon: 'sri-lanka',
+  usstate: 'us-states',
+  'us-state': 'us-states',
+  usstates: 'us-states',
+  'us-states': 'us-states',
+  usestates: 'us-states',
+  'use-state': 'us-states',
+  'use-states': 'us-states',
+  usastate: 'us-states',
+  'usa-state': 'us-states',
+  usastates: 'us-states',
+  'usa-states': 'us-states',
+  'u-s-states': 'us-states',
+  'united-states-states': 'us-states',
+  'american-states': 'us-states',
 };
 
 export const ISO_TO_COUNTRY_HUB_SLUG: Record<string, string> = {
