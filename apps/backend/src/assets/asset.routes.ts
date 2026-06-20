@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import {
   getAssetById,
   getAssetBySlug,
@@ -11,8 +12,52 @@ import {
 import {
   getPublishedCountryFlagById,
   listPublishedCountryFlagFiles,
+  type PublishedCountryFlagDTO,
 } from './country-flag-files-public.service.js';
 import { authenticateToken, optionalAuth, requireAdmin, AuthRequest } from '../auth/auth.middleware.js';
+import { listR2ObjectSummaries, getPublicR2Url, requireR2Config } from '../storage/r2.js';
+
+const PREVIEWABLE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
+const FLAG_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg', '.eps', '.ai', '.pdf', '.psd', '.mp4', '.webm', '.mov']);
+
+function r2ObjectToFlagDto(key: string, size: number, publicUrlBase: string, countrySlug: string, countryName: string): PublishedCountryFlagDTO {
+  const filename = key.split('/').pop() ?? key;
+  const ext = path.extname(filename).replace(/^\./, '').toLowerCase() || 'bin';
+  const fileUrl = `${publicUrlBase}/${key.replace(/^\/+/, '')}`;
+  const isPreviewable = PREVIEWABLE_EXTS.has(`.${ext}`);
+  const id = `r2-${key.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
+  const now = new Date().toISOString();
+  return {
+    id,
+    title: null,
+    country_slug: countrySlug,
+    country_name: countryName,
+    file_name: filename.replace(/\.[^.]+$/, ''),
+    file_key: key,
+    file_path: key,
+    file_url: fileUrl,
+    thumbnail_url: isPreviewable ? fileUrl : null,
+    preview_url: isPreviewable ? fileUrl : null,
+    format: ext,
+    mime_type: null,
+    file_size_bytes: size || null,
+    variant_name: filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
+    premium_tier: 'free',
+    price_cents: 0,
+    watermark_enabled: false,
+    tags: null,
+    status: 'published',
+    storage_provider: 'r2',
+    processing_status: 'completed',
+    iso_alpha_2: null,
+    region: null,
+    created_at: now,
+    updated_at: now,
+    asset_group_key: null,
+    display_title: filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
+    ratio: null,
+  };
+}
 
 const router = express.Router();
 
@@ -72,6 +117,25 @@ router.get('/', optionalAuth, async (req: AuthRequest, res) => {
       limit: f.limit,
       sort: f.sort === 'popular' ? 'newest' : f.sort,
     });
+
+    // R2 fallback: when querying a specific country and DB has no results,
+    // list R2 directly so files appear immediately (before 10-min sync populates DB)
+    if (f.country_slug && result.data.length === 0 && !f.q && !f.search) {
+      try {
+        const cfg = requireR2Config();
+        const slug = f.country_slug.trim().toLowerCase();
+        const objects = await listR2ObjectSummaries(cfg, { prefix: `flags/${slug}/`, maxObjects: 500 });
+        const flagObjects = objects.filter(o => FLAG_EXTS.has(path.extname(o.key).toLowerCase()));
+        if (flagObjects.length > 0) {
+          const countryName = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          const dtos = flagObjects.map(o => r2ObjectToFlagDto(o.key, o.size, cfg.publicUrlBase, slug, countryName));
+          return res.json({ source: 'r2_direct', data: dtos, total: dtos.length, page: 1, limit: dtos.length, hasMore: false });
+        }
+      } catch {
+        // R2 not configured or listing failed — proceed with empty DB result
+      }
+    }
+
     res.json({
       source: 'country_flag_files',
       ...result,
