@@ -28,21 +28,33 @@ export function GalleryFilterBar() {
   const [format, setFormat] = useState<FormatId>('all');
   const [loading, setLoading] = useState(false);
 
+  const navigate = (fmtId: FormatId, query?: string) => {
+    const qTrimmed = (query ?? q).trim();
+    const p = new URLSearchParams();
+    if (fmtId !== 'all') p.set('format', fmtId);
+    if (qTrimmed) p.set('q', qTrimmed);
+    router.push(`/gallery${p.size > 0 ? `?${p.toString()}` : ''}`);
+  };
+
+  const handleFormatClick = (fmtId: FormatId) => {
+    setFormat(fmtId);
+    // If no search query, navigate to gallery with format filter immediately
+    if (!q.trim()) {
+      navigate(fmtId);
+    }
+  };
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     const query = q.trim();
 
     if (!query) {
-      // No country typed — go to gallery with format filter
-      const p = new URLSearchParams();
-      if (format !== 'all') p.set('format', format);
-      router.push(`/gallery${p.size > 0 ? `?${p.toString()}` : ''}`);
+      navigate(format);
       return;
     }
 
     setLoading(true);
     try {
-      // Try to resolve exact country
       const res = await fetch(
         `/api/gallery/resolve-country?q=${encodeURIComponent(query)}`,
         { cache: 'no-store' },
@@ -62,11 +74,7 @@ export function GalleryFilterBar() {
       setLoading(false);
     }
 
-    // Fallback: gallery list with query + format
-    const p = new URLSearchParams();
-    p.set('q', query);
-    if (format !== 'all') p.set('format', format);
-    router.push(`/gallery?${p.toString()}`);
+    navigate(format, query);
   };
 
   return (
@@ -119,7 +127,7 @@ export function GalleryFilterBar() {
             <button
               key={id}
               type="button"
-              onClick={() => setFormat(id)}
+              onClick={() => handleFormatClick(id)}
               title={desc}
               className="group relative flex flex-col items-center gap-0.5 px-1 py-2 transition-all duration-150 hover:bg-neutral-50 sm:gap-1 sm:px-2 sm:py-2.5"
             >

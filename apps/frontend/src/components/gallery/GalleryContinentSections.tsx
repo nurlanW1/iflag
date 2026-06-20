@@ -16,15 +16,16 @@ type Section = {
 type Props = {
   sections: Section[];
   view: 'grid' | 'list';
+  hrefForSlug?: (slug: string) => string;
 };
 
 const TILE_BY_NAME = Object.fromEntries(HOME_REGION_HUB_TILES.map((t) => [t.name, t]));
 
-export function GalleryContinentSections({ sections, view }: Props) {
+export function GalleryContinentSections({ sections, view, hrefForSlug }: Props) {
   return (
     <div className="space-y-12 sm:space-y-14">
       {sections.map((section) => (
-        <ContinentBlock key={section.continent} section={section} listView={view === 'list'} />
+        <ContinentBlock key={section.continent} section={section} listView={view === 'list'} hrefForSlug={hrefForSlug} />
       ))}
     </div>
   );
@@ -33,9 +34,11 @@ export function GalleryContinentSections({ sections, view }: Props) {
 function ContinentBlock({
   section,
   listView = false,
+  hrefForSlug,
 }: {
   section: Section;
   listView?: boolean;
+  hrefForSlug?: (slug: string) => string;
 }) {
   const tile = TILE_BY_NAME[section.continent];
   const href =
@@ -87,7 +90,7 @@ function ContinentBlock({
           {section.countries.map((country) => (
             <li key={`${country.code ?? 'x'}-${country.slug}-row`}>
               <Link
-                href={`/gallery/${country.slug}`}
+                href={hrefForSlug ? hrefForSlug(country.slug) : `/gallery/${country.slug}`}
                 className="group flex items-center gap-3 px-3 py-3 transition-colors hover:bg-stone-50 sm:gap-4 sm:px-4 sm:py-3.5"
               >
                 <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-stone-50 ring-1 ring-stone-200 sm:h-16 sm:w-24">
@@ -113,7 +116,7 @@ function ContinentBlock({
           ))}
         </ul>
       ) : (
-        <CountryHubFolderGrid countries={section.countries} variant="compact" />
+        <CountryHubFolderGrid countries={section.countries} variant="compact" hrefForSlug={hrefForSlug} />
       )}
     </section>
   );

@@ -61,7 +61,8 @@ function GalleryContent() {
   const [searchQuery, setSearchQuery] = useState(initialQ);
   const [view, setView] = useState<ViewMode>('grid');
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
-  const [formatFilter, setFormatFilter] = useState<FormatFilter>('all');
+  const urlFormat = (sp.get('format') ?? 'all') as FormatFilter;
+  const [formatFilter, setFormatFilter] = useState<FormatFilter>(urlFormat);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -79,6 +80,8 @@ function GalleryContent() {
   useEffect(() => {
     const q = sp.get('q') ?? '';
     setSearchQuery(q);
+    const fmt = (sp.get('format') ?? 'all') as FormatFilter;
+    setFormatFilter(fmt);
   }, [sp]);
 
   useEffect(() => {
@@ -138,9 +141,30 @@ function GalleryContent() {
       const params = new URLSearchParams();
       if (region?.trim()) params.set('region', region.trim());
       if (nextKind) params.set('kind', nextKind);
+      if (formatFilter !== 'all') params.set('format', formatFilter);
       return `/gallery${params.size > 0 ? `?${params.toString()}` : ''}`;
     },
-    [region],
+    [region, formatFilter],
+  );
+
+  const buildFormatHref = useCallback(
+    (fmt: FormatFilter) => {
+      const params = new URLSearchParams();
+      if (region?.trim()) params.set('region', region.trim());
+      if (kind?.trim()) params.set('kind', kind.trim());
+      if (fmt !== 'all') params.set('format', fmt);
+      return `/gallery${params.size > 0 ? `?${params.toString()}` : ''}`;
+    },
+    [region, kind],
+  );
+
+  const countryHref = useCallback(
+    (slug: string) => {
+      const p = new URLSearchParams();
+      if (formatFilter !== 'all') p.set('format', formatFilter);
+      return `/gallery/${encodeURIComponent(slug)}${p.size > 0 ? `?${p.toString()}` : ''}`;
+    },
+    [formatFilter],
   );
 
   const filteredCountries = useMemo(() => {
@@ -345,11 +369,10 @@ function GalleryContent() {
                 </div>
                 <span className="h-5 w-px shrink-0 bg-stone-200" aria-hidden />
                 <div className="flex flex-wrap gap-1">
-                  {(['all', 'svg', 'png', 'video'] as const).map((f) => (
-                    <button
+                  {(['all', 'svg', 'png', 'jpg', 'video'] as const).map((f) => (
+                    <Link
                       key={f}
-                      type="button"
-                      onClick={() => setFormatFilter(f)}
+                      href={buildFormatHref(f as FormatFilter)}
                       className={`rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
                         formatFilter === f
                           ? 'bg-stone-800 text-white shadow-sm'
@@ -357,7 +380,7 @@ function GalleryContent() {
                       }`}
                     >
                       {f === 'all' ? 'All formats' : f.toUpperCase()}
-                    </button>
+                    </Link>
                   ))}
                 </div>
                 <span className="h-5 w-px shrink-0 bg-stone-200" aria-hidden />
@@ -426,11 +449,11 @@ function GalleryContent() {
             </ul>
             <p className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Format</p>
             <div className="mb-6 flex flex-wrap gap-2">
-              {(['all', 'svg', 'png', 'video'] as const).map((f) => (
-                <button
+              {(['all', 'svg', 'png', 'jpg', 'video'] as const).map((f) => (
+                <Link
                   key={f}
-                  type="button"
-                  onClick={() => setFormatFilter(f)}
+                  href={buildFormatHref(f as FormatFilter)}
+                  onClick={() => setFiltersOpen(false)}
                   className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
                     formatFilter === f
                       ? 'bg-stone-800 text-white'
@@ -438,7 +461,7 @@ function GalleryContent() {
                   }`}
                 >
                   {f === 'all' ? 'All formats' : f.toUpperCase()}
-                </button>
+                </Link>
               ))}
             </div>
             <p className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Type</p>
@@ -503,24 +526,24 @@ function GalleryContent() {
             onClearFilter={() => router.push('/gallery')}
           />
         ) : useContinentSections && continentSections.length > 0 ? (
-          <GalleryContinentSections sections={continentSections} view={view} />
+          <GalleryContinentSections sections={continentSections} view={view} hrefForSlug={countryHref} />
         ) : view === 'grid' ? (
-          <CountryHubFolderGrid countries={filteredCountries} variant="compact" />
+          <CountryHubFolderGrid countries={filteredCountries} variant="compact" hrefForSlug={countryHref} />
         ) : (
-          <CardList countries={filteredCountries} />
+          <CardList countries={filteredCountries} hrefForSlug={countryHref} />
         )}
       </div>
     </main>
   );
 }
 
-function CardList({ countries }: { countries: Country[] }) {
+function CardList({ countries, hrefForSlug }: { countries: Country[]; hrefForSlug?: (slug: string) => string }) {
   return (
     <ul className="divide-y divide-stone-100 overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-sm">
       {countries.map((country) => (
         <li key={`${country.code ?? 'x'}-${country.slug}-row`}>
           <Link
-            href={`/gallery/${country.slug}`}
+            href={hrefForSlug ? hrefForSlug(country.slug) : `/gallery/${country.slug}`}
             className="group flex items-center gap-3 px-3 py-3 transition-colors hover:bg-stone-50 sm:gap-4 sm:px-4 sm:py-3.5"
           >
             <div
