@@ -9,13 +9,10 @@ import {
   Globe2,
   ChevronRight,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { EditorialHero } from '@/components/landing/EditorialHero';
 import { LandingCategoryStrip } from '@/components/landing/LandingCategoryStrip';
 import { LandingFlagGalleryPreview } from '@/components/landing/LandingFlagGalleryPreview';
 import { SectionReveal } from '@/components/motion/SectionReveal';
-import { useRevealInView } from '@/hooks/useRevealInView';
-import { SITE_NAME } from '@/lib/seo/site-config';
 import { HOME_REGION_HUB_TILES } from '@/lib/gallery/region-hub-tiles';
 import { ONE_TIME_STOCK, PRICING_MARKETING, formatPricingMoney } from '@/lib/marketing/pricing-config';
 

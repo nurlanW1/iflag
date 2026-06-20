@@ -44,19 +44,19 @@ export const HOME_REGION_HUB_TILES: RegionHubTile[] = [
   {
     name: 'Organizations',
     icon: Flag,
-    href: '/gallery?kind=organizations',
+    href: '/categories/organization-flags',
     accent: '#4F46E5',
   },
   {
     name: 'Football Clubs',
     icon: Trophy,
-    href: '/gallery?kind=football',
+    href: '/categories/football-clubs',
     accent: '#16A34A',
   },
   {
     name: 'Historical',
     icon: Clock3,
-    href: '/gallery?kind=historical',
+    href: '/categories/historical-flags',
     accent: '#7C2D12',
   },
 ];
