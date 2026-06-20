@@ -71,8 +71,11 @@ function drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: numb
   for (let i = 0; i < spikes * 2; i++) {
     const a = (Math.PI / spikes) * i - Math.PI / 2;
     const rr = toggle ? inner : r;
-    i === 0 ? ctx.moveTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr)
-            : ctx.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+    if (i === 0) {
+      ctx.moveTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+    } else {
+      ctx.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+    }
     toggle = !toggle;
   }
   ctx.closePath();
@@ -92,8 +95,11 @@ function drawNgon(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: numb
   ctx.beginPath();
   for (let i = 0; i < n; i++) {
     const a = (2 * Math.PI / n) * i - Math.PI / 2;
-    i === 0 ? ctx.moveTo(cx + r * Math.cos(a), cy + r * Math.sin(a))
-            : ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+    if (i === 0) {
+      ctx.moveTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+    } else {
+      ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+    }
   }
   ctx.closePath();
 }
@@ -129,7 +135,7 @@ function renderElement(
   ctx.globalAlpha = el.opacity;
   ctx.translate(el.x, el.y);
   ctx.rotate(rad(el.rot));
-  if (el.flipH || el.flipV) ctx.scale(el.flipH ? -1 : 1, el.flipV ? -1 : 1);
+  ctx.scale(el.flipH ? -1 : 1, el.flipV ? -1 : 1);
   ctx.fillStyle = el.fill;
   ctx.strokeStyle = el.stroke;
   ctx.lineWidth = el.sw;
@@ -159,11 +165,6 @@ function renderElement(
       ctx.restore();
       return;
     case 'line':
-      ctx.restore();
-      ctx.save();
-      ctx.globalAlpha = el.opacity;
-      ctx.translate(el.x, el.y);
-      ctx.rotate(rad(el.rot));
       ctx.strokeStyle = el.fill;
       ctx.lineWidth = el.sw || 4;
       ctx.beginPath(); ctx.moveTo(-hw, 0); ctx.lineTo(hw, 0);
@@ -189,7 +190,9 @@ function renderElement(
 function hitTest(el: CE, px: number, py: number) {
   const cos = Math.cos(-rad(el.rot)), sin = Math.sin(-rad(el.rot));
   const dx = px - el.x, dy = py - el.y;
-  const lx = dx * cos - dy * sin, ly = dx * sin + dy * cos;
+  const flipX = el.flipH ? -1 : 1;
+  const flipY = el.flipV ? -1 : 1;
+  const lx = (dx * cos - dy * sin) * flipX, ly = (dx * sin + dy * cos) * flipY;
   return Math.abs(lx) <= el.w / 2 + 4 && Math.abs(ly) <= el.h / 2 + 4;
 }
 
@@ -202,7 +205,8 @@ type HandleId = typeof HANDLES[number]['id'];
 
 function getHandlePos(el: CE, h: typeof HANDLES[number], scale: number) {
   const cos = Math.cos(rad(el.rot)), sin = Math.sin(rad(el.rot));
-  const lx = h.lx * el.w / 2, ly = h.ly * el.h / 2;
+  const lx = h.lx * el.w / 2 * (el.flipH ? -1 : 1);
+  const ly = h.ly * el.h / 2 * (el.flipV ? -1 : 1);
   return { x: (el.x + lx * cos - ly * sin) * scale, y: (el.y + lx * sin + ly * cos) * scale };
 }
 
@@ -338,10 +342,10 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   }, []);
 
   const undo = useCallback(() => {
-    if (histIdx.current > 0) { histIdx.current--; setElements(history.current[histIdx.current]); }
+    if (histIdx.current > 0) { histIdx.current--; setElements(history.current[histIdx.current]); setSelId(null); }
   }, []);
   const redo = useCallback(() => {
-    if (histIdx.current < history.current.length - 1) { histIdx.current++; setElements(history.current[histIdx.current]); }
+    if (histIdx.current < history.current.length - 1) { histIdx.current++; setElements(history.current[histIdx.current]); setSelId(null); }
   }, []);
 
   const [selId, setSelId] = useState<string | null>(null);
@@ -638,12 +642,12 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   useEffect(() => { dupRef.current = duplicateSelected; }, [duplicateSelected]);
 
   const flipH = useCallback(() => {
-    if (!selId) return;
+    if (!selId || !elementsRef.current.find(e => e.id === selId)) return;
     push(elementsRef.current.map(el => el.id === selId ? { ...el, flipH: !el.flipH } : el));
   }, [selId, push]);
 
   const flipV = useCallback(() => {
-    if (!selId) return;
+    if (!selId || !elementsRef.current.find(e => e.id === selId)) return;
     push(elementsRef.current.map(el => el.id === selId ? { ...el, flipV: !el.flipV } : el));
   }, [selId, push]);
 
@@ -821,10 +825,10 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
             className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors disabled:opacity-30"
             style={{ color: T.textSub }}><Copy size={13} /></button>
           <span className="h-4 w-px mx-1.5 shrink-0" style={{ background: T.border }} />
-          <button onClick={flipH} title="Flip horizontal" disabled={!selId}
+          <button onClick={flipH} title="Flip horizontal" disabled={!selEl}
             className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors disabled:opacity-30"
             style={{ color: T.textSub }}><FlipHorizontal2 size={13} /></button>
-          <button onClick={flipV} title="Flip vertical" disabled={!selId}
+          <button onClick={flipV} title="Flip vertical" disabled={!selEl}
             className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-slate-100 transition-colors disabled:opacity-30"
             style={{ color: T.textSub }}><FlipVertical2 size={13} /></button>
         </div>
