@@ -354,6 +354,7 @@ export default function CountryHubPage() {
 
   const facts: CountryFact | null = countryFacts[data.country.slug] ?? null;
   const flagColors: FlagColor[] = countryColors[data.country.slug] ?? [];
+  const hasOwnDesigns = data.variants.length > 0;
 
   const description = (() => {
     const base = data.country.description?.trim();
@@ -490,11 +491,7 @@ export default function CountryHubPage() {
             Flag designs for {pageTitle}
           </h2>
 
-          {data.variants.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-neutral-200 bg-white px-6 py-12 text-center text-neutral-500">
-              No published designs for this country yet.
-            </p>
-          ) : (
+          {hasOwnDesigns ? (
             <>
               {/* Format + Sort bar */}
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -677,13 +674,17 @@ export default function CountryHubPage() {
                         </li>
                       );
                     })}
-              </ul>
+                </ul>
             </>
-          )}
+          ) : null}
 
               {/* Mixed stock section */}
               {(stockLoading || stockFetched) && (
-                <div className="mt-10 border-t border-neutral-200/60 pt-8">
+                <div
+                  className={clsx(
+                    hasOwnDesigns ? 'mt-10 border-t border-neutral-200/60 pt-8' : 'mt-0 pt-0',
+                  )}
+                >
                   <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-2.5">
                       <h3 className="text-base font-semibold text-[#2a2a2a]">

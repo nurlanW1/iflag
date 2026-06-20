@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import clsx from 'clsx';
+import { Crown } from 'lucide-react';
 
 interface ShutterstockCardProps {
   id: string;
@@ -13,10 +15,10 @@ interface ShutterstockCardProps {
   mediaType?: string;
 }
 
-const SOURCE_META = {
-  shutterstock: { badge: 'SS', label: 'Shutterstock', badgeClass: 'bg-[#cc0000]/90' },
-  pixabay: { badge: 'PX', label: 'Pixabay', badgeClass: 'bg-emerald-600/90' },
-  pexels: { badge: 'PE', label: 'Pexels', badgeClass: 'bg-green-600/90' },
+const SOURCE_LABELS = {
+  shutterstock: 'Shutterstock',
+  pixabay: 'Pixabay',
+  pexels: 'Pexels',
 } as const;
 
 export function ShutterstockCard({
@@ -29,8 +31,10 @@ export function ShutterstockCard({
   mediaType,
 }: ShutterstockCardProps) {
   const [imgError, setImgError] = useState(false);
-  const meta = SOURCE_META[source] ?? SOURCE_META.shutterstock;
+  const sourceLabel = SOURCE_LABELS[source] ?? SOURCE_LABELS.shutterstock;
   const href = shutterUrl || sourceUrl || '#';
+  const isPremium = licenseType === 'paid' || source === 'shutterstock';
+  const tierLabel = isPremium ? 'Premium' : 'Free';
 
   return (
     <a
@@ -40,8 +44,15 @@ export function ShutterstockCard({
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:border-neutral-300 hover:shadow-md"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
-        <span className={`absolute right-2 top-2 z-10 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm ${meta.badgeClass}`}>
-          {meta.badge}
+        <span
+          className={clsx(
+            'pointer-events-none absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-lg shadow-[0_1px_4px_rgba(15,23,42,0.18)] ring-1 ring-black/10',
+            isPremium ? 'bg-amber-400 text-amber-950' : 'bg-sky-500 text-white',
+          )}
+          title={tierLabel}
+        >
+          <Crown className="h-4 w-4 shrink-0" strokeWidth={2.35} aria-hidden />
+          <span className="sr-only">{tierLabel} stock image</span>
         </span>
 
         {!imgError && thumbUrl ? (
@@ -68,7 +79,7 @@ export function ShutterstockCard({
 
         <div className="absolute inset-0 flex items-end justify-center bg-black/0 transition-all duration-200 group-hover:bg-black/25">
           <span className="mb-3 translate-y-1.5 rounded-lg bg-white/90 px-3 py-1.5 text-[11px] font-bold text-neutral-900 opacity-0 backdrop-blur-sm transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
-            View on {meta.label}
+            Open original
           </span>
         </div>
       </div>
@@ -79,9 +90,12 @@ export function ShutterstockCard({
         </p>
         <div className="mt-auto flex items-center justify-between gap-2">
           <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
-            {meta.label}
+            {tierLabel}
           </p>
-          <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-neutral-500">
+          <span
+            className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-neutral-500"
+            title={sourceLabel}
+          >
             {mediaType || licenseType}
           </span>
         </div>

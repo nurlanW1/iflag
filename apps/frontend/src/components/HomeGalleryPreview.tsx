@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { SectionReveal } from '@/components/motion/SectionReveal';
 import GalleryGrid from './GalleryGrid';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 
-const PREVIEW_COUNT = 24;
+const PREVIEW_COUNT = 36;
 
 export default function HomeGalleryPreview() {
   const [allCountries, setAllCountries] = useState<GalleryCountrySummary[]>([]);
@@ -95,11 +94,10 @@ export default function HomeGalleryPreview() {
           )}
 
           <div className={expanded || allCountries.length <= PREVIEW_COUNT ? '' : 'overflow-hidden'}>
-            <div className="rounded-[1.75rem] border-2 border-[#1e40af]/12 bg-[#f5fafb] p-3 shadow-[0_12px_40px_-12px_rgba(0,109,122,0.18)] sm:p-4 md:p-5">
+            <div className="rounded-[1.25rem] border border-[#1e40af]/12 bg-[#f5fafb] p-3 shadow-[0_10px_30px_-14px_rgba(0,109,122,0.18)] sm:p-4">
               <GalleryGrid
                 countries={displayCountries}
                 disableScrollReveal
-                largeTiles
                 linkToCountryGallery
               />
             </div>
@@ -118,7 +116,7 @@ export default function HomeGalleryPreview() {
               onClick={handleShowMore}
               className="rounded-xl border border-neutral-200 bg-white px-8 py-3 text-sm font-semibold text-[#2a2a2a] shadow-sm transition-all hover:border-[var(--brand-blue)]/40 hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue)] hover:shadow-md"
             >
-              Show more countries
+              Show more
             </button>
           ) : expanded && allCountries.length > PREVIEW_COUNT ? (
             <button
