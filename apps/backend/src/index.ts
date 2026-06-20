@@ -207,7 +207,11 @@ try {
       if (r2SyncRunning) return;
       r2SyncRunning = true;
       try {
-        const stats = await runR2Import({ maxObjects: 10_000, pool });
+        const maxObjects = Math.min(
+          100_000,
+          Math.max(1, Number(process.env.R2_SYNC_MAX_OBJECTS ?? 50_000) || 50_000),
+        );
+        const stats = await runR2Import({ maxObjects, pool });
         if (stats.inserted > 0 || stats.updated > 0) {
           console.log(`[r2-sync] inserted=${stats.inserted} updated=${stats.updated} scanned=${stats.scanned}`);
         }

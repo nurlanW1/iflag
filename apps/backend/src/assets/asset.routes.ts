@@ -16,14 +16,64 @@ import {
 } from './country-flag-files-public.service.js';
 import { authenticateToken, optionalAuth, requireAdmin, AuthRequest } from '../auth/auth.middleware.js';
 import { listR2ObjectSummaries, getPublicR2Url, requireR2Config } from '../storage/r2.js';
+import { getCanonicalCountryByIso, getCanonicalCountryBySlug } from '../lib/canonical-countries.js';
 
 const PREVIEWABLE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
 const FLAG_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg', '.eps', '.ai', '.pdf', '.psd', '.mp4', '.webm', '.mov']);
 
+function r2PublicUrlFromKey(publicUrlBase: string, key: string): string {
+  const encodedKey = key
+    .replace(/^\/+/, '')
+    .split('/')
+    .filter(Boolean)
+    .map((part) => encodeURIComponent(part))
+    .join('/');
+  return `${publicUrlBase.replace(/\/+$/, '')}/${encodedKey}`;
+}
+
+function titleCaseWords(input: string): string {
+  return input
+    .split(/[\s-]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function addCandidateKey(out: Set<string>, raw: string | null | undefined) {
+  const value = raw?.trim();
+  if (value) out.add(value);
+}
+
+function r2CountryPrefixCandidates(slugRaw: string): string[] {
+  const slug = slugRaw.trim().toLowerCase();
+  const canonical = getCanonicalCountryBySlug(slug) ?? (slug.length === 2 ? getCanonicalCountryByIso(slug) : null);
+  const name = canonical?.name ?? slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const code = canonical?.code ?? (slug.length === 2 ? slug : '');
+  const spacedSlug = slug.replace(/-/g, ' ');
+
+  const keys = new Set<string>();
+  addCandidateKey(keys, slug);
+  addCandidateKey(keys, canonical?.slug);
+  addCandidateKey(keys, name);
+  addCandidateKey(keys, name.toLowerCase());
+  addCandidateKey(keys, name.replace(/\s+/g, '-').toLowerCase());
+  addCandidateKey(keys, spacedSlug);
+  addCandidateKey(keys, titleCaseWords(spacedSlug));
+  addCandidateKey(keys, code.toLowerCase());
+  addCandidateKey(keys, code.toUpperCase());
+
+  const prefixes = new Set<string>();
+  for (const key of keys) {
+    prefixes.add(`flags/${key}/`);
+    prefixes.add(`${key}/`);
+  }
+  return [...prefixes];
+}
+
 function r2ObjectToFlagDto(key: string, size: number, publicUrlBase: string, countrySlug: string, countryName: string): PublishedCountryFlagDTO {
   const filename = key.split('/').pop() ?? key;
   const ext = path.extname(filename).replace(/^\./, '').toLowerCase() || 'bin';
-  const fileUrl = `${publicUrlBase}/${key.replace(/^\/+/, '')}`;
+  const fileUrl = r2PublicUrlFromKey(publicUrlBase, key);
   const isPreviewable = PREVIEWABLE_EXTS.has(`.${ext}`);
   const id = `r2-${key.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
   const now = new Date().toISOString();
@@ -42,7 +92,7 @@ function r2ObjectToFlagDto(key: string, size: number, publicUrlBase: string, cou
     mime_type: null,
     file_size_bytes: size || null,
     variant_name: filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
-    premium_tier: 'free',
+    premium_tier: 'paid',
     price_cents: 0,
     watermark_enabled: false,
     tags: null,
@@ -125,12 +175,12 @@ router.get('/', optionalAuth, async (req: AuthRequest, res) => {
       try {
         const cfg = requireR2Config();
         const slug = f.country_slug.trim().toLowerCase();
-        const prefixes = [`flags/${slug}/`, `${slug}/`];
+        const prefixes = r2CountryPrefixCandidates(slug);
         const seenKeys = new Set<string>();
         const allFlagObjects: Array<{ key: string; size: number }> = [];
         for (const prefix of prefixes) {
           try {
-            const found = await listR2ObjectSummaries(cfg, { prefix, maxObjects: 500 });
+            const found = await listR2ObjectSummaries(cfg, { prefix, maxObjects: 5_000 });
             for (const o of found) {
               if (!seenKeys.has(o.key) && FLAG_EXTS.has(path.extname(o.key).toLowerCase())) {
                 seenKeys.add(o.key);

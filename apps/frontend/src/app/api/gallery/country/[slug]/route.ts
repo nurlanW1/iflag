@@ -301,20 +301,72 @@ function loadFromFlagStock(countrySlug: string) {
 }
 
 const PREVIEWABLE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
-const ALL_FLAG_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg', '.eps', '.ai', '.pdf', '.psd']);
+const ALL_FLAG_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg', '.eps', '.ai', '.pdf', '.psd', '.mp4', '.webm', '.mov']);
+const R2_DIRECT_MAX_OBJECTS = Math.min(
+  20_000,
+  Math.max(500, Number(process.env.R2_COUNTRY_DIRECT_MAX_OBJECTS ?? 5_000) || 5_000),
+);
+
+function titleCaseWords(input: string): string {
+  return input
+    .split(/[\s-]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function addCandidateKey(out: Set<string>, raw: string | null | undefined) {
+  const value = raw?.trim();
+  if (!value) return;
+  out.add(value);
+}
+
+function r2CountryPrefixCandidates(countrySlug: string): string[] {
+  const canonical = canonicalCountryForSlug(countrySlug);
+  const countryName = canonical?.name ?? slugToCountryName(countrySlug);
+  const code = (canonical?.code ?? getCountryCode(countryName) ?? '').trim();
+  const spacedSlug = countrySlug.replace(/-/g, ' ');
+
+  const keys = new Set<string>();
+  addCandidateKey(keys, countrySlug);
+  addCandidateKey(keys, canonical?.slug);
+  addCandidateKey(keys, countryName);
+  addCandidateKey(keys, countryName.toLowerCase());
+  addCandidateKey(keys, countryName.replace(/\s+/g, '-').toLowerCase());
+  addCandidateKey(keys, spacedSlug);
+  addCandidateKey(keys, titleCaseWords(spacedSlug));
+  addCandidateKey(keys, code.toLowerCase());
+  addCandidateKey(keys, code.toUpperCase());
+
+  const prefixes = new Set<string>();
+  for (const key of keys) {
+    prefixes.add(`flags/${key}/`);
+    prefixes.add(`${key}/`);
+  }
+  return [...prefixes];
+}
+
+function r2PublicUrlFromKey(base: string, key: string): string {
+  const encodedKey = key
+    .replace(/^\/+/, '')
+    .split('/')
+    .filter(Boolean)
+    .map((part) => encodeURIComponent(part))
+    .join('/');
+  return `${base.replace(/\/+$/, '')}/${encodedKey}`;
+}
 
 async function loadFromR2(countrySlug: string) {
   const r2Base = getPublicR2PublicBaseUrl();
   if (!r2Base) return [];
 
-  // Try both structured path and root-level folder
-  const prefixes = [`flags/${countrySlug}/`, `${countrySlug}/`];
+  const prefixes = r2CountryPrefixCandidates(countrySlug);
   const seenKeys = new Set<string>();
   const allObjects: import('@/lib/server/cloudflare-r2').R2ListEntry[] = [];
 
   for (const prefix of prefixes) {
     try {
-      const found = await listR2Objects(prefix, 500);
+      const found = await listR2Objects(prefix, R2_DIRECT_MAX_OBJECTS);
       for (const obj of found) {
         if (!seenKeys.has(obj.key)) {
           seenKeys.add(obj.key);
@@ -336,15 +388,16 @@ async function loadFromR2(countrySlug: string) {
       id: string;
       format: string;
       formatCode: string;
-      category: 'raster' | 'vector';
+      category: 'raster' | 'vector' | 'video';
       file: string;
       url: string;
       previewUrl: string;
-      premiumTier: 'free';
+      premiumTier: 'paid';
       downloadProtected: boolean;
       size: string;
       dimensions: string;
     }>;
+    isPremiumDesign: boolean;
   }> = [];
 
   for (const obj of allObjects) {
@@ -353,27 +406,29 @@ async function loadFromR2(countrySlug: string) {
     const filename = obj.key.split('/').pop() ?? obj.key;
     const fileId = `r2-${obj.key.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
     const extCode = ext.slice(1);
-    const url = `${r2Base}/${obj.key}`;
+    const url = r2PublicUrlFromKey(r2Base, obj.key);
     const isVector = ext === '.svg' || ext === '.eps' || ext === '.ai';
+    const isVideo = VIDEO_EXTS.has(ext);
     const isPreviewable = PREVIEWABLE_EXTS.has(ext);
     variants.push({
       id: fileId,
       productSlug: fileId,
       name: filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
-      type: isVector ? 'vector' : 'standard',
-      thumbnail: isPreviewable ? url : '',
+      type: isVideo ? 'video' : isVector ? 'vector' : 'standard',
+      thumbnail: isPreviewable || isVideo ? url : '',
+      isPremiumDesign: true,
       formats: [{
         id: `${fileId}-${extCode}`,
         format: extCode.toUpperCase(),
         formatCode: extCode,
-        category: isVector ? 'vector' : 'raster',
+        category: isVideo ? 'video' : isVector ? 'vector' : 'raster',
         file: filename,
         url,
-        previewUrl: isPreviewable ? url : '',
-        premiumTier: 'free',
-        downloadProtected: false,
+        previewUrl: isPreviewable || isVideo ? url : '',
+        premiumTier: 'paid',
+        downloadProtected: true,
         size: obj.size > 0 ? `${(obj.size / (1024 * 1024)).toFixed(2)} MB` : 'Unknown',
-        dimensions: 'Original',
+        dimensions: isVideo ? 'Video' : 'Original',
       }],
     });
   }

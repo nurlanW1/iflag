@@ -32,6 +32,7 @@ type FileRow = {
   country_id: string;
   format: string | null;
   country_slug: string | null;
+  imported_via: string | null;
 };
 
 function stemFromFileName(fn: string): string {
@@ -109,7 +110,8 @@ async function classifyAllRows(pool: pg.Pool): Promise<number> {
     `SELECT f.id, f.file_name, f.file_key, f.file_path, f.country_id, f.format,
             COALESCE(NULLIF(trim(c.slug), ''), NULLIF(trim(f.country_slug), '')) AS country_slug,
             NULLIF(trim(c.iso_alpha_2::text), '') AS iso_alpha_2,
-            NULLIF(trim(c.name::text), '') AS country_name
+            NULLIF(trim(c.name::text), '') AS country_name,
+            NULLIF(trim(f.metadata->>'imported_via'), '') AS imported_via
      FROM country_flag_files f
      LEFT JOIN countries c ON c.id = f.country_id`,
   );
@@ -124,7 +126,9 @@ async function classifyAllRows(pool: pg.Pool): Promise<number> {
       countryName: row.country_name,
       format: row.format?.trim() ?? '',
     });
-    const premium = parsed.premium_tier === 'free' ? 'free' : 'paid';
+    const premium = row.imported_via === 'import-r2-files'
+      ? 'paid'
+      : parsed.premium_tier === 'free' ? 'free' : 'paid';
     await pool.query(
       `UPDATE country_flag_files SET
           design_type = $1::varchar,
