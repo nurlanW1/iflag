@@ -578,7 +578,7 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
     setR2Importing(true);
     setR2Result(null);
     try {
-      const res = await fetch(`/api/admin/import-r2?maxObjects=25000`, {
+      const res = await fetch(`/api/admin/import-r2?maxObjects=100000`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include',
@@ -600,7 +600,7 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
     setAutoSyncStatus('syncing');
     try {
       const res = await fetch(
-        `/api/admin/import-r2?prefix=${encodeURIComponent(`flags/${slug}/`)}&maxObjects=500`,
+        `/api/admin/import-r2?prefix=${encodeURIComponent(`flags/${slug}/`)}&maxObjects=10000`,
         { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' },
       );
       setAutoSyncStatus(res.ok ? 'done' : 'error');

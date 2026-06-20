@@ -347,6 +347,23 @@ async function fetchGalleryCountriesFromDbOnce(
     const hasWebp = Boolean(webpHref?.trim());
     const webpCover = hasWebp ? resolveGalleryAssetUrl(webpHref) : null;
 
+    let fallbackCover = '';
+    if (!webpCover) {
+      const rawFallback = resolvedFlagPublicHref({
+        fileKey: row.raw_file_key,
+        fallbackRawUrls: [
+          row.hub_cover_hint,
+          row.raw_thumbnail_url,
+          row.raw_file_url,
+          row.country_cover_column,
+          row.country_thumb,
+        ],
+      });
+      if (rawFallback && !isPackFallbackFlagThumbnail(rawFallback)) {
+        fallbackCover = resolveGalleryAssetUrl(rawFallback);
+      }
+    }
+
     const n = Number.isFinite(count) ? count : 0;
     const d = Number.isFinite(designs) ? designs : 0;
 
@@ -359,8 +376,8 @@ async function fetchGalleryCountriesFromDbOnce(
           code,
           has_webp_cover: hasWebp,
           webp_cover_url: webpCover,
-          thumbnail_url: webpCover ?? '',
-          thumbnail: webpCover ?? '',
+          thumbnail_url: webpCover ?? fallbackCover,
+          thumbnail: webpCover ?? fallbackCover,
           flag_count: n,
           design_count: d || n,
           count: n,

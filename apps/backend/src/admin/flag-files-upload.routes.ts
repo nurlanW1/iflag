@@ -48,7 +48,7 @@ router.post('/import-r2', async (req: express.Request, res: Response) => {
   }
 
   const rawMax = req.query.maxObjects ?? req.query.max;
-  let maxObjects = 25_000;
+  let maxObjects = 100_000;
   if (rawMax !== undefined) {
     const raw = Array.isArray(rawMax) ? rawMax[0] : rawMax;
     const n = Number(raw);

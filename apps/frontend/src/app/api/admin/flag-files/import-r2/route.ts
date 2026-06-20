@@ -8,7 +8,7 @@ export const maxDuration = 300;
 
 /**
  * Proxies to Railway/Express `POST /api/admin/flag-files/import-r2` after Clerk admin gate.
- * Query: maxObjects (default 25000), prefix (optional R2 list prefix).
+ * Query: maxObjects (default 100000), prefix (optional R2 list prefix).
  */
 export async function POST(request: Request): Promise<Response> {
   const gate = await requireClerkAdminBearerJson(request);

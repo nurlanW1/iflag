@@ -20,6 +20,10 @@ import { getCanonicalCountryByIso, getCanonicalCountryBySlug } from '../lib/cano
 
 const PREVIEWABLE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
 const FLAG_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg', '.eps', '.ai', '.pdf', '.psd', '.mp4', '.webm', '.mov']);
+const R2_DIRECT_COUNTRY_MAX_OBJECTS = Math.min(
+  20_000,
+  Math.max(500, Number(process.env.R2_COUNTRY_DIRECT_MAX_OBJECTS ?? 10_000) || 10_000),
+);
 
 function r2PublicUrlFromKey(publicUrlBase: string, key: string): string {
   const encodedKey = key
@@ -117,6 +121,50 @@ function r2ObjectToFlagDto(key: string, size: number, publicUrlBase: string, cou
   };
 }
 
+async function listDirectR2CountryFlagDtos(
+  countrySlug: string,
+  countryName: string,
+  opts: {
+    format?: string;
+    premiumTier?: string;
+    existingKeys?: Set<string>;
+  } = {},
+): Promise<PublishedCountryFlagDTO[]> {
+  const tier = opts.premiumTier?.trim().toLowerCase();
+  if (tier && tier !== 'paid') return [];
+
+  const cfg = requireR2Config();
+  const format = opts.format?.trim().toLowerCase();
+  const prefixes = r2CountryPrefixCandidates(countrySlug);
+  const seenKeys = new Set<string>(opts.existingKeys ?? []);
+  const rows: PublishedCountryFlagDTO[] = [];
+
+  for (const prefix of prefixes) {
+    try {
+      const found = await listR2ObjectSummaries(cfg, { prefix, maxObjects: R2_DIRECT_COUNTRY_MAX_OBJECTS });
+      for (const obj of found) {
+        if (seenKeys.has(obj.key)) continue;
+        const ext = path.extname(obj.key).replace(/^\./, '').toLowerCase();
+        if (!FLAG_EXTS.has(`.${ext}`)) continue;
+        if (
+          format &&
+          ext !== format &&
+          !(format === 'jpg' && ext === 'jpeg') &&
+          !(format === 'jpeg' && ext === 'jpg')
+        ) {
+          continue;
+        }
+        seenKeys.add(obj.key);
+        rows.push(r2ObjectToFlagDto(obj.key, obj.size, cfg.publicUrlBase, countrySlug, countryName));
+      }
+    } catch {
+      // Keep the list responsive when an alias prefix is absent or unavailable.
+    }
+  }
+
+  return rows;
+}
+
 const router = express.Router();
 
 function parseListQuery(req: express.Request) {
@@ -176,31 +224,32 @@ router.get('/', optionalAuth, async (req: AuthRequest, res) => {
       sort: f.sort === 'popular' ? 'newest' : f.sort,
     });
 
-    // R2 fallback: when querying a specific country and DB has no results,
-    // list R2 directly so files appear immediately (before 10-min sync populates DB).
-    // Try both flags/{slug}/ (admin panel uploads) and {slug}/ (direct R2 uploads).
-    if (f.country_slug && result.data.length === 0 && !f.q && !f.search) {
+    // R2 direct merge: include files uploaded straight to R2 before background sync imports them.
+    if (f.country_slug && !f.q && !f.search && (result.page ?? 1) === 1) {
       try {
-        const cfg = requireR2Config();
         const slug = f.country_slug.trim().toLowerCase();
-        const prefixes = r2CountryPrefixCandidates(slug);
-        const seenKeys = new Set<string>();
-        const allFlagObjects: Array<{ key: string; size: number }> = [];
-        for (const prefix of prefixes) {
-          try {
-            const found = await listR2ObjectSummaries(cfg, { prefix, maxObjects: 5_000 });
-            for (const o of found) {
-              if (!seenKeys.has(o.key) && FLAG_EXTS.has(path.extname(o.key).toLowerCase())) {
-                seenKeys.add(o.key);
-                allFlagObjects.push(o);
-              }
-            }
-          } catch { /* prefix not found or empty */ }
-        }
-        if (allFlagObjects.length > 0) {
-          const countryName = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-          const dtos = allFlagObjects.map(o => r2ObjectToFlagDto(o.key, o.size, cfg.publicUrlBase, slug, countryName));
-          return res.json({ source: 'r2_direct', data: dtos, total: dtos.length, page: 1, limit: dtos.length, hasMore: false });
+        const existingKeys = new Set(
+          result.data
+            .map((row) => row.file_key?.trim())
+            .filter((key): key is string => Boolean(key)),
+        );
+        const countryName =
+          result.data[0]?.country_name?.trim() ||
+          slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const directRows = await listDirectR2CountryFlagDtos(slug, countryName, {
+          format: f.format,
+          premiumTier: f.premium_tier,
+          existingKeys,
+        });
+        if (directRows.length > 0) {
+          return res.json({
+            source: result.data.length > 0 ? 'country_flag_files+r2_direct' : 'r2_direct',
+            data: [...result.data, ...directRows],
+            total: result.total + directRows.length,
+            page: result.page,
+            limit: result.limit + directRows.length,
+            hasMore: result.hasMore,
+          });
         }
       } catch {
         // R2 not configured or listing failed — proceed with empty DB result

@@ -209,7 +209,7 @@ try {
       try {
         const maxObjects = Math.min(
           100_000,
-          Math.max(1, Number(process.env.R2_SYNC_MAX_OBJECTS ?? 50_000) || 50_000),
+          Math.max(1, Number(process.env.R2_SYNC_MAX_OBJECTS ?? 100_000) || 100_000),
         );
         const stats = await runR2Import({ maxObjects, pool });
         if (stats.inserted > 0 || stats.updated > 0) {

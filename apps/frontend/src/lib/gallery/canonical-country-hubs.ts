@@ -15,6 +15,10 @@ export const COUNTRY_SLUG_SEARCH_ALIASES: Record<string, string> = {
   czechia: 'czech-republic',
   ivorycoast: 'ivory-coast',
   'cote-divoire': 'ivory-coast',
+  korea: 'south-korea',
+  'republic-of-korea': 'south-korea',
+  rok: 'south-korea',
+  southkorea: 'south-korea',
 };
 
 export const ISO_TO_COUNTRY_HUB_SLUG: Record<string, string> = {
@@ -22,6 +26,8 @@ export const ISO_TO_COUNTRY_HUB_SLUG: Record<string, string> = {
   US: 'united-states',
   GB: 'united-kingdom',
   UZ: 'uzbekistan',
+  KR: 'south-korea',
+  KP: 'north-korea',
 };
 
 /** Slugs that look like imported file stems, not country folders. */
@@ -138,14 +144,7 @@ export function filterGalleryCountryFolders(
 ): GalleryCountrySummary[] {
   return mergeCanonicalCountryHubs(countries).filter((c) => {
     if (!c.is_fallback_country && (c.flag_count ?? 0) < 1) return false;
-    if (c.is_fallback_country) {
-      const thumb = c.webp_cover_url ?? c.thumbnail ?? '';
-      return Boolean(thumb.trim()) && !isPackFallbackFlagThumbnail(thumb);
-    }
-    if (!c.has_webp_cover) return false;
-    const webp = c.webp_cover_url?.trim() ?? '';
-    if (!webp) return false;
-    if (isPackFallbackFlagThumbnail(webp)) return false;
-    return true;
+    const thumb = c.webp_cover_url ?? c.thumbnail ?? c.thumbnail_url ?? '';
+    return Boolean(thumb.trim()) && !isPackFallbackFlagThumbnail(thumb);
   });
 }

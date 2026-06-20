@@ -6,7 +6,7 @@ import { COUNTRIES } from '@/lib/countries';
 import { getDb } from '@/lib/server/db';
 import { buildCountryHubDescription } from '@/lib/gallery/country-hub-copy';
 import { fetchCountryGalleryFromBackendApi } from '@/lib/server/gallery-country-detail-fallback';
-import { fetchCountryGalleryFromDb } from '@/lib/server/gallery-from-db';
+import { fetchCountryGalleryFromDb, type CountryGalleryPayload } from '@/lib/server/gallery-from-db';
 import { getPublicR2PublicBaseUrl, listR2Objects } from '@/lib/server/cloudflare-r2';
 
 export const dynamic = 'force-dynamic';
@@ -444,6 +444,76 @@ async function loadFromR2(countrySlug: string) {
   return variants;
 }
 
+function formatIdentity(format: CountryGalleryPayload['variants'][number]['formats'][number]): string {
+  return [
+    format.id,
+    format.previewUrl,
+    format.url,
+    format.file,
+    format.formatCode,
+  ]
+    .filter((part): part is string => Boolean(part?.trim()))
+    .join('|')
+    .toLowerCase();
+}
+
+function variantIdentity(variant: CountryGalleryPayload['variants'][number]): string {
+  const formatKeys = variant.formats.map(formatIdentity).filter(Boolean).join('||');
+  return [
+    variant.productSlug,
+    variant.id,
+    variant.name,
+    formatKeys,
+  ]
+    .filter((part): part is string => Boolean(part?.trim()))
+    .join('|')
+    .toLowerCase();
+}
+
+function mergeCountryGalleryPayload(
+  base: CountryGalleryPayload,
+  extraVariants: CountryGalleryPayload['variants'],
+): CountryGalleryPayload {
+  if (extraVariants.length === 0) return base;
+
+  const seenVariants = new Set(base.variants.map(variantIdentity));
+  const seenFormats = new Set(
+    base.variants.flatMap((variant) => variant.formats.map(formatIdentity)).filter(Boolean),
+  );
+  const added: CountryGalleryPayload['variants'] = [];
+
+  for (const variant of extraVariants) {
+    const variantKey = variantIdentity(variant);
+    const hasKnownVariant = variantKey && seenVariants.has(variantKey);
+    const newFormats = variant.formats.filter((format) => {
+      const key = formatIdentity(format);
+      return key && !seenFormats.has(key);
+    });
+    if (hasKnownVariant || newFormats.length === 0) continue;
+
+    for (const format of newFormats) {
+      const key = formatIdentity(format);
+      if (key) seenFormats.add(key);
+    }
+    if (variantKey) seenVariants.add(variantKey);
+    added.push({ ...variant, formats: newFormats });
+  }
+
+  if (added.length === 0) return base;
+
+  const variants = [...base.variants, ...added];
+  const fileCount = variants.reduce((sum, variant) => sum + variant.formats.length, 0);
+  return {
+    ...base,
+    country: {
+      ...base.country,
+      file_count: fileCount,
+      design_count: variants.length,
+    },
+    variants,
+  };
+}
+
 export async function GET(
   _request: Request,
   context: { params: Promise<{ slug: string }> }
@@ -454,28 +524,24 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid slug' }, { status: 400 });
     }
 
-    const [fromDb, diskVideos, r2Variants] = await Promise.all([
+    const [fromDb, fromBackend, diskVideos, r2Variants] = await Promise.all([
       loadFromDatabase(slug),
+      fetchCountryGalleryFromBackendApi(slug),
       Promise.resolve(loadDiskVideosForCountry(slug)),
       loadFromR2(slug),
     ]);
-    console.info(`[gallery/country] ${slug}: db=${fromDb?.variants.length ?? 0} diskVideos=${diskVideos.length} r2=${r2Variants.length}`);
+    console.info(`[gallery/country] ${slug}: db=${fromDb?.variants.length ?? 0} backend=${fromBackend?.variants.length ?? 0} diskVideos=${diskVideos.length} r2=${r2Variants.length}`);
 
     if (fromDb && fromDb.variants.length > 0) {
-      const extra = [...diskVideos, ...r2Variants];
-      const merged = extra.length > 0
-        ? { ...fromDb, variants: [...fromDb.variants, ...extra] }
-        : fromDb;
+      const extra = [...(fromBackend?.variants ?? []), ...diskVideos, ...r2Variants];
+      const merged = mergeCountryGalleryPayload(fromDb, extra);
       return NextResponse.json(merged, { headers: { 'Cache-Control': 'no-store' } });
     }
 
-    const fromBackend = await fetchCountryGalleryFromBackendApi(slug);
     if (fromBackend && fromBackend.variants.length > 0) {
       console.info(`[gallery/country] served ${slug} from backend API fallback`);
       const extra = [...diskVideos, ...r2Variants];
-      const merged = extra.length > 0
-        ? { ...fromBackend, variants: [...fromBackend.variants, ...extra] }
-        : fromBackend;
+      const merged = mergeCountryGalleryPayload(fromBackend, extra);
       return NextResponse.json(merged, { headers: { 'Cache-Control': 'no-store' } });
     }
 
