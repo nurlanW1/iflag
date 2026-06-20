@@ -23,6 +23,10 @@ const SLUG_ALIASES: Record<string, string> = {
   czechia: 'czech-republic',
   ivorycoast: 'ivory-coast',
   'cote-divoire': 'ivory-coast',
+  korea: 'south-korea',
+  'republic-of-korea': 'south-korea',
+  rok: 'south-korea',
+  southkorea: 'south-korea',
 };
 
 /** ISO-3166 alpha-2 → canonical slug (subset; DB iso match is preferred). */
@@ -37,6 +41,8 @@ const ISO_TO_SLUG: Record<string, string> = {
   fr: 'france',
   de: 'germany',
   pk: 'pakistan',
+  kr: 'south-korea',
+  kp: 'north-korea',
 };
 
 export type CountrySlugIndex = {

@@ -61,6 +61,14 @@ function r2CountryPrefixCandidates(slugRaw: string): string[] {
   addCandidateKey(keys, titleCaseWords(spacedSlug));
   addCandidateKey(keys, code.toLowerCase());
   addCandidateKey(keys, code.toUpperCase());
+  if ((canonical?.slug ?? slug).toLowerCase() === 'south-korea') {
+    addCandidateKey(keys, 'korea');
+    addCandidateKey(keys, 'Korea');
+    addCandidateKey(keys, 'republic-of-korea');
+    addCandidateKey(keys, 'Republic of Korea');
+    addCandidateKey(keys, 'rok');
+    addCandidateKey(keys, 'ROK');
+  }
 
   const prefixes = new Set<string>();
   for (const key of keys) {
