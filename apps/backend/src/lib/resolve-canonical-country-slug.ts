@@ -4,6 +4,10 @@
  */
 
 import type { Pool } from 'pg';
+import {
+  CANONICAL_COUNTRIES,
+  getCanonicalCountryBySlug,
+} from './canonical-countries.js';
 import { slugifySegment } from '../storage/r2.js';
 
 /** Common slug aliases → canonical slug (lowercase). */
@@ -42,7 +46,7 @@ export type CountrySlugIndex = {
 };
 
 function normSlug(s: string): string {
-  return s.trim().toLowerCase().replace(/^\-+|\-+$/g, '');
+  return s.trim().toLowerCase().replace(/^-+|-+$/g, '');
 }
 
 function tokensFromSlug(slug: string): string[] {
@@ -75,6 +79,17 @@ export async function loadCountrySlugIndex(pool: Pool): Promise<CountrySlugIndex
   const bySlug = new Map<string, string>();
   const byIso = new Map<string, string>();
   const byName = new Map<string, string>();
+
+  for (const country of CANONICAL_COUNTRIES) {
+    const slug = normSlug(country.slug);
+    bySlug.set(slug, slug);
+    byIso.set(country.code.toLowerCase(), slug);
+
+    const nameKey = country.name.toLowerCase();
+    byName.set(nameKey, slug);
+    byName.set(nameKey.replace(/\s+/g, '-'), slug);
+    byName.set(slug, slug);
+  }
 
   for (const row of res.rows) {
     const slug = normSlug(row.slug);
@@ -135,6 +150,10 @@ export function resolveCanonicalCountrySlugWithIndex(
   }
 
   return raw;
+}
+
+export function getCanonicalCountryForSlug(slug: string) {
+  return getCanonicalCountryBySlug(normSlug(slug));
 }
 
 export async function resolveCanonicalCountrySlug(

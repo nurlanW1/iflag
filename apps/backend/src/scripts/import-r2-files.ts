@@ -20,6 +20,7 @@ import { deriveAssetGroupKeyFromParts, deriveDisplayTitle } from '../lib/asset-g
 import { classifyFlagDesign } from '../lib/flag-design-classify.js';
 import { FLAG_VIDEO_FORMATS } from '../lib/flag-video-formats.js';
 import {
+  getCanonicalCountryForSlug,
   loadCountrySlugIndex,
   resolveCanonicalCountrySlugWithIndex,
   type CountrySlugIndex,
@@ -145,11 +146,11 @@ function deriveCountrySlugFromText(raw: string): string | null {
 
   /** Underscores / runs of punctuation → breaks so "National_flag_of_Pakistan" tokenizes cleanly. */
   s = s.replace(/[_]+/g, ' ');
-  s = s.replace(/[^\p{L}\p{N}\s\-]+/gu, ' ');
+  s = s.replace(/[^\p{L}\p{N}\s-]+/gu, ' ');
   const tokens = s
     .toLowerCase()
     .split(/\s+/)
-    .map((t) => t.replace(/^\-+|\-+$/g, ''))
+    .map((t) => t.replace(/^-+|-+$/g, ''))
     .filter(Boolean);
 
   const kept = tokens.filter((t) => !STOP_WORDS.has(t));
@@ -231,10 +232,10 @@ function parseObjectKey(objectKey: string): ParsedKey | null {
     for (let i = dirParts.length - 1; i >= 0; i--) {
       const segment = dirParts[i]!;
       const candidate =
-        deriveCountrySlugFromText(segment) ?? slugifySegment(segment.replace(/[^\p{L}\p{N}\-_ ]+/gu, ''), 96);
+        deriveCountrySlugFromText(segment) ?? slugifySegment(segment.replace(/[^\p{L}\p{N}_ -]+/gu, ''), 96);
       if (!candidate) continue;
 
-      const cLow = candidate.toLowerCase().replace(/^\-+|\-+$/g, '');
+      const cLow = candidate.toLowerCase().replace(/^-+|-+$/g, '');
       if (GENERIC_FOLDER_SLUGS.has(cLow)) continue;
 
       if (candidate.length >= 2) {
@@ -267,7 +268,7 @@ function parseObjectKey(objectKey: string): ParsedKey | null {
 
   const slugNorm =
     deriveCountrySlugFromText(finalSlug) ?? slugifySegment(finalSlug.replace(/_/g, ' '), 96) ?? finalSlug.toLowerCase();
-  const countrySlugOut = slugNorm.trim().replace(/^\-+|\-+$/g, '') || slugNorm.toLowerCase();
+  const countrySlugOut = slugNorm.trim().replace(/^-+|-+$/g, '') || slugNorm.toLowerCase();
   if (!countrySlugOut) return null;
 
   const titleFromFile =
@@ -295,6 +296,7 @@ function parseObjectKey(objectKey: string): ParsedKey | null {
 async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | null> {
   const sl = slug.toLowerCase().trim();
   if (!sl) return null;
+  const canonical = getCanonicalCountryForSlug(sl);
 
   const found = await pool.query<{ id: string }>(
     'SELECT id FROM countries WHERE lower(trim(slug)) = lower(trim($1)) LIMIT 1',
@@ -303,14 +305,47 @@ async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | nu
   if (found.rows[0]?.id) return found.rows[0].id;
 
   const displayName =
-    humanizeSlug(sl.replace(/[^\p{L}\p{N}\s\-]/gu, ' ')).replace(/\s+/g, ' ').trim().slice(0, 250) ||
+    canonical?.name ||
+    humanizeSlug(sl.replace(/[^\p{L}\p{N}\s-]/gu, ' ')).replace(/\s+/g, ' ').trim().slice(0, 250) ||
     humanizeSlug(sl).slice(0, 250);
+  const isoAlpha2 = canonical?.code.toUpperCase() ?? null;
+
+  if (canonical) {
+    const canonicalMatch = await pool.query<{ id: string }>(
+      `SELECT id
+       FROM countries
+       WHERE lower(trim(COALESCE(iso_alpha_2::text, ''))) = lower(trim($1))
+          OR lower(trim(name::text)) = lower(trim($2))
+       ORDER BY CASE
+         WHEN lower(trim(COALESCE(iso_alpha_2::text, ''))) = lower(trim($1)) THEN 0
+         ELSE 1
+       END
+       LIMIT 1`,
+      [canonical.code, canonical.name],
+    );
+    const existingId = canonicalMatch.rows[0]?.id;
+    if (existingId) {
+      await pool.query(
+        `UPDATE countries
+         SET slug = $1,
+             name = $2,
+             iso_alpha_2 = COALESCE(NULLIF(trim(iso_alpha_2::text), ''), $3),
+             category = COALESCE(NULLIF(trim(category::text), ''), 'country'),
+             status = COALESCE(NULLIF(trim(status::text), ''), 'published'),
+             published_at = COALESCE(published_at, CURRENT_TIMESTAMP),
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id = $4::uuid`,
+        [sl, displayName, isoAlpha2, existingId],
+      );
+      return existingId;
+    }
+  }
 
   await pool.query(
-    `INSERT INTO countries (name, slug, category, status, published_at)
-     VALUES ($1, $2, 'country', 'published', CURRENT_TIMESTAMP)
+    `INSERT INTO countries (name, slug, iso_alpha_2, category, status, published_at)
+     VALUES ($1, $2, $3, 'country', 'published', CURRENT_TIMESTAMP)
      ON CONFLICT (slug) DO NOTHING`,
-    [displayName, sl]
+    [displayName, sl, isoAlpha2]
   );
 
   const sel = await pool.query<{ id: string }>(
