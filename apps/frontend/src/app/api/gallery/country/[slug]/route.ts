@@ -304,15 +304,26 @@ const PREVIEWABLE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
 const ALL_FLAG_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg', '.eps', '.ai', '.pdf', '.psd']);
 
 async function loadFromR2(countrySlug: string) {
-  const prefix = `flags/${countrySlug}/`;
   const r2Base = getPublicR2PublicBaseUrl();
   if (!r2Base) return [];
 
-  let objects;
-  try {
-    objects = await listR2Objects(prefix, 500);
-  } catch {
-    return [];
+  // Try both structured path and root-level folder
+  const prefixes = [`flags/${countrySlug}/`, `${countrySlug}/`];
+  const seenKeys = new Set<string>();
+  const allObjects: import('@/lib/server/cloudflare-r2').R2ListEntry[] = [];
+
+  for (const prefix of prefixes) {
+    try {
+      const found = await listR2Objects(prefix, 500);
+      for (const obj of found) {
+        if (!seenKeys.has(obj.key)) {
+          seenKeys.add(obj.key);
+          allObjects.push(obj);
+        }
+      }
+    } catch {
+      // ignore per-prefix errors
+    }
   }
 
   const variants: Array<{
@@ -336,7 +347,7 @@ async function loadFromR2(countrySlug: string) {
     }>;
   }> = [];
 
-  for (const obj of objects) {
+  for (const obj of allObjects) {
     const ext = path.extname(obj.key).toLowerCase();
     if (!ALL_FLAG_EXTS.has(ext)) continue;
     const filename = obj.key.split('/').pop() ?? obj.key;

@@ -119,16 +119,29 @@ router.get('/', optionalAuth, async (req: AuthRequest, res) => {
     });
 
     // R2 fallback: when querying a specific country and DB has no results,
-    // list R2 directly so files appear immediately (before 10-min sync populates DB)
+    // list R2 directly so files appear immediately (before 10-min sync populates DB).
+    // Try both flags/{slug}/ (admin panel uploads) and {slug}/ (direct R2 uploads).
     if (f.country_slug && result.data.length === 0 && !f.q && !f.search) {
       try {
         const cfg = requireR2Config();
         const slug = f.country_slug.trim().toLowerCase();
-        const objects = await listR2ObjectSummaries(cfg, { prefix: `flags/${slug}/`, maxObjects: 500 });
-        const flagObjects = objects.filter(o => FLAG_EXTS.has(path.extname(o.key).toLowerCase()));
-        if (flagObjects.length > 0) {
+        const prefixes = [`flags/${slug}/`, `${slug}/`];
+        const seenKeys = new Set<string>();
+        const allFlagObjects: Array<{ key: string; size: number }> = [];
+        for (const prefix of prefixes) {
+          try {
+            const found = await listR2ObjectSummaries(cfg, { prefix, maxObjects: 500 });
+            for (const o of found) {
+              if (!seenKeys.has(o.key) && FLAG_EXTS.has(path.extname(o.key).toLowerCase())) {
+                seenKeys.add(o.key);
+                allFlagObjects.push(o);
+              }
+            }
+          } catch { /* prefix not found or empty */ }
+        }
+        if (allFlagObjects.length > 0) {
           const countryName = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-          const dtos = flagObjects.map(o => r2ObjectToFlagDto(o.key, o.size, cfg.publicUrlBase, slug, countryName));
+          const dtos = allFlagObjects.map(o => r2ObjectToFlagDto(o.key, o.size, cfg.publicUrlBase, slug, countryName));
           return res.json({ source: 'r2_direct', data: dtos, total: dtos.length, page: 1, limit: dtos.length, hasMore: false });
         }
       } catch {

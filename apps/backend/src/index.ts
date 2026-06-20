@@ -200,24 +200,30 @@ try {
 
     // Background R2 → DB sync: picks up files uploaded directly to R2 (e.g. via Cloudflare dashboard)
     const R2_SYNC_INTERVAL_MS = 10 * 60 * 1000; // every 10 minutes
+    const R2_INITIAL_DELAY_MS = 30 * 1000;       // first run 30 s after start
     let r2SyncRunning = false;
+
+    const runSync = async () => {
+      if (r2SyncRunning) return;
+      r2SyncRunning = true;
+      try {
+        const stats = await runR2Import({ maxObjects: 10_000, pool });
+        if (stats.inserted > 0 || stats.updated > 0) {
+          console.log(`[r2-sync] inserted=${stats.inserted} updated=${stats.updated} scanned=${stats.scanned}`);
+        }
+      } catch (err) {
+        console.error('[r2-sync] sync error:', err);
+      } finally {
+        r2SyncRunning = false;
+      }
+    };
+
     try {
       requireR2Config();
-      setInterval(async () => {
-        if (r2SyncRunning) return;
-        r2SyncRunning = true;
-        try {
-          const stats = await runR2Import({ maxObjects: 10_000, pool });
-          if (stats.inserted > 0 || stats.updated > 0) {
-            console.log(`[r2-sync] inserted=${stats.inserted} updated=${stats.updated} scanned=${stats.scanned}`);
-          }
-        } catch (err) {
-          console.error('[r2-sync] sync error:', err);
-        } finally {
-          r2SyncRunning = false;
-        }
-      }, R2_SYNC_INTERVAL_MS);
-      console.log(`[startup] R2 background sync enabled — runs every ${R2_SYNC_INTERVAL_MS / 60_000} min`);
+      // Run once shortly after start, then every 10 minutes
+      setTimeout(runSync, R2_INITIAL_DELAY_MS);
+      setInterval(runSync, R2_SYNC_INTERVAL_MS);
+      console.log(`[startup] R2 background sync enabled — first run in ${R2_INITIAL_DELAY_MS / 1000}s, then every ${R2_SYNC_INTERVAL_MS / 60_000} min`);
     } catch {
       console.log('[startup] R2 background sync disabled (R2 env not configured)');
     }
