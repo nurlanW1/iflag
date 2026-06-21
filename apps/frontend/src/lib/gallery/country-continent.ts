@@ -325,8 +325,11 @@ export function groupCountryHubsByContinent<T extends CountryWithContinent & { n
   const buckets = new Map<GalleryCollectionSection, T[]>();
   for (const c of list) {
     const slug = c.slug?.trim().toLowerCase() || '';
+    // A slug like "georgia" could be either the country (ISO GE → Europe) or the US state.
+    // If the entry has a known country ISO code, honour that and skip the USA States check.
+    const hasKnownCountryIso = !!c.code && !!continentFromIso2(c.code);
     const key: GalleryCollectionSection =
-      USA_STATES_SLUG_SET.has(slug)
+      (!hasKnownCountryIso && USA_STATES_SLUG_SET.has(slug))
         ? 'USA States'
         : AUTONOMY_REGIONAL_SLUG_SET.has(slug)
           ? 'Autonomous & Regional'
@@ -340,11 +343,11 @@ export function groupCountryHubsByContinent<T extends CountryWithContinent & { n
 
   const out: Array<{ continent: GalleryCollectionSection; countries: T[] }> = [];
 
-  // USA States and Autonomy always appear (even empty — rendered as nav hub tiles)
-  for (const cont of ['USA States', 'Autonomous & Regional'] as const) {
-    const countries = buckets.get(cont) ?? [];
+  // Autonomy always appears first (even empty — rendered as nav hub tile)
+  {
+    const countries = buckets.get('Autonomous & Regional') ?? [];
     countries.sort((a, b) => a.name.localeCompare(b.name));
-    out.push({ continent: cont, countries });
+    out.push({ continent: 'Autonomous & Regional', countries });
   }
   for (const cont of GALLERY_CONTINENTS) {
     const countries = buckets.get(cont);
@@ -357,6 +360,12 @@ export function groupCountryHubsByContinent<T extends CountryWithContinent & { n
   if (other?.length) {
     other.sort((a, b) => a.name.localeCompare(b.name));
     out.push({ continent: 'Other', countries: other });
+  }
+  // USA States always last (even empty — rendered as nav hub tile)
+  {
+    const countries = buckets.get('USA States') ?? [];
+    countries.sort((a, b) => a.name.localeCompare(b.name));
+    out.push({ continent: 'USA States', countries });
   }
   return out;
 }
