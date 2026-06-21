@@ -65,9 +65,16 @@ const STOP_WORDS = new Set([
   'vector',
   'sphere',
   'wave',
+  'waves',
+  'waving',
   'circle',
   'heart',
+  'image',
+  'images',
+  'flagpole',
+  'flagpoles',
   'national',
+  'on',
   'of',
   'the',
   'a',
@@ -297,7 +304,7 @@ async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | nu
   const sl = slug.toLowerCase().trim();
   if (!sl) return null;
   const canonical = getCanonicalCountryForSlug(sl);
-  const category = sl === 'us-states' ? 'us-states' : 'country';
+  const category = 'country';
 
   const found = await pool.query<{ id: string }>(
     'SELECT id FROM countries WHERE lower(trim(slug)) = lower(trim($1)) LIMIT 1',

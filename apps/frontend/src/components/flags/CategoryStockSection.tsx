@@ -39,6 +39,7 @@ const STOCK_FILTERS = [
 
 const CATEGORY_SEARCH: Record<CategoryKind, { query: string; defaultFilter: StockFilterId }> = {
   country_flags: { query: 'national country flags', defaultFilter: 'all' },
+  usa_state_flags: { query: 'usa state flags', defaultFilter: 'all' },
   autonomy_flags: { query: 'regional autonomous territory flags', defaultFilter: 'all' },
   historical_flags: { query: 'historical old national flags', defaultFilter: 'all' },
   organization_flags: { query: 'international organization flags', defaultFilter: 'all' },

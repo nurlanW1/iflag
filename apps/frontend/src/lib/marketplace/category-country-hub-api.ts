@@ -2,6 +2,7 @@ import type { Category } from '@/types/marketplace';
 
 const KIND_TO_GALLERY_QUERY: Partial<Record<string, string>> = {
   country_flags: '/api/gallery/countries',
+  usa_state_flags: '/api/gallery/countries?kind=us-states',
   autonomy_flags: '/api/gallery/countries?kind=autonomy',
   historical_flags: '/api/gallery/countries?kind=historical',
   organization_flags: '/api/gallery/countries?kind=organizations',

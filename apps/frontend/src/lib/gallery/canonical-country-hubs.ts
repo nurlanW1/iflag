@@ -5,8 +5,15 @@ import { COUNTRIES } from '@/lib/countries';
 /** Slug aliases → canonical country hub slug (lowercase). */
 export const COUNTRY_SLUG_SEARCH_ALIASES: Record<string, string> = {
   algerie: 'algeria',
+  algerian: 'algeria',
   dz: 'algeria',
   'national-algeria': 'algeria',
+  'antigua-barbuda': 'antigua-and-barbuda',
+  antiguabarbuda: 'antigua-and-barbuda',
+  'arabic-emirates': 'united-arab-emirates',
+  'arab-emirates': 'united-arab-emirates',
+  arabicemirates: 'united-arab-emirates',
+  uae: 'united-arab-emirates',
   usa: 'united-states',
   'united-states-of-america': 'united-states',
   uk: 'united-kingdom',
@@ -52,9 +59,54 @@ function compactKey(s: string): string {
 }
 
 const COMPACT_COUNTRY_HUB_SLUGS = new Map<string, string>();
+const COUNTRY_BY_SLUG = new Map(COUNTRIES.map((country) => [country.slug.toLowerCase(), country]));
 for (const country of COUNTRIES) {
   COMPACT_COUNTRY_HUB_SLUGS.set(compactKey(country.slug), country.slug);
   COMPACT_COUNTRY_HUB_SLUGS.set(compactKey(country.name), country.slug);
+}
+
+const DECORATIVE_SLUG_TOKENS = new Set([
+  'flag',
+  'flags',
+  'flagpole',
+  'flagpoles',
+  'vector',
+  'wave',
+  'waves',
+  'waving',
+  'circle',
+  'heart',
+  'sphere',
+  'mockup',
+  'banner',
+  'icon',
+  'image',
+  'images',
+  'pack',
+  'background',
+  'grunge',
+  'on',
+  'of',
+  'the',
+  'and',
+  'for',
+]);
+
+function canonicalFromDecorativeSlug(raw: string): string | null {
+  const tokens = raw
+    .trim()
+    .toLowerCase()
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .filter((token) => !DECORATIVE_SLUG_TOKENS.has(token));
+  if (tokens.length === 0) return null;
+
+  const hyphen = tokens.join('-');
+  return (
+    COUNTRY_SLUG_SEARCH_ALIASES[hyphen] ??
+    COMPACT_COUNTRY_HUB_SLUGS.get(compactKey(hyphen)) ??
+    null
+  );
 }
 
 /** Slugs that look like imported file stems, not country folders. */
@@ -63,7 +115,7 @@ export function slugLooksLikeFileAsset(slug: string): boolean {
   if (!s || s.length < 2) return true;
   if (s.includes('_')) return true;
   if (
-    /\b(flag|flags|vector|wave|circle|heart|sphere|mockup|banner|icon|pack|background|grunge)\b/.test(
+    /\b(flag|flags|flagpole|flagpoles|vector|wave|waves|waving|circle|heart|sphere|mockup|banner|icon|image|images|pack|background|grunge)\b/.test(
       s,
     )
   ) {
@@ -76,6 +128,8 @@ export function canonicalHubSlug(row: Pick<GalleryCountrySummary, 'slug' | 'code
   const raw = row.slug.trim().toLowerCase();
   const aliased = COUNTRY_SLUG_SEARCH_ALIASES[raw];
   if (aliased) return aliased;
+  const decorative = canonicalFromDecorativeSlug(raw);
+  if (decorative) return decorative;
   const compact = COMPACT_COUNTRY_HUB_SLUGS.get(compactKey(raw));
   if (compact) return compact;
   const iso = row.code?.trim().toUpperCase();
@@ -107,13 +161,15 @@ export function mergeCanonicalCountryHubs(
   const map = new Map<string, GalleryCountrySummary>();
 
   for (const row of countries) {
-    if (slugLooksLikeFileAsset(row.slug)) continue;
-
     const canon = canonicalHubSlug(row);
+    if (slugLooksLikeFileAsset(row.slug) && canon === row.slug.trim().toLowerCase()) continue;
     const key = mergeKey(row);
+    const canonicalCountry = COUNTRY_BY_SLUG.get(canon.toLowerCase());
     const normalized: GalleryCountrySummary = {
       ...row,
       slug: canon,
+      name: canonicalCountry?.name ?? row.name,
+      code: row.code || canonicalCountry?.code.toUpperCase() || null,
     };
 
     const existing = map.get(key);

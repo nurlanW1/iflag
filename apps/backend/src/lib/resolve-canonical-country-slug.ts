@@ -13,7 +13,14 @@ import { slugifySegment } from '../storage/r2.js';
 /** Common slug aliases → canonical slug (lowercase). */
 const SLUG_ALIASES: Record<string, string> = {
   algerie: 'algeria',
+  algerian: 'algeria',
   'national-algeria': 'algeria',
+  'antigua-barbuda': 'antigua-and-barbuda',
+  antiguabarbuda: 'antigua-and-barbuda',
+  'arabic-emirates': 'united-arab-emirates',
+  'arab-emirates': 'united-arab-emirates',
+  arabicemirates: 'united-arab-emirates',
+  uae: 'united-arab-emirates',
   'united-states-of-america': 'united-states',
   usa: 'united-states',
   uk: 'united-kingdom',

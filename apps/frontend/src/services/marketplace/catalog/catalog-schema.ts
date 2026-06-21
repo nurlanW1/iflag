@@ -5,6 +5,7 @@ const isoDateString = z.string().min(10, 'Use an ISO-8601 timestamp');
 
 export const categoryKindSchema = z.enum([
   'country_flags',
+  'usa_state_flags',
   'autonomy_flags',
   'historical_flags',
   'organization_flags',

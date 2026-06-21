@@ -12,6 +12,18 @@
     "updatedAt": "2026-01-15T12:00:00.000Z"
   },
   {
+    "id": "11111111-1111-4111-8111-111111111113",
+    "name": "USA State flags",
+    "slug": "usa-state-flags",
+    "description": "State flags of the United States in SVG, PNG, JPG and EPS formats.",
+    "kind": "usa_state_flags",
+    "isApproved": true,
+    "parentId": null,
+    "displayOrder": 12,
+    "createdAt": "2026-06-21T12:00:00.000Z",
+    "updatedAt": "2026-06-21T12:00:00.000Z"
+  },
+  {
     "id": "11111111-1111-4111-8111-111111111105",
     "name": "Autonomous & regional flags",
     "slug": "autonomous-flags",

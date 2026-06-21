@@ -2,6 +2,8 @@
  * Five gallery continents (Olympic-style hubs) — used for `/gallery?region=…` and grouped lists.
  */
 
+import { COUNTRIES } from '@/lib/countries';
+
 export const GALLERY_CONTINENTS = [
   'Europe',
   'Asia',
@@ -13,6 +15,9 @@ export const GALLERY_CONTINENTS = [
 export type GalleryContinent = (typeof GALLERY_CONTINENTS)[number];
 
 const ISO_TO_CONTINENT: Record<string, GalleryContinent> = {};
+const ISO_BY_COUNTRY_SLUG = new Map(
+  COUNTRIES.map((country) => [country.slug.toLowerCase(), country.code.toUpperCase()]),
+);
 
 function addContinent(continent: GalleryContinent, codes: string): void {
   for (const raw of codes.split(',')) {
@@ -91,10 +96,13 @@ export function continentFromStoredRegion(region: string | null | undefined): Ga
 export function resolveGalleryContinent(input: {
   isoAlpha2?: string | null;
   storedRegion?: string | null;
+  slug?: string | null;
 }): GalleryContinent | null {
+  const slugIso = input.slug ? ISO_BY_COUNTRY_SLUG.get(input.slug.trim().toLowerCase()) : null;
   return (
     continentFromStoredRegion(input.storedRegion) ??
     continentFromIso2(input.isoAlpha2) ??
+    continentFromIso2(slugIso) ??
     null
   );
 }
@@ -122,6 +130,7 @@ export function galleryRegionMatchesContinent(
 
 export type CountryWithContinent = {
   code?: string | null;
+  slug?: string | null;
   continent?: string | null;
 };
 
@@ -132,6 +141,7 @@ export function assignContinentToCountryHub<T extends CountryWithContinent>(
   const continent = resolveGalleryContinent({
     isoAlpha2: row.code,
     storedRegion,
+    slug: row.slug,
   });
   return { ...row, continent };
 }
@@ -145,7 +155,7 @@ export function filterCountryHubsByGalleryRegion<T extends CountryWithContinent>
   return list.filter((c) => {
     const cont =
       (c.continent as GalleryContinent | null | undefined) ??
-      resolveGalleryContinent({ isoAlpha2: c.code });
+      resolveGalleryContinent({ isoAlpha2: c.code, slug: c.slug });
     return cont === want;
   });
 }
@@ -157,7 +167,7 @@ export function groupCountryHubsByContinent<T extends CountryWithContinent & { n
   for (const c of list) {
     const cont =
       (c.continent as GalleryContinent | null | undefined) ??
-      resolveGalleryContinent({ isoAlpha2: c.code }) ??
+      resolveGalleryContinent({ isoAlpha2: c.code, slug: c.slug }) ??
       'Other';
     const key = cont === 'Other' ? 'Other' : cont;
     const arr = buckets.get(key) ?? [];

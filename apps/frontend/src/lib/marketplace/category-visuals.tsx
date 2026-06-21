@@ -142,6 +142,12 @@ export function visualsForCategoryKind(kind: CategoryKind): CategoryCardVisual {
         accent: 'bg-blue-50 ring-1 ring-inset ring-blue-200',
         chip: 'Sovereign & national',
       };
+    case 'usa_state_flags':
+      return {
+        Icon: AutonomyFlagIcon,
+        accent: 'bg-indigo-50 ring-1 ring-inset ring-indigo-200',
+        chip: '50 state flags',
+      };
     case 'autonomy_flags':
       return {
         Icon: AutonomyFlagIcon,
