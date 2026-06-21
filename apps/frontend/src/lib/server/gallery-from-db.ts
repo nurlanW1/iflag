@@ -212,6 +212,13 @@ async function fetchGalleryCountriesFromDbOnce(
   const lateralDesignOrder = schema.fileDesignType
     ? `CASE WHEN lower(trim(COALESCE(fx.design_type::text, ''))) = 'official_flat' THEN 0 ELSE 1 END ASC,`
     : '';
+  // Exclude non-flat decorative styles from cover picks (circle, 3d, mockup, background)
+  const lateralDesignExclude = schema.fileDesignType
+    ? `AND COALESCE(lower(trim(fx.design_type::text)), '') NOT IN ('circle', '3d', 'mockup', 'background')`
+    : '';
+  const lateralWebpDesignOrder = schema.fileDesignType
+    ? `CASE WHEN lower(trim(COALESCE(fw.design_type::text, ''))) IN ('circle', '3d', 'mockup', 'background') THEN 1 ELSE 0 END ASC,`
+    : '';
   const countriesOrder = schema.countrySortName
     ? `COALESCE(NULLIF(lower(trim(coalesce(c.sort_name::text, ''))), ''), lower(trim(c.name::text))), c.name ASC`
     : `lower(trim(c.name::text)), c.name ASC`;
@@ -285,6 +292,7 @@ async function fetchGalleryCountriesFromDbOnce(
            NULLIF(trim(fx.preview_url::text), ''),
            NULLIF(trim(fx.file_url::text), '')
          ) IS NOT NULL
+         ${lateralDesignExclude}
        ORDER BY
          ${lateralCoverOrder}
          ${lateralDesignOrder}
@@ -306,7 +314,9 @@ async function fetchGalleryCountriesFromDbOnce(
          AND ${galleryVisibleFlagFileSql('fw')}
          AND lower(trim(coalesce(fw.format::text, ''))) = 'webp'
          AND ${publishedFlagHasMediaSql('fw')}
-       ORDER BY COALESCE(fw.updated_at, fw.created_at) DESC NULLS LAST
+       ORDER BY
+         ${lateralWebpDesignOrder}
+         COALESCE(fw.updated_at, fw.created_at) DESC NULLS LAST
        LIMIT 1
      ) fw ON TRUE
      LEFT JOIN LATERAL (
