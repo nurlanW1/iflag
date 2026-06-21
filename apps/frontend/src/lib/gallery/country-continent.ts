@@ -24,6 +24,14 @@ const ISO_BY_COUNTRY_SLUG = new Map(
   COUNTRIES.map((country) => [country.slug.toLowerCase(), country.code.toUpperCase()]),
 );
 
+// Normalized (letters+digits only) → ISO code, for fuzzy matching of R2 folder name variations
+const NORMALIZED_TO_ISO = new Map<string, string>();
+for (const c of COUNTRIES) {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  NORMALIZED_TO_ISO.set(norm(c.slug), c.code.toUpperCase());
+  NORMALIZED_TO_ISO.set(norm(c.name), c.code.toUpperCase());
+}
+
 export const AUTONOMY_REGIONAL_SLUGS = [
   'american-samoa',
   'anguilla',
@@ -199,6 +207,32 @@ export function continentFromStoredRegion(region: string | null | undefined): Ga
   return normalizeGalleryRegionParam(region);
 }
 
+function continentFromSlugFuzzy(slug: string): GalleryContinent | null {
+  // Strip letters/digits only and match against all country names/slugs
+  const normalized = slug.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const iso = NORMALIZED_TO_ISO.get(normalized);
+  if (iso) return continentFromIso2(iso);
+
+  // Strip common R2 folder suffixes and retry
+  const suffixes = ['birmania', 'burma', 'converted', 'flag', 'flags', 'island', 'islands', 'republic', 'democratic'];
+  for (const suffix of suffixes) {
+    const stripped = normalized.replace(new RegExp(suffix + '$'), '').replace(new RegExp('^' + suffix), '');
+    if (stripped && stripped !== normalized) {
+      const iso2 = NORMALIZED_TO_ISO.get(stripped);
+      if (iso2) return continentFromIso2(iso2);
+    }
+  }
+
+  // Partial prefix match — if slug starts with a known country slug
+  for (const [knownSlug, isoCode] of ISO_BY_COUNTRY_SLUG) {
+    if (slug.startsWith(knownSlug + '-') || slug.startsWith(knownSlug + ' ')) {
+      return continentFromIso2(isoCode);
+    }
+  }
+
+  return null;
+}
+
 export function resolveGalleryContinent(input: {
   isoAlpha2?: string | null;
   storedRegion?: string | null;
@@ -211,6 +245,7 @@ export function resolveGalleryContinent(input: {
     continentFromIso2(input.isoAlpha2) ??
     continentFromIso2(slugIso) ??
     (slug ? SLUG_TO_CONTINENT[slug] : null) ??
+    (slug ? continentFromSlugFuzzy(slug) : null) ??
     null
   );
 }

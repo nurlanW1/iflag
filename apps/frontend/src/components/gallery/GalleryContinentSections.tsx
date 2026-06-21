@@ -22,9 +22,11 @@ type Props = {
 const TILE_BY_NAME = Object.fromEntries(HOME_REGION_HUB_TILES.map((t) => [t.name, t]));
 
 export function GalleryContinentSections({ sections, view, hrefForSlug }: Props) {
+  // Hide "Other" section if it's empty — only show truly uncategorized countries when present
+  const visible = sections.filter(s => s.continent !== 'Other' || s.countries.length > 0);
   return (
     <div className="space-y-12 sm:space-y-14">
-      {sections.map((section) => (
+      {visible.map((section) => (
         <ContinentBlock key={section.continent} section={section} listView={view === 'list'} hrefForSlug={hrefForSlug} />
       ))}
     </div>
