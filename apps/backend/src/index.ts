@@ -198,6 +198,13 @@ try {
       console.warn('[startup] WARNING: DATABASE_URL is unset — /health will fail until configured.');
     }
 
+    // One-time migration: all R2-owned files should be free (not premium-gated)
+    pool.query(
+      `UPDATE country_flag_files SET premium_tier = 'free' WHERE storage_provider = 'r2' AND premium_tier != 'free'`
+    ).then((r: { rowCount: number | null }) => {
+      if ((r.rowCount ?? 0) > 0) console.log(`[startup] Freed ${r.rowCount} R2 file(s) that were incorrectly premium-gated`);
+    }).catch((e: unknown) => console.warn('[startup] R2 free-tier migration failed:', e));
+
     // Background R2 → DB sync: picks up files uploaded directly to R2 (e.g. via Cloudflare dashboard)
     const R2_SYNC_INTERVAL_MS = 10 * 60 * 1000; // every 10 minutes
     const R2_INITIAL_DELAY_MS = 30 * 1000;       // first run 30 s after start

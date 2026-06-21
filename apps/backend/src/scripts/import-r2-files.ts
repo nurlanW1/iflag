@@ -496,8 +496,8 @@ export async function runR2Import(opts: R2ImportRunOptions = {}): Promise<R2Impo
         countryName: countryMeta.name,
         format,
       });
-      // Direct R2 imports are the site's owned catalog content; keep them gated as premium.
-      const premiumTier = 'paid';
+      // Direct R2 imports are the site's owned content — free to download.
+      const premiumTier = 'free';
       const designTypeStr = classify.design_type;
       const regionSnap = countryMeta.region;
       const sortTitleValue = displayTitle.slice(0, 250);

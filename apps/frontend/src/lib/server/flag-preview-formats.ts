@@ -1,5 +1,5 @@
-/** WebP (and future lightweight rasters) are hub covers / gallery previews only — not downloadable masters. */
-export const PREVIEW_ONLY_FORMATS = new Set(['webp']);
+/** Formats that are preview-only (not downloadable). Currently none — all R2 files are freely downloadable. */
+export const PREVIEW_ONLY_FORMATS = new Set<string>();
 
 export function isPreviewOnlyFormat(format: string | null | undefined): boolean {
   const f = (format ?? '').trim().toLowerCase();
