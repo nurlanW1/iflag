@@ -137,14 +137,14 @@ export async function logGalleryCountriesStats(pool: Pool): Promise<void> {
     const totalFlagFiles = await read(`SELECT COUNT(*)::int AS n FROM country_flag_files`);
     const totalPublishedFiles = await read(
       `SELECT COUNT(*)::int AS n FROM country_flag_files f
-       WHERE lower(trim(coalesce(f.status::text, ''))) = 'published'
+       WHERE ${galleryVisibleFlagFileSql('f')}
          AND ${publishedFlagHasMediaSql('f')}`,
     );
     const joinedCount = await read(
       `SELECT COUNT(DISTINCT c.id)::int AS n
        FROM countries c
        INNER JOIN country_flag_files f ON f.country_id = c.id
-       WHERE lower(trim(coalesce(f.status::text, ''))) = 'published'
+       WHERE ${galleryVisibleFlagFileSql('f')}
          AND ${publishedFlagHasMediaSql('f')}`,
     );
     console.log('[gallery/countries] total countries', totalCountries);
@@ -183,6 +183,15 @@ function isMissingColumnPgError(err: unknown): boolean {
     'code' in err &&
     String((err as { code: string }).code) === '42703'
   );
+}
+
+function galleryVisibleFlagFileSql(tableAlias?: string): string {
+  const p = tableAlias?.trim() ? `${tableAlias.trim()}.` : '';
+  return `(
+    lower(trim(coalesce(${p}status::text, ''))) = 'published'
+    OR lower(trim(coalesce(${p}storage_provider::text, ''))) = 'r2'
+    OR NULLIF(trim(${p}file_key::text), '') IS NOT NULL
+  )`;
 }
 
 async function fetchGalleryCountriesFromDbOnce(
@@ -261,7 +270,7 @@ async function fetchGalleryCountriesFromDbOnce(
            regexp_replace(lower(trim(file_name::text)), '\\.[^.]+$', '')
          ))::int AS design_cnt
        FROM country_flag_files
-       WHERE lower(trim(coalesce(status::text, ''))) = 'published'
+       WHERE ${galleryVisibleFlagFileSql()}
          AND ${publishedFlagHasMediaSql('country_flag_files')}
        GROUP BY country_id
      ) agg ON agg.country_id = c.id
@@ -269,7 +278,7 @@ async function fetchGalleryCountriesFromDbOnce(
        SELECT thumbnail_url, preview_url, file_url, file_key
        FROM country_flag_files fx
        WHERE fx.country_id = c.id
-         AND lower(trim(coalesce(fx.status::text, ''))) = 'published'
+         AND ${galleryVisibleFlagFileSql('fx')}
          AND lower(trim(coalesce(fx.format::text, ''))) IN ('webp', 'jpg', 'jpeg', 'png', 'svg')
          AND COALESCE(
            NULLIF(trim(fx.thumbnail_url::text), ''),
@@ -294,7 +303,7 @@ async function fetchGalleryCountriesFromDbOnce(
        SELECT thumbnail_url, preview_url, file_url, file_key
        FROM country_flag_files fw
        WHERE fw.country_id = c.id
-         AND lower(trim(coalesce(fw.status::text, ''))) = 'published'
+         AND ${galleryVisibleFlagFileSql('fw')}
          AND lower(trim(coalesce(fw.format::text, ''))) = 'webp'
          AND ${publishedFlagHasMediaSql('fw')}
        ORDER BY COALESCE(fw.updated_at, fw.created_at) DESC NULLS LAST
@@ -304,7 +313,7 @@ async function fetchGalleryCountriesFromDbOnce(
        SELECT thumbnail_url, preview_url, file_url, file_key
        FROM country_flag_files fy
        WHERE fy.country_id = c.id
-         AND lower(trim(coalesce(fy.status::text, ''))) = 'published'
+         AND ${galleryVisibleFlagFileSql('fy')}
        ORDER BY COALESCE(fy.updated_at, fy.created_at) DESC NULLS LAST
        LIMIT 1
      ) fx0 ON TRUE
@@ -483,6 +492,14 @@ function truncateDisplayPath(name: string, max = 80): string {
   return `${t.slice(0, max - 1)}…`;
 }
 
+function galleryCountrySlugAliases(slug: string): string[] {
+  const s = slug.trim().toLowerCase();
+  if (['myanmar', 'myanmar-birmania', 'myanmar-burma', 'birmania', 'burma'].includes(s)) {
+    return ['myanmar', 'myanmar-birmania', 'myanmar-burma', 'birmania', 'burma'];
+  }
+  return [s];
+}
+
 export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promise<CountryGalleryPayload | null> {
   try {
     return await fetchCountryGalleryFromDbOnce(pool, slug);
@@ -498,6 +515,7 @@ export async function fetchCountryGalleryFromDb(pool: Pool, slug: string): Promi
 }
 
 async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<CountryGalleryPayload | null> {
+  const slugAliases = galleryCountrySlugAliases(slug);
   const schema = await galleryOptionalColumns(pool);
   const countryCoverSelect = schema.countryCoverImageUrl
     ? `NULLIF(trim(cover_image_url::text), '') AS cover_image_url,`
@@ -528,8 +546,12 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
             NULLIF(trim(description::text), '') AS description,
             ${countryCoverSelect}
             NULLIF(trim(thumbnail_url::text), '') AS thumbnail_url
-     FROM countries WHERE lower(slug) = lower($1) LIMIT 1`,
-    [slug],
+     FROM countries
+     WHERE lower(trim(slug)) = ANY($1::text[])
+     ORDER BY CASE WHEN lower(trim(slug)) = $2 THEN 0 ELSE 1 END,
+              lower(trim(slug)) ASC
+     LIMIT 1`,
+    [slugAliases, slugAliases[0]],
   );
   const countryRow = cRes.rows[0];
   if (!countryRow) return null;
@@ -539,14 +561,14 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
             premium_tier, thumbnail_url, preview_url, file_key, storage_provider,
             asset_group_key, display_title${fileExtraComma}
      FROM country_flag_files cff
-     WHERE lower(trim(coalesce(cff.status::text, ''))) = 'published'
+     WHERE ${galleryVisibleFlagFileSql('cff')}
        AND (
          cff.country_id = $1::uuid
-         OR lower(trim(coalesce(cff.country_slug, ''))) = lower(trim($2))
+         OR lower(trim(coalesce(cff.country_slug, ''))) = ANY($2::text[])
        )
      ORDER BY ${fileOrderBy},
               format NULLS LAST, created_at ASC`,
-    [countryRow.id, countryRow.slug],
+    [countryRow.id, Array.from(new Set([countryRow.slug.trim().toLowerCase(), ...slugAliases]))],
   );
 
   if (fRes.rows.length === 0) return null;
@@ -681,7 +703,6 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
 
   for (const r of fRes.rows) {
     const previewOnly = isPreviewOnlyFormat(r.format);
-    if (previewOnly) continue;
 
     const previewUrl = previewUrlForFlagRow(r);
 

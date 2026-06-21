@@ -2,8 +2,8 @@
 
 import clsx from 'clsx';
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
-import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import { ArrowLeft, ImageOff, RefreshCw, Layers, FileCode2, Image as ImageIcon, Clapperboard, BadgeCheck, Camera, Gift, Shuffle } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { ArrowLeft, ImageOff, RefreshCw, FileCode2, Image as ImageIcon, Clapperboard, BadgeCheck, Camera, Gift, Shuffle } from 'lucide-react';
 import Link from 'next/link';
 import { ProductPreviewImage } from '@/components/brand/ProductPreviewImage';
 import { FlagVideoPreview } from '@/components/media/FlagVideoPreview';
@@ -91,15 +91,6 @@ function DesignGridSkeleton() {
   );
 }
 
-// Format tabs for the designs section
-const FORMAT_TABS = [
-  { id: 'all',   label: 'All',    Icon: Layers,       match: (_f: string) => true },
-  { id: 'svg',   label: 'Vector', Icon: FileCode2,    match: (f: string) => /svg|eps|ai/i.test(f) },
-  { id: 'png',   label: 'PNG',    Icon: ImageIcon,    match: (f: string) => /png|webp/i.test(f) },
-  { id: 'jpg',   label: 'JPG',    Icon: ImageIcon,    match: (f: string) => /jpe?g/i.test(f) },
-  { id: 'video', label: 'Video',  Icon: Clapperboard, match: (f: string) => /mp4|webm|mov|video/i.test(f) },
-] as const;
-type FormatTabId = typeof FORMAT_TABS[number]['id'];
 const STOCK_PAGE_SIZE = 12;
 
 const STOCK_FILTERS = [
@@ -112,16 +103,6 @@ const STOCK_FILTERS = [
   { id: 'jpg', label: 'JPG', Icon: ImageIcon },
   { id: 'icon', label: 'Icon', Icon: BadgeCheck },
 ] as const;
-
-function variantMatchesFormat(v: Variant, fmtId: FormatTabId): boolean {
-  if (fmtId === 'all') return true;
-  const tab = FORMAT_TABS.find(t => t.id === fmtId);
-  if (!tab) return true;
-  // Check variant type
-  if (tab.match(v.type)) return true;
-  // Check any format code/name
-  return v.formats.some(f => tab.match(f.formatCode ?? f.format ?? ''));
-}
 
 function interleaveStockGroups(groups: StockImage[][]): StockImage[] {
   const output: StockImage[] = [];
@@ -150,8 +131,6 @@ function sourceAllowedForFilter(source: StockSource, filter: StockFilterId): boo
 
 export default function CountryHubPage() {
   const params = useParams();
-  const sp = useSearchParams();
-  const router = useRouter();
   const slug = typeof params.slug === 'string' ? params.slug : '';
   const [data, setData] = useState<CountryData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -164,16 +143,6 @@ export default function CountryHubPage() {
   const [stockFilter, setStockFilter] = useState<StockFilterId>('all');
   const stockPageRef = useRef(1);
   const stockCountryRef = useRef<string>('');
-
-  // Format filter from URL ?format=svg|png|jpg|video
-  const formatParam = (sp.get('format') ?? 'all') as FormatTabId;
-  const activeFormat: FormatTabId = FORMAT_TABS.some(t => t.id === formatParam) ? formatParam : 'all';
-
-  const setFormat = (id: FormatTabId) => {
-    const p = new URLSearchParams();
-    if (id !== 'all') p.set('format', id);
-    router.replace(`/gallery/${slug}${p.size > 0 ? `?${p.toString()}` : ''}`, { scroll: false });
-  };
 
   const loadCountryData = useCallback(async (countrySlug: string) => {
     setLoading(true);
@@ -274,8 +243,7 @@ export default function CountryHubPage() {
 
   const sortedVariants = useMemo(() => {
     if (!data?.variants) return [];
-    let v = data.variants.filter(variant => variantMatchesFormat(variant, activeFormat));
-    v = [...v];
+    const v = [...data.variants];
     switch (sortOrder) {
       case 'popular':
         return v.sort((a, b) => b.formats.length - a.formats.length || a.name.localeCompare(b.name));
@@ -288,7 +256,7 @@ export default function CountryHubPage() {
       default:
         return v;
     }
-  }, [data?.variants, sortOrder, activeFormat]);
+  }, [data?.variants, sortOrder]);
 
   if (loading) {
     return (
@@ -493,38 +461,8 @@ export default function CountryHubPage() {
 
           {hasOwnDesigns ? (
             <>
-              {/* Format + Sort bar */}
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                {/* Format filter tabs */}
-                <div className="flex flex-wrap gap-1.5">
-                  {FORMAT_TABS.map(({ id, label, Icon }) => {
-                    const active = activeFormat === id;
-                    const count = id === 'all'
-                      ? (data?.variants.length ?? 0)
-                      : (data?.variants.filter(v => variantMatchesFormat(v, id)).length ?? 0);
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => setFormat(id)}
-                        className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
-                          active
-                            ? 'bg-[var(--brand-blue)] text-white shadow-sm shadow-[#2563eb]/30'
-                            : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                        }`}
-                      >
-                        <Icon size={12} aria-hidden />
-                        {label}
-                        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none ${
-                          active ? 'bg-white/20 text-white' : 'bg-neutral-200 text-neutral-500'
-                        }`}>
-                          {count}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
+              {/* Sort bar */}
+              <div className="mb-5 flex flex-wrap items-center justify-end gap-3">
                 <div className="flex items-center gap-2">
                   <p className="text-xs font-medium text-neutral-500">
                     <span className="font-semibold text-[#2a2a2a]">{sortedVariants.length}</span>{' '}

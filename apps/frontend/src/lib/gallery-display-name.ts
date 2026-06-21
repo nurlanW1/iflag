@@ -26,6 +26,9 @@ export function resolveGalleryDisplayName(
   isoAlpha2: string | null,
   slug: string,
 ): string {
+  if (['myanmar', 'myanmar-birmania', 'myanmar-burma', 'birmania', 'burma'].includes(slug.trim().toLowerCase())) {
+    return 'Myanmar (Birmania)';
+  }
   if (slug.trim().toLowerCase() === 'us-states') return 'USA States';
 
   const isoTrim = isoAlpha2?.trim();

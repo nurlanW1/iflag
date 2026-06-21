@@ -31,8 +31,6 @@ type Country = GalleryCountrySummary;
 
 type ViewMode = 'grid' | 'list';
 type SortKey = 'name-asc' | 'name-desc' | 'designs-desc' | 'designs-asc';
-type FormatFilter = 'all' | 'svg' | 'png' | 'video';
-type TypeFilter = 'all' | 'free' | 'premium';
 
 const KIND_TABS: ReadonlyArray<{ id: string | null; label: string; Icon: LucideIcon }> = [
   { id: null, label: 'All', Icon: Compass },
@@ -61,9 +59,6 @@ function GalleryContent() {
   const [searchQuery, setSearchQuery] = useState(initialQ);
   const [view, setView] = useState<ViewMode>('grid');
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
-  const urlFormat = (sp.get('format') ?? 'all') as FormatFilter;
-  const [formatFilter, setFormatFilter] = useState<FormatFilter>(urlFormat);
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const filterLabel = useMemo(() => {
@@ -80,8 +75,6 @@ function GalleryContent() {
   useEffect(() => {
     const q = sp.get('q') ?? '';
     setSearchQuery(q);
-    const fmt = (sp.get('format') ?? 'all') as FormatFilter;
-    setFormatFilter(fmt);
   }, [sp]);
 
   useEffect(() => {
@@ -141,30 +134,14 @@ function GalleryContent() {
       const params = new URLSearchParams();
       if (region?.trim()) params.set('region', region.trim());
       if (nextKind) params.set('kind', nextKind);
-      if (formatFilter !== 'all') params.set('format', formatFilter);
       return `/gallery${params.size > 0 ? `?${params.toString()}` : ''}`;
     },
-    [region, formatFilter],
-  );
-
-  const buildFormatHref = useCallback(
-    (fmt: FormatFilter) => {
-      const params = new URLSearchParams();
-      if (region?.trim()) params.set('region', region.trim());
-      if (kind?.trim()) params.set('kind', kind.trim());
-      if (fmt !== 'all') params.set('format', fmt);
-      return `/gallery${params.size > 0 ? `?${params.toString()}` : ''}`;
-    },
-    [region, kind],
+    [region],
   );
 
   const countryHref = useCallback(
-    (slug: string) => {
-      const p = new URLSearchParams();
-      if (formatFilter !== 'all') p.set('format', formatFilter);
-      return `/gallery/${encodeURIComponent(slug)}${p.size > 0 ? `?${p.toString()}` : ''}`;
-    },
-    [formatFilter],
+    (slug: string) => `/gallery/${encodeURIComponent(slug)}`,
+    [],
   );
 
   const filteredCountries = useMemo(() => {
@@ -203,10 +180,8 @@ function GalleryContent() {
   const activeFilterCount = useMemo(() => {
     let n = 0;
     if (activeKind !== null) n++;
-    if (formatFilter !== 'all') n++;
-    if (typeFilter !== 'all') n++;
     return n;
-  }, [activeKind, formatFilter, typeFilter]);
+  }, [activeKind]);
 
   const useContinentSections = !region?.trim() && !kind?.trim() && !searchQuery.trim();
 
@@ -367,43 +342,6 @@ function GalleryContent() {
                     );
                   })}
                 </div>
-                <span className="h-5 w-px shrink-0 bg-stone-200" aria-hidden />
-                <div className="flex flex-wrap gap-1">
-                  {(['all', 'svg', 'png', 'jpg', 'video'] as const).map((f) => (
-                    <Link
-                      key={f}
-                      href={buildFormatHref(f as FormatFilter)}
-                      className={`rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
-                        formatFilter === f
-                          ? 'bg-stone-800 text-white shadow-sm'
-                          : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
-                      }`}
-                    >
-                      {f === 'all' ? 'All formats' : f.toUpperCase()}
-                    </Link>
-                  ))}
-                </div>
-                <span className="h-5 w-px shrink-0 bg-stone-200" aria-hidden />
-                <div className="flex flex-wrap gap-1">
-                  {(['all', 'free', 'premium'] as const).map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setTypeFilter(t)}
-                      className={`rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
-                        typeFilter === t
-                          ? t === 'free'
-                            ? 'bg-emerald-600 text-white shadow-sm'
-                            : t === 'premium'
-                            ? 'bg-amber-500 text-white shadow-sm'
-                            : 'bg-stone-800 text-white shadow-sm'
-                          : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
-                      }`}
-                    >
-                      {t === 'all' ? 'All types' : t.charAt(0).toUpperCase() + t.slice(1)}
-                    </button>
-                  ))}
-                </div>
                 {activeFilterCount > 0 && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-[var(--brand-blue)]/10 px-2.5 py-1 text-[11px] font-bold text-[var(--brand-blue)]">
                     {activeFilterCount} active
@@ -447,44 +385,6 @@ function GalleryContent() {
                 );
               })}
             </ul>
-            <p className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Format</p>
-            <div className="mb-6 flex flex-wrap gap-2">
-              {(['all', 'svg', 'png', 'jpg', 'video'] as const).map((f) => (
-                <Link
-                  key={f}
-                  href={buildFormatHref(f as FormatFilter)}
-                  onClick={() => setFiltersOpen(false)}
-                  className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-                    formatFilter === f
-                      ? 'bg-stone-800 text-white'
-                      : 'bg-stone-50 text-stone-700 ring-1 ring-stone-200/90'
-                  }`}
-                >
-                  {f === 'all' ? 'All formats' : f.toUpperCase()}
-                </Link>
-              ))}
-            </div>
-            <p className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Type</p>
-            <div className="mb-6 flex flex-wrap gap-2">
-              {(['all', 'free', 'premium'] as const).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTypeFilter(t)}
-                  className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-                    typeFilter === t
-                      ? t === 'free'
-                        ? 'bg-emerald-600 text-white'
-                        : t === 'premium'
-                        ? 'bg-amber-500 text-white'
-                        : 'bg-stone-800 text-white'
-                      : 'bg-stone-50 text-stone-700 ring-1 ring-stone-200/90'
-                  }`}
-                >
-                  {t === 'all' ? 'All types' : t.charAt(0).toUpperCase() + t.slice(1)}
-                </button>
-              ))}
-            </div>
             <button
               type="button"
               className="flex min-h-12 w-full items-center justify-center rounded-xl bg-[var(--brand-blue)] py-3.5 text-base font-semibold text-white shadow-sm hover:bg-[var(--brand-blue-hover)]"

@@ -81,6 +81,13 @@ function r2CountryPrefixCandidates(slugRaw: string): string[] {
     addCandidateKey(keys, 'rok');
     addCandidateKey(keys, 'ROK');
   }
+  if ((canonical?.slug ?? slug).toLowerCase() === 'myanmar' || slug.includes('birmania')) {
+    addCandidateKey(keys, 'Myanmar (Birmania)');
+    addCandidateKey(keys, 'Myanmar Birmania');
+    addCandidateKey(keys, 'myanmar-birmania');
+    addCandidateKey(keys, 'Birmania');
+    addCandidateKey(keys, 'Burma');
+  }
   if (slug === 'us-states') {
     addCandidateKey(keys, 'US States');
     addCandidateKey(keys, 'U.S. States');

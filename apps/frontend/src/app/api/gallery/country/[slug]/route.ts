@@ -353,6 +353,13 @@ function r2CountryPrefixCandidates(countrySlug: string): string[] {
     addCandidateKey(keys, 'rok');
     addCandidateKey(keys, 'ROK');
   }
+  if ((canonical?.slug ?? countrySlug).toLowerCase() === 'myanmar' || countrySlug.toLowerCase().includes('birmania')) {
+    addCandidateKey(keys, 'Myanmar (Birmania)');
+    addCandidateKey(keys, 'Myanmar Birmania');
+    addCandidateKey(keys, 'myanmar-birmania');
+    addCandidateKey(keys, 'Birmania');
+    addCandidateKey(keys, 'Burma');
+  }
   if (countrySlug.toLowerCase() === 'us-states') {
     addCandidateKey(keys, 'US States');
     addCandidateKey(keys, 'U.S. States');

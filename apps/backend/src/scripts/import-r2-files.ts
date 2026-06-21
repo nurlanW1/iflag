@@ -317,9 +317,11 @@ async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | nu
     [sl]
   );
   if (found.rows[0]?.id) {
+    const existingDisplayName = sl === 'myanmar' ? 'Myanmar (Birmania)' : null;
     await pool.query(
       `UPDATE countries
        SET category = $1,
+           name = COALESCE($3, name),
            status = COALESCE(NULLIF(trim(status::text), ''), 'published'),
            published_at = COALESCE(published_at, CURRENT_TIMESTAMP),
            updated_at = CURRENT_TIMESTAMP
@@ -328,14 +330,16 @@ async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | nu
            lower(trim(COALESCE(category::text, ''))) IS DISTINCT FROM lower(trim($1))
            OR lower(trim(COALESCE(status::text, ''))) IS DISTINCT FROM 'published'
            OR published_at IS NULL
+           OR ($3 IS NOT NULL AND name IS DISTINCT FROM $3)
          )`,
-      [category, found.rows[0].id],
+      [category, found.rows[0].id, existingDisplayName],
     );
     return found.rows[0].id;
   }
 
   const displayName =
     sl === 'us-states' ? 'US States' :
+    sl === 'myanmar' ? 'Myanmar (Birmania)' :
     canonical?.name ||
     humanizeSlug(sl.replace(/[^\p{L}\p{N}\s-]/gu, ' ')).replace(/\s+/g, ' ').trim().slice(0, 250) ||
     humanizeSlug(sl).slice(0, 250);
