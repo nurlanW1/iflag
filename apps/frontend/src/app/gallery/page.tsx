@@ -8,17 +8,11 @@ import {
   ArrowRight,
   LayoutGrid,
   Rows3,
-  Compass,
-  Building2,
-  Map,
-  Clock3,
   X,
   Sparkles,
   Globe2,
   FileImage,
-  SlidersHorizontal,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCover';
 import { CountryHubFolderGrid } from '@/components/gallery/CountryHubFolderGrid';
@@ -31,14 +25,6 @@ type Country = GalleryCountrySummary;
 
 type ViewMode = 'grid' | 'list';
 type SortKey = 'name-asc' | 'name-desc' | 'designs-desc' | 'designs-asc';
-
-const KIND_TABS: ReadonlyArray<{ id: string | null; label: string; Icon: LucideIcon }> = [
-  { id: null, label: 'All', Icon: Compass },
-  { id: 'independent', label: 'Independent', Icon: Building2 },
-  { id: 'us-states', label: 'USA States', Icon: Map },
-  { id: 'autonomy', label: 'Autonomous & Regional', Icon: Globe2 },
-  { id: 'historical', label: 'Historical', Icon: Clock3 },
-];
 
 const SORT_OPTIONS: ReadonlyArray<{ id: SortKey; label: string }> = [
   { id: 'name-asc', label: 'Name · A → Z' },
@@ -59,7 +45,6 @@ function GalleryContent() {
   const [searchQuery, setSearchQuery] = useState(initialQ);
   const [view, setView] = useState<ViewMode>('grid');
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
-  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const filterLabel = useMemo(() => {
     const ks = kind?.trim();
@@ -129,16 +114,6 @@ function GalleryContent() {
     }
   };
 
-  const buildHref = useCallback(
-    (nextKind: string | null) => {
-      const params = new URLSearchParams();
-      if (region?.trim()) params.set('region', region.trim());
-      if (nextKind) params.set('kind', nextKind);
-      return `/gallery${params.size > 0 ? `?${params.toString()}` : ''}`;
-    },
-    [region],
-  );
-
   const countryHref = useCallback(
     (slug: string) => `/gallery/${encodeURIComponent(slug)}`,
     [],
@@ -174,14 +149,6 @@ function GalleryContent() {
     () => countries.reduce((acc, c) => acc + (c.design_count ?? c.count ?? 0), 0),
     [countries],
   );
-
-  const activeKind = kind?.trim() || null;
-
-  const activeFilterCount = useMemo(() => {
-    let n = 0;
-    if (activeKind !== null) n++;
-    return n;
-  }, [activeKind]);
 
   const useContinentSections = !region?.trim() && !kind?.trim() && !searchQuery.trim();
 
@@ -262,21 +229,6 @@ function GalleryContent() {
                     </button>
                   ) : null}
                 </div>
-                <button
-                  type="button"
-                  className="flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-100 min-[620px]:hidden"
-                  onClick={() => setFiltersOpen(true)}
-                  aria-expanded={filtersOpen}
-                  aria-haspopup="dialog"
-                >
-                  <SlidersHorizontal size={17} aria-hidden />
-                  Filters
-                  {activeFilterCount > 0 && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--brand-blue)] px-1 text-[11px] font-bold text-white">
-                      {activeFilterCount}
-                    </span>
-                  )}
-                </button>
                 <div className="ml-auto flex shrink-0 items-center gap-2">
                   <div className="relative hidden min-w-0 min-[620px]:block">
                     <select
@@ -321,80 +273,10 @@ function GalleryContent() {
                   </div>
                 </div>
               </div>
-              {/* Row 2: filter pills — desktop only */}
-              <div className="hidden border-t border-stone-100 pt-2.5 min-[620px]:flex min-[620px]:flex-wrap min-[620px]:items-center min-[620px]:gap-x-3 min-[620px]:gap-y-1.5">
-                <div className="flex flex-wrap gap-1">
-                  {KIND_TABS.map(({ id, label, Icon }) => {
-                    const active = (id ?? null) === activeKind;
-                    return (
-                      <Link
-                        key={label}
-                        href={buildHref(id)}
-                        className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
-                          active
-                            ? 'bg-[var(--brand-blue)] text-white shadow-sm shadow-[#2563eb]/30'
-                            : 'bg-stone-100/80 text-stone-700 hover:bg-stone-200/80'
-                        }`}
-                      >
-                        <Icon size={13} aria-hidden />
-                        {label}
-                      </Link>
-                    );
-                  })}
-                </div>
-                {activeFilterCount > 0 && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[var(--brand-blue)]/10 px-2.5 py-1 text-[11px] font-bold text-[var(--brand-blue)]">
-                    {activeFilterCount} active
-                  </span>
-                )}
-              </div>
             </div>
           </div>
         </div>
       </div>
-
-      {filtersOpen ? (
-        <div className="fixed inset-0 z-[45] lg:hidden">
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/45 backdrop-blur-[1px]"
-            aria-label="Close filters"
-            onClick={() => setFiltersOpen(false)}
-          />
-          <div className="absolute inset-x-0 bottom-0 max-h-[82dvh] overflow-y-auto rounded-t-2xl border border-stone-200 bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] pt-2 shadow-[0_-12px_40px_-14px_rgba(15,23,42,0.2)]">
-            <div className="mx-auto mb-5 h-1 w-11 rounded-full bg-stone-200" aria-hidden />
-            <p className="mb-4 text-[11px] font-bold uppercase tracking-wide text-stone-500">Category</p>
-            <ul className="mx-0 mb-6 list-none space-y-2 p-0">
-              {KIND_TABS.map(({ id, label, Icon }) => {
-                const active = (id ?? null) === activeKind;
-                return (
-                  <li key={label} className="list-none">
-                    <Link
-                      href={buildHref(id)}
-                      onClick={() => setFiltersOpen(false)}
-                      className={`flex min-h-12 touch-manipulation items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold transition-colors ${
-                        active
-                          ? 'bg-[var(--brand-blue)] text-white shadow-sm shadow-[#2563eb]/25'
-                          : 'bg-stone-50 text-stone-800 ring-1 ring-stone-200/90 hover:bg-stone-100'
-                      }`}
-                    >
-                      <Icon size={18} aria-hidden />
-                      {label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-            <button
-              type="button"
-              className="flex min-h-12 w-full items-center justify-center rounded-xl bg-[var(--brand-blue)] py-3.5 text-base font-semibold text-white shadow-sm hover:bg-[var(--brand-blue-hover)]"
-              onClick={() => setFiltersOpen(false)}
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      ) : null}
 
       <div className="marketplace-shell py-7 sm:py-11 lg:py-14">
         <div className="mb-5 flex items-center justify-between">

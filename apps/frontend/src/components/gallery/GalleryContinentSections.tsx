@@ -22,7 +22,6 @@ type Props = {
 const TILE_BY_NAME = Object.fromEntries(HOME_REGION_HUB_TILES.map((t) => [t.name, t]));
 
 export function GalleryContinentSections({ sections, view, hrefForSlug }: Props) {
-  // Hide "Other" section if it's empty — only show truly uncategorized countries when present
   const visible = sections.filter(s => s.continent !== 'Other' || s.countries.length > 0);
   return (
     <div className="space-y-12 sm:space-y-14">
@@ -72,8 +71,9 @@ function ContinentBlock({
               {section.continent}
             </h2>
             <p className="text-xs text-stone-500">
-              {section.countries.length}{' '}
-              {section.countries.length === 1 ? 'folder' : 'folders'}
+              {section.countries.length > 0
+                ? `${section.countries.length} ${section.countries.length === 1 ? 'folder' : 'folders'}`
+                : 'Browse collection'}
             </p>
           </div>
         </div>
@@ -87,7 +87,19 @@ function ContinentBlock({
           </Link>
         ) : null}
       </div>
-      {listView ? (
+
+      {/* Empty section → show a hub nav tile */}
+      {section.countries.length === 0 ? (
+        <Link
+          href={href}
+          className="flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-5 py-4 shadow-sm transition hover:border-stone-300 hover:bg-stone-50"
+        >
+          <span className="text-sm font-semibold text-stone-700">
+            Browse {section.continent} flags
+          </span>
+          <ArrowRight size={16} className="text-stone-400" aria-hidden />
+        </Link>
+      ) : listView ? (
         <ul className="divide-y divide-stone-100 overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-sm">
           {section.countries.map((country) => (
             <li key={`${country.code ?? 'x'}-${country.slug}-row`}>

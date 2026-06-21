@@ -19,6 +19,22 @@ export type GalleryCollectionSection =
   | 'Autonomous & Regional'
   | 'Other';
 
+/** All 50 US state slugs + DC + the hub slug. */
+export const USA_STATES_SLUG_SET = new Set<string>([
+  'us-states',
+  'alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado',
+  'connecticut', 'delaware', 'florida', 'georgia', 'hawaii', 'idaho',
+  'illinois', 'indiana', 'iowa', 'kansas', 'kentucky', 'louisiana',
+  'maine', 'maryland', 'massachusetts', 'michigan', 'minnesota',
+  'mississippi', 'missouri', 'montana', 'nebraska', 'nevada',
+  'new-hampshire', 'new-jersey', 'new-mexico', 'new-york',
+  'north-carolina', 'north-dakota', 'ohio', 'oklahoma', 'oregon',
+  'pennsylvania', 'rhode-island', 'south-carolina', 'south-dakota',
+  'tennessee', 'texas', 'utah', 'vermont', 'virginia', 'washington',
+  'west-virginia', 'wisconsin', 'wyoming',
+  'district-of-columbia', 'washington-dc',
+]);
+
 const ISO_TO_CONTINENT: Record<string, GalleryContinent> = {};
 const ISO_BY_COUNTRY_SLUG = new Map(
   COUNTRIES.map((country) => [country.slug.toLowerCase(), country.code.toUpperCase()]),
@@ -310,7 +326,7 @@ export function groupCountryHubsByContinent<T extends CountryWithContinent & { n
   for (const c of list) {
     const slug = c.slug?.trim().toLowerCase() || '';
     const key: GalleryCollectionSection =
-      slug === 'us-states'
+      USA_STATES_SLUG_SET.has(slug)
         ? 'USA States'
         : AUTONOMY_REGIONAL_SLUG_SET.has(slug)
           ? 'Autonomous & Regional'
@@ -323,12 +339,12 @@ export function groupCountryHubsByContinent<T extends CountryWithContinent & { n
   }
 
   const out: Array<{ continent: GalleryCollectionSection; countries: T[] }> = [];
+
+  // USA States and Autonomy always appear (even empty — rendered as nav hub tiles)
   for (const cont of ['USA States', 'Autonomous & Regional'] as const) {
-    const countries = buckets.get(cont);
-    if (countries?.length) {
-      countries.sort((a, b) => a.name.localeCompare(b.name));
-      out.push({ continent: cont, countries });
-    }
+    const countries = buckets.get(cont) ?? [];
+    countries.sort((a, b) => a.name.localeCompare(b.name));
+    out.push({ continent: cont, countries });
   }
   for (const cont of GALLERY_CONTINENTS) {
     const countries = buckets.get(cont);
