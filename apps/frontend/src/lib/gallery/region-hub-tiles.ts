@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Globe2, Flag, Trophy, Clock3 } from 'lucide-react';
+import { Globe2, Flag, Trophy, Clock3, Map } from 'lucide-react';
 
 /** Olympic-rings–inspired accent colors (icon well only; hub tile panel is white). */
 export type RegionHubTile = {
@@ -40,6 +40,18 @@ export const HOME_REGION_HUB_TILES: RegionHubTile[] = [
     icon: Globe2,
     href: '/gallery?region=Oceania',
     accent: '#009B3A',
+  },
+  {
+    name: 'USA States',
+    icon: Map,
+    href: '/gallery?kind=us-states',
+    accent: '#2563EB',
+  },
+  {
+    name: 'Autonomous & Regional',
+    icon: Globe2,
+    href: '/gallery?kind=autonomy',
+    accent: '#7C3AED',
   },
   {
     name: 'Organizations',

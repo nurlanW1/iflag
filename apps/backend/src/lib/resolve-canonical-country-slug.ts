@@ -21,13 +21,18 @@ const SLUG_ALIASES: Record<string, string> = {
   'arab-emirates': 'united-arab-emirates',
   arabicemirates: 'united-arab-emirates',
   uae: 'united-arab-emirates',
+  'bosnia-herzegovina': 'bosnia-and-herzegovina',
+  'botswana-verde': 'cabo-verde',
   'united-states-of-america': 'united-states',
   usa: 'united-states',
   uk: 'united-kingdom',
   england: 'united-kingdom',
   holland: 'netherlands',
   burma: 'myanmar',
+  birmania: 'myanmar',
+  'myanmar-birmania': 'myanmar',
   czechia: 'czech-republic',
+  czech: 'czech-republic',
   ivorycoast: 'ivory-coast',
   'cote-divoire': 'ivory-coast',
   korea: 'south-korea',
@@ -35,6 +40,15 @@ const SLUG_ALIASES: Record<string, string> = {
   rok: 'south-korea',
   southkorea: 'south-korea',
   ceylon: 'sri-lanka',
+  palastine: 'palestine',
+  'palastine-converted': 'palestine',
+  's-o-tom-pr-ncipe': 'sao-tome-and-principe',
+  'sao-tome': 'sao-tome-and-principe',
+  somali: 'somalia',
+  'south-sudan-guinea': 'south-sudan',
+  tadjikistan: 'tajikistan',
+  'turkmenistan-converted': 'turkmenistan',
+  'saint-vincent-grenadines': 'saint-vincent-and-the-grenadines',
   usstate: 'us-states',
   'us-state': 'us-states',
   usstates: 'us-states',
@@ -50,6 +64,17 @@ const SLUG_ALIASES: Record<string, string> = {
   'united-states-states': 'us-states',
   'american-states': 'us-states',
 };
+
+const CONTAINS_ALIASES: ReadonlyArray<[needle: string, slug: string]> = [
+  ['palastine', 'palestine'],
+  ['palestine', 'palestine'],
+  ['tadjikistan', 'tajikistan'],
+  ['turkmenistan', 'turkmenistan'],
+  ['myanmar', 'myanmar'],
+  ['pakistan', 'pakistan'],
+  ['korea', 'south-korea'],
+  ['chile', 'chile'],
+];
 
 /** ISO-3166 alpha-2 → canonical slug (subset; DB iso match is preferred). */
 const ISO_TO_SLUG: Record<string, string> = {
@@ -158,6 +183,9 @@ export function resolveCanonicalCountrySlugWithIndex(
 
   const alias = SLUG_ALIASES[raw];
   if (alias) return alias;
+
+  const contained = CONTAINS_ALIASES.find(([needle]) => raw.includes(needle));
+  if (contained) return contained[1];
 
   const nationalTail = stripNationalPrefix(raw);
   if (nationalTail) {

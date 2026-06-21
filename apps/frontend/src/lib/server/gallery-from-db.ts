@@ -5,6 +5,7 @@ import {
   flagThumbPlaceholderForFileId,
 } from '@/lib/flag-thumbnail-fallback';
 import {
+  AUTONOMY_REGIONAL_SLUGS,
   assignContinentToCountryHub,
   normalizeGalleryRegionParam,
 } from '@/lib/gallery/country-continent';
@@ -311,6 +312,10 @@ async function fetchGalleryCountriesFromDbOnce(
          $1::text IS NULL
          OR lower(trim(coalesce(c.category::text, 'country'))) = lower(trim($1))
          OR (
+           lower(trim($1)) = 'autonomy'
+           AND lower(trim(c.slug::text)) = ANY($2::text[])
+         )
+         OR (
            lower(trim($1)) = 'us-states'
            AND lower(trim(c.slug::text)) IN (
              'us-states',
@@ -332,7 +337,7 @@ async function fetchGalleryCountriesFromDbOnce(
          )
        )
      ORDER BY ${countriesOrder}`,
-    [catParam],
+    [catParam, [...AUTONOMY_REGIONAL_SLUGS]],
   );
 
   const out: GalleryCountrySummary[] = [];

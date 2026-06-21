@@ -14,13 +14,18 @@ export const COUNTRY_SLUG_SEARCH_ALIASES: Record<string, string> = {
   'arab-emirates': 'united-arab-emirates',
   arabicemirates: 'united-arab-emirates',
   uae: 'united-arab-emirates',
+  'bosnia-herzegovina': 'bosnia-and-herzegovina',
+  'botswana-verde': 'cabo-verde',
   usa: 'united-states',
   'united-states-of-america': 'united-states',
   uk: 'united-kingdom',
   england: 'united-kingdom',
   holland: 'netherlands',
   burma: 'myanmar',
+  birmania: 'myanmar',
+  'myanmar-birmania': 'myanmar',
   czechia: 'czech-republic',
+  czech: 'czech-republic',
   ivorycoast: 'ivory-coast',
   'cote-divoire': 'ivory-coast',
   korea: 'south-korea',
@@ -29,6 +34,15 @@ export const COUNTRY_SLUG_SEARCH_ALIASES: Record<string, string> = {
   southkorea: 'south-korea',
   srilanka: 'sri-lanka',
   ceylon: 'sri-lanka',
+  palastine: 'palestine',
+  'palastine-converted': 'palestine',
+  's-o-tom-pr-ncipe': 'sao-tome-and-principe',
+  'sao-tome': 'sao-tome-and-principe',
+  somali: 'somalia',
+  'south-sudan-guinea': 'south-sudan',
+  tadjikistan: 'tajikistan',
+  'turkmenistan-converted': 'turkmenistan',
+  'saint-vincent-grenadines': 'saint-vincent-and-the-grenadines',
   usstate: 'us-states',
   'us-state': 'us-states',
   usstates: 'us-states',
@@ -44,6 +58,17 @@ export const COUNTRY_SLUG_SEARCH_ALIASES: Record<string, string> = {
   'united-states-states': 'us-states',
   'american-states': 'us-states',
 };
+
+const COUNTRY_SLUG_CONTAINS_ALIASES: ReadonlyArray<[needle: string, slug: string]> = [
+  ['palastine', 'palestine'],
+  ['palestine', 'palestine'],
+  ['tadjikistan', 'tajikistan'],
+  ['turkmenistan', 'turkmenistan'],
+  ['myanmar', 'myanmar'],
+  ['pakistan', 'pakistan'],
+  ['korea', 'south-korea'],
+  ['chile', 'chile'],
+];
 
 export const ISO_TO_COUNTRY_HUB_SLUG: Record<string, string> = {
   DZ: 'algeria',
@@ -85,6 +110,12 @@ const DECORATIVE_SLUG_TOKENS = new Set([
   'pack',
   'background',
   'grunge',
+  'as',
+  'round',
+  'glossy',
+  'converted',
+  'map',
+  'folder',
   'on',
   'of',
   'the',
@@ -113,9 +144,10 @@ function canonicalFromDecorativeSlug(raw: string): string | null {
 export function slugLooksLikeFileAsset(slug: string): boolean {
   const s = slug.trim().toLowerCase();
   if (!s || s.length < 2) return true;
+  if (s === 'new-folder') return true;
   if (s.includes('_')) return true;
   if (
-    /\b(flag|flags|flagpole|flagpoles|vector|wave|waves|waving|circle|heart|sphere|mockup|banner|icon|image|images|pack|background|grunge)\b/.test(
+    /\b(flag|flags|flagpole|flagpoles|vector|wave|waves|waving|circle|heart|sphere|mockup|banner|icon|image|images|pack|background|grunge|folder)\b/.test(
       s,
     )
   ) {
@@ -128,6 +160,8 @@ export function canonicalHubSlug(row: Pick<GalleryCountrySummary, 'slug' | 'code
   const raw = row.slug.trim().toLowerCase();
   const aliased = COUNTRY_SLUG_SEARCH_ALIASES[raw];
   if (aliased) return aliased;
+  const contained = COUNTRY_SLUG_CONTAINS_ALIASES.find(([needle]) => raw.includes(needle));
+  if (contained) return contained[1];
   const decorative = canonicalFromDecorativeSlug(raw);
   if (decorative) return decorative;
   const compact = COMPACT_COUNTRY_HUB_SLUGS.get(compactKey(raw));
@@ -163,7 +197,6 @@ export function mergeCanonicalCountryHubs(
   for (const row of countries) {
     const canon = canonicalHubSlug(row);
     if (slugLooksLikeFileAsset(row.slug) && canon === row.slug.trim().toLowerCase()) continue;
-    const key = mergeKey(row);
     const canonicalCountry = COUNTRY_BY_SLUG.get(canon.toLowerCase());
     const normalized: GalleryCountrySummary = {
       ...row,
@@ -171,6 +204,7 @@ export function mergeCanonicalCountryHubs(
       name: canonicalCountry?.name ?? row.name,
       code: row.code || canonicalCountry?.code.toUpperCase() || null,
     };
+    const key = mergeKey(normalized);
 
     const existing = map.get(key);
     if (!existing) {

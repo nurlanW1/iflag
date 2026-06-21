@@ -26,6 +26,8 @@ export function resolveGalleryDisplayName(
   isoAlpha2: string | null,
   slug: string,
 ): string {
+  if (slug.trim().toLowerCase() === 'us-states') return 'USA States';
+
   const isoTrim = isoAlpha2?.trim();
   const iso = isoTrim ? isoTrim.toUpperCase() : '';
   if (iso) {

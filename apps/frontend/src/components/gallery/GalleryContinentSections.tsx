@@ -6,10 +6,10 @@ import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCove
 import { CountryHubFolderGrid } from '@/components/gallery/CountryHubFolderGrid';
 import { HOME_REGION_HUB_TILES } from '@/lib/gallery/region-hub-tiles';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
-import type { GalleryContinent } from '@/lib/gallery/country-continent';
+import type { GalleryCollectionSection } from '@/lib/gallery/country-continent';
 
 type Section = {
-  continent: GalleryContinent | 'Other';
+  continent: GalleryCollectionSection;
   countries: GalleryCountrySummary[];
 };
 
@@ -44,7 +44,7 @@ function ContinentBlock({
   const href =
     section.continent === 'Other'
       ? '/gallery'
-      : `/gallery?region=${encodeURIComponent(section.continent)}`;
+      : tile?.href ?? `/gallery?region=${encodeURIComponent(section.continent)}`;
   const accent = tile?.accent ?? '#475569';
   const ContinentIcon = tile?.icon;
 
@@ -71,7 +71,7 @@ function ContinentBlock({
             </h2>
             <p className="text-xs text-stone-500">
               {section.countries.length}{' '}
-              {section.countries.length === 1 ? 'country' : 'countries'}
+              {section.countries.length === 1 ? 'folder' : 'folders'}
             </p>
           </div>
         </div>

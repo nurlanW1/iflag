@@ -13,11 +13,117 @@ export const GALLERY_CONTINENTS = [
 ] as const;
 
 export type GalleryContinent = (typeof GALLERY_CONTINENTS)[number];
+export type GalleryCollectionSection =
+  | GalleryContinent
+  | 'USA States'
+  | 'Autonomous & Regional'
+  | 'Other';
 
 const ISO_TO_CONTINENT: Record<string, GalleryContinent> = {};
 const ISO_BY_COUNTRY_SLUG = new Map(
   COUNTRIES.map((country) => [country.slug.toLowerCase(), country.code.toUpperCase()]),
 );
+
+export const AUTONOMY_REGIONAL_SLUGS = [
+  'american-samoa',
+  'anguilla',
+  'antarctica',
+  'aruba',
+  'bermuda',
+  'british-indian-ocean-territory',
+  'british-virgin-islands',
+  'caribbean-netherlands',
+  'cayman-islands',
+  'christmas-island',
+  'cocos-keeling-islands',
+  'cook-islands',
+  'cura-ao',
+  'curacao',
+  'falkland-islands',
+  'faroe-islands',
+  'french-guiana',
+  'french-polynesia',
+  'french-southern-territories',
+  'gibraltar',
+  'guadeloupe',
+  'isle-man',
+  'isle-of-man',
+  'jersey',
+  'land-islands',
+  'aland-islands',
+  'mayotte',
+  'montserrat',
+  'niue',
+  'norfolk-island',
+  'northern-ireland',
+  'northern-mariana-islands',
+  'pitcairn-islands',
+  'r-union',
+  'reunion',
+  'saint-barth-lemy',
+  'saint-barthelemy',
+  'saint-helena',
+  'saint-pierre-miquelon',
+  'sint-maarten',
+  'south-georgia-south-sandwich-islands',
+  'turks-caicos-islands',
+  'united-states-virgin-islands',
+  'uyghur-hand-holding-east-turkestan',
+  'wales',
+  'western-sahara',
+] as const;
+
+export const AUTONOMY_REGIONAL_SLUG_SET = new Set<string>(AUTONOMY_REGIONAL_SLUGS);
+
+const SLUG_TO_CONTINENT: Record<string, GalleryContinent> = {
+  'american-samoa': 'Oceania',
+  anguilla: 'Americas',
+  antarctica: 'Oceania',
+  aruba: 'Americas',
+  bermuda: 'Americas',
+  'british-indian-ocean-territory': 'Asia',
+  'british-virgin-islands': 'Americas',
+  'caribbean-netherlands': 'Americas',
+  'cayman-islands': 'Americas',
+  'christmas-island': 'Oceania',
+  'cocos-keeling-islands': 'Oceania',
+  'cook-islands': 'Oceania',
+  'cura-ao': 'Americas',
+  curacao: 'Americas',
+  'falkland-islands': 'Americas',
+  'faroe-islands': 'Europe',
+  'french-guiana': 'Americas',
+  'french-polynesia': 'Oceania',
+  'french-southern-territories': 'Oceania',
+  gibraltar: 'Europe',
+  guadeloupe: 'Americas',
+  'isle-man': 'Europe',
+  'isle-of-man': 'Europe',
+  jersey: 'Europe',
+  'land-islands': 'Europe',
+  'aland-islands': 'Europe',
+  mayotte: 'Africa',
+  montserrat: 'Americas',
+  niue: 'Oceania',
+  'norfolk-island': 'Oceania',
+  'northern-ireland': 'Europe',
+  'northern-mariana-islands': 'Oceania',
+  'pitcairn-islands': 'Oceania',
+  'r-union': 'Africa',
+  reunion: 'Africa',
+  'saint-barth-lemy': 'Americas',
+  'saint-barthelemy': 'Americas',
+  'saint-helena': 'Africa',
+  'saint-pierre-miquelon': 'Americas',
+  'sint-maarten': 'Americas',
+  'south-georgia-south-sandwich-islands': 'Americas',
+  'turks-caicos-islands': 'Americas',
+  'united-states-virgin-islands': 'Americas',
+  'us-states': 'Americas',
+  'uyghur-hand-holding-east-turkestan': 'Asia',
+  wales: 'Europe',
+  'western-sahara': 'Africa',
+};
 
 function addContinent(continent: GalleryContinent, codes: string): void {
   for (const raw of codes.split(',')) {
@@ -98,11 +204,13 @@ export function resolveGalleryContinent(input: {
   storedRegion?: string | null;
   slug?: string | null;
 }): GalleryContinent | null {
-  const slugIso = input.slug ? ISO_BY_COUNTRY_SLUG.get(input.slug.trim().toLowerCase()) : null;
+  const slug = input.slug?.trim().toLowerCase() || null;
+  const slugIso = slug ? ISO_BY_COUNTRY_SLUG.get(slug) : null;
   return (
     continentFromStoredRegion(input.storedRegion) ??
     continentFromIso2(input.isoAlpha2) ??
     continentFromIso2(slugIso) ??
+    (slug ? SLUG_TO_CONTINENT[slug] : null) ??
     null
   );
 }
@@ -162,20 +270,31 @@ export function filterCountryHubsByGalleryRegion<T extends CountryWithContinent>
 
 export function groupCountryHubsByContinent<T extends CountryWithContinent & { name: string }>(
   list: T[],
-): Array<{ continent: GalleryContinent | 'Other'; countries: T[] }> {
-  const buckets = new Map<GalleryContinent | 'Other', T[]>();
+): Array<{ continent: GalleryCollectionSection; countries: T[] }> {
+  const buckets = new Map<GalleryCollectionSection, T[]>();
   for (const c of list) {
-    const cont =
-      (c.continent as GalleryContinent | null | undefined) ??
-      resolveGalleryContinent({ isoAlpha2: c.code, slug: c.slug }) ??
-      'Other';
-    const key = cont === 'Other' ? 'Other' : cont;
+    const slug = c.slug?.trim().toLowerCase() || '';
+    const key: GalleryCollectionSection =
+      slug === 'us-states'
+        ? 'USA States'
+        : AUTONOMY_REGIONAL_SLUG_SET.has(slug)
+          ? 'Autonomous & Regional'
+          : (c.continent as GalleryContinent | null | undefined) ??
+            resolveGalleryContinent({ isoAlpha2: c.code, slug: c.slug }) ??
+            'Other';
     const arr = buckets.get(key) ?? [];
     arr.push(c);
     buckets.set(key, arr);
   }
 
-  const out: Array<{ continent: GalleryContinent | 'Other'; countries: T[] }> = [];
+  const out: Array<{ continent: GalleryCollectionSection; countries: T[] }> = [];
+  for (const cont of ['USA States', 'Autonomous & Regional'] as const) {
+    const countries = buckets.get(cont);
+    if (countries?.length) {
+      countries.sort((a, b) => a.name.localeCompare(b.name));
+      out.push({ continent: cont, countries });
+    }
+  }
   for (const cont of GALLERY_CONTINENTS) {
     const countries = buckets.get(cont);
     if (countries?.length) {

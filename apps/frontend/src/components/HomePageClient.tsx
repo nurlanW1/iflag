@@ -39,7 +39,7 @@ export default function HomePageClient() {
           </SectionReveal>
 
           <div className="rounded-xl border border-neutral-200/90 bg-[#fafaf9] p-2.5 sm:p-3 lg:p-4">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 lg:grid-cols-8">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2 lg:grid-cols-5 xl:grid-cols-10">
               {HOME_REGION_HUB_TILES.map((cat, idx) => {
                 const CatIcon = cat.icon;
                 return (
