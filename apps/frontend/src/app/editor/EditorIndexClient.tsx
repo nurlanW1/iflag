@@ -28,7 +28,7 @@ function FlagCard({ code, upperCode, name }: { code: string; upperCode: string; 
           className="h-full w-full object-cover"
           loading="lazy"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = `https://flagcdn.com/w160/${code}.png`;
+            (e.target as HTMLImageElement).style.display = 'none';
           }}
         />
       </div>

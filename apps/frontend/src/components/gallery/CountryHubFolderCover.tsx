@@ -7,7 +7,6 @@ type Props = {
   countryName: string;
   coverUrl?: string | null;
   hasWebpCover: boolean;
-  /** ISO 3166-1 alpha-2 code (e.g. "US", "BR") — used for flagcdn.com fallback. */
   countryCode?: string | null;
   className?: string;
   imageClassName?: string;
@@ -15,27 +14,16 @@ type Props = {
   priority?: boolean;
 };
 
-function flagCdnUrl(code: string): string {
-  return `https://flagcdn.com/w320/${code.toLowerCase()}.webp`;
-}
-
-/**
- * Country folder tile cover.
- * Priority: any cover URL (SVG/PNG/WebP) → flagcdn.com (by ISO code) → grey placeholder.
- */
 export function CountryHubFolderCover({
   countryName,
   coverUrl,
-  countryCode,
   className = '',
   imageClassName = 'object-contain p-3',
   priority = false,
 }: Props) {
-  const coverSrc = coverUrl?.trim() ?? '';
-  const fallbackSrc = countryCode?.trim() ? flagCdnUrl(countryCode.trim()) : null;
+  const src = coverUrl?.trim() ?? '';
 
-  if (coverSrc || fallbackSrc) {
-    const src = coverSrc || fallbackSrc!;
+  if (src) {
     return (
       <div className={`relative h-full w-full ${className}`.trim()}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -48,12 +36,7 @@ export function CountryHubFolderCover({
           referrerPolicy="no-referrer"
           draggable={false}
           onError={(e) => {
-            const el = e.currentTarget;
-            if (coverSrc && fallbackSrc && el.src !== fallbackSrc) {
-              el.src = fallbackSrc;
-              return;
-            }
-            el.style.display = 'none';
+            (e.currentTarget as HTMLImageElement).style.display = 'none';
           }}
         />
       </div>
@@ -73,17 +56,14 @@ export function CountryHubFolderCover({
 export function CountryHubFolderCoverFill({
   countryName,
   coverUrl,
-  countryCode,
   className = 'absolute inset-0',
   imageClassName = 'object-contain p-3',
   sizes,
   priority = false,
 }: Props) {
-  const coverSrc = coverUrl?.trim() ?? '';
-  const fallbackSrc = countryCode?.trim() ? flagCdnUrl(countryCode.trim()) : null;
+  const src = coverUrl?.trim() ?? '';
 
-  if (coverSrc || fallbackSrc) {
-    const src = coverSrc || fallbackSrc!;
+  if (src) {
     const unoptimized = shouldUnoptimizeFlagImageHref(src, ['webp']);
     return (
       <div className={className}>

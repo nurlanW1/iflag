@@ -457,10 +457,7 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
     img.src = `/flags/${upper}.svg`;
     img.onload = () => setFlagBg(img);
     img.onerror = () => {
-      const img2 = new window.Image();
-      img2.crossOrigin = 'anonymous';
-      img2.src = `https://flagcdn.com/w640/${upper.toLowerCase()}.png`;
-      img2.onload = () => setFlagBg(img2);
+      // No external fallback — only serve own uploaded flags
     };
   }, []);
 

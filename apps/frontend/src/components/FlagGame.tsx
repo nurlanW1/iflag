@@ -272,14 +272,12 @@ export function FlagGame({ onClose }: { onClose: () => void }) {
 
         {/* Flag image — full width, centered */}
         <div className="mx-auto mb-5 flex w-full max-w-[17rem] items-center justify-center overflow-hidden rounded-xl shadow-[0_6px_24px_-4px_rgba(0,0,0,0.22)]" style={{ aspectRatio: '17/10' }}>
-          <img
+          <div
             key={correct.code}
-            src={`https://flagcdn.com/w320/${correct.code}.webp`}
-            alt="Country flag"
-            className="h-full w-full object-cover"
-            loading="eager"
-            draggable={false}
-          />
+            className="flex h-full w-full items-center justify-center bg-neutral-100 text-xs text-neutral-400"
+          >
+            {correct.name}
+          </div>
         </div>
 
         {/* Result banner */}
