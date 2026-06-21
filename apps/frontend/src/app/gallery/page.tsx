@@ -38,7 +38,7 @@ const KIND_TABS: ReadonlyArray<{ id: string | null; label: string; Icon: LucideI
   { id: null, label: 'All', Icon: Compass },
   { id: 'independent', label: 'Independent', Icon: Building2 },
   { id: 'us-states', label: 'USA States', Icon: Map },
-  { id: 'autonomy', label: 'Autonomous', Icon: Globe2 },
+  { id: 'autonomy', label: 'Autonomous & Regional', Icon: Globe2 },
   { id: 'historical', label: 'Historical', Icon: Clock3 },
 ];
 
@@ -71,7 +71,7 @@ function GalleryContent() {
     const rg = region?.trim();
     if (ks === 'independent') return 'Independent';
     if (ks === 'us-states') return 'USA States';
-    if (ks === 'autonomy') return 'Autonomous';
+    if (ks === 'autonomy') return 'Autonomous & Regional';
     if (ks === 'historical') return 'Historical flags';
     if (rg) return rg;
     return null;

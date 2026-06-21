@@ -341,7 +341,7 @@ export default function CountryDetailPage() {
                     className="w-full px-4 py-3 border-2 border-neutral-200 rounded-xl focus:outline-none focus:border-[var(--brand-blue)] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-[#2a2a2a]"
                   >
                     <option value="country">Country</option>
-                    <option value="autonomy">Autonomy</option>
+                    <option value="autonomy">Autonomous & Regional</option>
                     <option value="organization">Organization</option>
                     <option value="historical">Historical</option>
                   </select>
