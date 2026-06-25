@@ -669,13 +669,9 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
     return '';
   }
 
-  /** Group by filename stem first: same file name across formats = one design card. */
-  function designBucketKey(row: FlagFileRow): string {
-    const byFileName = variantGroupKey(row);
-    if (byFileName) return byFileName;
-    const ag = row.asset_group_key?.trim();
-    if (ag) return `ag:${ag.toLowerCase()}`;
-    return `solo:${row.id}`;
+  /** All files in a country folder = one design card (one card per country). */
+  function designBucketKey(_row: FlagFileRow): string {
+    return 'main';
   }
 
   type FormatRow = CountryGalleryPayload['variants'][number]['formats'][number];
@@ -761,19 +757,22 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
     const downloadProtected =
       previewOnly || String(r.premium_tier ?? 'free').trim().toLowerCase() !== 'free';
 
-    builder.formats.push({
-      id: String(r.id),
-      format: formatDisplayName(r.format),
-      formatCode: ext,
-      category: formatToCategory(r.format),
-      file: r.file_name,
-      url: undefined,
-      previewUrl,
-      premiumTier: previewOnly ? 'paid' : tier,
-      downloadProtected,
-      size: formatFileSize(sz),
-      dimensions: dim,
-    });
+    // Deduplicate by format extension — one format tab per extension
+    if (!builder.formats.some((f) => f.formatCode === ext)) {
+      builder.formats.push({
+        id: String(r.id),
+        format: formatDisplayName(r.format),
+        formatCode: ext,
+        category: formatToCategory(r.format),
+        file: r.file_name,
+        url: undefined,
+        previewUrl,
+        premiumTier: previewOnly ? 'paid' : tier,
+        downloadProtected,
+        size: formatFileSize(sz),
+        dimensions: dim,
+      });
+    }
 
     const score = thumbScoreForFormat(r.format);
     const thumbOk =

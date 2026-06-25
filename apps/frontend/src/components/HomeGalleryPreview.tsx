@@ -18,21 +18,9 @@ export default function HomeGalleryPreview() {
 
   const loadCountries = async () => {
     try {
-      const previewRes = await fetch('/api/gallery/landing-preview?full=1', {
-        cache: 'no-store',
-      });
-      if (previewRes.ok) {
-        const data = await previewRes.json();
-        const list = data.countries || [];
-        if (list.length > 0) {
-          setAllCountries(list);
-          return;
-        }
-      }
-
-      const stockRes = await fetch('/api/gallery/landing-preview?full=1', { cache: 'no-store' });
-      if (stockRes.ok) {
-        const data = await stockRes.json();
+      const res = await fetch('/api/gallery/landing-preview', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
         setAllCountries(data.countries || []);
       }
     } catch (error) {

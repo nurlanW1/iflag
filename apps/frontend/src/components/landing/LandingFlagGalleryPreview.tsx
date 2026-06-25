@@ -6,8 +6,9 @@ import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCove
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 
-/* ── Speeds (seconds for one full cycle) — all rows go left ── */
-const ROW_SPEEDS = [160, 200, 140, 180, 155] as const;
+/* 3 rows — slower = less CPU/GPU pressure */
+const ROW_SPEEDS = [180, 220, 160] as const;
+const MAX_COUNTRIES = 60;
 
 function FlagCard({ country }: { country: GalleryCountrySummary }) {
   return (
@@ -22,7 +23,6 @@ function FlagCard({ country }: { country: GalleryCountrySummary }) {
           countryName={country.name}
           coverUrl={country.webp_cover_url ?? country.thumbnail}
           hasWebpCover={country.has_webp_cover}
-          countryCode={country.code}
           imageClassName="h-full w-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-[1.05]"
         />
       </div>
@@ -47,7 +47,6 @@ function MarqueeRow({
   const trackRef = useRef<HTMLDivElement>(null);
   const doubled = [...items, ...items];
 
-  /* Smooth speed change via Web Animations API — no jump */
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -64,6 +63,7 @@ function MarqueeRow({
         style={{
           animation: `marquee-left ${speed}s linear infinite`,
           willChange: 'transform',
+          contain: 'layout style',
         }}
       >
         {doubled.map((country, i) => (
@@ -85,7 +85,7 @@ export function LandingFlagGalleryPreview() {
       { retries: 2, delayMs: 500 },
     ).then(({ ok, data }) => {
       if (ok && data?.countries && data.countries.length > 0) {
-        setCountries(data.countries);
+        setCountries(data.countries.slice(0, MAX_COUNTRIES));
         setReady(true);
       }
     });
@@ -95,9 +95,9 @@ export function LandingFlagGalleryPreview() {
     return (
       <section className="overflow-hidden border-t border-neutral-200/85 bg-[#fafaf9] py-6">
         <div className="space-y-2.5">
-          {[1, 2, 3, 4, 5].map((r) => (
+          {[1, 2, 3].map((r) => (
             <div key={r} className="flex gap-2.5 px-4">
-              {Array.from({ length: 12 }).map((_, i) => (
+              {Array.from({ length: 10 }).map((_, i) => (
                 <div
                   key={i}
                   className="h-[100px] w-[130px] shrink-0 animate-pulse rounded-xl bg-neutral-200/60"
@@ -110,13 +110,11 @@ export function LandingFlagGalleryPreview() {
     );
   }
 
-  const fifth = Math.ceil(countries.length / 5);
+  const third = Math.ceil(countries.length / 3);
   const rows: GalleryCountrySummary[][] = [
-    countries.slice(0, fifth),
-    countries.slice(fifth, fifth * 2),
-    countries.slice(fifth * 2, fifth * 3),
-    countries.slice(fifth * 3, fifth * 4),
-    countries.slice(fifth * 4),
+    countries.slice(0, third),
+    countries.slice(third, third * 2),
+    countries.slice(third * 2),
   ];
 
   return (
@@ -130,7 +128,7 @@ export function LandingFlagGalleryPreview() {
           <MarqueeRow
             key={idx}
             items={row}
-            speed={ROW_SPEEDS[idx] ?? 38}
+            speed={ROW_SPEEDS[idx] ?? 180}
             slow={slow}
           />
         ))}
