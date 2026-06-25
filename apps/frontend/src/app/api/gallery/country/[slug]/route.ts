@@ -148,7 +148,6 @@ function emptyCountryHub(slug: string) {
   const canonical = canonicalCountryForSlug(slug);
   const countryName = canonical?.name ?? slugToCountryName(slug);
   const countryCode = canonical?.code.toUpperCase() ?? getCountryCode(countryName);
-  const coverUrl = canonical ? `/flags/${canonical.code.toLowerCase()}.svg` : null;
   return {
     country: {
       name: countryName,
@@ -164,9 +163,9 @@ function emptyCountryHub(slug: string) {
         designCount: 0,
         fileCount: 0,
       }),
-      cover_image_url: coverUrl,
-      has_webp_cover: Boolean(coverUrl),
-      webp_cover_url: coverUrl,
+      cover_image_url: null,
+      has_webp_cover: false,
+      webp_cover_url: null,
       file_count: 0,
       design_count: 0,
     },
@@ -583,6 +582,9 @@ export async function GET(
     if (r2Variants.length > 0) {
       const countryName = slugToCountryName(slug);
       const countryCode = getCountryCode(countryName);
+      const webpCover = r2Variants.find((variant) =>
+        variant.formats.some((format) => format.formatCode.toLowerCase() === 'webp'),
+      )?.thumbnail || r2Variants.find((variant) => variant.thumbnail)?.thumbnail || null;
       return NextResponse.json({
         country: {
           name: countryName,
@@ -590,9 +592,9 @@ export async function GET(
           code: countryCode,
           region: null,
           description: buildCountryHubDescription({ name: countryName, slug, isoCode: countryCode, region: null, dbDescription: null, designCount: r2Variants.length, fileCount: r2Variants.length }),
-          cover_image_url: r2Variants[0]?.thumbnail ?? null,
-          has_webp_cover: false,
-          webp_cover_url: null,
+          cover_image_url: webpCover,
+          has_webp_cover: Boolean(webpCover?.toLowerCase().includes('.webp')),
+          webp_cover_url: webpCover?.toLowerCase().includes('.webp') ? webpCover : null,
           file_count: r2Variants.length,
           design_count: r2Variants.length,
         },

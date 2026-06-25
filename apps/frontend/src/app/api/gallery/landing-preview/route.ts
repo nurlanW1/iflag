@@ -5,8 +5,6 @@ import {
   applyGalleryDisplayNames,
   fetchGalleryCountriesFromDb,
 } from '@/lib/server/gallery-from-db';
-import { COUNTRIES } from '@/lib/countries';
-import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 
 /** Fisher–Yates shuffle */
 function shuffle<T>(items: T[]): T[] {
@@ -18,52 +16,28 @@ function shuffle<T>(items: T[]): T[] {
   return out;
 }
 
-/** Static list of all ISO countries — used for marquee belt (no DB dependency). */
-function allCountriesStatic(): GalleryCountrySummary[] {
-  return [...COUNTRIES]
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map((c) => ({
-      id: `static:${c.slug}`,
-      name: c.name,
-      slug: c.slug,
-      code: c.code.toUpperCase(),
-      thumbnail_url: '',
-      flag_count: 0,
-      design_count: 0,
-      thumbnail: '',
-      count: 0,
-      has_webp_cover: false,
-      webp_cover_url: null,
-    }));
-}
-
 /**
  * Landing gallery preview:
- * - Default: random 24-tile preview (published countries with covers).
- * - `?full=1`: ALL ISO countries for the marquee belt via flagcdn.com — no DB needed.
+ * - Default: random 24-tile preview from uploaded R2-backed countries.
+ * - `?full=1`: all uploaded R2-backed countries for marquee/game use.
  */
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const full = searchParams.get('full') === '1';
 
-    if (full) {
-      return NextResponse.json(
-        { countries: allCountriesStatic() },
-        { headers: { 'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800' } },
-      );
-    }
-
     const rowsBuilt =
       process.env.DATABASE_URL?.trim() ?
         await fetchGalleryCountriesFromDb(getDb(), null)
       : [];
 
-    const rows = filterLandingCountryFolders(applyGalleryDisplayNames(rowsBuilt));
+    const rows = filterLandingCountryFolders(applyGalleryDisplayNames(rowsBuilt)).filter((country) =>
+      Boolean(country.webp_cover_url?.trim() || country.thumbnail?.trim() || country.thumbnail_url?.trim()),
+    );
     const sorted = [...rows].sort((a, b) => a.name.localeCompare(b.name));
 
     return NextResponse.json(
-      { countries: shuffle(sorted).slice(0, 24) },
+      { countries: full ? sorted : shuffle(sorted).slice(0, 24) },
       { headers: { 'Cache-Control': 'no-store' } },
     );
   } catch (error) {

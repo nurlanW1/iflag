@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { getCountryCode } from '@/lib/country-mapping';
-import { COUNTRIES } from '@/lib/countries';
 import { getDb } from '@/lib/server/db';
 import {
   applyGalleryDisplayNames,
@@ -43,39 +42,8 @@ function mergeStockOnlyIntoDb(dbList: GalleryCountrySummary[], stockList: Galler
   return mergeCanonicalCountryHubs([...dbList, ...extra]);
 }
 
-function canonicalCountryFallbacks(): GalleryCountrySummary[] {
-  return COUNTRIES.map((country) => {
-    const code = country.code.toUpperCase();
-    const thumbnail = `/flags/${country.code.toLowerCase()}.svg`;
-    return {
-      id: `canonical-country:${country.slug}`,
-      name: country.name,
-      slug: country.slug,
-      code,
-      flag_count: 0,
-      design_count: 0,
-      count: 0,
-      has_webp_cover: true,
-      webp_cover_url: thumbnail,
-      thumbnail_url: thumbnail,
-      thumbnail,
-      is_fallback_country: true,
-    };
-  });
-}
-
 function mergeMissingCanonicalCountries(list: GalleryCountrySummary[]): GalleryCountrySummary[] {
-  const existing = mergeCanonicalCountryHubs(list);
-  const seen = new Set<string>();
-  for (const country of existing) {
-    if (country.code?.trim()) seen.add(`code:${country.code.trim().toUpperCase()}`);
-    seen.add(`slug:${country.slug.trim().toLowerCase()}`);
-  }
-  const missing = canonicalCountryFallbacks().filter((country) => {
-    const byCode = country.code ? seen.has(`code:${country.code.toUpperCase()}`) : false;
-    return !byCode && !seen.has(`slug:${country.slug.toLowerCase()}`);
-  });
-  return mergeCanonicalCountryHubs([...existing, ...missing]);
+  return mergeCanonicalCountryHubs(list);
 }
 
 function finalizeCountryHubList(

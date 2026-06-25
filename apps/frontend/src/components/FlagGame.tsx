@@ -5,6 +5,22 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
 
+type Country = {
+  name: string;
+  code: string;
+  slug: string;
+  imageUrl: string;
+};
+
+type ApiCountrySummary = {
+  name?: string | null;
+  slug?: string | null;
+  code?: string | null;
+  webp_cover_url?: string | null;
+  thumbnail?: string | null;
+  thumbnail_url?: string | null;
+};
+
 const COUNTRIES = [
   { name: 'Afghanistan', code: 'af' },
   { name: 'Albania', code: 'al' },
@@ -195,8 +211,6 @@ const COUNTRIES = [
   { name: 'Zimbabwe', code: 'zw' },
 ] as const;
 
-type Country = (typeof COUNTRIES)[number];
-
 function fisherYatesShuffle<T>(arr: readonly T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -206,37 +220,137 @@ function fisherYatesShuffle<T>(arr: readonly T[]): T[] {
   return a;
 }
 
-function buildQuestion(): { correct: Country; options: Country[] } {
-  const shuffled = fisherYatesShuffle(COUNTRIES);
+function webpPreviewUrl(country: ApiCountrySummary): string {
+  const candidates = [country.webp_cover_url, country.thumbnail, country.thumbnail_url];
+  return (
+    candidates.find((url) => {
+      const raw = url?.trim() ?? '';
+      return Boolean(raw) && /\.webp(?:$|[?#])/i.test(raw);
+    })?.trim() ?? ''
+  );
+}
+
+function normalizeApiCountries(raw: unknown): Country[] {
+  const payload = raw as { countries?: ApiCountrySummary[] };
+  const apiCountries = Array.isArray(payload.countries) ? payload.countries : [];
+  const knownByName = new Map(COUNTRIES.map((country) => [country.name.toLowerCase(), country]));
+  const seen = new Set<string>();
+  const out: Country[] = [];
+
+  for (const country of apiCountries) {
+    const name = country.name?.trim() ?? '';
+    const slug = country.slug?.trim() ?? name.toLowerCase().replace(/\s+/g, '-');
+    const imageUrl = webpPreviewUrl(country);
+    if (!name || !slug || !imageUrl) continue;
+
+    const known = knownByName.get(name.toLowerCase());
+    const code = (country.code?.trim() || known?.code || slug.slice(0, 2)).toLowerCase();
+    const key = slug.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ name, slug, code, imageUrl });
+  }
+
+  return out;
+}
+
+function buildQuestion(countries: readonly Country[]): { correct: Country; options: Country[] } {
+  const shuffled = fisherYatesShuffle(countries);
   const correct = shuffled[0]!;
   const options = fisherYatesShuffle([correct, ...shuffled.slice(1, 4)]);
   return { correct, options };
 }
 
 export function FlagGame({ onClose }: { onClose: () => void }) {
-  const [{ correct, options }, setQuestion] = useState(buildQuestion);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [question, setQuestion] = useState<{ correct: Country; options: Country[] } | null>(null);
   const [selected, setSelected] = useState<Country | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    let cancelled = false;
 
-  const next = useCallback(() => {
-    setQuestion(buildQuestion());
-    setSelected(null);
+    async function loadCountries() {
+      try {
+        const res = await fetch('/api/gallery/landing-preview?full=1', { cache: 'no-store' });
+        const data = await res.json();
+        const loaded = normalizeApiCountries(data);
+        if (cancelled) return;
+        setCountries(loaded);
+        setQuestion(loaded.length >= 4 ? buildQuestion(loaded) : null);
+        setLoadFailed(loaded.length < 4);
+      } catch {
+        if (!cancelled) setLoadFailed(true);
+      }
+    }
+
+    void loadCountries();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
+  const next = useCallback(() => {
+    if (countries.length >= 4) {
+      setQuestion(buildQuestion(countries));
+    }
+    setSelected(null);
+  }, [countries]);
+
   const handleSelect = (option: Country) => {
-    if (selected) return;
+    if (selected || !question) return;
     setSelected(option);
-    if (option.code === correct.code) {
+    if (option.code === question.correct.code) {
       setTimeout(next, 1100);
     }
   };
 
   const answered = selected !== null;
-  const isCorrectAnswer = selected?.code === correct.code;
+  const correct = question?.correct;
+  const options = question?.options ?? [];
+  const isCorrectAnswer = selected?.code === correct?.code;
 
   if (!mounted) return null;
+
+  if (!correct) {
+    return createPortal(
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/65 p-3 sm:p-6 backdrop-blur-md"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 20, opacity: 0 }}
+          transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+          className="relative w-full max-w-[28rem] rounded-2xl bg-white p-5 text-center shadow-[0_32px_80px_-12px_rgba(0,0,0,0.45)] sm:p-8"
+        >
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-neutral-800"
+            aria-label="Close game"
+          >
+            <X size={16} strokeWidth={2.5} />
+          </button>
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-400">
+            Flag Quiz
+          </p>
+          <p className="text-sm font-semibold text-neutral-700">
+            {loadFailed ? 'No R2 WebP flag previews are available yet.' : 'Loading flag previews...'}
+          </p>
+        </motion.div>
+      </motion.div>,
+      document.body,
+    );
+  }
 
   return createPortal(
     <motion.div
@@ -272,12 +386,13 @@ export function FlagGame({ onClose }: { onClose: () => void }) {
 
         {/* Flag image — full width, centered */}
         <div className="mx-auto mb-5 flex w-full max-w-[17rem] items-center justify-center overflow-hidden rounded-xl shadow-[0_6px_24px_-4px_rgba(0,0,0,0.22)]" style={{ aspectRatio: '17/10' }}>
-          <div
+          <img
             key={correct.code}
-            className="flex h-full w-full items-center justify-center bg-neutral-100 text-xs text-neutral-400"
-          >
-            {correct.name}
-          </div>
+            src={correct.imageUrl}
+            alt=""
+            className="h-full w-full bg-neutral-100 object-cover"
+            decoding="async"
+          />
         </div>
 
         {/* Result banner */}
@@ -354,7 +469,7 @@ export function FlagGame({ onClose }: { onClose: () => void }) {
         {/* Footer */}
         <div className="mt-4 sm:mt-5 flex items-center justify-between">
           <span className="text-[10px] font-medium text-neutral-400">
-            {COUNTRIES.length} countries
+            {countries.length} countries
           </span>
           <button
             onClick={next}

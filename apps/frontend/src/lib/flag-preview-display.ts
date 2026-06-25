@@ -6,7 +6,7 @@ import { isFlagVideoFormat } from '@/lib/flag-video-formats';
 
 export const NON_BROWSER_MASTER_FORMATS = new Set(['eps', 'pdf', 'ai', 'psd']);
 
-const CARD_COVER_FORMAT_PRIORITY = ['png', 'jpg', 'jpeg', 'webp', 'svg'] as const;
+const CARD_COVER_FORMAT_PRIORITY = ['webp', 'png', 'jpg', 'jpeg', 'svg'] as const;
 
 export function hrefLooksLikeNonBrowserMaster(url: string | null | undefined): boolean {
   const u = (url ?? '').trim();
@@ -24,7 +24,7 @@ function formatKey(f: { format: string; formatCode?: string }): string {
   return (f.formatCode ?? f.format).trim().toLowerCase();
 }
 
-/** Prefer PNG/JPG/WebP/SVG preview for a grouped design card. */
+/** Prefer WEBP previews for fast R2-backed grouped design cards. */
 export function pickFormatPreviewUrl(
   formats: ReadonlyArray<{ format: string; formatCode?: string; previewUrl?: string | null }>,
   fallbackUrls: string[] = [],

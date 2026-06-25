@@ -175,6 +175,20 @@ function deriveCountrySlugFromText(raw: string): string | null {
   return slug;
 }
 
+function stripDecorativeCountrySlugSuffix(slug: string): string {
+  let out = slug.trim().toLowerCase().replace(/^-+|-+$/g, '');
+  for (let i = 0; i < 3; i++) {
+    const next = out
+      .replace(/-(?:national-)?flags?$/i, '')
+      .replace(/-(?:flag|flags?)-?(?:vector|image|images|icon|icons)$/i, '')
+      .replace(/-(?:vector|image|images|icon|icons)-?(?:flag|flags?)$/i, '')
+      .replace(/^-+|-+$/g, '');
+    if (next === out) break;
+    out = next;
+  }
+  return out || slug.trim().toLowerCase();
+}
+
 /** Encode each `/` segment for a valid public HTTPS URL while preserving slashes. */
 function publicUrlFromR2Key(cfg: R2Config, key: string): string {
   const base = cfg.publicUrlBase.replace(/\/+$/, '');
@@ -281,7 +295,8 @@ function parseObjectKey(objectKey: string): ParsedKey | null {
 
   const slugNorm =
     deriveCountrySlugFromText(finalSlug) ?? slugifySegment(finalSlug.replace(/_/g, ' '), 96) ?? finalSlug.toLowerCase();
-  const countrySlugOut = slugNorm.trim().replace(/^-+|-+$/g, '') || slugNorm.toLowerCase();
+  const countrySlugOut =
+    stripDecorativeCountrySlugSuffix(slugNorm.trim().replace(/^-+|-+$/g, '') || slugNorm.toLowerCase());
   if (!countrySlugOut) return null;
 
   const titleFromFile =
@@ -321,7 +336,7 @@ async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | nu
     await pool.query(
       `UPDATE countries
        SET category = $1,
-           name = COALESCE($3, name),
+           name = COALESCE($3::text, name),
            status = COALESCE(NULLIF(trim(status::text), ''), 'published'),
            published_at = COALESCE(published_at, CURRENT_TIMESTAMP),
            updated_at = CURRENT_TIMESTAMP
@@ -330,7 +345,7 @@ async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | nu
            lower(trim(COALESCE(category::text, ''))) IS DISTINCT FROM lower(trim($1))
            OR lower(trim(COALESCE(status::text, ''))) IS DISTINCT FROM 'published'
            OR published_at IS NULL
-           OR ($3 IS NOT NULL AND name IS DISTINCT FROM $3)
+           OR ($3::text IS NOT NULL AND name IS DISTINCT FROM $3::text)
          )`,
       [category, found.rows[0].id, existingDisplayName],
     );
@@ -364,7 +379,7 @@ async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | nu
         `UPDATE countries
          SET slug = $1,
              name = $2,
-             iso_alpha_2 = COALESCE(NULLIF(trim(iso_alpha_2::text), ''), $3),
+             iso_alpha_2 = COALESCE(NULLIF(trim(iso_alpha_2::text), ''), $3::text),
              category = COALESCE(NULLIF(trim(category::text), ''), $5),
              status = COALESCE(NULLIF(trim(status::text), ''), 'published'),
              published_at = COALESCE(published_at, CURRENT_TIMESTAMP),
@@ -378,7 +393,7 @@ async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | nu
 
   await pool.query(
     `INSERT INTO countries (name, slug, iso_alpha_2, category, status, published_at)
-     VALUES ($1, $2, $3, $4, 'published', CURRENT_TIMESTAMP)
+     VALUES ($1, $2, $3::text, $4, 'published', CURRENT_TIMESTAMP)
      ON CONFLICT (slug) DO NOTHING`,
     [displayName, sl, isoAlpha2, category]
   );

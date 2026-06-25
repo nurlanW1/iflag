@@ -23,12 +23,12 @@ function shuffle<T>(items: T[]): T[] {
   return out;
 }
 
-/** Preview-safe formats only (landing / cards). JPG → PNG → WEBP → SVG. No EPS/PDF/AI previews. */
+/** Preview-safe formats only (landing / cards). WEBP first for fast R2 previews. */
 const NON_BROWSER_PREVIEW_FMT = new Set(['eps', 'pdf', 'ai', 'psd']);
 
 function previewRankForPick(format: string): number {
   const f = format.toLowerCase();
-  const order = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
+  const order = ['webp', 'png', 'jpg', 'jpeg', 'svg'];
   const i = order.indexOf(f);
   return i < 0 ? 50 + (f.charCodeAt(0) || 0) : i;
 }
@@ -40,7 +40,8 @@ function rowTs(row: NeonLikeFlagRow): number {
 
 /** Row used for URLs + badges — raster/web previews only where possible */
 function pickMetadataRow(bundle: NeonLikeFlagRow[]): NeonLikeFlagRow {
-  const imageLike = bundle.filter((r) => !NON_BROWSER_PREVIEW_FMT.has(r.format.toLowerCase()));
+  const webpRows = bundle.filter((r) => r.format.toLowerCase() === 'webp');
+  const imageLike = webpRows.length ? webpRows : bundle.filter((r) => !NON_BROWSER_PREVIEW_FMT.has(r.format.toLowerCase()));
   const candidates = imageLike.length ? imageLike : bundle;
   const sorted = [...candidates].sort(
     (a, b) =>
@@ -49,24 +50,25 @@ function pickMetadataRow(bundle: NeonLikeFlagRow[]): NeonLikeFlagRow {
   return sorted[0]!;
 }
 
-/**
- * Prefer `preview_url` → `thumbnail_url` → `file_url` (free rows only) before R2 object key resolution
- * so grid slots never inflate with premium originals when previews exist on the CDN.
- */
 function landingCardImageHref(row: NeonLikeFlagRow): string {
-  for (const raw of fallbackUrlsForGalleryListThumb({
-    premiumTierRaw: row.premium_tier,
-    previewUrl: row.preview_url,
-    thumbnailUrl: row.thumbnail_url,
-    fileUrl: row.file_url,
-  })) {
-    const out = resolveGalleryAssetUrl(raw);
-    if (out) return out;
-  }
   const key = row.file_key?.trim();
   if (key) {
     const href = getPublicR2FileUrl(key);
     if (href) return resolveGalleryAssetUrl(href);
+  }
+  const ownPreviewCandidates =
+    row.format?.trim().toLowerCase() === 'webp'
+      ? [row.preview_url, row.thumbnail_url, row.file_url]
+      : fallbackUrlsForGalleryListThumb({
+          premiumTierRaw: row.premium_tier,
+          previewUrl: row.preview_url,
+          thumbnailUrl: row.thumbnail_url,
+          fileUrl: row.file_url,
+        });
+  for (const raw of ownPreviewCandidates) {
+    if (!raw?.trim()) continue;
+    const out = resolveGalleryAssetUrl(raw);
+    if (out) return out;
   }
   return '';
 }
@@ -114,7 +116,11 @@ export async function fetchRandomGalleryPreviewItems(opts: {
     `SELECT ${NEON_SELECT_FIELDS}
      FROM country_flag_files cff
      LEFT JOIN countries c ON c.id = cff.country_id
-     WHERE cff.status = 'published'
+     WHERE (
+         lower(trim(coalesce(cff.status::text, ''))) = 'published'
+         OR lower(trim(coalesce(cff.storage_provider::text, ''))) = 'r2'
+         OR NULLIF(trim(cff.file_key::text), '') IS NOT NULL
+       )
        AND ${publishedFlagHasMediaSql('cff')}
      ${orderSql}
      LIMIT $1`,
