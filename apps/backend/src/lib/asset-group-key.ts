@@ -25,6 +25,18 @@ const GROUP_STOP = new Set([
   'graphics',
 ]);
 
+const FORMAT_FOLDER_STOP = new Set([
+  'ai',
+  'eps',
+  'jpg',
+  'jpeg',
+  'pdf',
+  'png',
+  'psd',
+  'svg',
+  'webp',
+]);
+
 function slugToken(raw: string): string {
   return slugifySegment(raw.replace(/[^\p{L}\p{N}\s\-_/]+/gu, ' '), 96) || 'x';
 }
@@ -81,6 +93,7 @@ export function deriveAssetGroupKeyFromParts(parts: {
   for (const seg of parts.folderSegments) {
     const s = seg.trim();
     if (!s.toLowerCase() || s.toLowerCase() === 'flags') continue;
+    if (FORMAT_FOLDER_STOP.has(s.toLowerCase())) continue;
     pieces.push(s);
   }
   pieces.push(parts.fileStemNoExt);

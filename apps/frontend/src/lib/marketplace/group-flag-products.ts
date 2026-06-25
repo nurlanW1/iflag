@@ -103,12 +103,20 @@ export function slugFromAssetGroupKey(raw: string): string {
 }
 
 function compositeGroupKey(row: NeonLikeFlagRow): string | null {
-  const ag = row.asset_group_key?.trim();
-  if (!ag) return null;
   const cs =
     row.country_slug?.trim().toLowerCase() ||
     row.country_name?.trim()?.toLowerCase().replace(/\s+/g, '-') ||
     'unknown';
+  const fileStem = row.file_name
+    ?.replace(/\.[^.]+$/, '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+  if (fileStem) return `${cs}::file:${fileStem}`;
+  const ag = row.asset_group_key?.trim();
+  if (!ag) return null;
   return `${cs}::${ag.toLowerCase()}`;
 }
 

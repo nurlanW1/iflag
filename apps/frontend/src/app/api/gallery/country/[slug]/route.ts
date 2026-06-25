@@ -306,6 +306,16 @@ const R2_DIRECT_MAX_OBJECTS = Math.min(
   Math.max(500, Number(process.env.R2_COUNTRY_DIRECT_MAX_OBJECTS ?? 20_000) || 20_000),
 );
 
+function normalizedFileStemKey(fileName: string | null | undefined): string {
+  return (fileName ?? '')
+    .replace(/\.[^.]+$/, '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 function titleCaseWords(input: string): string {
   return input
     .split(/[\s-]+/)
@@ -465,7 +475,32 @@ async function loadFromR2(countrySlug: string) {
     });
   }
 
-  return variants;
+  const grouped = new Map<string, (typeof variants)[number]>();
+  for (const variant of variants) {
+    const firstFormat = variant.formats[0];
+    const key = normalizedFileStemKey(firstFormat?.file || variant.name) || variant.productSlug;
+    const existing = grouped.get(key);
+    if (!existing) {
+      grouped.set(key, { ...variant, formats: [...variant.formats] });
+      continue;
+    }
+    const seenFormats = new Set(existing.formats.map((format) => format.formatCode.toLowerCase()));
+    for (const format of variant.formats) {
+      const fmt = format.formatCode.toLowerCase();
+      if (!seenFormats.has(fmt)) {
+        seenFormats.add(fmt);
+        existing.formats.push(format);
+      }
+    }
+    if (variant.thumbnail && (!existing.thumbnail || variant.thumbnail.toLowerCase().includes('.webp'))) {
+      existing.thumbnail = variant.thumbnail;
+    }
+  }
+
+  return [...grouped.values()].map((variant) => ({
+    ...variant,
+    formats: [...variant.formats].sort((a, b) => a.formatCode.localeCompare(b.formatCode)),
+  }));
 }
 
 function formatIdentity(format: CountryGalleryPayload['variants'][number]['formats'][number]): string {
@@ -557,14 +592,14 @@ export async function GET(
     console.info(`[gallery/country] ${slug}: db=${fromDb?.variants.length ?? 0} backend=${fromBackend?.variants.length ?? 0} diskVideos=${diskVideos.length} r2=${r2Variants.length}`);
 
     if (fromDb && fromDb.variants.length > 0) {
-      const extra = [...(fromBackend?.variants ?? []), ...diskVideos, ...r2Variants];
+      const extra = [...(fromBackend?.variants ?? []), ...diskVideos];
       const merged = mergeCountryGalleryPayload(fromDb, extra);
       return NextResponse.json(merged, { headers: { 'Cache-Control': 'no-store' } });
     }
 
     if (fromBackend && fromBackend.variants.length > 0) {
       console.info(`[gallery/country] served ${slug} from backend API fallback`);
-      const extra = [...diskVideos, ...r2Variants];
+      const extra = [...diskVideos];
       const merged = mergeCountryGalleryPayload(fromBackend, extra);
       return NextResponse.json(merged, { headers: { 'Cache-Control': 'no-store' } });
     }

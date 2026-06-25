@@ -54,6 +54,14 @@ function previewForRow(row: BackendFlagRow): string {
 }
 
 function designBucketKey(row: BackendFlagRow): string {
+  const stem = row.file_name
+    .replace(/\.[^.]+$/, '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+  if (stem) return `f:${stem}`;
   const ag = row.asset_group_key?.trim();
   if (ag) return `ag:${ag.toLowerCase()}`;
   const named = row.variant_name?.trim();

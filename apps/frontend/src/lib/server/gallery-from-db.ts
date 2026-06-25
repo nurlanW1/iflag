@@ -651,18 +651,31 @@ async function fetchCountryGalleryFromDbOnce(pool: Pool, slug: string): Promise<
     return builderType.replace(/_/g, ' ') || 'design';
   }
 
-  function variantGroupKey(row: FlagFileRow): string {
-    const named = row.variant_name?.trim();
-    if (named) return `n:${named.toLowerCase()}`;
-    const base = row.file_name.replace(/\.[^.]+$/, '').trim();
-    return `f:${base.toLowerCase()}`;
+  function normalizedFileStemKey(fileName: string | null | undefined): string {
+    return (fileName ?? '')
+      .replace(/\.[^.]+$/, '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
   }
 
-  /** Group by asset design key; fall back to filename stem. */
+  function variantGroupKey(row: FlagFileRow): string {
+    const stem = normalizedFileStemKey(row.file_name);
+    if (stem) return `f:${stem}`;
+    const named = row.variant_name?.trim();
+    if (named) return `n:${named.toLowerCase()}`;
+    return '';
+  }
+
+  /** Group by filename stem first: same file name across formats = one design card. */
   function designBucketKey(row: FlagFileRow): string {
+    const byFileName = variantGroupKey(row);
+    if (byFileName) return byFileName;
     const ag = row.asset_group_key?.trim();
     if (ag) return `ag:${ag.toLowerCase()}`;
-    return variantGroupKey(row);
+    return `solo:${row.id}`;
   }
 
   type FormatRow = CountryGalleryPayload['variants'][number]['formats'][number];
