@@ -205,6 +205,20 @@ try {
       if ((r.rowCount ?? 0) > 0) console.log(`[startup] Freed ${r.rowCount} R2 file(s) that were incorrectly premium-gated`);
     }).catch((e: unknown) => console.warn('[startup] R2 free-tier migration failed:', e));
 
+    // One-time migration: fix country_id for files whose country_slug doesn't match their assigned country
+    // (e.g. north-korea files incorrectly assigned to south-korea due to a slug alias bug)
+    pool.query(
+      `UPDATE country_flag_files f
+       SET country_id = c.id,
+           updated_at = CURRENT_TIMESTAMP
+       FROM countries c
+       WHERE lower(trim(f.country_slug::text)) = lower(trim(c.slug::text))
+         AND f.country_id IS DISTINCT FROM c.id
+         AND f.storage_provider = 'r2'`
+    ).then((r: { rowCount: number | null }) => {
+      if ((r.rowCount ?? 0) > 0) console.log(`[startup] Reassigned ${r.rowCount} R2 file(s) to correct country based on country_slug`);
+    }).catch((e: unknown) => console.warn('[startup] country_id reassignment migration failed:', e));
+
     // Background R2 → DB sync: picks up files uploaded directly to R2 (e.g. via Cloudflare dashboard)
     const R2_SYNC_INTERVAL_MS = 10 * 60 * 1000; // every 10 minutes
     const R2_INITIAL_DELAY_MS = 30 * 1000;       // first run 30 s after start

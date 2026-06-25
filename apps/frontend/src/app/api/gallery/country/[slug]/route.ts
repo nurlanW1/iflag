@@ -434,7 +434,7 @@ async function loadFromR2(countrySlug: string) {
       file: string;
       url: string;
       previewUrl: string;
-      premiumTier: 'paid';
+      premiumTier: 'free' | 'paid';
       downloadProtected: boolean;
       size: string;
       dimensions: string;
@@ -458,7 +458,7 @@ async function loadFromR2(countrySlug: string) {
       name: filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
       type: isVideo ? 'video' : isVector ? 'vector' : 'standard',
       thumbnail: isPreviewable || isVideo ? url : '',
-      isPremiumDesign: true,
+      isPremiumDesign: false,
       formats: [{
         id: `${fileId}-${extCode}`,
         format: extCode.toUpperCase(),
@@ -467,40 +467,38 @@ async function loadFromR2(countrySlug: string) {
         file: filename,
         url,
         previewUrl: isPreviewable || isVideo ? url : '',
-        premiumTier: 'paid',
-        downloadProtected: true,
+        premiumTier: 'free',
+        downloadProtected: false,
         size: obj.size > 0 ? `${(obj.size / (1024 * 1024)).toFixed(2)} MB` : 'Unknown',
         dimensions: isVideo ? 'Video' : 'Original',
       }],
     });
   }
 
-  const grouped = new Map<string, (typeof variants)[number]>();
+  // All files in a country folder → ONE card with all formats (deduplicated by extension)
+  let merged: (typeof variants)[number] | undefined;
   for (const variant of variants) {
-    const firstFormat = variant.formats[0];
-    const key = normalizedFileStemKey(firstFormat?.file || variant.name) || variant.productSlug;
-    const existing = grouped.get(key);
-    if (!existing) {
-      grouped.set(key, { ...variant, formats: [...variant.formats] });
+    if (!merged) {
+      merged = { ...variant, formats: [...variant.formats] };
       continue;
     }
-    const seenFormats = new Set(existing.formats.map((format) => format.formatCode.toLowerCase()));
+    const seenFormats = new Set(merged.formats.map((f) => f.formatCode.toLowerCase()));
     for (const format of variant.formats) {
-      const fmt = format.formatCode.toLowerCase();
-      if (!seenFormats.has(fmt)) {
-        seenFormats.add(fmt);
-        existing.formats.push(format);
+      if (!seenFormats.has(format.formatCode.toLowerCase())) {
+        seenFormats.add(format.formatCode.toLowerCase());
+        merged.formats.push(format);
       }
     }
-    if (variant.thumbnail && (!existing.thumbnail || variant.thumbnail.toLowerCase().includes('.webp'))) {
-      existing.thumbnail = variant.thumbnail;
+    if (variant.thumbnail && (!merged.thumbnail || variant.thumbnail.toLowerCase().includes('.webp'))) {
+      merged.thumbnail = variant.thumbnail;
     }
   }
 
-  return [...grouped.values()].map((variant) => ({
-    ...variant,
-    formats: [...variant.formats].sort((a, b) => a.formatCode.localeCompare(b.formatCode)),
-  }));
+  if (!merged) return [];
+  return [{
+    ...merged,
+    formats: [...merged.formats].sort((a, b) => a.formatCode.localeCompare(b.formatCode)),
+  }];
 }
 
 function formatIdentity(format: CountryGalleryPayload['variants'][number]['formats'][number]): string {
