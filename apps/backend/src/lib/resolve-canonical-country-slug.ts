@@ -72,7 +72,7 @@ const CONTAINS_ALIASES: ReadonlyArray<[needle: string, slug: string]> = [
   ['turkmenistan', 'turkmenistan'],
   ['myanmar', 'myanmar'],
   ['pakistan', 'pakistan'],
-  ['korea', 'south-korea'],
+  // NOTE: 'korea' removed — it would incorrectly redirect 'north-korea' → 'south-korea'
   ['chile', 'chile'],
 ];
 
