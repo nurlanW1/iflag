@@ -74,34 +74,27 @@ export default function VSDesignerClient() {
 
   async function handleExport() {
     const el = canvasRef.current;
-    const wr = wrapperRef.current;
     if (!el) return;
     setExporting(true);
 
-    const savedTransform  = el.style.transform;
-    const savedPosition   = el.style.position;
-    const savedTop        = el.style.top;
-    const savedLeft       = el.style.left;
-    const savedOverflow   = wr?.style.overflow ?? '';
-    const savedHeight     = wr?.style.height   ?? '';
-
+    // Clone the rendered canvas into document.body at full 1920×1080.
+    // We never touch the original element so the ResizeObserver cannot
+    // re-apply the scale transform between "set none" and "capture".
+    let clone: HTMLDivElement | null = null;
     try {
-      // Expand wrapper so the full 1920×1080 canvas is not clipped
-      if (wr) {
-        wr.style.overflow = 'visible';
-        wr.style.height   = '1080px';
-      }
-      // Reset absolute positioning so html2canvas reads from (0,0)
-      el.style.position  = 'relative';
-      el.style.top       = '0';
-      el.style.left      = '0';
-      el.style.transform = 'none';
+      clone = el.cloneNode(true) as HTMLDivElement;
+      clone.style.cssText =
+        'position:fixed;top:0;left:0;width:1920px;height:1080px;' +
+        'transform:none;transform-origin:top left;' +
+        'z-index:-9999;pointer-events:none;overflow:hidden;';
+      document.body.appendChild(clone);
 
+      // Allow the browser to lay out the clone before capturing
       await new Promise((r) => requestAnimationFrame(r));
       await new Promise((r) => requestAnimationFrame(r));
 
       const html2canvas = (await import('html2canvas')).default;
-      const png = await html2canvas(el, {
+      const png = await html2canvas(clone, {
         width: 1920, height: 1080, scale: 1,
         useCORS: true, allowTaint: false,
         backgroundColor: state.bgColor, logging: false,
@@ -114,14 +107,7 @@ export default function VSDesignerClient() {
       link.href = png.toDataURL('image/png', 1.0);
       link.click();
     } finally {
-      el.style.transform = savedTransform;
-      el.style.position  = savedPosition;
-      el.style.top       = savedTop;
-      el.style.left      = savedLeft;
-      if (wr) {
-        wr.style.overflow = savedOverflow || 'hidden';
-        wr.style.height   = savedHeight;
-      }
+      clone?.parentNode?.removeChild(clone);
       setExporting(false);
     }
   }
