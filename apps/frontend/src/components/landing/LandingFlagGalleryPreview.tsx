@@ -5,9 +5,8 @@ import Link from 'next/link';
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 
-const COLS = 7;
-const ROWS = 5;
-const TOTAL = COLS * ROWS;
+// desktop cols × rows; mobile/tablet show fewer cols via CSS grid
+const TOTAL = 42; // enough for up to 7 cols × 6 rows
 
 function FlagImage({ country, eager }: { country: GalleryCountrySummary; eager: boolean }) {
   const src = (country.webp_cover_url ?? country.thumbnail ?? '').trim();
@@ -45,13 +44,13 @@ export function LandingFlagGalleryPreview() {
     });
   }, []);
 
+  const gridClass =
+    'grid gap-[3px] grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7';
+
   const skeleton = (
     <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-4">
       <div className="marketplace-shell">
-        <div
-          className="grid"
-          style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)`, gap: '4px' }}
-        >
+        <div className={gridClass}>
           {Array.from({ length: TOTAL }).map((_, i) => (
             <div key={i} className="aspect-[3/2] animate-pulse rounded-sm bg-neutral-200/60" />
           ))}
@@ -65,10 +64,7 @@ export function LandingFlagGalleryPreview() {
   return (
     <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-4">
       <div className="marketplace-shell">
-        <div
-          className="grid"
-          style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)`, gap: '4px' }}
-        >
+        <div className={gridClass}>
           {flags.map((country, idx) => (
             <Link
               key={country.slug}
@@ -81,7 +77,7 @@ export function LandingFlagGalleryPreview() {
                 boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
               }}
             >
-              <FlagImage country={country} eager={idx < COLS} />
+              <FlagImage country={country} eager={idx < 5} />
             </Link>
           ))}
         </div>
