@@ -57,14 +57,13 @@ export default function VSDesignerClient() {
   }, []);
 
   // Scale canvas to fit wrapper.
-  // We apply position:absolute + transform to scaleRef (not canvasRef) so
-  // React's re-renders of VSCanvas never clobber position:absolute.
+  // Height is maintained by padding-bottom:56.25% (pure CSS 16:9 trick) — no JS
+  // height manipulation means no ResizeObserver re-fire → no transform race.
   useEffect(() => {
     function update() {
       if (!wrapperRef.current || !scaleRef.current) return;
       const scale = wrapperRef.current.clientWidth / 1920;
       scaleRef.current.style.transform = `scale(${scale})`;
-      wrapperRef.current.style.height  = `${Math.round(1080 * scale)}px`;
     }
     update();
     const ro = new ResizeObserver(update);
@@ -335,19 +334,22 @@ export default function VSDesignerClient() {
         </div>
 
         {/* Canvas */}
-        <div className="flex min-w-0 flex-1 items-center justify-center bg-black/40 p-4">
+        <div className="min-w-0 flex-1 bg-black/40 p-4">
           {/*
-            wrapperRef: position:relative, overflow:hidden, height set by JS.
-            scaleRef:   position:absolute, transform:scale(N) — JS-only, never
-                        overwritten by React because VSCanvas is a child of it.
-            canvasRef:  the 1920×1080 VSCanvas root — keeps position:relative.
+            wrapperRef — overflow:hidden clips the canvas.
+            aspectBox  — padding-bottom:56.25% keeps perfect 16:9 without JS;
+                         no height manipulation → ResizeObserver cannot race.
+            scaleRef   — position:absolute, gets only transform:scale(N) from JS.
+            canvasRef  — VSCanvas root (1920×1080), keeps its own position:relative.
           */}
-          <div ref={wrapperRef} className="relative w-full overflow-hidden rounded-xl shadow-2xl">
-            <div
-              ref={scaleRef}
-              style={{ position: 'absolute', top: 0, left: 0, transformOrigin: 'top left' }}
-            >
-              <VSCanvas ref={canvasRef} {...state} />
+          <div ref={wrapperRef} className="w-full overflow-hidden rounded-xl shadow-2xl">
+            <div style={{ position: 'relative', paddingBottom: '56.25%' }}>
+              <div
+                ref={scaleRef}
+                style={{ position: 'absolute', top: 0, left: 0, transformOrigin: 'top left' }}
+              >
+                <VSCanvas ref={canvasRef} {...state} />
+              </div>
             </div>
           </div>
         </div>
