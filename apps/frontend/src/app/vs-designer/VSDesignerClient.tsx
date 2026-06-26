@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, Type } from 'lucide-react';
 import { defaultState, type VSDesignerState } from '@/lib/vs-designer-types';
 import VSCanvas from './components/VSCanvas';
 import FlagSlider from './components/FlagSlider';
@@ -20,6 +20,7 @@ const BG_PRESETS = [
 export default function VSDesignerClient() {
   const [state, setState] = useState<VSDesignerState>(defaultState);
   const [exporting, setExporting] = useState(false);
+  const [textOpen, setTextOpen] = useState(false);
   const canvasRef    = useRef<HTMLDivElement>(null);
   const wrapperRef   = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -115,6 +116,20 @@ export default function VSDesignerClient() {
 
           <div className="h-5 w-px bg-neutral-700" />
 
+          {/* Text panel toggle */}
+          <button
+            type="button"
+            onClick={() => setTextOpen((v) => !v)}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+              textOpen ? 'bg-neutral-700 text-white' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'
+            }`}
+          >
+            <Type size={14} aria-hidden />
+            Text
+          </button>
+
+          <div className="h-5 w-px bg-neutral-700" />
+
           {/* Export */}
           <button
             type="button" onClick={handleExport} disabled={exporting}
@@ -125,6 +140,100 @@ export default function VSDesignerClient() {
           </button>
         </div>
       </div>
+
+      {/* ── Text panel ───────────────────────── */}
+      {textOpen && (
+        <div className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-2 border-b border-neutral-800 bg-neutral-900/80 px-4 py-2.5">
+          {/* Left name */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Left name</span>
+            <input
+              value={state.left.name}
+              onChange={(e) => onChange({ left: { ...state.left, name: e.target.value } })}
+              className="w-32 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
+            />
+          </div>
+          {/* Event title */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Event</span>
+            <input
+              value={state.eventTitle}
+              onChange={(e) => onChange({ eventTitle: e.target.value })}
+              className="w-40 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
+            />
+          </div>
+          {/* Right name */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Right name</span>
+            <input
+              value={state.right.name}
+              onChange={(e) => onChange({ right: { ...state.right, name: e.target.value } })}
+              className="w-32 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
+            />
+          </div>
+          {/* VS text */}
+          {!state.scoreMode && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">VS text</span>
+              <input
+                value={state.vsText}
+                onChange={(e) => onChange({ vsText: e.target.value })}
+                className="w-16 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-center text-sm font-bold text-white outline-none focus:border-blue-500"
+              />
+            </div>
+          )}
+          {/* Date */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Date</span>
+            <div className="flex overflow-hidden rounded border border-neutral-700">
+              {(['auto', 'manual'] as const).map((m) => (
+                <button key={m} type="button"
+                  onClick={() => onChange({ dateMode: m })}
+                  className={`px-2 py-1 text-[10px] font-semibold transition-colors ${state.dateMode === m ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-500 hover:bg-neutral-700'}`}
+                >
+                  {m === 'auto' ? 'Auto' : 'Custom'}
+                </button>
+              ))}
+            </div>
+            {state.dateMode === 'manual' && (
+              <input
+                value={state.dateText}
+                onChange={(e) => onChange({ dateText: e.target.value })}
+                placeholder="23.06.2026"
+                className="w-28 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
+              />
+            )}
+          </div>
+          {/* Name size */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Name size</span>
+            <input
+              type="range" min={14} max={40} value={state.nameSize}
+              onChange={(e) => onChange({ nameSize: Number(e.target.value) })}
+              className="w-20 accent-blue-500"
+            />
+            <span className="text-[10px] text-neutral-600">{state.nameSize}px</span>
+          </div>
+          {/* Name color */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Name color</span>
+            <label className="relative block h-7 w-7 cursor-pointer overflow-hidden rounded border border-neutral-700">
+              <div className="h-full w-full" style={{ backgroundColor: state.nameColor }} />
+              <input type="color" value={state.nameColor} onChange={(e) => onChange({ nameColor: e.target.value })} className="absolute inset-0 cursor-pointer opacity-0" />
+            </label>
+          </div>
+          {/* Title size */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Title size</span>
+            <input
+              type="range" min={14} max={56} value={state.titleSize}
+              onChange={(e) => onChange({ titleSize: Number(e.target.value) })}
+              className="w-20 accent-blue-500"
+            />
+            <span className="text-[10px] text-neutral-600">{state.titleSize}px</span>
+          </div>
+        </div>
+      )}
 
       {/* ── Body ─────────────────────────────────── */}
       <div className="flex min-h-0 flex-1">
