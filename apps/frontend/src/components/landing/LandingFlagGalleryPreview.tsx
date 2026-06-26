@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { CountryHubFolderCover } from '@/components/gallery/CountryHubFolderCover';
 import { fetchJsonWithRetry } from '@/lib/fetch-with-retry';
 import type { GalleryCountrySummary } from '@/types/gallery-country-hub';
 
 const COLS = 7;
 const ROWS = 5;
-const TOTAL = COLS * ROWS; // 35 flags
+const TOTAL = COLS * ROWS;
 
 function shuffle<T>(arr: T[]): T[] {
   const out = [...arr];
@@ -17,6 +16,24 @@ function shuffle<T>(arr: T[]): T[] {
     [out[i], out[j]] = [out[j], out[i]];
   }
   return out;
+}
+
+function FlagImage({ country, eager }: { country: GalleryCountrySummary; eager: boolean }) {
+  const src = (country.webp_cover_url ?? country.thumbnail ?? '').trim();
+  if (!src) return <div className="h-full w-full bg-neutral-200" />;
+  return (
+    /* eslint-disable-next-line @next/next/no-img-element */
+    <img
+      src={src}
+      alt={country.name}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      fetchPriority={eager ? 'high' : 'low'}
+      draggable={false}
+      className="h-full w-full object-cover"
+      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+    />
+  );
 }
 
 export function LandingFlagGalleryPreview() {
@@ -35,42 +52,39 @@ export function LandingFlagGalleryPreview() {
 
   if (flags.length === 0) {
     return (
-      <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-8">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="grid grid-cols-7 gap-2">
-            {Array.from({ length: TOTAL }).map((_, i) => (
-              <div
-                key={i}
-                className="aspect-[3/2] animate-pulse rounded-lg bg-neutral-200/60"
-              />
-            ))}
-          </div>
+      <section className="w-full bg-[#fafaf9] py-3">
+        <div
+          className="grid w-full"
+          style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)`, gap: '4px' }}
+        >
+          {Array.from({ length: TOTAL }).map((_, i) => (
+            <div key={i} className="aspect-[3/2] animate-pulse bg-neutral-200/60" />
+          ))}
         </div>
       </section>
     );
   }
 
   return (
-    <section className="border-t border-neutral-200/85 bg-[#fafaf9] py-8">
-      <div className="mx-auto max-w-7xl px-4">
-        <div className="grid grid-cols-7 gap-2">
-          {flags.map((country) => (
-            <Link
-              key={country.slug}
-              href={`/gallery/${encodeURIComponent(country.slug)}`}
-              className="block overflow-hidden rounded-lg border border-neutral-200/80 bg-white shadow-sm"
-            >
-              <div className="aspect-[3/2] w-full overflow-hidden bg-neutral-50">
-                <CountryHubFolderCover
-                  countryName={country.name}
-                  coverUrl={country.webp_cover_url ?? country.thumbnail}
-                  hasWebpCover={country.has_webp_cover}
-                  imageClassName="h-full w-full object-contain p-2"
-                />
-              </div>
-            </Link>
-          ))}
-        </div>
+    <section className="w-full bg-[#fafaf9] py-3">
+      <div
+        className="grid w-full"
+        style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)`, gap: '4px' }}
+      >
+        {flags.map((country, idx) => (
+          <Link
+            key={country.slug}
+            href={`/gallery/${encodeURIComponent(country.slug)}`}
+            className="block"
+            style={{
+              aspectRatio: '3/2',
+              overflow: 'hidden',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
+            }}
+          >
+            <FlagImage country={country} eager={idx < COLS} />
+          </Link>
+        ))}
       </div>
     </section>
   );

@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(
       { countries: full ? sorted : shuffle(sorted).slice(0, 24) },
-      { headers: { 'Cache-Control': 'no-store' } },
+      { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } },
     );
   } catch (error) {
     console.error('Error building landing gallery preview:', error);
