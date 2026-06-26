@@ -1,26 +1,40 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Download, Type } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { defaultState, type VSDesignerState } from '@/lib/vs-designer-types';
 import VSCanvas from './components/VSCanvas';
 import FlagSlider from './components/FlagSlider';
 
 const BG_PRESETS = [
-  { label: 'Navy',    color: '#0A1628' },
-  { label: 'Black',   color: '#000000' },
-  { label: 'Slate',   color: '#0f172a' },
-  { label: 'Charcoal',color: '#111827' },
-  { label: 'Forest',  color: '#0a1a0a' },
-  { label: 'Wine',    color: '#1a0608' },
-  { label: 'Indigo',  color: '#1e1b4b' },
-  { label: 'Purple',  color: '#1a0a2a' },
+  { label: 'Navy',     color: '#0A1628' },
+  { label: 'Black',    color: '#000000' },
+  { label: 'Slate',    color: '#0f172a' },
+  { label: 'Charcoal', color: '#111827' },
+  { label: 'Forest',   color: '#0a1a0a' },
+  { label: 'Wine',     color: '#1a0608' },
+  { label: 'Indigo',   color: '#1e1b4b' },
+  { label: 'Purple',   color: '#1a0a2a' },
 ];
+
+function ColorSwatch({
+  value, onChange, title,
+}: { value: string; onChange: (v: string) => void; title?: string }) {
+  return (
+    <label className="relative block h-7 w-7 cursor-pointer overflow-hidden rounded border border-neutral-700" title={title}>
+      <div className="h-full w-full" style={{ backgroundColor: value }} />
+      <input
+        type="color" value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="absolute inset-0 cursor-pointer opacity-0"
+      />
+    </label>
+  );
+}
 
 export default function VSDesignerClient() {
   const [state, setState] = useState<VSDesignerState>(defaultState);
   const [exporting, setExporting] = useState(false);
-  const [textOpen, setTextOpen] = useState(false);
   const canvasRef    = useRef<HTMLDivElement>(null);
   const wrapperRef   = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -55,27 +69,45 @@ export default function VSDesignerClient() {
 
   async function handleExport() {
     const el = canvasRef.current;
+    const wr = wrapperRef.current;
     if (!el) return;
     setExporting(true);
-    const saved = el.style.transform;
+
+    const savedTransform  = el.style.transform;
+    const savedOverflow   = wr?.style.overflow ?? '';
+    const savedHeight     = wr?.style.height   ?? '';
+
     try {
+      // Expand wrapper so the full 1920×1080 canvas is accessible (not clipped)
+      if (wr) {
+        wr.style.overflow = 'visible';
+        wr.style.height   = '1080px';
+      }
       el.style.transform = 'none';
+
+      // Wait for layout to recalculate
       await new Promise((r) => requestAnimationFrame(r));
       await new Promise((r) => requestAnimationFrame(r));
+
       const html2canvas = (await import('html2canvas')).default;
       const canvas = await html2canvas(el, {
         width: 1920, height: 1080, scale: 1,
         useCORS: true, allowTaint: false,
         backgroundColor: state.bgColor, logging: false,
-        imageTimeout: 15000, scrollX: 0, scrollY: 0,
+        imageTimeout: 15_000, scrollX: 0, scrollY: 0,
         windowWidth: 1920, windowHeight: 1080,
       });
+
       const link = document.createElement('a');
       link.download = `vs-${Date.now()}.png`;
       link.href = canvas.toDataURL('image/png', 1.0);
       link.click();
     } finally {
-      el.style.transform = saved;
+      el.style.transform = savedTransform;
+      if (wr) {
+        wr.style.overflow = savedOverflow || 'hidden';
+        wr.style.height   = savedHeight;
+      }
       setExporting(false);
     }
   }
@@ -87,109 +119,115 @@ export default function VSDesignerClient() {
       style={{ top: 64 }}
     >
       {/* ── Header ───────────────────────────────── */}
-      <div className="flex shrink-0 items-center justify-between border-b border-neutral-800 bg-neutral-950 px-4" style={{ height: 48 }}>
+      <div
+        className="flex shrink-0 items-center justify-between border-b border-neutral-800 bg-neutral-950 px-4"
+        style={{ height: 48 }}
+      >
         <div className="flex items-center gap-3">
-          <span className="text-base font-bold text-white tracking-tight">VS Designer</span>
-          <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] font-bold uppercase text-neutral-400">1920×1080</span>
+          <span className="text-base font-bold tracking-tight text-white">VS Designer</span>
+          <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] font-bold uppercase text-neutral-400">
+            1920×1080
+          </span>
         </div>
 
-        {/* Quick controls */}
-        <div className="flex items-center gap-3">
-          {/* Background presets */}
-          <div className="flex items-center gap-1.5">
-            {BG_PRESETS.map((p) => (
-              <button
-                key={p.color} type="button" title={p.label}
-                onClick={() => onChange({ bgColor: p.color })}
-                style={{ backgroundColor: p.color }}
-                className={`h-6 w-6 rounded-full border-2 transition-transform hover:scale-110 ${state.bgColor === p.color ? 'border-blue-400' : 'border-neutral-600'}`}
-              />
-            ))}
-            <label className="cursor-pointer" title="Custom color">
-              <div
-                className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-dashed border-neutral-600 text-[11px] text-neutral-400 hover:border-blue-400"
-                style={{ backgroundColor: BG_PRESETS.some(p => p.color === state.bgColor) ? undefined : state.bgColor }}
-              >+</div>
-              <input type="color" value={state.bgColor} onChange={(e) => onChange({ bgColor: e.target.value })} className="sr-only" />
-            </label>
-          </div>
-
-          <div className="h-5 w-px bg-neutral-700" />
-
-          {/* Text panel toggle */}
-          <button
-            type="button"
-            onClick={() => setTextOpen((v) => !v)}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
-              textOpen ? 'bg-neutral-700 text-white' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'
-            }`}
-          >
-            <Type size={14} aria-hidden />
-            Text
-          </button>
-
-          <div className="h-5 w-px bg-neutral-700" />
-
-          {/* Export */}
-          <button
-            type="button" onClick={handleExport} disabled={exporting}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-bold text-white transition hover:bg-blue-500 disabled:opacity-60"
-          >
-            <Download size={14} aria-hidden />
-            {exporting ? 'Exporting…' : 'Export PNG'}
-          </button>
-        </div>
+        <button
+          type="button" onClick={handleExport} disabled={exporting}
+          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-bold text-white transition hover:bg-blue-500 disabled:opacity-60"
+        >
+          <Download size={14} aria-hidden />
+          {exporting ? 'Exporting…' : 'Export PNG'}
+        </button>
       </div>
 
-      {/* ── Text panel ───────────────────────── */}
-      {textOpen && (
-        <div className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-2 border-b border-neutral-800 bg-neutral-900/80 px-4 py-2.5">
+      {/* ── Text / controls panel (always visible) ── */}
+      <div className="shrink-0 border-b border-neutral-800 bg-neutral-900/90 px-4 py-2.5">
+
+        {/* Row 1: names, score, date */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+
           {/* Left name */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Left name</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Left</span>
             <input
               value={state.left.name}
               onChange={(e) => onChange({ left: { ...state.left, name: e.target.value } })}
-              className="w-32 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
+              className="w-28 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
             />
           </div>
+
           {/* Event title */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Event</span>
             <input
               value={state.eventTitle}
               onChange={(e) => onChange({ eventTitle: e.target.value })}
-              className="w-40 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
+              className="w-36 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
             />
           </div>
+
           {/* Right name */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Right name</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Right</span>
             <input
               value={state.right.name}
               onChange={(e) => onChange({ right: { ...state.right, name: e.target.value } })}
-              className="w-32 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
+              className="w-28 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
             />
           </div>
-          {/* VS text */}
-          {!state.scoreMode && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">VS text</span>
+
+          {/* Divider */}
+          <div className="h-5 w-px bg-neutral-700" />
+
+          {/* Score / VS */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onChange({ scoreMode: !state.scoreMode })}
+              className={`rounded-lg px-2 py-1 text-[11px] font-bold uppercase tracking-wide transition-colors ${
+                state.scoreMode
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'
+              }`}
+            >
+              Score
+            </button>
+            {state.scoreMode ? (
+              <div className="flex items-center gap-1">
+                <input
+                  type="text" value={state.leftScore} maxLength={3}
+                  onChange={(e) => onChange({ leftScore: e.target.value })}
+                  className="w-10 rounded border border-neutral-700 bg-neutral-800 py-1 text-center text-sm font-bold text-white outline-none focus:border-blue-500"
+                />
+                <span className="text-neutral-500">–</span>
+                <input
+                  type="text" value={state.rightScore} maxLength={3}
+                  onChange={(e) => onChange({ rightScore: e.target.value })}
+                  className="w-10 rounded border border-neutral-700 bg-neutral-800 py-1 text-center text-sm font-bold text-white outline-none focus:border-blue-500"
+                />
+              </div>
+            ) : (
               <input
-                value={state.vsText}
+                type="text" value={state.vsText}
                 onChange={(e) => onChange({ vsText: e.target.value })}
                 className="w-16 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-center text-sm font-bold text-white outline-none focus:border-blue-500"
               />
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="h-5 w-px bg-neutral-700" />
+
           {/* Date */}
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Date</span>
             <div className="flex overflow-hidden rounded border border-neutral-700">
               {(['auto', 'manual'] as const).map((m) => (
-                <button key={m} type="button"
+                <button
+                  key={m} type="button"
                   onClick={() => onChange({ dateMode: m })}
-                  className={`px-2 py-1 text-[10px] font-semibold transition-colors ${state.dateMode === m ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-500 hover:bg-neutral-700'}`}
+                  className={`px-2 py-1 text-[10px] font-semibold transition-colors ${
+                    state.dateMode === m ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-500 hover:bg-neutral-700'
+                  }`}
                 >
                   {m === 'auto' ? 'Auto' : 'Custom'}
                 </button>
@@ -197,43 +235,92 @@ export default function VSDesignerClient() {
             </div>
             {state.dateMode === 'manual' && (
               <input
-                value={state.dateText}
+                value={state.dateText} placeholder="JUNE 26, 2026"
                 onChange={(e) => onChange({ dateText: e.target.value })}
-                placeholder="23.06.2026"
-                className="w-28 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
+                className="w-32 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
               />
             )}
           </div>
-          {/* Name size */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Name size</span>
+        </div>
+
+        {/* Row 2: background, sizes, colors */}
+        <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2">
+
+          {/* BG presets */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">BG</span>
+            {BG_PRESETS.map((p) => (
+              <button
+                key={p.color} type="button" title={p.label}
+                onClick={() => onChange({ bgColor: p.color })}
+                style={{ backgroundColor: p.color }}
+                className={`h-6 w-6 rounded-full border-2 transition-transform hover:scale-110 ${
+                  state.bgColor === p.color ? 'border-blue-400' : 'border-neutral-600'
+                }`}
+              />
+            ))}
+            <label className="cursor-pointer" title="Custom BG color">
+              <div
+                className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-dashed border-neutral-600 text-[11px] text-neutral-400 hover:border-blue-400"
+                style={{
+                  backgroundColor: BG_PRESETS.some((p) => p.color === state.bgColor)
+                    ? undefined
+                    : state.bgColor,
+                }}
+              >
+                +
+              </div>
+              <input
+                type="color" value={state.bgColor}
+                onChange={(e) => onChange({ bgColor: e.target.value })}
+                className="sr-only"
+              />
+            </label>
+          </div>
+
+          {/* Divider */}
+          <div className="h-5 w-px bg-neutral-700" />
+
+          {/* Name size + color */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Name</span>
             <input
               type="range" min={14} max={40} value={state.nameSize}
               onChange={(e) => onChange({ nameSize: Number(e.target.value) })}
               className="w-20 accent-blue-500"
             />
-            <span className="text-[10px] text-neutral-600">{state.nameSize}px</span>
+            <span className="w-8 text-[10px] text-neutral-600">{state.nameSize}px</span>
+            <ColorSwatch value={state.nameColor} onChange={(v) => onChange({ nameColor: v })} title="Name color" />
           </div>
-          {/* Name color */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Name color</span>
-            <label className="relative block h-7 w-7 cursor-pointer overflow-hidden rounded border border-neutral-700">
-              <div className="h-full w-full" style={{ backgroundColor: state.nameColor }} />
-              <input type="color" value={state.nameColor} onChange={(e) => onChange({ nameColor: e.target.value })} className="absolute inset-0 cursor-pointer opacity-0" />
-            </label>
-          </div>
-          {/* Title size */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Title size</span>
+
+          {/* Title size + color */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Title</span>
             <input
               type="range" min={14} max={56} value={state.titleSize}
               onChange={(e) => onChange({ titleSize: Number(e.target.value) })}
               className="w-20 accent-blue-500"
             />
-            <span className="text-[10px] text-neutral-600">{state.titleSize}px</span>
+            <span className="w-8 text-[10px] text-neutral-600">{state.titleSize}px</span>
+            <ColorSwatch value={state.titleColor} onChange={(v) => onChange({ titleColor: v })} title="Title color" />
           </div>
+
+          {/* Center size + color */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+              {state.scoreMode ? 'Score' : 'VS'} size
+            </span>
+            <input
+              type="range" min={60} max={160} value={state.centerSize}
+              onChange={(e) => onChange({ centerSize: Number(e.target.value) })}
+              className="w-20 accent-blue-500"
+            />
+            <span className="w-8 text-[10px] text-neutral-600">{state.centerSize}px</span>
+            <ColorSwatch value={state.centerColor} onChange={(v) => onChange({ centerColor: v })} title="Score/VS color" />
+          </div>
+
         </div>
-      )}
+      </div>
 
       {/* ── Body ─────────────────────────────────── */}
       <div className="flex min-h-0 flex-1">
@@ -247,108 +334,10 @@ export default function VSDesignerClient() {
           />
         </div>
 
-        {/* Center: canvas + settings */}
-        <div className="flex min-w-0 flex-1 flex-col">
-
-          {/* Canvas */}
-          <div className="flex flex-1 items-center justify-center bg-black/40 p-4">
-            <div ref={wrapperRef} className="w-full overflow-hidden rounded-xl shadow-2xl">
-              <VSCanvas ref={canvasRef} {...state} />
-            </div>
-          </div>
-
-          {/* Settings strip */}
-          <div className="shrink-0 border-t border-neutral-800 bg-neutral-900">
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-
-              {/* Event title */}
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Event</span>
-                <input
-                  type="text" value={state.eventTitle}
-                  onChange={(e) => onChange({ eventTitle: e.target.value })}
-                  className="w-40 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
-                />
-              </div>
-
-              {/* Score toggle + inputs */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => onChange({ scoreMode: !state.scoreMode })}
-                  className={`rounded-lg px-2 py-1 text-[11px] font-bold uppercase tracking-wide transition-colors ${
-                    state.scoreMode ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
-                  }`}
-                >
-                  Score
-                </button>
-                {state.scoreMode ? (
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="text" value={state.leftScore} maxLength={3}
-                      onChange={(e) => onChange({ leftScore: e.target.value })}
-                      className="w-10 rounded border border-neutral-700 bg-neutral-800 py-1 text-center text-sm font-bold text-white outline-none focus:border-blue-500"
-                    />
-                    <span className="text-neutral-500">–</span>
-                    <input
-                      type="text" value={state.rightScore} maxLength={3}
-                      onChange={(e) => onChange({ rightScore: e.target.value })}
-                      className="w-10 rounded border border-neutral-700 bg-neutral-800 py-1 text-center text-sm font-bold text-white outline-none focus:border-blue-500"
-                    />
-                  </div>
-                ) : (
-                  <input
-                    type="text" value={state.vsText}
-                    onChange={(e) => onChange({ vsText: e.target.value })}
-                    className="w-16 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-center text-sm font-bold text-white outline-none focus:border-blue-500"
-                  />
-                )}
-              </div>
-
-              {/* Date */}
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Date</span>
-                <div className="flex overflow-hidden rounded border border-neutral-700">
-                  {(['auto', 'manual'] as const).map((m) => (
-                    <button key={m} type="button"
-                      onClick={() => onChange({ dateMode: m })}
-                      className={`px-2 py-1 text-[11px] font-semibold transition-colors ${state.dateMode === m ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-500 hover:bg-neutral-700'}`}
-                    >
-                      {m === 'auto' ? 'Auto' : 'Custom'}
-                    </button>
-                  ))}
-                </div>
-                {state.dateMode === 'manual' && (
-                  <input
-                    type="text" value={state.dateText} placeholder="JUNE 26, 2026"
-                    onChange={(e) => onChange({ dateText: e.target.value })}
-                    className="w-36 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
-                  />
-                )}
-              </div>
-
-              {/* Center text size */}
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
-                  {state.scoreMode ? 'Score size' : 'VS size'}
-                </span>
-                <input
-                  type="range" min={60} max={140} value={state.centerSize}
-                  onChange={(e) => onChange({ centerSize: Number(e.target.value) })}
-                  className="w-20 accent-blue-500"
-                />
-                <span className="text-[11px] text-neutral-500">{state.centerSize}px</span>
-              </div>
-
-              {/* Center color */}
-              <label className="flex cursor-pointer items-center gap-1.5">
-                <div className="h-6 w-6 overflow-hidden rounded border border-neutral-700" style={{ backgroundColor: state.centerColor }}>
-                  <input type="color" value={state.centerColor} onChange={(e) => onChange({ centerColor: e.target.value })} className="sr-only" />
-                </div>
-                <span className="text-[11px] text-neutral-500">Color</span>
-              </label>
-
-            </div>
+        {/* Canvas */}
+        <div className="flex min-w-0 flex-1 items-center justify-center bg-black/40 p-4">
+          <div ref={wrapperRef} className="w-full overflow-hidden rounded-xl shadow-2xl">
+            <VSCanvas ref={canvasRef} {...state} />
           </div>
         </div>
 
