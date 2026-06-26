@@ -36,6 +36,9 @@ export default function VSDesignerClient() {
   const [state, setState] = useState<VSDesignerState>(defaultState);
   const [exporting, setExporting] = useState(false);
   const canvasRef    = useRef<HTMLDivElement>(null);
+  // scaleRef wraps VSCanvas; it takes position:absolute + transform.
+  // VSCanvas itself keeps position:relative so React re-renders don't fight JS.
+  const scaleRef     = useRef<HTMLDivElement>(null);
   const wrapperRef   = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -54,17 +57,14 @@ export default function VSDesignerClient() {
   }, []);
 
   // Scale canvas to fit wrapper.
-  // Canvas is absolutely positioned so its 1920px layout box doesn't push siblings.
+  // We apply position:absolute + transform to scaleRef (not canvasRef) so
+  // React's re-renders of VSCanvas never clobber position:absolute.
   useEffect(() => {
     function update() {
-      if (!wrapperRef.current || !canvasRef.current) return;
+      if (!wrapperRef.current || !scaleRef.current) return;
       const scale = wrapperRef.current.clientWidth / 1920;
-      const el = canvasRef.current;
-      el.style.position = 'absolute';
-      el.style.top = '0';
-      el.style.left = '0';
-      el.style.transform = `scale(${scale})`;
-      wrapperRef.current.style.height = `${Math.round(1080 * scale)}px`;
+      scaleRef.current.style.transform = `scale(${scale})`;
+      wrapperRef.current.style.height  = `${Math.round(1080 * scale)}px`;
     }
     update();
     const ro = new ResizeObserver(update);
@@ -325,8 +325,8 @@ export default function VSDesignerClient() {
       {/* ── Body ─────────────────────────────────── */}
       <div className="flex min-h-0 flex-1">
 
-        {/* Left picker */}
-        <div className="flex w-72 shrink-0 flex-col border-r border-neutral-800 p-3">
+        {/* Left picker — z-10 so it stays above the canvas stacking context */}
+        <div className="relative z-10 flex w-72 shrink-0 flex-col border-r border-neutral-800 p-3">
           <FlagSlider
             label="Left Side"
             entity={state.left}
@@ -336,14 +336,24 @@ export default function VSDesignerClient() {
 
         {/* Canvas */}
         <div className="flex min-w-0 flex-1 items-center justify-center bg-black/40 p-4">
-          {/* relative + overflow-hidden so absolute canvas is properly clipped */}
+          {/*
+            wrapperRef: position:relative, overflow:hidden, height set by JS.
+            scaleRef:   position:absolute, transform:scale(N) — JS-only, never
+                        overwritten by React because VSCanvas is a child of it.
+            canvasRef:  the 1920×1080 VSCanvas root — keeps position:relative.
+          */}
           <div ref={wrapperRef} className="relative w-full overflow-hidden rounded-xl shadow-2xl">
-            <VSCanvas ref={canvasRef} {...state} />
+            <div
+              ref={scaleRef}
+              style={{ position: 'absolute', top: 0, left: 0, transformOrigin: 'top left' }}
+            >
+              <VSCanvas ref={canvasRef} {...state} />
+            </div>
           </div>
         </div>
 
-        {/* Right picker */}
-        <div className="flex w-72 shrink-0 flex-col border-l border-neutral-800 p-3">
+        {/* Right picker — z-10 so it stays above the canvas stacking context */}
+        <div className="relative z-10 flex w-72 shrink-0 flex-col border-l border-neutral-800 p-3">
           <FlagSlider
             label="Right Side"
             entity={state.right}
