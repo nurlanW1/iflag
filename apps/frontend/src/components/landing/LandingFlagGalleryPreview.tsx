@@ -58,14 +58,14 @@ export function LandingFlagGalleryPreview() {
             <Link
               key={country.slug}
               href={`/gallery/${encodeURIComponent(country.slug)}`}
-              className="group block overflow-hidden rounded-lg border border-neutral-200/80 bg-white shadow-sm transition-all duration-200 hover:border-neutral-300 hover:shadow-md"
+              className="block overflow-hidden rounded-lg border border-neutral-200/80 bg-white shadow-sm"
             >
               <div className="aspect-[3/2] w-full overflow-hidden bg-neutral-50">
                 <CountryHubFolderCover
                   countryName={country.name}
                   coverUrl={country.webp_cover_url ?? country.thumbnail}
                   hasWebpCover={country.has_webp_cover}
-                  imageClassName="h-full w-full object-contain p-2 transition-transform duration-200 group-hover:scale-105"
+                  imageClassName="h-full w-full object-contain p-2"
                 />
               </div>
             </Link>
