@@ -28,34 +28,42 @@ export default function VSDesignerClient() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-white">
-      <div className="mx-auto max-w-[1800px] px-4 py-6">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold tracking-tight text-white">VS Designer</h1>
-          <p className="mt-1 text-sm text-neutral-400">
-            Create 1920×1080 matchup graphics for sports, politics and events
+    <main className="flex h-screen flex-col overflow-hidden bg-neutral-950 text-white">
+      {/* Header */}
+      <div className="flex shrink-0 items-center gap-3 border-b border-neutral-800 px-5 py-3">
+        <div>
+          <h1 className="text-lg font-bold leading-tight text-white">VS Designer</h1>
+          <p className="text-xs text-neutral-500">1920 × 1080 · PNG eksport</p>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex min-h-0 flex-1 gap-0">
+        {/* Canvas area */}
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center bg-neutral-925 p-6" style={{ background: '#0d0d0d' }}>
+          <div
+            ref={wrapperRef}
+            className="overflow-hidden rounded-xl shadow-2xl"
+            style={{ width: '100%', maxWidth: 1200 }}
+          >
+            <VSCanvas ref={canvasRef} state={state} />
+          </div>
+          <p className="mt-3 text-center text-xs text-neutral-700">
+            Ko'rib chiqish — eksport to'liq 1920×1080 sifatida saqlanadi
           </p>
         </div>
 
-        <div className="flex flex-col gap-6 lg:flex-row">
-          {/* Canvas preview */}
-          <div className="min-w-0 flex-1">
-            <div
-              ref={wrapperRef}
-              className="overflow-hidden rounded-xl"
-              style={{ width: '100%' }}
-            >
-              <VSCanvas ref={canvasRef} state={state} />
-            </div>
-            <p className="mt-2 text-center text-xs text-neutral-600">
-              Preview — exports at full 1920×1080 resolution
-            </p>
-          </div>
-
-          {/* Control panel */}
-          <div className="w-full lg:w-80 xl:w-96">
-            <ControlPanel state={state} onChange={onChange} canvasRef={canvasRef} />
-          </div>
+        {/* Control panel */}
+        <div
+          className="flex shrink-0 flex-col border-l border-neutral-800"
+          style={{ width: 300 }}
+        >
+          <ControlPanel
+            state={state}
+            onChange={onChange}
+            canvasRef={canvasRef}
+            wrapperRef={wrapperRef}
+          />
         </div>
       </div>
     </main>
