@@ -7,41 +7,39 @@ export interface VSEntity {
 export interface VSDesignerState {
   left: VSEntity;
   right: VSEntity;
+  leftScore: string;
+  rightScore: string;
+  scoreMode: boolean;
   bgColor: string;
   eventTitle: string;
   vsText: string;
   dateMode: 'auto' | 'manual';
   dateText: string;
   titleSize: number;
-  vsSize: number;
+  centerSize: number;
   nameSize: number;
   titleColor: string;
-  vsColor: string;
+  centerColor: string;
   nameColor: string;
   dateColor: string;
 }
 
 export const defaultState: VSDesignerState = {
-  left: {
-    name: 'Uzbekistan',
-    imageUrl: 'https://flagcdn.com/w320/uz.png',
-    type: 'flag',
-  },
-  right: {
-    name: 'Portugal',
-    imageUrl: 'https://flagcdn.com/w320/pt.png',
-    type: 'flag',
-  },
-  bgColor: '#0A1628',
+  left:  { name: 'Uzbekistan', imageUrl: 'https://flagcdn.com/w320/uz.png', type: 'flag' },
+  right: { name: 'Portugal',   imageUrl: 'https://flagcdn.com/w320/pt.png', type: 'flag' },
+  leftScore:  '0',
+  rightScore: '0',
+  scoreMode:  false,
+  bgColor:    '#0A1628',
   eventTitle: 'WORLD CUP 2026',
-  vsText: 'VS',
-  dateMode: 'auto',
-  dateText: '',
-  titleSize: 28,
-  vsSize: 96,
-  nameSize: 22,
-  titleColor: '#FFFFFF',
-  vsColor: '#FFFFFF',
-  nameColor: '#CCCCCC',
-  dateColor: '#888888',
+  vsText:     'VS',
+  dateMode:   'auto',
+  dateText:   '',
+  titleSize:  30,
+  centerSize: 110,
+  nameSize:   24,
+  titleColor:  '#FFFFFF',
+  centerColor: '#FFFFFF',
+  nameColor:   '#CCCCCC',
+  dateColor:   '#777777',
 };
