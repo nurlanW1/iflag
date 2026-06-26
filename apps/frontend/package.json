@@ -25,6 +25,7 @@
     "country-flag-icons": "^1.6.12",
     "eslint": "^9.39.2",
     "flag-icons": "^7.5.0",
+    "html2canvas": "^1.4.1",
     "jose": "^6.2.2",
     "konva": "^9.3.0",
     "lucide-react": "^0.468.0",
