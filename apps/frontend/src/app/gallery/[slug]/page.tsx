@@ -359,17 +359,16 @@ export default function CountryHubPage() {
           {/* ── Left column ── */}
           <div className="flex flex-col gap-2.5 pb-6 lg:pb-8">
 
-            {/* Small flag — same papka preview as gallery grid */}
+            {/* Small flag preview — no background, flag only */}
             <div
-              className="rounded-[3px] shadow-[0_3px_16px_rgba(0,0,0,0.15)] overflow-hidden"
-              style={{ width: 200, height: 130 }}
+              className="overflow-hidden rounded-[3px]"
+              style={{ width: 200, height: 133, boxShadow: '0 2px 12px rgba(0,0,0,0.18)' }}
             >
               <CountryHubFolderCover
                 countryName={pageTitle}
                 coverUrl={webpCover || null}
                 hasWebpCover={data.country.has_webp_cover ?? !!webpCover}
-                countryCode={data.country.code ?? null}
-                imageClassName="object-contain p-2"
+                imageClassName="object-cover"
                 priority
               />
             </div>
