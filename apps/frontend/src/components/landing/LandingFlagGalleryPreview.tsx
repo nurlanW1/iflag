@@ -36,8 +36,10 @@ export function LandingFlagGalleryPreview() {
       { retries: 2, delayMs: 500 },
     ).then(({ ok, data }) => {
       if (ok && data?.countries && data.countries.length > 0) {
-        // Stable alphabetical order — no random
-        const sorted = [...data.countries].sort((a, b) => a.name.localeCompare(b.name));
+        const EXCLUDED = new Set(['israel']);
+        const sorted = [...data.countries]
+          .filter((c) => !EXCLUDED.has(c.slug?.toLowerCase() ?? ''))
+          .sort((a, b) => a.name.localeCompare(b.name));
         setFlags(sorted.slice(0, TOTAL));
       }
     });
