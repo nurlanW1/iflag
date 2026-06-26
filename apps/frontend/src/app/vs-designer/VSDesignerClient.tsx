@@ -53,12 +53,17 @@ export default function VSDesignerClient() {
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // Scale canvas to fit wrapper
+  // Scale canvas to fit wrapper.
+  // Canvas is absolutely positioned so its 1920px layout box doesn't push siblings.
   useEffect(() => {
     function update() {
       if (!wrapperRef.current || !canvasRef.current) return;
       const scale = wrapperRef.current.clientWidth / 1920;
-      canvasRef.current.style.transform = `scale(${scale})`;
+      const el = canvasRef.current;
+      el.style.position = 'absolute';
+      el.style.top = '0';
+      el.style.left = '0';
+      el.style.transform = `scale(${scale})`;
       wrapperRef.current.style.height = `${Math.round(1080 * scale)}px`;
     }
     update();
@@ -74,23 +79,29 @@ export default function VSDesignerClient() {
     setExporting(true);
 
     const savedTransform  = el.style.transform;
+    const savedPosition   = el.style.position;
+    const savedTop        = el.style.top;
+    const savedLeft       = el.style.left;
     const savedOverflow   = wr?.style.overflow ?? '';
     const savedHeight     = wr?.style.height   ?? '';
 
     try {
-      // Expand wrapper so the full 1920×1080 canvas is accessible (not clipped)
+      // Expand wrapper so the full 1920×1080 canvas is not clipped
       if (wr) {
         wr.style.overflow = 'visible';
         wr.style.height   = '1080px';
       }
+      // Reset absolute positioning so html2canvas reads from (0,0)
+      el.style.position  = 'relative';
+      el.style.top       = '0';
+      el.style.left      = '0';
       el.style.transform = 'none';
 
-      // Wait for layout to recalculate
       await new Promise((r) => requestAnimationFrame(r));
       await new Promise((r) => requestAnimationFrame(r));
 
       const html2canvas = (await import('html2canvas')).default;
-      const canvas = await html2canvas(el, {
+      const png = await html2canvas(el, {
         width: 1920, height: 1080, scale: 1,
         useCORS: true, allowTaint: false,
         backgroundColor: state.bgColor, logging: false,
@@ -100,10 +111,13 @@ export default function VSDesignerClient() {
 
       const link = document.createElement('a');
       link.download = `vs-${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png', 1.0);
+      link.href = png.toDataURL('image/png', 1.0);
       link.click();
     } finally {
       el.style.transform = savedTransform;
+      el.style.position  = savedPosition;
+      el.style.top       = savedTop;
+      el.style.left      = savedLeft;
       if (wr) {
         wr.style.overflow = savedOverflow || 'hidden';
         wr.style.height   = savedHeight;
@@ -336,7 +350,8 @@ export default function VSDesignerClient() {
 
         {/* Canvas */}
         <div className="flex min-w-0 flex-1 items-center justify-center bg-black/40 p-4">
-          <div ref={wrapperRef} className="w-full overflow-hidden rounded-xl shadow-2xl">
+          {/* relative + overflow-hidden so absolute canvas is properly clipped */}
+          <div ref={wrapperRef} className="relative w-full overflow-hidden rounded-xl shadow-2xl">
             <VSCanvas ref={canvasRef} {...state} />
           </div>
         </div>
