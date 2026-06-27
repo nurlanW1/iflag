@@ -104,100 +104,103 @@ export default function VSDesignerClient() {
 
   /* ─── Controls panel (shared between desktop panel + mobile settings tab) ── */
   const ControlRows = () => (
-    <>
-      {/* Row 1 */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Left</span>
-          <input value={state.left.name} onChange={(e) => onChange({ left: { ...state.left, name: e.target.value } })}
-            className="w-24 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500" />
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Event</span>
-          <input value={state.eventTitle} onChange={(e) => onChange({ eventTitle: e.target.value })}
-            className="w-32 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500" />
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Right</span>
-          <input value={state.right.name} onChange={(e) => onChange({ right: { ...state.right, name: e.target.value } })}
-            className="w-24 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500" />
-        </div>
-        <div className="h-4 w-px bg-neutral-700" />
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => onChange({ scoreMode: !state.scoreMode })}
-            className={`rounded-lg px-2 py-1 text-[11px] font-bold uppercase tracking-wide transition-colors ${
-              state.scoreMode ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'}`}>
-            Score
-          </button>
-          {state.scoreMode ? (
-            <div className="flex items-center gap-1">
-              <input type="text" value={state.leftScore} maxLength={3} onChange={(e) => onChange({ leftScore: e.target.value })}
-                className="w-10 rounded border border-neutral-700 bg-neutral-800 py-1 text-center text-sm font-bold text-white outline-none focus:border-blue-500" />
-              <span className="text-neutral-500">–</span>
-              <input type="text" value={state.rightScore} maxLength={3} onChange={(e) => onChange({ rightScore: e.target.value })}
-                className="w-10 rounded border border-neutral-700 bg-neutral-800 py-1 text-center text-sm font-bold text-white outline-none focus:border-blue-500" />
-            </div>
-          ) : (
-            <input type="text" value={state.vsText} onChange={(e) => onChange({ vsText: e.target.value })}
-              className="w-14 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-center text-sm font-bold text-white outline-none focus:border-blue-500" />
-          )}
-        </div>
-        <div className="h-4 w-px bg-neutral-700" />
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Date</span>
-          <div className="flex overflow-hidden rounded border border-neutral-700">
-            {(['auto', 'manual'] as const).map((m) => (
-              <button key={m} type="button" onClick={() => onChange({ dateMode: m })}
-                className={`px-2 py-1 text-[10px] font-semibold transition-colors ${
-                  state.dateMode === m ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-500 hover:bg-neutral-700'}`}>
-                {m === 'auto' ? 'Auto' : 'Custom'}
-              </button>
-            ))}
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 md:flex-nowrap md:overflow-x-auto">
+      {/* LEFT name */}
+      <div className="flex shrink-0 items-center gap-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Left</span>
+        <input value={state.left.name} onChange={(e) => onChange({ left: { ...state.left, name: e.target.value } })}
+          className="w-20 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
+      </div>
+      {/* EVENT */}
+      <div className="flex shrink-0 items-center gap-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Event</span>
+        <input value={state.eventTitle} onChange={(e) => onChange({ eventTitle: e.target.value })}
+          className="w-24 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
+      </div>
+      {/* RIGHT name */}
+      <div className="flex shrink-0 items-center gap-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Right</span>
+        <input value={state.right.name} onChange={(e) => onChange({ right: { ...state.right, name: e.target.value } })}
+          className="w-20 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
+      </div>
+      <div className="h-4 w-px shrink-0 bg-neutral-700" />
+      {/* SCORE toggle + inputs */}
+      <div className="flex shrink-0 items-center gap-1">
+        <button type="button" onClick={() => onChange({ scoreMode: !state.scoreMode })}
+          className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide transition-colors ${
+            state.scoreMode ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'}`}>
+          Score
+        </button>
+        {state.scoreMode ? (
+          <div className="flex items-center gap-1">
+            <input type="text" value={state.leftScore} maxLength={3} onChange={(e) => onChange({ leftScore: e.target.value })}
+              className="w-9 rounded border border-neutral-700 bg-neutral-800 py-0.5 text-center text-xs font-bold text-white outline-none focus:border-blue-500" />
+            <span className="text-neutral-500">–</span>
+            <input type="text" value={state.rightScore} maxLength={3} onChange={(e) => onChange({ rightScore: e.target.value })}
+              className="w-9 rounded border border-neutral-700 bg-neutral-800 py-0.5 text-center text-xs font-bold text-white outline-none focus:border-blue-500" />
           </div>
-          {state.dateMode === 'manual' && (
-            <input value={state.dateText} placeholder="JUNE 26, 2026" onChange={(e) => onChange({ dateText: e.target.value })}
-              className="w-28 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-sm text-white outline-none focus:border-blue-500" />
-          )}
-        </div>
+        ) : (
+          <input type="text" value={state.vsText} onChange={(e) => onChange({ vsText: e.target.value })}
+            className="w-12 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-center text-xs font-bold text-white outline-none focus:border-blue-500" />
+        )}
       </div>
-
-      {/* Row 2 */}
-      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">BG</span>
-          {BG_PRESETS.map((p) => (
-            <button key={p.color} type="button" title={p.label} onClick={() => onChange({ bgColor: p.color })}
-              style={{ backgroundColor: p.color }}
-              className={`h-5 w-5 shrink-0 rounded-full border-2 transition-transform hover:scale-110 ${
-                state.bgColor === p.color ? 'border-blue-400' : 'border-neutral-600'}`} />
+      <div className="h-4 w-px shrink-0 bg-neutral-700" />
+      {/* DATE */}
+      <div className="flex shrink-0 items-center gap-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Date</span>
+        <div className="flex overflow-hidden rounded border border-neutral-700">
+          {(['auto', 'manual'] as const).map((m) => (
+            <button key={m} type="button" onClick={() => onChange({ dateMode: m })}
+              className={`px-1.5 py-0.5 text-[10px] font-semibold transition-colors ${
+                state.dateMode === m ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-500 hover:bg-neutral-700'}`}>
+              {m === 'auto' ? 'Auto' : 'Custom'}
+            </button>
           ))}
-          <label className="cursor-pointer" title="Custom">
-            <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-dashed border-neutral-600 text-[10px] text-neutral-400 hover:border-blue-400"
-              style={{ backgroundColor: BG_PRESETS.some((p) => p.color === state.bgColor) ? undefined : state.bgColor }}>+</div>
-            <input type="color" value={state.bgColor} onChange={(e) => onChange({ bgColor: e.target.value })} className="sr-only" />
-          </label>
         </div>
-        <div className="h-4 w-px bg-neutral-700" />
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Name</span>
-          <input type="range" min={14} max={40} value={state.nameSize} onChange={(e) => onChange({ nameSize: Number(e.target.value) })} className="w-16 accent-blue-500" />
-          <span className="w-6 text-[10px] text-neutral-600">{state.nameSize}</span>
-          <ColorSwatch value={state.nameColor} onChange={(v) => onChange({ nameColor: v })} title="Name color" />
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Title</span>
-          <input type="range" min={14} max={56} value={state.titleSize} onChange={(e) => onChange({ titleSize: Number(e.target.value) })} className="w-16 accent-blue-500" />
-          <span className="w-6 text-[10px] text-neutral-600">{state.titleSize}</span>
-          <ColorSwatch value={state.titleColor} onChange={(v) => onChange({ titleColor: v })} title="Title color" />
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">{state.scoreMode ? 'Score' : 'VS'}</span>
-          <input type="range" min={60} max={160} value={state.centerSize} onChange={(e) => onChange({ centerSize: Number(e.target.value) })} className="w-16 accent-blue-500" />
-          <span className="w-6 text-[10px] text-neutral-600">{state.centerSize}</span>
-          <ColorSwatch value={state.centerColor} onChange={(v) => onChange({ centerColor: v })} title="Score/VS color" />
-        </div>
+        {state.dateMode === 'manual' && (
+          <input value={state.dateText} placeholder="JUNE 26, 2026" onChange={(e) => onChange({ dateText: e.target.value })}
+            className="w-28 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
+        )}
       </div>
-    </>
+      <div className="h-4 w-px shrink-0 bg-neutral-700" />
+      {/* BG presets */}
+      <div className="flex shrink-0 items-center gap-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">BG</span>
+        {BG_PRESETS.map((p) => (
+          <button key={p.color} type="button" title={p.label} onClick={() => onChange({ bgColor: p.color })}
+            style={{ backgroundColor: p.color }}
+            className={`h-4 w-4 shrink-0 rounded-full border-2 transition-transform hover:scale-110 ${
+              state.bgColor === p.color ? 'border-blue-400' : 'border-neutral-600'}`} />
+        ))}
+        <label className="cursor-pointer" title="Custom">
+          <div className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-dashed border-neutral-600 text-[8px] text-neutral-400 hover:border-blue-400"
+            style={{ backgroundColor: BG_PRESETS.some((p) => p.color === state.bgColor) ? undefined : state.bgColor }}>+</div>
+          <input type="color" value={state.bgColor} onChange={(e) => onChange({ bgColor: e.target.value })} className="sr-only" />
+        </label>
+      </div>
+      <div className="h-4 w-px shrink-0 bg-neutral-700" />
+      {/* NAME size + color */}
+      <div className="flex shrink-0 items-center gap-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Name</span>
+        <input type="range" min={14} max={40} value={state.nameSize} onChange={(e) => onChange({ nameSize: Number(e.target.value) })} className="w-14 accent-blue-500" />
+        <span className="w-5 text-[10px] text-neutral-600">{state.nameSize}</span>
+        <ColorSwatch value={state.nameColor} onChange={(v) => onChange({ nameColor: v })} title="Name color" />
+      </div>
+      {/* TITLE size + color */}
+      <div className="flex shrink-0 items-center gap-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Title</span>
+        <input type="range" min={14} max={56} value={state.titleSize} onChange={(e) => onChange({ titleSize: Number(e.target.value) })} className="w-14 accent-blue-500" />
+        <span className="w-5 text-[10px] text-neutral-600">{state.titleSize}</span>
+        <ColorSwatch value={state.titleColor} onChange={(v) => onChange({ titleColor: v })} title="Title color" />
+      </div>
+      {/* SCORE/VS size + color */}
+      <div className="flex shrink-0 items-center gap-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">{state.scoreMode ? 'Score' : 'VS'}</span>
+        <input type="range" min={60} max={160} value={state.centerSize} onChange={(e) => onChange({ centerSize: Number(e.target.value) })} className="w-14 accent-blue-500" />
+        <span className="w-5 text-[10px] text-neutral-600">{state.centerSize}</span>
+        <ColorSwatch value={state.centerColor} onChange={(v) => onChange({ centerColor: v })} title="Score/VS color" />
+      </div>
+    </div>
   );
 
   return (
@@ -224,7 +227,7 @@ export default function VSDesignerClient() {
       </div>
 
       {/* ── Desktop controls (hidden on mobile) ─────────────────────────── */}
-      <div className="hidden shrink-0 overflow-x-auto border-b border-neutral-800 bg-neutral-900/90 px-4 py-2.5 md:block">
+      <div className="hidden shrink-0 border-b border-neutral-800 bg-neutral-900/90 px-4 py-1.5 md:block">
         <ControlRows />
       </div>
 
