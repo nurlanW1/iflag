@@ -442,6 +442,10 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
   const [r2Importing, setR2Importing] = useState(false);
   const [r2Result, setR2Result] = useState<{ ok: boolean; message: string } | null>(null);
 
+  // Organize + import (move root files to flags/{slug}/ then sync DB)
+  const [organizing, setOrganizing] = useState(false);
+  const [organizeResult, setOrganizeResult] = useState<{ ok: boolean; message: string } | null>(null);
+
   // Auto-sync status after upload
   const [autoSyncStatus, setAutoSyncStatus] = useState<'idle' | 'syncing' | 'done' | 'error'>('idle');
 
@@ -568,6 +572,46 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
 
     if (successCount > 0) {
       void handleAutoSyncCountry(country.slug);
+    }
+  }
+
+  async function handleOrganizeAndImport() {
+    if (!getToken) return;
+    const token = await getToken();
+    if (!token) return;
+    setOrganizing(true);
+    setOrganizeResult(null);
+    try {
+      // Step 1: move root files to flags/{slug}/
+      const orgRes = await fetch('/api/admin/organize-r2', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+      });
+      const orgData = await orgRes.json().catch(() => ({})) as {
+        ok?: boolean; error?: string; moved?: number; unresolved?: number; errors?: string[];
+      };
+      if (!orgRes.ok) throw new Error(orgData.error ?? `Organize failed (${orgRes.status})`);
+
+      // Step 2: import all into DB
+      const impRes = await fetch('/api/admin/import-r2?maxObjects=100000', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+      });
+      const impData = await impRes.json().catch(() => ({})) as {
+        ok?: boolean; error?: string; inserted?: number; scanned?: number;
+      };
+      if (!impRes.ok) throw new Error(impData.error ?? `Import failed (${impRes.status})`);
+
+      setOrganizeResult({
+        ok: true,
+        message: `Moved: ${orgData.moved ?? 0} · Scanned: ${impData.scanned ?? '?'} · Inserted: ${impData.inserted ?? '?'}`,
+      });
+    } catch (e) {
+      setOrganizeResult({ ok: false, message: e instanceof Error ? e.message : 'Failed' });
+    } finally {
+      setOrganizing(false);
     }
   }
 
@@ -834,6 +878,43 @@ function AdminUploadFormContent({ getToken }: { getToken?: () => Promise<string 
             }
           </button>
         )}
+
+        {/* ── Organize + Import R2 ─────────────────────────────────────── */}
+        <details className="mb-4 rounded-2xl border border-violet-200 bg-white shadow-sm" open>
+          <summary className="flex cursor-pointer items-center gap-3 p-5 select-none">
+            <Database size={18} className="text-violet-600" />
+            <div className="flex-1 min-w-0">
+              <span className="text-sm font-semibold text-[#2a2a2a]">Organize &amp; Import R2 files</span>
+              <p className="text-xs text-gray-400 mt-0.5">Moves root-level files into flags/&#123;slug&#125;/ then syncs DB</p>
+            </div>
+            <ChevronDown size={14} className="ml-auto text-gray-400" />
+          </summary>
+          <div className="border-t border-neutral-100 px-5 pb-5 pt-4">
+            <p className="mb-3 text-xs text-gray-500">
+              1. Scans R2 for files <strong>not</strong> in <code className="rounded bg-black/5 px-1">flags/</code> prefix.
+              2. Derives country slug from filename (e.g. <code className="rounded bg-black/5 px-1">uzbekistan-flag.svg</code> → <code className="rounded bg-black/5 px-1">flags/uzbekistan/</code>).
+              3. Moves files, then runs full import to sync <code className="rounded bg-black/5 px-1">country_flag_files</code>.
+            </p>
+            {getToken ? (
+              <button
+                type="button"
+                onClick={() => void handleOrganizeAndImport()}
+                disabled={organizing}
+                className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-60"
+              >
+                {organizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database size={16} />}
+                {organizing ? 'Organizing…' : 'Organize + Import'}
+              </button>
+            ) : (
+              <p className="text-sm text-amber-700">Sign in with Clerk to use this button.</p>
+            )}
+            {organizeResult && (
+              <p className={`mt-3 text-sm font-medium ${organizeResult.ok ? 'text-emerald-700' : 'text-red-700'}`}>
+                {organizeResult.ok ? '✓ ' : '✗ '}{organizeResult.message}
+              </p>
+            )}
+          </div>
+        </details>
 
         {/* ── Import R2 (advanced) ─────────────────────────────────────── */}
         <details className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
