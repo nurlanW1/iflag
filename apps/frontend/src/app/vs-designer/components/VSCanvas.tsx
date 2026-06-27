@@ -88,7 +88,7 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
 
         {/* Score or VS */}
         {state.scoreMode ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, lineHeight: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
             {/* Left score */}
             <span style={{
               fontSize: state.centerSize,
@@ -98,6 +98,8 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
               minWidth: '1.4ch',
               textAlign: 'right',
               letterSpacing: -4,
+              lineHeight: 1,
+              display: 'inline-block',
               textShadow: `0 0 60px ${state.centerColor}cc, 0 0 120px ${state.centerColor}66`,
             }}>
               {state.leftScore || '0'}
@@ -113,8 +115,7 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
               padding: `0 ${state.centerSize * 0.18}px`,
               letterSpacing: 0,
               lineHeight: 1,
-              alignSelf: 'center',
-              paddingBottom: state.centerSize * 0.04,
+              display: 'inline-block',
             }}>
               —
             </span>
@@ -128,6 +129,8 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
               minWidth: '1.4ch',
               textAlign: 'left',
               letterSpacing: -4,
+              lineHeight: 1,
+              display: 'inline-block',
               textShadow: `0 0 60px ${state.centerColor}cc, 0 0 120px ${state.centerColor}66`,
             }}>
               {state.rightScore || '0'}
