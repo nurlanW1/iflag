@@ -28,6 +28,10 @@ function getDateStr(s: VSDesignerState): string {
 
 const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
   const dateStr = getDateStr(state);
+  const scoreTop = 540 - state.centerSize * 0.55;
+  const scoreHeight = state.centerSize * 1.15;
+  const dateTop = scoreTop + scoreHeight + 18;
+  const titleTop = scoreTop - state.titleSize * 1.6 - 26;
 
   return (
     <div
@@ -82,21 +86,38 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
 
       {/* ─── CENTER ── */}
       <div style={{
-        width: '24%', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', gap: 20, padding: '40px 16px',
+        width: '24%',
+        flex: '0 0 24%',
+        height: '100%',
+        position: 'relative',
+        display: 'block',
       }}>
         {/* Event title */}
         <span style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: titleTop,
           fontSize: state.titleSize, color: state.titleColor, fontWeight: 800,
           letterSpacing: 7, textTransform: 'uppercase', textAlign: 'center',
-          fontFamily: FONT, lineHeight: 1.3,
+          fontFamily: FONT, lineHeight: 1.2,
         }}>
           {state.eventTitle}
         </span>
 
         {/* Score or VS */}
         {state.scoreMode ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+          <div style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: scoreTop,
+            height: scoreHeight,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 0,
+          }}>
             {/* Left score */}
             <span style={{
               fontSize: state.centerSize,
@@ -106,8 +127,9 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
               minWidth: '1.4ch',
               textAlign: 'right',
               letterSpacing: -4,
-              lineHeight: 1,
+              lineHeight: 0.9,
               display: 'inline-block',
+              fontVariantNumeric: 'tabular-nums',
               textShadow: `0 0 60px ${state.centerColor}cc, 0 0 120px ${state.centerColor}66`,
             }}>
               {state.leftScore || '0'}
@@ -137,8 +159,9 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
               minWidth: '1.4ch',
               textAlign: 'left',
               letterSpacing: -4,
-              lineHeight: 1,
+              lineHeight: 0.9,
               display: 'inline-block',
+              fontVariantNumeric: 'tabular-nums',
               textShadow: `0 0 60px ${state.centerColor}cc, 0 0 120px ${state.centerColor}66`,
             }}>
               {state.rightScore || '0'}
@@ -146,12 +169,20 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
           </div>
         ) : (
           <span style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: scoreTop,
+            height: scoreHeight,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             fontSize: state.centerSize,
             color: state.centerColor,
             fontWeight: 900,
             letterSpacing: 14,
             fontFamily: FONT,
-            lineHeight: 1,
+            lineHeight: 0.9,
             textShadow: `0 0 50px ${state.centerColor}cc, 0 0 100px ${state.centerColor}55`,
           }}>
             {state.vsText}
@@ -161,6 +192,10 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
         {/* Date */}
         {dateStr ? (
           <span style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: dateTop,
             fontSize: 20, color: state.dateColor, fontWeight: 500,
             letterSpacing: 4, textAlign: 'center', textTransform: 'uppercase',
             fontFamily: FONT, lineHeight: 1.5,
