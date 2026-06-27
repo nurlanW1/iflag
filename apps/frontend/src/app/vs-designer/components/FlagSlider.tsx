@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Search, Upload, Globe, Trophy } from 'lucide-react';
 import { ALL_COUNTRIES } from '@/lib/flag-search';
 import { POPULAR_TEAMS } from '@/lib/sport-logos';
@@ -21,6 +21,7 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
   const [query, setQuery] = useState('');
   const gridRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const importedUrlRef = useRef<string | null>(null);
 
   const q = query.toLowerCase();
   const flagItems = q ? ALL_COUNTRIES.filter((c) => c.name.toLowerCase().includes(q)) : ALL_COUNTRIES;
@@ -36,13 +37,17 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
   }
 
   function handleFileImport(file: File) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const url = e.target?.result as string;
-      if (url) onSelect({ name: file.name.replace(/\.[^.]+$/, ''), imageUrl: url, type: 'flag' });
-    };
-    reader.readAsDataURL(file);
+    if (importedUrlRef.current) URL.revokeObjectURL(importedUrlRef.current);
+    const url = URL.createObjectURL(file);
+    importedUrlRef.current = url;
+    onSelect({ name: file.name.replace(/\.[^.]+$/, ''), imageUrl: url, type: 'flag' });
   }
+
+  useEffect(() => {
+    return () => {
+      if (importedUrlRef.current) URL.revokeObjectURL(importedUrlRef.current);
+    };
+  }, []);
 
   const MODES: { id: Mode; icon: React.ReactNode; label: string }[] = [
     { id: 'flag',   icon: <Globe  size={compact ? 16 : 20} />, label: 'Country' },

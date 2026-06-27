@@ -28,6 +28,28 @@ function ColorSwatch({ value, onChange, title }: { value: string; onChange: (v: 
 
 type MobileTab = 'left' | 'settings' | 'right';
 
+async function waitForCanvasAssets(root: HTMLElement): Promise<void> {
+  const images = Array.from(root.querySelectorAll('img'));
+  await Promise.all(
+    images.map((img) => {
+      if (img.complete && img.naturalWidth > 0) return;
+      return new Promise<void>((resolve) => {
+        const done = () => {
+          window.clearTimeout(timeout);
+          resolve();
+        };
+        const timeout = window.setTimeout(resolve, 3000);
+        img.addEventListener('load', done, { once: true });
+        img.addEventListener('error', done, { once: true });
+        void img.decode?.().then(done).catch(() => undefined);
+      });
+    }),
+  );
+  if (document.fonts?.ready) {
+    await document.fonts.ready;
+  }
+}
+
 export default function VSDesignerClient() {
   const [state, setState]         = useState<VSDesignerState>(defaultState);
   const [exporting, setExporting] = useState(false);
@@ -84,9 +106,10 @@ export default function VSDesignerClient() {
       document.body.appendChild(clone);
       await new Promise((r) => requestAnimationFrame(r));
       await new Promise((r) => requestAnimationFrame(r));
+      await waitForCanvasAssets(clone);
       const html2canvas = (await import('html2canvas')).default;
       const png = await html2canvas(clone, {
-        width: 1920, height: 1080, scale: 1,
+        width: 1920, height: 1080, scale: 2,
         useCORS: true, allowTaint: false,
         backgroundColor: state.bgColor, logging: false,
         imageTimeout: 15_000, scrollX: 0, scrollY: 0,

@@ -4,6 +4,20 @@ import { forwardRef } from 'react';
 import type { VSDesignerState } from '@/lib/vs-designer-types';
 
 const FONT = '"Arial Black", "Arial Bold", system-ui, -apple-system, Arial, sans-serif';
+const SIDE_IMAGE_STYLE = {
+  width: 510,
+  height: 340,
+  objectFit: 'contain',
+  filter: 'drop-shadow(0 12px 48px rgba(0,0,0,0.6))',
+  display: 'block',
+  flex: '0 0 auto',
+} as const;
+
+const CLUB_IMAGE_STYLE = {
+  ...SIDE_IMAGE_STYLE,
+  width: 300,
+  height: 300,
+} as const;
 
 function getDateStr(s: VSDesignerState): string {
   if (s.dateMode === 'manual') return s.dateText;
@@ -52,13 +66,7 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={state.left.imageUrl} alt={state.left.name} crossOrigin="anonymous"
-            style={{
-              width: state.left.type === 'club' ? 300 : 510,
-              height: state.left.type === 'club' ? 300 : 340,
-              objectFit: 'contain',
-              filter: 'drop-shadow(0 12px 48px rgba(0,0,0,0.6))',
-              display: 'block',
-            }}
+            style={state.left.type === 'club' ? CLUB_IMAGE_STYLE : SIDE_IMAGE_STYLE}
           />
         ) : (
           <div style={{ width: 510, height: 340, background: 'rgba(255,255,255,0.05)', borderRadius: 8 }} />
@@ -171,13 +179,7 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={state.right.imageUrl} alt={state.right.name} crossOrigin="anonymous"
-            style={{
-              width: state.right.type === 'club' ? 300 : 510,
-              height: state.right.type === 'club' ? 300 : 340,
-              objectFit: 'contain',
-              filter: 'drop-shadow(0 12px 48px rgba(0,0,0,0.6))',
-              display: 'block',
-            }}
+            style={state.right.type === 'club' ? CLUB_IMAGE_STYLE : SIDE_IMAGE_STYLE}
           />
         ) : (
           <div style={{ width: 510, height: 340, background: 'rgba(255,255,255,0.05)', borderRadius: 8 }} />
