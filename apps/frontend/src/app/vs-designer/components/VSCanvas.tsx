@@ -28,10 +28,11 @@ function getDateStr(s: VSDesignerState): string {
 
 const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
   const dateStr = getDateStr(state);
-  const scoreTop = 540 - state.centerSize * 0.55;
+  const scoreCenterY = 485;
+  const scoreTop = scoreCenterY - state.centerSize * 0.55;
   const scoreHeight = state.centerSize * 1.15;
-  const dateTop = scoreTop + scoreHeight + 18;
-  const titleTop = scoreTop - state.titleSize * 1.6 - 26;
+  const dateTop = scoreTop + scoreHeight + 46;
+  const titleTop = scoreTop - state.titleSize * 1.6 - 48;
 
   return (
     <div
