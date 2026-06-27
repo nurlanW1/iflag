@@ -365,11 +365,11 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
   const interRef = useRef<Inter | null>(null);
 
   const [defFill,     setDefFill]     = useState('#3b82f6');
-  const [defStroke,   setDefStroke]   = useState('#1e40af');
-  const [defSw,       setDefSw]       = useState(2);
-  const [defPoints,    setDefPoints]    = useState(5);
-  const [defSides,     setDefSides]     = useState(6);
-  const [defCrescent,  setDefCrescent]  = useState(50);
+  const defStroke = '#1e40af';
+  const defSw = 2;
+  const defPoints = 5;
+  const defSides = 6;
+  const defCrescent = 50;
   const [defText,     setDefText]     = useState('Text');
   const [defFontSize, setDefFontSize] = useState(60);
   const [defFont,     setDefFont]     = useState('Arial');
@@ -913,37 +913,6 @@ export default function FlagEditorClient({ slug }: { slug: string }) {
             {panel === 'shapes' && (
               <div className="flex flex-col gap-3 p-3">
                 <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: T.textMuted }}>Shapes</p>
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-medium" style={{ color: T.textSub }}>Fill color</label>
-                  <div className="flex items-center gap-2">
-                    <input type="color" value={defFill} onChange={e => setDefFill(e.target.value)}
-                      className="h-7 w-10 cursor-pointer rounded border-0 p-0" />
-                    <div className="flex flex-wrap gap-1">
-                      {PALETTE.slice(0, 6).map(c => (
-                        <button key={c} onClick={() => setDefFill(c)}
-                          className="h-5 w-5 rounded-md transition"
-                          style={{ background: c, border: defFill === c ? `2px solid ${ACCENT}` : `1px solid ${T.border}` }} />
-                      ))}
-                    </div>
-                  </div>
-                  <label className="text-xs font-medium" style={{ color: T.textSub }}>Stroke</label>
-                  <div className="flex items-center gap-2">
-                    <input type="color" value={defStroke} onChange={e => setDefStroke(e.target.value)}
-                      className="h-7 w-10 cursor-pointer rounded border-0 p-0" />
-                    <input type="range" min={0} max={20} value={defSw}
-                      onChange={e => setDefSw(Number(e.target.value))} className="flex-1" />
-                    <span className="w-5 text-xs" style={{ color: T.textSub }}>{defSw}</span>
-                  </div>
-                  <label className="text-xs font-medium" style={{ color: T.textSub }}>Star points: {defPoints}</label>
-                  <input type="range" min={3} max={20} value={defPoints}
-                    onChange={e => setDefPoints(Number(e.target.value))} />
-                  <label className="text-xs font-medium" style={{ color: T.textSub }}>Polygon sides: {defSides}</label>
-                  <input type="range" min={3} max={20} value={defSides}
-                    onChange={e => setDefSides(Number(e.target.value))} />
-                  <label className="text-xs font-medium" style={{ color: T.textSub }}>Moon crescent: {defCrescent}%</label>
-                  <input type="range" min={1} max={99} value={defCrescent}
-                    onChange={e => setDefCrescent(Number(e.target.value))} />
-                </div>
                 <div className="grid grid-cols-5 gap-1.5">
                   {SHAPE_CATALOG.map(s => (
                     <button key={s.kind} onClick={() => addShape(s.kind)} title={s.label}
