@@ -69,9 +69,18 @@ export default function VSDesignerClient() {
     let clone: HTMLDivElement | null = null;
     try {
       clone = el.cloneNode(true) as HTMLDivElement;
-      clone.style.cssText =
-        'position:fixed;top:0;left:0;width:1920px;height:1080px;' +
-        'transform:none;transform-origin:top left;z-index:-9999;pointer-events:none;overflow:hidden;';
+      // Set only positioning props — do NOT use cssText (it wipes VSCanvas
+      // inline styles like display:flex, alignItems, etc., breaking layout).
+      clone.style.position       = 'fixed';
+      clone.style.top            = '0';
+      clone.style.left           = '0';
+      clone.style.width          = '1920px';
+      clone.style.height         = '1080px';
+      clone.style.transform      = 'none';
+      clone.style.transformOrigin = 'top left';
+      clone.style.zIndex         = '-9999';
+      clone.style.pointerEvents  = 'none';
+      clone.style.overflow       = 'hidden';
       document.body.appendChild(clone);
       await new Promise((r) => requestAnimationFrame(r));
       await new Promise((r) => requestAnimationFrame(r));
