@@ -16,6 +16,27 @@ import { SectionReveal } from '@/components/motion/SectionReveal';
 import { HOME_REGION_HUB_TILES } from '@/lib/gallery/region-hub-tiles';
 import { ONE_TIME_STOCK, PRICING_MARKETING, formatPricingMoney } from '@/lib/marketing/pricing-config';
 
+const HOMEPAGE_TOOL_CARDS = [
+  {
+    title: 'VS Designer',
+    promise: 'Create match graphics in 30 seconds',
+    copy: 'Build 1920x1080 football and country matchup graphics. Free watermark preview, $1 clean HD export.',
+    href: '/vs-designer',
+  },
+  {
+    title: 'Flag Editor',
+    promise: 'Design custom country flags',
+    copy: 'Start from a country flag or blank canvas, then add text, shapes, symbols, and colors.',
+    href: '/editor/blank',
+  },
+  {
+    title: 'Flag Quiz',
+    promise: 'Learn world flags',
+    copy: 'Practice country recognition with real Flagswing previews, then browse downloadable assets.',
+    href: '/flag-quiz',
+  },
+];
+
 export default function HomePageClient() {
   const oneTimePrice = formatPricingMoney(ONE_TIME_STOCK.displayCents);
 
@@ -23,6 +44,45 @@ export default function HomePageClient() {
     <main className="min-h-screen bg-[#fafaf9]">
 
       <EditorialHero />
+
+      <section className="border-t border-neutral-200/80 bg-white py-6 sm:py-8 lg:py-10">
+        <div className="marketplace-shell">
+          <SectionReveal
+            hidden={{ opacity: 0, y: 10 }}
+            visible={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-5 sm:mb-6"
+          >
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--brand-blue)]">Creator tools</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#2a2a2a] sm:text-3xl">
+              What can you make on Flagswing?
+            </h2>
+          </SectionReveal>
+          <div className="grid gap-4 md:grid-cols-3">
+            {HOMEPAGE_TOOL_CARDS.map((tool, idx) => (
+              <SectionReveal
+                key={tool.title}
+                hidden={{ opacity: 0, y: 12 }}
+                visible={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: idx * 0.05 }}
+              >
+                <Link
+                  href={tool.href}
+                  className="group flex h-full flex-col rounded-xl border border-neutral-200/90 bg-[#fafaf9] p-5 transition hover:border-[var(--brand-blue)]/40 hover:bg-white hover:shadow-sm"
+                >
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">{tool.title}</p>
+                  <h3 className="mt-2 text-lg font-semibold text-[#2a2a2a]">{tool.promise}</h3>
+                  <p className="mt-2 flex-1 text-sm leading-6 text-neutral-600">{tool.copy}</p>
+                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[var(--brand-blue)]">
+                    Open tool
+                    <ChevronRight size={14} aria-hidden />
+                  </span>
+                </Link>
+              </SectionReveal>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Browse by region */}
       <section className="shrink-0 border-t border-neutral-200/80 bg-white py-5 sm:py-6 lg:py-8">
