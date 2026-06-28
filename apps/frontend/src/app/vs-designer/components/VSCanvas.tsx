@@ -31,6 +31,9 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
   const scoreCenterY = 485;
   const scoreTop = scoreCenterY - state.centerSize * 0.55;
   const scoreHeight = state.centerSize * 1.15;
+  const centerWidth = 1920 * 0.24;
+  const centerX = centerWidth / 2;
+  const scoreNumberOffset = state.centerSize * 0.24;
   const dateTop = scoreTop + scoreHeight + 46;
   const titleTop = scoreTop - state.titleSize * 1.6 - 48;
 
@@ -108,86 +111,103 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
 
         {/* Score or VS */}
         {state.scoreMode ? (
-          <div style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: scoreTop,
-            height: scoreHeight,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 0,
-          }}>
-            {/* Left score */}
-            <span style={{
-              fontSize: state.centerSize,
-              color: state.centerColor,
-              fontWeight: 900,
-              fontFamily: FONT,
-              minWidth: '1.4ch',
-              textAlign: 'right',
-              letterSpacing: -4,
-              lineHeight: 0.9,
-              display: 'inline-block',
-              fontVariantNumeric: 'tabular-nums',
-              textShadow: `0 0 60px ${state.centerColor}cc, 0 0 120px ${state.centerColor}66`,
-            }}>
-              {state.leftScore || '0'}
-            </span>
-
-            {/* Separator */}
-            <span style={{
-              fontSize: state.centerSize * 0.45,
-              color: state.centerColor,
-              fontWeight: 200,
-              fontFamily: FONT,
-              opacity: 0.28,
-              padding: `0 ${state.centerSize * 0.18}px`,
-              letterSpacing: 0,
-              lineHeight: 1,
-              display: 'inline-block',
-            }}>
-              —
-            </span>
-
-            {/* Right score */}
-            <span style={{
-              fontSize: state.centerSize,
-              color: state.centerColor,
-              fontWeight: 900,
-              fontFamily: FONT,
-              minWidth: '1.4ch',
-              textAlign: 'left',
-              letterSpacing: -4,
-              lineHeight: 0.9,
-              display: 'inline-block',
-              fontVariantNumeric: 'tabular-nums',
-              textShadow: `0 0 60px ${state.centerColor}cc, 0 0 120px ${state.centerColor}66`,
-            }}>
-              {state.rightScore || '0'}
-            </span>
-          </div>
+          <svg
+            width="100%"
+            height={scoreHeight}
+            viewBox={`0 0 ${centerWidth} ${scoreHeight}`}
+            preserveAspectRatio="none"
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: scoreTop,
+              overflow: 'visible',
+            }}
+            aria-label={`${state.leftScore || '0'} to ${state.rightScore || '0'}`}
+          >
+            <g style={{ filter: `drop-shadow(0 0 46px ${state.centerColor}cc) drop-shadow(0 0 92px ${state.centerColor}66)` }}>
+              <text
+                x={centerX - scoreNumberOffset}
+                y={scoreHeight / 2}
+                textAnchor="end"
+                dominantBaseline="middle"
+                fill={state.centerColor}
+                style={{
+                  fontSize: state.centerSize,
+                  fontWeight: 900,
+                  fontFamily: FONT,
+                  letterSpacing: -4,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {state.leftScore || '0'}
+              </text>
+              <text
+                x={centerX}
+                y={scoreHeight / 2}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fill={state.centerColor}
+                opacity={0.28}
+                style={{
+                  fontSize: state.centerSize * 0.45,
+                  fontWeight: 200,
+                  fontFamily: FONT,
+                  letterSpacing: 0,
+                }}
+              >
+                â€”
+              </text>
+              <text
+                x={centerX + scoreNumberOffset}
+                y={scoreHeight / 2}
+                textAnchor="start"
+                dominantBaseline="middle"
+                fill={state.centerColor}
+                style={{
+                  fontSize: state.centerSize,
+                  fontWeight: 900,
+                  fontFamily: FONT,
+                  letterSpacing: -4,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {state.rightScore || '0'}
+              </text>
+            </g>
+          </svg>
         ) : (
-          <span style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: scoreTop,
-            height: scoreHeight,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: state.centerSize,
-            color: state.centerColor,
-            fontWeight: 900,
-            letterSpacing: 14,
-            fontFamily: FONT,
-            lineHeight: 0.9,
-            textShadow: `0 0 50px ${state.centerColor}cc, 0 0 100px ${state.centerColor}55`,
-          }}>
-            {state.vsText}
-          </span>
+          <svg
+            width="100%"
+            height={scoreHeight}
+            viewBox={`0 0 ${centerWidth} ${scoreHeight}`}
+            preserveAspectRatio="none"
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: scoreTop,
+              overflow: 'visible',
+            }}
+            aria-label={state.vsText}
+          >
+            <text
+              x={centerX}
+              y={scoreHeight / 2}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill={state.centerColor}
+              style={{
+                fontSize: state.centerSize,
+                fontWeight: 900,
+                letterSpacing: 14,
+                fontFamily: FONT,
+                filter: `drop-shadow(0 0 42px ${state.centerColor}cc) drop-shadow(0 0 86px ${state.centerColor}55)`,
+              }}
+            >
+              {state.vsText}
+            </text>
+          </svg>
         )}
 
         {/* Date */}
