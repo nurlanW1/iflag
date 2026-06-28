@@ -426,11 +426,11 @@ export default function VSDesignerClient() {
         {BG_PRESETS.map((p) => (
           <button key={p.color} type="button" title={p.label} onClick={() => onChange({ bgColor: p.color })}
             style={{ backgroundColor: p.color }}
-            className={`h-4 w-4 shrink-0 rounded-full border-2 transition-transform hover:scale-110 ${
-              state.bgColor === p.color ? 'border-blue-400' : 'border-neutral-600'}`} />
+            className={`h-6 w-6 shrink-0 rounded-md border-2 shadow-sm transition-transform hover:scale-110 ${
+              state.bgColor === p.color ? 'border-blue-400 ring-2 ring-blue-400/30' : 'border-neutral-600'}`} />
         ))}
         <label className="cursor-pointer" title="Custom">
-          <div className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-dashed border-neutral-600 text-[8px] text-neutral-400 hover:border-blue-400"
+          <div className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-dashed border-neutral-600 text-[11px] font-bold text-neutral-400 shadow-sm hover:border-blue-400"
             style={{ backgroundColor: BG_PRESETS.some((p) => p.color === state.bgColor) ? undefined : state.bgColor }}>+</div>
           <input type="color" value={state.bgColor} onChange={(e) => onChange({ bgColor: e.target.value })} className="sr-only" />
         </label>
