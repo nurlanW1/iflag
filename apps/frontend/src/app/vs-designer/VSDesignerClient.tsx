@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Download, ChevronLeft, ChevronRight, Settings2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Crown, Download, Lock, Settings2, X } from 'lucide-react';
+import { CheckoutButton } from '@/components/billing/CheckoutButton';
+import { PRICING_MARKETING } from '@/lib/marketing/pricing-config';
 import { defaultState, type VSDesignerState } from '@/lib/vs-designer-types';
 import VSCanvas from './components/VSCanvas';
 import FlagSlider from './components/FlagSlider';
@@ -27,6 +29,10 @@ function ColorSwatch({ value, onChange, title }: { value: string; onChange: (v: 
 }
 
 type MobileTab = 'left' | 'settings' | 'right';
+type ExportTier = 'premium' | 'watermarked';
+
+const VS_DESIGNER_PRODUCT_SLUG = 'vs-designer-export';
+const VS_DESIGNER_ASSET_GROUP_KEY = 'tool:vs-designer-export';
 
 async function waitForCanvasAssets(root: HTMLElement): Promise<void> {
   const images = Array.from(root.querySelectorAll('img'));
@@ -50,9 +56,66 @@ async function waitForCanvasAssets(root: HTMLElement): Promise<void> {
   }
 }
 
+function downloadCanvas(canvas: HTMLCanvasElement, filename: string) {
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/png', 1.0);
+  link.click();
+}
+
+function makeWatermarkedPreview(source: HTMLCanvasElement): HTMLCanvasElement {
+  const out = document.createElement('canvas');
+  out.width = source.width;
+  out.height = source.height;
+  const ctx = out.getContext('2d');
+  if (!ctx) return source;
+
+  ctx.save();
+  ctx.filter = 'blur(1.2px) brightness(0.82) contrast(0.86) saturate(0.82)';
+  ctx.drawImage(source, 0, 0);
+  ctx.restore();
+
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.fillRect(0, 0, out.width, out.height);
+
+  ctx.save();
+  ctx.translate(out.width / 2, out.height / 2);
+  ctx.rotate(-Math.PI / 7);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = '900 86px Arial, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.34)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.22)';
+  ctx.lineWidth = 3;
+  const stepX = 760;
+  const stepY = 260;
+  for (let y = -out.height; y <= out.height; y += stepY) {
+    for (let x = -out.width; x <= out.width; x += stepX) {
+      ctx.strokeText('FLAGSWING FREE PREVIEW', x, y);
+      ctx.fillText('FLAGSWING FREE PREVIEW', x, y);
+    }
+  }
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.34)';
+  ctx.fillRect(0, out.height - 96, out.width, 96);
+  ctx.font = '700 34px Arial, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.textAlign = 'center';
+  ctx.fillText('Free preview - unlock clean HD export for $1', out.width / 2, out.height - 40);
+  ctx.restore();
+
+  return out;
+}
+
 export default function VSDesignerClient() {
   const [state, setState]         = useState<VSDesignerState>(defaultState);
   const [exporting, setExporting] = useState(false);
+  const [purchaseOpen, setPurchaseOpen] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(false);
+  const [accessError, setAccessError] = useState<string | null>(null);
+  const [premiumUnlocked, setPremiumUnlocked] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>('left');
 
   const canvasRef    = useRef<HTMLDivElement>(null);
@@ -84,10 +147,9 @@ export default function VSDesignerClient() {
     return () => ro.disconnect();
   }, []);
 
-  async function handleExport() {
+  async function renderExportCanvas(tier: ExportTier): Promise<HTMLCanvasElement | null> {
     const el = canvasRef.current;
-    if (!el) return;
-    setExporting(true);
+    if (!el) return null;
     let clone: HTMLDivElement | null = null;
     try {
       clone = el.cloneNode(true) as HTMLDivElement;
@@ -109,19 +171,64 @@ export default function VSDesignerClient() {
       await waitForCanvasAssets(clone);
       const html2canvas = (await import('html2canvas')).default;
       const png = await html2canvas(clone, {
-        width: 1920, height: 1080, scale: 2,
+        width: 1920, height: 1080, scale: tier === 'premium' ? 2 : 1,
         useCORS: true, allowTaint: false,
         backgroundColor: state.bgColor, logging: false,
         imageTimeout: 15_000, scrollX: 0, scrollY: 0,
         windowWidth: 1920, windowHeight: 1080,
       });
-      const link = document.createElement('a');
-      link.download = `vs-${Date.now()}.png`;
-      link.href = png.toDataURL('image/png', 1.0);
-      link.click();
+      return tier === 'watermarked' ? makeWatermarkedPreview(png) : png;
     } finally {
       clone?.parentNode?.removeChild(clone);
+    }
+  }
+
+  async function handleExport(tier: ExportTier) {
+    setExporting(true);
+    try {
+      const canvas = await renderExportCanvas(tier);
+      if (!canvas) return;
+      const suffix = tier === 'premium' ? 'premium-hd' : 'free-preview';
+      downloadCanvas(canvas, `vs-${suffix}-${Date.now()}.png`);
+    } finally {
       setExporting(false);
+    }
+  }
+
+  async function verifyPremiumAndExport() {
+    setAccessError(null);
+    if (premiumUnlocked) {
+      await handleExport('premium');
+      return;
+    }
+    setCheckingAccess(true);
+    try {
+      const qs = new URLSearchParams({
+        productSlug: VS_DESIGNER_PRODUCT_SLUG,
+        assetGroupKey: VS_DESIGNER_ASSET_GROUP_KEY,
+      });
+      const res = await fetch(`/api/billing/ownership?${qs.toString()}`, {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { ownsProduct?: boolean; alreadyPurchased?: boolean };
+        if (data.ownsProduct || data.alreadyPurchased) {
+          setPremiumUnlocked(true);
+          setPurchaseOpen(false);
+          await handleExport('premium');
+          return;
+        }
+      }
+      setPurchaseOpen(true);
+      if (!res.ok && res.status !== 401) {
+        setAccessError('Could not verify your purchase yet. Try again or use Paddle checkout.');
+      }
+    } catch {
+      setPurchaseOpen(true);
+      setAccessError('Network error while checking premium access.');
+    } finally {
+      setCheckingAccess(false);
     }
   }
 
@@ -240,13 +347,23 @@ export default function VSDesignerClient() {
             1920×1080
           </span>
         </div>
-        <button
-          type="button" onClick={handleExport} disabled={exporting}
-          className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-blue-500 disabled:opacity-60 sm:gap-2 sm:px-4 sm:text-sm"
-        >
-          <Download size={13} aria-hidden />
-          {exporting ? '…' : 'Export PNG'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button" onClick={() => void handleExport('watermarked')} disabled={exporting || checkingAccess}
+            className="flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-900 px-2.5 py-1.5 text-xs font-bold text-neutral-200 transition hover:bg-neutral-800 disabled:opacity-60 sm:px-3"
+          >
+            <Download size={13} aria-hidden />
+            <span className="sm:hidden">Free</span>
+            <span className="hidden sm:inline">Free preview</span>
+          </button>
+          <button
+            type="button" onClick={() => void verifyPremiumAndExport()} disabled={exporting || checkingAccess}
+            className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-blue-500 disabled:opacity-60 sm:gap-2 sm:px-4 sm:text-sm"
+          >
+            {premiumUnlocked ? <Download size={13} aria-hidden /> : <Crown size={13} aria-hidden />}
+            {exporting ? 'Exporting...' : checkingAccess ? 'Checking...' : premiumUnlocked ? 'Export HD' : <><span className="sm:hidden">Premium</span><span className="hidden sm:inline">Premium PNG $1</span></>}
+          </button>
+        </div>
       </div>
 
       {/* ── Desktop controls (hidden on mobile) ─────────────────────────── */}
@@ -338,6 +455,71 @@ export default function VSDesignerClient() {
           <FlagSlider label="Right Side" entity={state.right} onSelect={(e) => onChange({ right: e })} />
         </div>
       </div>
+
+      {purchaseOpen && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-md rounded-2xl border border-neutral-700 bg-neutral-950 p-5 shadow-2xl">
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-yellow-400/15 text-yellow-300">
+                  <Lock size={18} aria-hidden />
+                </div>
+                <h2 className="text-lg font-bold text-white">Unlock clean VS Designer export</h2>
+                <p className="mt-1 text-sm leading-6 text-neutral-400">
+                  Free download stays available with watermark and softer quality. Pay {PRICING_MARKETING.oneTimeShort} once to download clean HD PNG exports from VS Designer.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPurchaseOpen(false)}
+                className="rounded-lg p-1 text-neutral-500 transition hover:bg-neutral-800 hover:text-white"
+                aria-label="Close premium export dialog"
+              >
+                <X size={18} aria-hidden />
+              </button>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => void handleExport('watermarked')}
+                disabled={exporting}
+                className="rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm font-bold text-neutral-100 transition hover:bg-neutral-800 disabled:opacity-60"
+              >
+                Free watermarked PNG
+              </button>
+              <CheckoutButton
+                kind="one_time"
+                productSlug="flag-stock"
+                assetGroupKey={VS_DESIGNER_ASSET_GROUP_KEY}
+                assetProductSlug={VS_DESIGNER_PRODUCT_SLUG}
+                className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-500 disabled:opacity-60"
+                minimal
+                onAlreadyPurchased={() => {
+                  setPremiumUnlocked(true);
+                  setPurchaseOpen(false);
+                  void handleExport('premium');
+                }}
+              >
+                Pay {PRICING_MARKETING.oneTimeShort} with Paddle
+              </CheckoutButton>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => void verifyPremiumAndExport()}
+              disabled={checkingAccess || exporting}
+              className="mt-3 w-full rounded-xl border border-blue-500/40 bg-blue-500/10 px-4 py-2.5 text-sm font-semibold text-blue-200 transition hover:bg-blue-500/15 disabled:opacity-60"
+            >
+              {checkingAccess ? 'Checking payment...' : 'I already paid - download HD'}
+            </button>
+            {accessError ? <p className="mt-2 text-xs text-red-300">{accessError}</p> : null}
+            <p className="mt-3 text-xs leading-5 text-neutral-500">
+              Paddle confirms the payment, then your account keeps access for future clean downloads.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
