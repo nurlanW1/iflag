@@ -29,11 +29,11 @@ function getDateStr(s: VSDesignerState): string {
 const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
   const dateStr = getDateStr(state);
   const scoreCenterY = 485;
-  const scoreTop = scoreCenterY - state.centerSize * 0.55;
-  const scoreHeight = state.centerSize * 1.15;
+  const scoreTop = scoreCenterY - state.centerSize * 0.5;
+  const scoreHeight = state.centerSize;
   const scoreLineWidth = state.centerSize * 0.32;
   const scoreNumberWidth = state.centerSize * 1.08;
-  const dateTop = scoreTop + scoreHeight + 46;
+  const dateTop = scoreCenterY + state.centerSize * 0.6 + 46;
   const titleTop = scoreTop - state.titleSize * 1.6 - 48;
 
   return (
@@ -114,11 +114,11 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
             position: 'absolute',
             left: 0,
             right: 0,
-            top: scoreCenterY,
+            top: scoreTop,
+            height: scoreHeight,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transform: 'translateY(-50%)',
             filter: `drop-shadow(0 0 46px ${state.centerColor}cc) drop-shadow(0 0 92px ${state.centerColor}66)`,
           }}>
             <span style={{
@@ -162,8 +162,11 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
             position: 'absolute',
             left: 0,
             right: 0,
-            top: scoreCenterY,
-            transform: 'translateY(-50%)',
+            top: scoreTop,
+            height: scoreHeight,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             fontSize: state.centerSize,
             color: state.centerColor,
             fontWeight: 900,
@@ -184,9 +187,13 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
             left: 0,
             right: 0,
             top: dateTop,
+            height: 30,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             fontSize: 20, color: state.dateColor, fontWeight: 500,
             letterSpacing: 4, textAlign: 'center', textTransform: 'uppercase',
-            fontFamily: FONT, lineHeight: 1.5,
+            fontFamily: FONT, lineHeight: 1,
           }}>
             {dateStr}
           </span>
