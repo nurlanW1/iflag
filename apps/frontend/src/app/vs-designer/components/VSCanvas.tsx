@@ -142,22 +142,16 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
               >
                 {state.leftScore || '0'}
               </text>
-              <text
-                x={centerX}
-                y={scoreHeight / 2}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill={state.centerColor}
+              <line
+                x1={centerX - state.centerSize * 0.16}
+                x2={centerX + state.centerSize * 0.16}
+                y1={scoreHeight / 2}
+                y2={scoreHeight / 2}
+                stroke={state.centerColor}
+                strokeWidth={Math.max(3, state.centerSize * 0.035)}
+                strokeLinecap="round"
                 opacity={0.28}
-                style={{
-                  fontSize: state.centerSize * 0.45,
-                  fontWeight: 200,
-                  fontFamily: FONT,
-                  letterSpacing: 0,
-                }}
-              >
-                â€”
-              </text>
+              />
               <text
                 x={centerX + scoreNumberOffset}
                 y={scoreHeight / 2}
