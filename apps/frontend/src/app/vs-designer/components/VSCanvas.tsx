@@ -31,9 +31,8 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
   const scoreCenterY = 485;
   const scoreTop = scoreCenterY - state.centerSize * 0.55;
   const scoreHeight = state.centerSize * 1.15;
-  const centerWidth = 1920 * 0.24;
-  const centerX = centerWidth / 2;
-  const scoreNumberOffset = state.centerSize * 0.24;
+  const scoreLineWidth = state.centerSize * 0.32;
+  const scoreNumberWidth = state.centerSize * 1.08;
   const dateTop = scoreTop + scoreHeight + 46;
   const titleTop = scoreTop - state.titleSize * 1.6 - 48;
 
@@ -111,97 +110,71 @@ const VSCanvas = forwardRef<HTMLDivElement, VSDesignerState>((state, ref) => {
 
         {/* Score or VS */}
         {state.scoreMode ? (
-          <svg
-            width="100%"
-            height={scoreHeight}
-            viewBox={`0 0 ${centerWidth} ${scoreHeight}`}
-            preserveAspectRatio="none"
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: scoreTop,
-              overflow: 'visible',
-            }}
-            aria-label={`${state.leftScore || '0'} to ${state.rightScore || '0'}`}
-          >
-            <g style={{ filter: `drop-shadow(0 0 46px ${state.centerColor}cc) drop-shadow(0 0 92px ${state.centerColor}66)` }}>
-              <text
-                x={centerX - scoreNumberOffset}
-                y={scoreHeight / 2}
-                textAnchor="end"
-                dominantBaseline="middle"
-                fill={state.centerColor}
-                style={{
-                  fontSize: state.centerSize,
-                  fontWeight: 900,
-                  fontFamily: FONT,
-                  letterSpacing: -4,
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {state.leftScore || '0'}
-              </text>
-              <line
-                x1={centerX - state.centerSize * 0.16}
-                x2={centerX + state.centerSize * 0.16}
-                y1={scoreHeight / 2}
-                y2={scoreHeight / 2}
-                stroke={state.centerColor}
-                strokeWidth={Math.max(3, state.centerSize * 0.035)}
-                strokeLinecap="round"
-                opacity={0.28}
-              />
-              <text
-                x={centerX + scoreNumberOffset}
-                y={scoreHeight / 2}
-                textAnchor="start"
-                dominantBaseline="middle"
-                fill={state.centerColor}
-                style={{
-                  fontSize: state.centerSize,
-                  fontWeight: 900,
-                  fontFamily: FONT,
-                  letterSpacing: -4,
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {state.rightScore || '0'}
-              </text>
-            </g>
-          </svg>
+          <div style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: scoreCenterY,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transform: 'translateY(-50%)',
+            filter: `drop-shadow(0 0 46px ${state.centerColor}cc) drop-shadow(0 0 92px ${state.centerColor}66)`,
+          }}>
+            <span style={{
+              width: scoreNumberWidth,
+              fontSize: state.centerSize,
+              color: state.centerColor,
+              fontWeight: 900,
+              fontFamily: FONT,
+              lineHeight: 1,
+              textAlign: 'right',
+              letterSpacing: -4,
+              fontVariantNumeric: 'tabular-nums',
+            }}>
+              {state.leftScore || '0'}
+            </span>
+            <span style={{
+              width: scoreLineWidth,
+              height: Math.max(3, state.centerSize * 0.035),
+              margin: `0 ${state.centerSize * 0.06}px`,
+              borderRadius: 999,
+              backgroundColor: state.centerColor,
+              opacity: 0.28,
+              flex: '0 0 auto',
+            }} />
+            <span style={{
+              width: scoreNumberWidth,
+              fontSize: state.centerSize,
+              color: state.centerColor,
+              fontWeight: 900,
+              fontFamily: FONT,
+              lineHeight: 1,
+              textAlign: 'left',
+              letterSpacing: -4,
+              fontVariantNumeric: 'tabular-nums',
+            }}>
+              {state.rightScore || '0'}
+            </span>
+          </div>
         ) : (
-          <svg
-            width="100%"
-            height={scoreHeight}
-            viewBox={`0 0 ${centerWidth} ${scoreHeight}`}
-            preserveAspectRatio="none"
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: scoreTop,
-              overflow: 'visible',
-            }}
-            aria-label={state.vsText}
-          >
-            <text
-              x={centerX}
-              y={scoreHeight / 2}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fill={state.centerColor}
-              style={{
-                fontSize: state.centerSize,
-                fontWeight: 900,
-                letterSpacing: 14,
-                fontFamily: FONT,
-                filter: `drop-shadow(0 0 42px ${state.centerColor}cc) drop-shadow(0 0 86px ${state.centerColor}55)`,
-              }}
-            >
-              {state.vsText}
-            </text>
-          </svg>
+          <span style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: scoreCenterY,
+            transform: 'translateY(-50%)',
+            fontSize: state.centerSize,
+            color: state.centerColor,
+            fontWeight: 900,
+            letterSpacing: 14,
+            fontFamily: FONT,
+            lineHeight: 1,
+            textAlign: 'center',
+            textShadow: `0 0 50px ${state.centerColor}cc, 0 0 100px ${state.centerColor}55`,
+          }}>
+            {state.vsText}
+          </span>
         )}
 
         {/* Date */}

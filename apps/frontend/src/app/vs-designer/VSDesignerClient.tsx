@@ -84,21 +84,21 @@ function makeWatermarkedPreview(source: HTMLCanvasElement): HTMLCanvasElement {
   ctx.save();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(0,0,0,0.42)';
-  ctx.shadowBlur = 28;
+  ctx.shadowColor = 'rgba(0,0,0,0.26)';
+  ctx.shadowBlur = 18;
   ctx.shadowOffsetY = 8;
   ctx.font = '900 76px Arial, sans-serif';
   ctx.lineWidth = 6;
-  ctx.strokeStyle = 'rgba(0,0,0,0.36)';
-  ctx.fillStyle = 'rgba(255,255,255,0.76)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+  ctx.fillStyle = 'rgba(255,255,255,0.30)';
   ctx.strokeText('FLAGSWING FREE PREVIEW', out.width / 2, out.height / 2 - 10);
   ctx.fillText('FLAGSWING FREE PREVIEW', out.width / 2, out.height / 2 - 10);
 
-  ctx.shadowBlur = 16;
+  ctx.shadowBlur = 10;
   ctx.font = '700 30px Arial, sans-serif';
   ctx.lineWidth = 3;
-  ctx.fillStyle = 'rgba(255,255,255,0.58)';
-  ctx.strokeStyle = 'rgba(0,0,0,0.28)';
+  ctx.fillStyle = 'rgba(255,255,255,0.30)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.14)';
   ctx.strokeText('Unlock clean HD export for $1', out.width / 2, out.height / 2 + 58);
   ctx.fillText('Unlock clean HD export for $1', out.width / 2, out.height / 2 + 58);
   ctx.restore();
