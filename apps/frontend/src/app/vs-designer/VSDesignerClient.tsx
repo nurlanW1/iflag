@@ -74,39 +74,33 @@ function makeWatermarkedPreview(source: HTMLCanvasElement): HTMLCanvasElement {
   if (!ctx) return source;
 
   ctx.save();
-  ctx.filter = 'blur(1.2px) brightness(0.82) contrast(0.86) saturate(0.82)';
+  ctx.filter = 'blur(0.8px) brightness(0.78) contrast(0.9) saturate(0.86)';
   ctx.drawImage(source, 0, 0);
   ctx.restore();
 
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.fillStyle = 'rgba(5,12,24,0.22)';
   ctx.fillRect(0, 0, out.width, out.height);
 
   ctx.save();
-  ctx.translate(out.width / 2, out.height / 2);
-  ctx.rotate(-Math.PI / 7);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = '900 86px Arial, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.34)';
-  ctx.strokeStyle = 'rgba(0,0,0,0.22)';
-  ctx.lineWidth = 3;
-  const stepX = 760;
-  const stepY = 260;
-  for (let y = -out.height; y <= out.height; y += stepY) {
-    for (let x = -out.width; x <= out.width; x += stepX) {
-      ctx.strokeText('FLAGSWING FREE PREVIEW', x, y);
-      ctx.fillText('FLAGSWING FREE PREVIEW', x, y);
-    }
-  }
-  ctx.restore();
+  ctx.shadowColor = 'rgba(0,0,0,0.42)';
+  ctx.shadowBlur = 28;
+  ctx.shadowOffsetY = 8;
+  ctx.font = '900 76px Arial, sans-serif';
+  ctx.lineWidth = 6;
+  ctx.strokeStyle = 'rgba(0,0,0,0.36)';
+  ctx.fillStyle = 'rgba(255,255,255,0.76)';
+  ctx.strokeText('FLAGSWING FREE PREVIEW', out.width / 2, out.height / 2 - 10);
+  ctx.fillText('FLAGSWING FREE PREVIEW', out.width / 2, out.height / 2 - 10);
 
-  ctx.save();
-  ctx.fillStyle = 'rgba(0,0,0,0.34)';
-  ctx.fillRect(0, out.height - 96, out.width, 96);
-  ctx.font = '700 34px Arial, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.92)';
-  ctx.textAlign = 'center';
-  ctx.fillText('Free preview - unlock clean HD export for $1', out.width / 2, out.height - 40);
+  ctx.shadowBlur = 16;
+  ctx.font = '700 30px Arial, sans-serif';
+  ctx.lineWidth = 3;
+  ctx.fillStyle = 'rgba(255,255,255,0.58)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.28)';
+  ctx.strokeText('Unlock clean HD export for $1', out.width / 2, out.height / 2 + 58);
+  ctx.fillText('Unlock clean HD export for $1', out.width / 2, out.height / 2 + 58);
   ctx.restore();
 
   return out;
