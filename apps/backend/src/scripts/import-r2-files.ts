@@ -113,6 +113,23 @@ const GENERIC_FOLDER_SLUGS = new Set([
   'flags',
 ]);
 
+function isUsStatesHubSlug(slug: string): boolean {
+  const compact = slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+  return [
+    'usstate',
+    'usstates',
+    'usestate',
+    'usestates',
+    'usastate',
+    'usastates',
+    'ustateflags',
+    'usstatesflags',
+    'usastateflags',
+    'usastatesflags',
+    'unitedstatesstates',
+    'americanstates',
+  ].includes(compact);
+}
 export type R2ImportStats = {
   scanned: number;
   inserted: number;
@@ -325,7 +342,7 @@ async function ensureCountryId(pool: pg.Pool, slug: string): Promise<string | nu
   const sl = slug.toLowerCase().trim();
   if (!sl) return null;
   const canonical = getCanonicalCountryForSlug(sl);
-  const category = 'country';
+  const category = isUsStatesHubSlug(sl) ? 'us-states' : 'country';
 
   const found = await pool.query<{ id: string }>(
     'SELECT id FROM countries WHERE lower(trim(slug)) = lower(trim($1)) LIMIT 1',

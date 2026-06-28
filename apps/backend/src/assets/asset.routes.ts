@@ -90,8 +90,17 @@ function r2CountryPrefixCandidates(slugRaw: string): string[] {
   }
   if (slug === 'us-states') {
     addCandidateKey(keys, 'US States');
+    addCandidateKey(keys, 'US State');
     addCandidateKey(keys, 'U.S. States');
+    addCandidateKey(keys, 'U.S. State');
     addCandidateKey(keys, 'USA States');
+    addCandidateKey(keys, 'USA State');
+    addCandidateKey(keys, 'USA STATE');
+    addCandidateKey(keys, 'USA STATE FLAGS');
+    addCandidateKey(keys, 'USA State Flags');
+    addCandidateKey(keys, 'usa state flags');
+    addCandidateKey(keys, 'USA State Flags');
+    addCandidateKey(keys, 'usa state flags');
     addCandidateKey(keys, 'Usa States');
     addCandidateKey(keys, 'United States States');
     addCandidateKey(keys, 'American States');

@@ -6,6 +6,7 @@ import {
 } from '@/lib/flag-thumbnail-fallback';
 import {
   AUTONOMY_REGIONAL_SLUGS,
+  USA_STATES_SLUG_SET,
   assignContinentToCountryHub,
   normalizeGalleryRegionParam,
 } from '@/lib/gallery/country-continent';
@@ -223,6 +224,23 @@ async function fetchGalleryCountriesFromDbOnce(
     ? `COALESCE(NULLIF(lower(trim(coalesce(c.sort_name::text, ''))), ''), lower(trim(c.name::text))), c.name ASC`
     : `lower(trim(c.name::text)), c.name ASC`;
 
+  const usaStatesCollectionSlugs = [
+    ...USA_STATES_SLUG_SET,
+    'us-state',
+    'usstates',
+    'usstate',
+    'use-states',
+    'use-state',
+    'usestates',
+    'usestate',
+    'usa-states',
+    'usa-state',
+    'usastates',
+    'usastate',
+    'u-s-states',
+    'united-states-states',
+    'american-states',
+  ];
   const result = await pool.query<{
     cid: string;
     name: string;
@@ -336,27 +354,11 @@ async function fetchGalleryCountriesFromDbOnce(
          )
          OR (
            lower(trim($1)) = 'us-states'
-           AND lower(trim(c.slug::text)) IN (
-             'us-states',
-             'us-state',
-             'usstates',
-             'usstate',
-             'use-states',
-             'use-state',
-             'usestates',
-             'usestate',
-             'usa-states',
-             'usa-state',
-             'usastates',
-             'usastate',
-             'u-s-states',
-             'united-states-states',
-             'american-states'
-           )
+           AND lower(trim(c.slug::text)) = ANY($3::text[])
          )
        )
      ORDER BY ${countriesOrder}`,
-    [catParam, [...AUTONOMY_REGIONAL_SLUGS]],
+    [catParam, [...AUTONOMY_REGIONAL_SLUGS], usaStatesCollectionSlugs],
   );
 
   const out: GalleryCountrySummary[] = [];
