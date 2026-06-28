@@ -62,11 +62,11 @@ export default function EditorIndexClient() {
           Flag Editor
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl lg:text-5xl">
-          Customize Any Flag
+          Design custom country flags
         </h1>
         <p className="mt-3 text-base text-neutral-500 sm:text-lg">
-          Add text, shapes, and effects to any flag.{' '}
-          <span className="font-medium text-neutral-700">Free preview</span>, HD download for $5.
+          Design custom country flags with text, shapes, colors, and symbols.{' '}
+          <span className="font-medium text-neutral-700">Free preview</span>, HD download when you are ready.
         </p>
       </div>
 

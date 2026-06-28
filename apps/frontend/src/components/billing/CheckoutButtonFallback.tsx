@@ -21,6 +21,8 @@ type Props = {
   children: React.ReactNode;
   minimal?: boolean;
   onAlreadyPurchased?: () => void;
+  onCheckoutStarted?: () => void;
+  successUrl?: string;
 };
 
 /**
@@ -41,6 +43,7 @@ export function CheckoutButtonFallback({
   children,
   minimal = false,
   onAlreadyPurchased,
+  onCheckoutStarted,
 }: Props) {
   const pathname = usePathname();
   const { user, loading } = useAuth();
@@ -115,6 +118,7 @@ export function CheckoutButtonFallback({
         return;
       }
       if (data.url) {
+        onCheckoutStarted?.();
         window.location.href = data.url;
         return;
       }

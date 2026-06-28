@@ -26,6 +26,20 @@ export default function ThankYouPage() {
             ready instantly.
           </p>
 
+          <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-left">
+            <p className="text-sm font-semibold text-blue-950">Bought a VS Designer export?</p>
+            <p className="mt-1 text-xs leading-5 text-blue-800">
+              Return to VS Designer. It will verify your Paddle payment and start the clean HD PNG
+              download automatically when ownership syncs.
+            </p>
+            <Link
+              href="/vs-designer?checkout=vs-designer-export"
+              className="mt-3 inline-flex min-h-9 items-center justify-center rounded-lg bg-blue-600 px-3 text-xs font-bold text-white transition hover:bg-blue-500"
+            >
+              Return to VS Designer
+            </Link>
+          </div>
+
           <div className="mt-6 space-y-2.5">
             <Link
               href="/dashboard/purchases"

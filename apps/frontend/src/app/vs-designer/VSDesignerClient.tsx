@@ -33,6 +33,9 @@ type ExportTier = 'premium' | 'watermarked';
 
 const VS_DESIGNER_PRODUCT_SLUG = 'vs-designer-export';
 const VS_DESIGNER_ASSET_GROUP_KEY = 'tool:vs-designer-export';
+const VS_DESIGNER_CHECKOUT_SUCCESS_PATH = '/vs-designer?checkout=vs-designer-export';
+const VS_DESIGNER_STATE_KEY = 'flagswing.vsDesigner.state';
+const VS_DESIGNER_PENDING_KEY = 'flagswing.vsDesigner.pendingPremiumExport';
 
 async function waitForCanvasAssets(root: HTMLElement): Promise<void> {
   const images = Array.from(root.querySelectorAll('img'));
@@ -109,23 +112,128 @@ function makeWatermarkedPreview(source: HTMLCanvasElement): HTMLCanvasElement {
   return out;
 }
 
+function isDesignerState(value: unknown): value is VSDesignerState {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as Partial<VSDesignerState>;
+  return (
+    typeof v.bgColor === 'string' &&
+    typeof v.eventTitle === 'string' &&
+    typeof v.left?.name === 'string' &&
+    typeof v.left?.imageUrl === 'string' &&
+    typeof v.right?.name === 'string' &&
+    typeof v.right?.imageUrl === 'string'
+  );
+}
+
 export default function VSDesignerClient() {
   const [state, setState]         = useState<VSDesignerState>(defaultState);
   const [exporting, setExporting] = useState(false);
   const [purchaseOpen, setPurchaseOpen] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(false);
+  const [checkoutPending, setCheckoutPending] = useState(false);
   const [accessError, setAccessError] = useState<string | null>(null);
   const [premiumUnlocked, setPremiumUnlocked] = useState(false);
+  const [stateRestored, setStateRestored] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>('left');
 
   const canvasRef    = useRef<HTMLDivElement>(null);
   const scaleRef     = useRef<HTMLDivElement>(null);
   const wrapperRef   = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const autoExportedRef = useRef(false);
 
   const onChange = useCallback((patch: Partial<VSDesignerState>) => {
     setState((prev) => ({ ...prev, ...patch }));
   }, []);
+
+  useEffect(() => {
+    try {
+      const savedState = window.localStorage.getItem(VS_DESIGNER_STATE_KEY);
+      if (savedState) {
+        const parsed = JSON.parse(savedState) as unknown;
+        if (isDesignerState(parsed)) {
+          setState(parsed);
+        }
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const checkoutReturn = params.get('checkout') === VS_DESIGNER_PRODUCT_SLUG;
+      const pending = window.localStorage.getItem(VS_DESIGNER_PENDING_KEY);
+      if (checkoutReturn || pending) {
+        setPurchaseOpen(true);
+        setCheckoutPending(true);
+        setAccessError('Waiting for Paddle confirmation. HD download will start automatically.');
+      }
+      if (checkoutReturn) {
+        window.history.replaceState(null, '', '/vs-designer');
+      }
+    } catch {
+      // Local storage is an enhancement only; the designer still works without it.
+    } finally {
+      setStateRestored(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!stateRestored) return;
+    try {
+      window.localStorage.setItem(VS_DESIGNER_STATE_KEY, JSON.stringify(state));
+    } catch {
+      // Ignore quota/private-mode errors.
+    }
+  }, [state, stateRestored]);
+
+  const checkPremiumOwnership = useCallback(async (): Promise<boolean> => {
+    const qs = new URLSearchParams({
+      productSlug: VS_DESIGNER_PRODUCT_SLUG,
+      assetGroupKey: VS_DESIGNER_ASSET_GROUP_KEY,
+    });
+    const res = await fetch(`/api/billing/ownership?${qs.toString()}`, {
+      credentials: 'include',
+      cache: 'no-store',
+    });
+    if (!res.ok) return false;
+    const data = (await res.json()) as { ownsProduct?: boolean; alreadyPurchased?: boolean };
+    return Boolean(data.ownsProduct || data.alreadyPurchased);
+  }, []);
+
+  const markPremiumUnlockedAndExport = useCallback(() => {
+    setPremiumUnlocked(true);
+    setPurchaseOpen(false);
+    setCheckoutPending(false);
+    setAccessError(null);
+    try {
+      window.localStorage.removeItem(VS_DESIGNER_PENDING_KEY);
+    } catch {
+      // Ignore storage errors.
+    }
+    if (!autoExportedRef.current) {
+      autoExportedRef.current = true;
+      window.setTimeout(() => {
+        void handleExport('premium');
+      }, 250);
+    }
+  }, []);
+
+  const beginPremiumCheckout = useCallback(() => {
+    autoExportedRef.current = false;
+    setCheckoutPending(true);
+    setPurchaseOpen(true);
+    setAccessError('Waiting for Paddle confirmation. HD download will start automatically.');
+    try {
+      window.localStorage.setItem(VS_DESIGNER_STATE_KEY, JSON.stringify(state));
+      window.localStorage.setItem(
+        VS_DESIGNER_PENDING_KEY,
+        JSON.stringify({
+          productSlug: VS_DESIGNER_PRODUCT_SLUG,
+          assetGroupKey: VS_DESIGNER_ASSET_GROUP_KEY,
+          startedAt: Date.now(),
+        }),
+      );
+    } catch {
+      // Ignore storage errors.
+    }
+  }, [state]);
 
   useEffect(() => {
     const nav = document.querySelector('nav[aria-label="Primary"]') as HTMLElement | null;
@@ -146,6 +254,39 @@ export default function VSDesignerClient() {
     if (wrapperRef.current) ro.observe(wrapperRef.current);
     return () => ro.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!checkoutPending) return;
+    let stopped = false;
+    const startedAt = Date.now();
+
+    const poll = async () => {
+      if (stopped) return;
+      try {
+        const owns = await checkPremiumOwnership();
+        if (stopped) return;
+        if (owns) {
+          markPremiumUnlockedAndExport();
+          return;
+        }
+        if (Date.now() - startedAt > 120_000) {
+          setCheckoutPending(false);
+          setAccessError('Payment is not confirmed yet. Click "I already paid" after Paddle finishes.');
+        }
+      } catch {
+        if (!stopped) {
+          setAccessError('Still checking Paddle confirmation. HD download starts automatically after payment syncs.');
+        }
+      }
+    };
+
+    void poll();
+    const interval = window.setInterval(() => void poll(), 3000);
+    return () => {
+      stopped = true;
+      window.clearInterval(interval);
+    };
+  }, [checkoutPending, checkPremiumOwnership, markPremiumUnlockedAndExport]);
 
   async function renderExportCanvas(tier: ExportTier): Promise<HTMLCanvasElement | null> {
     const el = canvasRef.current;
@@ -203,27 +344,13 @@ export default function VSDesignerClient() {
     }
     setCheckingAccess(true);
     try {
-      const qs = new URLSearchParams({
-        productSlug: VS_DESIGNER_PRODUCT_SLUG,
-        assetGroupKey: VS_DESIGNER_ASSET_GROUP_KEY,
-      });
-      const res = await fetch(`/api/billing/ownership?${qs.toString()}`, {
-        credentials: 'include',
-        cache: 'no-store',
-      });
-      if (res.ok) {
-        const data = (await res.json()) as { ownsProduct?: boolean; alreadyPurchased?: boolean };
-        if (data.ownsProduct || data.alreadyPurchased) {
-          setPremiumUnlocked(true);
-          setPurchaseOpen(false);
-          await handleExport('premium');
-          return;
-        }
+      const owns = await checkPremiumOwnership();
+      if (owns) {
+        markPremiumUnlockedAndExport();
+        return;
       }
       setPurchaseOpen(true);
-      if (!res.ok && res.status !== 401) {
-        setAccessError('Could not verify your purchase yet. Try again or use Paddle checkout.');
-      }
+      setAccessError('No confirmed purchase found yet. Use Paddle checkout or retry after payment finishes.');
     } catch {
       setPurchaseOpen(true);
       setAccessError('Network error while checking premium access.');
@@ -343,6 +470,9 @@ export default function VSDesignerClient() {
       <div className="flex shrink-0 items-center justify-between border-b border-neutral-800 bg-neutral-950 px-3 md:px-4" style={{ height: 48 }}>
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold tracking-tight text-white md:text-base">VS Designer</span>
+          <span className="hidden rounded bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-200 md:inline">
+            Create match graphics in 30 seconds
+          </span>
           <span className="hidden rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] font-bold uppercase text-neutral-400 sm:inline">
             1920×1080
           </span>
@@ -466,8 +596,13 @@ export default function VSDesignerClient() {
                 </div>
                 <h2 className="text-lg font-bold text-white">Unlock clean VS Designer export</h2>
                 <p className="mt-1 text-sm leading-6 text-neutral-400">
-                  Free download stays available with watermark and softer quality. Pay {PRICING_MARKETING.oneTimeShort} once to download clean HD PNG exports from VS Designer.
+                  Create match graphics in 30 seconds, keep a free watermarked preview, or pay {PRICING_MARKETING.oneTimeShort} once to download a clean HD PNG for posts, thumbnails, and client work.
                 </p>
+                {checkoutPending ? (
+                  <div className="mt-3 rounded-xl border border-blue-500/25 bg-blue-500/10 px-3 py-2 text-xs font-semibold leading-5 text-blue-100">
+                    Waiting for Paddle confirmation. This dialog checks automatically and starts your HD download when payment syncs.
+                  </div>
+                ) : null}
               </div>
               <button
                 type="button"
@@ -477,6 +612,21 @@ export default function VSDesignerClient() {
               >
                 <X size={18} aria-hidden />
               </button>
+            </div>
+
+            <div className="mt-5 grid gap-2 rounded-2xl border border-neutral-800 bg-neutral-950/70 p-3 text-xs text-neutral-300 sm:grid-cols-3">
+              <div>
+                <p className="font-bold text-white">Before</p>
+                <p className="mt-1 leading-5">Free preview with watermark and softer quality.</p>
+              </div>
+              <div>
+                <p className="font-bold text-white">After</p>
+                <p className="mt-1 leading-5">Clean 1920x1080 HD PNG starts after payment sync.</p>
+              </div>
+              <div>
+                <p className="font-bold text-white">Trust</p>
+                <p className="mt-1 leading-5">Secure Paddle checkout and future access on your account.</p>
+              </div>
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
@@ -493,12 +643,12 @@ export default function VSDesignerClient() {
                 productSlug="flag-stock"
                 assetGroupKey={VS_DESIGNER_ASSET_GROUP_KEY}
                 assetProductSlug={VS_DESIGNER_PRODUCT_SLUG}
+                successUrl={VS_DESIGNER_CHECKOUT_SUCCESS_PATH}
+                onCheckoutStarted={beginPremiumCheckout}
                 className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-500 disabled:opacity-60"
                 minimal
                 onAlreadyPurchased={() => {
-                  setPremiumUnlocked(true);
-                  setPurchaseOpen(false);
-                  void handleExport('premium');
+                  markPremiumUnlockedAndExport();
                 }}
               >
                 Pay {PRICING_MARKETING.oneTimeShort} with Paddle

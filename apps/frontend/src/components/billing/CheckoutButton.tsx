@@ -17,6 +17,8 @@ type Props = {
   countrySlug?: string | null;
   planSlug?: string;
   onAlreadyPurchased?: () => void;
+  onCheckoutStarted?: () => void;
+  successUrl?: string;
   className?: string;
   style?: React.CSSProperties;
   children: React.ReactNode;

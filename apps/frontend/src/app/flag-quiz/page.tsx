@@ -103,7 +103,7 @@ export default function FlagQuizPage() {
               Free geography game
             </p>
             <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-normal sm:text-5xl">
-              Flag Quiz: learn world flags faster
+              Learn world flags with a fast visual quiz
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-neutral-600 sm:text-lg">
               Practice country flags with a quick visual quiz, then open the gallery to download the
@@ -117,7 +117,7 @@ export default function FlagQuizPage() {
           <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-5">
             <h2 className="text-lg font-bold">What you can practice</h2>
             <ul className="mt-4 space-y-3 text-sm leading-6 text-neutral-700">
-              <li>Recognize national flags from real Flagswing previews.</li>
+              <li>Learn world flags by matching real Flagswing previews to country names.</li>
               <li>Improve geography memory before using assets in projects.</li>
               <li>Jump from learning to downloading SVG, PNG, EPS, and WebP flag files.</li>
             </ul>
@@ -127,7 +127,7 @@ export default function FlagQuizPage() {
 
       <section className="mx-auto grid max-w-[1200px] gap-6 px-4 py-10 sm:px-6 md:grid-cols-3">
         {[
-          ['World flags', 'Practice sovereign country flags and common visual patterns.'],
+          ['Learn world flags', 'Practice sovereign country flags and common visual patterns.'],
           ['Design workflow', 'Use the gallery after the quiz to download matching flag assets.'],
           ['More tools', 'Create custom flags or VS matchup graphics with Flagswing tools.'],
         ].map(([heading, copy]) => (

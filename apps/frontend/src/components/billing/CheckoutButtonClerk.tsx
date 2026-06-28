@@ -23,6 +23,10 @@ type Props = {
   minimal?: boolean;
   /** Called when checkout API reports the user already owns this asset. */
   onAlreadyPurchased?: () => void;
+  /** Called after checkout URL is created and before opening Paddle/redirecting. */
+  onCheckoutStarted?: () => void;
+  /** Paddle overlay success URL. Defaults to the generic thank-you page. */
+  successUrl?: string;
 };
 
 /**
@@ -42,6 +46,8 @@ export function CheckoutButtonClerk({
   children,
   minimal = false,
   onAlreadyPurchased,
+  onCheckoutStarted,
+  successUrl,
 }: Props) {
   const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
@@ -73,6 +79,10 @@ export function CheckoutButtonClerk({
         onAlreadyPurchased?.();
         return;
       }
+      onCheckoutStarted?.();
+      const checkoutSuccessUrl = successUrl?.startsWith('http')
+        ? successUrl
+        : `${window.location.origin}${successUrl?.startsWith('/') ? successUrl : '/thank-you'}`;
       // Extract _ptxn from checkout URL and open Paddle overlay directly.
       // This avoids the successUrl validation error on Initialize().
       try {
@@ -82,7 +92,7 @@ export function CheckoutButtonClerk({
             transactionId: ptxn,
             settings: {
               displayMode: 'overlay',
-              successUrl: `${window.location.origin}/thank-you`,
+              successUrl: checkoutSuccessUrl,
             },
           });
           return;

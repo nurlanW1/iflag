@@ -90,6 +90,30 @@ const ANNUAL_FEATURES = [
   'Team license (up to 5 seats)',
 ];
 
+const TOOL_VALUE_PROPS = [
+  {
+    title: 'VS Designer',
+    promise: 'Create match graphics in 30 seconds',
+    copy: '$1 clean HD export, free watermarked preview, secure Paddle checkout.',
+    href: '/vs-designer',
+    cta: 'Create a match graphic',
+  },
+  {
+    title: 'Flag Editor',
+    promise: 'Design custom country flags',
+    copy: 'Start from any country flag, add shapes/text, then export when ready.',
+    href: '/editor/blank',
+    cta: 'Open Flag Editor',
+  },
+  {
+    title: 'Flag Quiz',
+    promise: 'Learn world flags',
+    copy: 'Practice recognition, then jump into downloadable flag assets.',
+    href: '/flag-quiz',
+    cta: 'Play Flag Quiz',
+  },
+];
+
 export function PricingPlansClient() {
   const price = formatPricingMoney(ONE_TIME_STOCK.displayCents);
 
@@ -217,6 +241,35 @@ export function PricingPlansClient() {
           </div>
 
         </div>
+
+        <section className="mt-10 rounded-2xl border border-neutral-200/80 bg-white p-6 md:p-8" aria-labelledby="creator-tools-pricing">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--brand-blue)]">Creator tools</p>
+            <h2 id="creator-tools-pricing" className="mt-2 text-2xl font-semibold tracking-tight text-[#2a2a2a]">
+              Pick the tool, see the value, then export confidently
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-neutral-600">
+              Ads visitors can quickly understand the offer: free previews, clear one-time pricing, and secure Paddle payments.
+            </p>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {TOOL_VALUE_PROPS.map((tool) => (
+              <Link
+                key={tool.title}
+                href={tool.href}
+                className="group rounded-xl border border-neutral-200 bg-neutral-50 p-5 transition hover:border-[var(--brand-blue)]/40 hover:bg-white hover:shadow-sm"
+              >
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">{tool.title}</p>
+                <h3 className="mt-2 text-lg font-semibold text-[#2a2a2a]">{tool.promise}</h3>
+                <p className="mt-2 text-sm leading-6 text-neutral-600">{tool.copy}</p>
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[var(--brand-blue)]">
+                  {tool.cta}
+                  <ArrowRight size={14} aria-hidden />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {/* FAQ-like questions */}
         <div className="mt-12 rounded-2xl border border-neutral-200/80 bg-white p-6 md:p-8 lg:mt-14">
