@@ -6,6 +6,7 @@ import {
   Crown,
   Star,
   Flag,
+  PenTool,
   Globe2,
   ChevronRight,
 } from 'lucide-react';
@@ -22,18 +23,27 @@ const HOMEPAGE_TOOL_CARDS = [
     promise: 'Create match graphics in 30 seconds',
     copy: 'Build 1920x1080 football and country matchup graphics. Free watermark preview, $1 clean HD export.',
     href: '/vs-designer',
+    badge: 'Premium export',
+    icon: Crown,
+    accent: '#2563eb',
   },
   {
     title: 'Flag Editor',
     promise: 'Design custom country flags',
     copy: 'Start from a country flag or blank canvas, then add text, shapes, symbols, and colors.',
     href: '/editor/blank',
+    badge: 'Creative editor',
+    icon: PenTool,
+    accent: '#7c3aed',
   },
   {
     title: 'Flag Quiz',
     promise: 'Learn world flags',
     copy: 'Practice country recognition with real Flagswing previews, then browse downloadable assets.',
     href: '/flag-quiz',
+    badge: 'Free learning',
+    icon: Star,
+    accent: '#059669',
   },
 ];
 
@@ -44,45 +54,6 @@ export default function HomePageClient() {
     <main className="min-h-screen bg-[#fafaf9]">
 
       <EditorialHero />
-
-      <section className="border-t border-neutral-200/80 bg-white py-6 sm:py-8 lg:py-10">
-        <div className="marketplace-shell">
-          <SectionReveal
-            hidden={{ opacity: 0, y: 10 }}
-            visible={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="mb-5 sm:mb-6"
-          >
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--brand-blue)]">Creator tools</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#2a2a2a] sm:text-3xl">
-              What can you make on Flagswing?
-            </h2>
-          </SectionReveal>
-          <div className="grid gap-4 md:grid-cols-3">
-            {HOMEPAGE_TOOL_CARDS.map((tool, idx) => (
-              <SectionReveal
-                key={tool.title}
-                hidden={{ opacity: 0, y: 12 }}
-                visible={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: idx * 0.05 }}
-              >
-                <Link
-                  href={tool.href}
-                  className="group flex h-full flex-col rounded-xl border border-neutral-200/90 bg-[#fafaf9] p-5 transition hover:border-[var(--brand-blue)]/40 hover:bg-white hover:shadow-sm"
-                >
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">{tool.title}</p>
-                  <h3 className="mt-2 text-lg font-semibold text-[#2a2a2a]">{tool.promise}</h3>
-                  <p className="mt-2 flex-1 text-sm leading-6 text-neutral-600">{tool.copy}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[var(--brand-blue)]">
-                    Open tool
-                    <ChevronRight size={14} aria-hidden />
-                  </span>
-                </Link>
-              </SectionReveal>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Browse by region */}
       <section className="shrink-0 border-t border-neutral-200/80 bg-white py-5 sm:py-6 lg:py-8">
@@ -138,7 +109,64 @@ export default function HomePageClient() {
       <LandingFlagGalleryPreview />
 
       <LandingCategoryStrip />
+      <section className="border-t border-neutral-200/80 bg-[#fafaf9] py-9 sm:py-11 lg:py-14">
+        <div className="marketplace-shell">
+          <SectionReveal
+            hidden={{ opacity: 0, y: 10 }}
+            visible={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mx-auto mb-7 max-w-2xl text-center sm:mb-8"
+          >
+            <p className="mx-auto mb-3 inline-flex items-center rounded-full border border-blue-100 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--brand-blue)] shadow-sm">
+              Creator tools
+            </p>
+            <h2 className="text-2xl font-semibold tracking-tight text-[#2a2a2a] sm:text-3xl">
+              Make more than a download
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-neutral-600 sm:text-base">
+              Build match graphics, customize flags, or practice flag knowledge from the same Flagswing workspace.
+            </p>
+          </SectionReveal>
 
+          <div className="grid gap-4 md:grid-cols-3 lg:gap-5">
+            {HOMEPAGE_TOOL_CARDS.map((tool, idx) => {
+              const ToolIcon = tool.icon;
+              return (
+                <SectionReveal
+                  key={tool.title}
+                  hidden={{ opacity: 0, y: 12 }}
+                  visible={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: idx * 0.05 }}
+                >
+                  <Link
+                    href={tool.href}
+                    className="group flex h-full min-h-[15rem] flex-col overflow-hidden rounded-2xl border border-neutral-200/90 bg-white p-5 shadow-[0_8px_28px_-24px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-[0_18px_44px_-28px_rgba(15,23,42,0.5)]"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div
+                        className="flex h-11 w-11 items-center justify-center rounded-xl"
+                        style={{ backgroundColor: `${tool.accent}14`, color: tool.accent }}
+                      >
+                        <ToolIcon size={20} strokeWidth={1.9} aria-hidden />
+                      </div>
+                      <span className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">
+                        {tool.badge}
+                      </span>
+                    </div>
+                    <p className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">{tool.title}</p>
+                    <h3 className="mt-2 text-xl font-semibold leading-snug tracking-tight text-[#2a2a2a]">{tool.promise}</h3>
+                    <p className="mt-3 flex-1 text-sm leading-6 text-neutral-600">{tool.copy}</p>
+                    <span className="mt-6 inline-flex w-fit items-center gap-1.5 rounded-full bg-neutral-950 px-3 py-2 text-sm font-semibold text-white transition group-hover:bg-[var(--brand-blue)]">
+                      Open tool
+                      <ChevronRight size={14} aria-hidden />
+                    </span>
+                  </Link>
+                </SectionReveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
       {/* Stats */}
       <section className="relative overflow-hidden border-t border-neutral-200/80 bg-[#fafaf9] py-8 sm:py-10 lg:py-14">
         {/* Subtle grid texture */}
