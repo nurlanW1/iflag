@@ -354,7 +354,7 @@ export default function VSDesignerClient() {
   }
 
   /* ─── Controls panel (shared between desktop panel + mobile settings tab) ── */
-  const ControlRows = () => (
+  const renderControlRows = () => (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-2 md:flex-nowrap md:overflow-x-auto">
       {/* LEFT name */}
       <div className="flex shrink-0 items-center gap-1">
@@ -492,7 +492,7 @@ export default function VSDesignerClient() {
 
       {/* ── Desktop controls (hidden on mobile) ─────────────────────────── */}
       <div className="hidden shrink-0 border-b border-neutral-800 bg-neutral-900/90 px-4 py-1.5 md:block">
-        <ControlRows />
+        {renderControlRows()}
       </div>
 
       {/* ── Body ────────────────────────────────────────────────────────── */}
@@ -564,7 +564,7 @@ export default function VSDesignerClient() {
               )}
               {mobileTab === 'settings' && (
                 <div className="p-4">
-                  <ControlRows />
+                  {renderControlRows()}
                 </div>
               )}
             </div>
