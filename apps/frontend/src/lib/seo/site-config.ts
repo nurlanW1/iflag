@@ -5,7 +5,7 @@ export const SITE_NAME = 'Flagswing';
 
 /** Short default description; override per-page with `description` in metadata. */
 export const SITE_DESCRIPTION =
-  'Download country flags in SVG, PNG, EPS formats. Free flat flags + premium shapes, mockups, and historical flags. 250+ countries and territories.';
+  'Download country flags in SVG, PNG, EPS formats, design custom flags, create VS matchup graphics, and play a world flag quiz. Free flat flags + premium flag assets.';
 
 /**
  * Canonical site origin for metadataBase, sitemap, and robots.
@@ -60,13 +60,19 @@ export function buildDefaultMetadata(): Metadata {
       'world flags',
       'flag mockup',
       'flag illustration',
+      'flag editor',
+      'flag maker',
+      'vs designer',
+      'match graphic maker',
+      'flag quiz',
+      'football match poster',
     ],
     openGraph: {
       type: 'website',
       locale: 'en_US',
       siteName: SITE_NAME,
       title: `${SITE_NAME} — Flag Assets SVG PNG Free Download`,
-      description: '250+ country flags in SVG, PNG, EPS formats. Free flat flags + premium shapes, historical archives.',
+      description: 'Country flag downloads, custom flag editor, VS matchup graphic maker, and a world flag quiz for creators.',
       url: origin,
       images: [
         {
@@ -80,7 +86,7 @@ export function buildDefaultMetadata(): Metadata {
     twitter: {
       card: 'summary_large_image',
       title: `${SITE_NAME} — Flag Assets SVG PNG Free Download`,
-      description: '250+ country flags. Free SVG + premium shapes.',
+      description: 'Flag downloads, editor tools, VS graphics, and a world flag quiz.',
       images: ['/og-image-v2.png'],
     },
     robots: {

@@ -16,6 +16,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${origin}/pricing`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${origin}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${origin}/contact`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${origin}/assets`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${origin}/flags`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${origin}/stock`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${origin}/vs-designer`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${origin}/editor/blank`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${origin}/flag-quiz`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${origin}/blog`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
     { url: `${origin}/faq`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${origin}/licenses`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
@@ -33,9 +39,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${origin}/flags/historical`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${origin}/flags/us-states`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
     { url: `${origin}/flags/autonomous`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
-    { url: `${origin}/bundles`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${origin}/generate`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${origin}/editor`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
   ];
 
   // ── Dynamic country gallery pages ─────────────────────────────────────────
