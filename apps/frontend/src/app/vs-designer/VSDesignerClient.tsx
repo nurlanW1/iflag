@@ -292,12 +292,14 @@ export default function VSDesignerClient() {
       // inline styles like display:flex, alignItems, etc., breaking layout).
       clone.style.position       = 'fixed';
       clone.style.top            = '0';
-      clone.style.left           = '0';
+      clone.style.left           = '-10000px';
       clone.style.width          = '1920px';
       clone.style.height         = '1080px';
       clone.style.transform      = 'none';
       clone.style.transformOrigin = 'top left';
-      clone.style.zIndex         = '-9999';
+      clone.style.zIndex         = '2147483647';
+      clone.style.opacity        = '1';
+      clone.style.visibility     = 'visible';
       clone.style.pointerEvents  = 'none';
       clone.style.overflow       = 'hidden';
       document.body.appendChild(clone);
