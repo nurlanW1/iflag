@@ -51,34 +51,17 @@ function makeWatermarkedPreview(source: HTMLCanvasElement): HTMLCanvasElement {
   const ctx = out.getContext('2d');
   if (!ctx) return source;
 
-  ctx.save();
-  ctx.filter = 'blur(0.8px) brightness(0.78) contrast(0.9) saturate(0.86)';
   ctx.drawImage(source, 0, 0);
-  ctx.restore();
-
-  ctx.fillStyle = 'rgba(5,12,24,0.22)';
-  ctx.fillRect(0, 0, out.width, out.height);
 
   ctx.save();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(0,0,0,0.26)';
-  ctx.shadowBlur = 18;
-  ctx.shadowOffsetY = 8;
-  ctx.font = '900 76px Arial, sans-serif';
-  ctx.lineWidth = 6;
-  ctx.strokeStyle = 'rgba(0,0,0,0.18)';
-  ctx.fillStyle = 'rgba(255,255,255,0.30)';
-  ctx.strokeText('FLAGSWING FREE PREVIEW', out.width / 2, out.height / 2 - 10);
-  ctx.fillText('FLAGSWING FREE PREVIEW', out.width / 2, out.height / 2 - 10);
-
-  ctx.shadowBlur = 10;
-  ctx.font = '700 30px Arial, sans-serif';
+  ctx.font = '900 42px Arial, sans-serif';
   ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
   ctx.fillStyle = 'rgba(255,255,255,0.30)';
-  ctx.strokeStyle = 'rgba(0,0,0,0.14)';
-  ctx.strokeText('Unlock clean HD export for $1', out.width / 2, out.height / 2 + 58);
-  ctx.fillText('Unlock clean HD export for $1', out.width / 2, out.height / 2 + 58);
+  ctx.strokeText('FLAGSWING FREE PREVIEW', out.width / 2, out.height / 2 + 105);
+  ctx.fillText('FLAGSWING FREE PREVIEW', out.width / 2, out.height / 2 + 105);
   ctx.restore();
 
   return out;
@@ -261,8 +244,7 @@ export default function VSDesignerClient() {
   }, [checkoutPending, checkPremiumOwnership, markPremiumUnlockedAndExport]);
 
   async function renderExportCanvas(tier: ExportTier): Promise<HTMLCanvasElement | null> {
-    const scale = tier === 'premium' ? 2 : 1;
-    const canvas = await renderVSDesignToCanvas(state, scale);
+    const canvas = await renderVSDesignToCanvas(state, 1);
     return tier === 'watermarked' ? makeWatermarkedPreview(canvas) : canvas;
   }
   async function handleExport(tier: ExportTier) {
