@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { shouldUnoptimizeFlagImageHref } from '@/lib/media/svg-image-url';
 
@@ -14,6 +15,31 @@ type Props = {
   priority?: boolean;
 };
 
+function coverInitials(name: string): string {
+  const words = name
+    .replace(/[^a-zA-Z0-9\s-]+/g, ' ')
+    .split(/[\s-]+/)
+    .map((w) => w.trim())
+    .filter(Boolean);
+  if (words.length === 0) return 'FS';
+  if (words.length === 1) return words[0]!.slice(0, 2).toUpperCase();
+  return `${words[0]![0]}${words[words.length - 1]![0]}`.toUpperCase();
+}
+
+function FallbackCover({ countryName, className = '' }: { countryName: string; className?: string }) {
+  const initials = useMemo(() => coverInitials(countryName), [countryName]);
+  return (
+    <div
+      className={`flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,#f8fafc,#eef2ff)] ${className}`.trim()}
+      aria-label={`${countryName} preview unavailable`}
+    >
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-200 bg-white/80 text-lg font-bold tracking-tight text-slate-400 shadow-sm">
+        {initials}
+      </div>
+    </div>
+  );
+}
+
 export function CountryHubFolderCover({
   countryName,
   coverUrl,
@@ -22,8 +48,10 @@ export function CountryHubFolderCover({
   priority = false,
 }: Props) {
   const src = coverUrl?.trim() ?? '';
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const canRender = Boolean(src) && failedSrc !== src;
 
-  if (src) {
+  if (canRender) {
     return (
       <div className={`relative h-full w-full ${className}`.trim()}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -35,21 +63,13 @@ export function CountryHubFolderCover({
           decoding="async"
           referrerPolicy="no-referrer"
           draggable={false}
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).style.display = 'none';
-          }}
+          onError={() => setFailedSrc(src)}
         />
       </div>
     );
   }
 
-  return (
-    <div
-      className={`flex h-full w-full items-center justify-center bg-neutral-100 ${className}`.trim()}
-    >
-      <span className="sr-only">{countryName}</span>
-    </div>
-  );
+  return <FallbackCover countryName={countryName} className={className} />;
 }
 
 /** Next/Image fill variant for layouts that require fill. */
@@ -62,8 +82,10 @@ export function CountryHubFolderCoverFill({
   priority = false,
 }: Props) {
   const src = coverUrl?.trim() ?? '';
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const canRender = Boolean(src) && failedSrc !== src;
 
-  if (src) {
+  if (canRender) {
     const unoptimized = shouldUnoptimizeFlagImageHref(src, ['webp']);
     return (
       <div className={className}>
@@ -76,14 +98,11 @@ export function CountryHubFolderCoverFill({
           sizes={sizes}
           priority={priority}
           draggable={false}
+          onError={() => setFailedSrc(src)}
         />
       </div>
     );
   }
 
-  return (
-    <div className={`${className} flex items-center justify-center bg-neutral-100`}>
-      <span className="sr-only">{countryName}</span>
-    </div>
-  );
+  return <FallbackCover countryName={countryName} className={className} />;
 }

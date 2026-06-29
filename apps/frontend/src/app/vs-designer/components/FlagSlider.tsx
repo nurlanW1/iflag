@@ -56,12 +56,12 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
   ];
 
   return (
-    <div className="flex h-full flex-col gap-2">
+    <div className="flex h-full min-h-0 flex-col gap-3">
       {/* Label */}
-      <div className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">{label}</div>
+      <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">{label}</div>
 
       {/* Selected preview */}
-      <div className="flex items-center gap-2 rounded-xl border border-neutral-700/70 bg-neutral-800/50 p-2">
+      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.055] p-2.5 shadow-[0_12px_34px_-30px_rgba(0,0,0,0.95)]">
         {entity.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -80,10 +80,10 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
             type="text"
             value={entity.name}
             onChange={(e) => onSelect({ ...entity, name: e.target.value })}
-            className="w-full bg-transparent text-sm font-bold text-white outline-none placeholder-neutral-600"
+            className="w-full bg-transparent text-sm font-black text-white outline-none placeholder-white/25"
             placeholder="Name…"
           />
-          <div className="mt-0.5 text-[10px] text-neutral-600">
+          <div className="mt-0.5 text-[10px] font-semibold text-white/30">
             {mode === 'club' ? 'Football Club' : mode === 'import' ? 'Custom Image' : 'Country Flag'}
           </div>
         </div>
@@ -96,7 +96,7 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
             <label
               key={id}
               className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg py-1.5 transition-colors ${
-                mode === id ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200'
+                mode === id ? 'bg-blue-600 text-white shadow-[0_10px_26px_-18px_rgba(37,99,235,0.95)]' : 'border border-white/8 bg-white/[0.06] text-white/45 hover:bg-white/[0.1] hover:text-white/80'
               }`}
               onClick={() => setMode(id)}
             >
@@ -115,7 +115,7 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
               key={id} type="button"
               onClick={() => { setMode(id); setQuery(''); }}
               className={`flex flex-col items-center justify-center gap-1 rounded-lg py-1.5 transition-colors ${
-                mode === id ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200'
+                mode === id ? 'bg-blue-600 text-white shadow-[0_10px_26px_-18px_rgba(37,99,235,0.95)]' : 'border border-white/8 bg-white/[0.06] text-white/45 hover:bg-white/[0.1] hover:text-white/80'
               }`}
             >
               {icon}
@@ -140,11 +140,11 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
       {/* Search */}
       {mode !== 'import' && (
         <div className="relative">
-          <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-600" aria-hidden />
+          <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30" aria-hidden />
           <input
             type="text" value={query} onChange={(e) => setQuery(e.target.value)}
             placeholder={mode === 'flag' ? 'Search country…' : 'Search club…'}
-            className="w-full rounded-lg border border-neutral-700/60 bg-neutral-800/60 py-1.5 pl-7 pr-3 text-xs text-white placeholder-neutral-600 outline-none focus:border-blue-500"
+            className="h-9 w-full rounded-xl border border-white/10 bg-white/[0.055] py-1.5 pl-8 pr-3 text-xs font-semibold text-white placeholder-white/25 outline-none transition focus:border-blue-400 focus:bg-white/[0.08]"
           />
         </div>
       )}
@@ -167,7 +167,7 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
                       className={`flex flex-col items-center gap-0.5 rounded-lg p-1.5 transition-all ${
                         isSelected
                           ? 'bg-blue-600/30 ring-1 ring-blue-500'
-                          : 'bg-neutral-800/40 hover:bg-neutral-700/60'
+                          : 'border border-white/8 bg-white/[0.055] hover:bg-white/[0.1]'
                       }`}
                       title={item.name}
                     >
@@ -178,7 +178,7 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
                         style={{ width: isFlag ? 40 : 30, height: isFlag ? 26 : 30 }}
                         loading="lazy"
                       />
-                      <span className="w-full truncate text-center text-[8px] leading-tight text-neutral-500">
+                      <span className="w-full truncate text-center text-[8px] leading-tight text-white/35">
                         {item.name.split(' ').slice(0, 2).join(' ')}
                       </span>
                     </button>
@@ -192,14 +192,14 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
             <div className="relative min-h-0 flex-1">
               <button
                 type="button" onClick={() => scroll('left')}
-                className="absolute left-0 top-1/2 z-20 -translate-y-1/2 rounded-md bg-neutral-900/95 p-0.5 text-neutral-400 shadow-lg transition hover:bg-neutral-800 hover:text-white"
+                className="absolute left-0 top-1/2 z-20 -translate-y-1/2 rounded-lg border border-white/10 bg-black/70 p-1 text-white/45 shadow-lg transition hover:bg-white/10 hover:text-white"
                 aria-label="Scroll left"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
                 type="button" onClick={() => scroll('right')}
-                className="absolute right-0 top-1/2 z-20 -translate-y-1/2 rounded-md bg-neutral-900/95 p-0.5 text-neutral-400 shadow-lg transition hover:bg-neutral-800 hover:text-white"
+                className="absolute right-0 top-1/2 z-20 -translate-y-1/2 rounded-lg border border-white/10 bg-black/70 p-1 text-white/45 shadow-lg transition hover:bg-white/10 hover:text-white"
                 aria-label="Scroll right"
               >
                 <ChevronRight size={16} />
@@ -231,7 +231,7 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
                       className={`flex flex-col items-center justify-center gap-0.5 rounded-lg p-1 transition-all ${
                         isSelected
                           ? 'bg-blue-600/30 ring-1 ring-blue-500'
-                          : 'bg-neutral-800/30 hover:bg-neutral-700/60'
+                          : 'border border-white/8 bg-white/[0.055] hover:bg-white/[0.1]'
                       }`}
                       style={{ scrollSnapAlign: 'start', width: mode === 'flag' ? 74 : 68 }}
                       title={item.name}
@@ -243,7 +243,7 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
                         style={{ width: mode === 'flag' ? 52 : 38, height: mode === 'flag' ? 34 : 38 }}
                         loading="lazy"
                       />
-                      <span className="w-full truncate text-center text-[8.5px] leading-tight text-neutral-500">
+                      <span className="w-full truncate text-center text-[8.5px] leading-tight text-white/35">
                         {item.name.split(' ').slice(0, 2).join(' ')}
                       </span>
                     </button>

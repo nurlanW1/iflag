@@ -21,7 +21,7 @@ const BG_PRESETS = [
 
 function ColorSwatch({ value, onChange, title }: { value: string; onChange: (v: string) => void; title?: string }) {
   return (
-    <label className="relative block h-6 w-6 shrink-0 cursor-pointer overflow-hidden rounded border border-neutral-700" title={title}>
+    <label className="relative block h-8 w-8 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-white/15 shadow-sm ring-1 ring-black/20" title={title}>
       <div className="h-full w-full" style={{ backgroundColor: value }} />
       <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="absolute inset-0 cursor-pointer opacity-0" />
     </label>
@@ -355,7 +355,7 @@ export default function VSDesignerClient() {
 
   /* ─── Controls panel (shared between desktop panel + mobile settings tab) ── */
   const renderControlRows = () => (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 md:flex-nowrap md:overflow-x-auto">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:flex-nowrap md:overflow-x-auto">
       {/* LEFT name */}
       <div className="flex shrink-0 items-center gap-1">
         <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Left</span>
@@ -457,41 +457,47 @@ export default function VSDesignerClient() {
   return (
     <div
       ref={containerRef}
-      className="fixed left-0 right-0 bottom-0 z-40 flex flex-col bg-neutral-950"
+      className="fixed left-0 right-0 bottom-0 z-40 flex flex-col bg-[#070910] text-white"
       style={{ top: 64 }}
     >
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 items-center justify-between border-b border-neutral-800 bg-neutral-950 px-3 md:px-4" style={{ height: 48 }}>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-bold tracking-tight text-white md:text-base">VS Designer</span>
-          <span className="hidden rounded bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-200 md:inline">
-            Create match graphics in 30 seconds
-          </span>
-          <span className="hidden rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] font-bold uppercase text-neutral-400 sm:inline">
-            1920×1080
-          </span>
+      <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-[#0b0e14]/95 px-3 shadow-[0_8px_30px_-24px_rgba(59,130,246,0.7)] backdrop-blur md:px-5" style={{ height: 64 }}>
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-blue-400/25 bg-blue-500/12 text-blue-200 shadow-[0_0_24px_rgba(37,99,235,0.18)]">
+            <Crown size={18} aria-hidden />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-black tracking-tight text-white md:text-lg">VS Designer</span>
+              <span className="hidden rounded-full border border-white/10 bg-white/[0.06] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white/55 sm:inline">
+                1920x1080
+              </span>
+            </div>
+            <p className="hidden truncate text-[11px] font-semibold text-white/45 md:block">
+              Match graphics, flags, scores, club logos, and clean PNG export
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button" onClick={() => void handleExport('watermarked')} disabled={exporting || checkingAccess}
-            className="flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-900 px-2.5 py-1.5 text-xs font-bold text-neutral-200 transition hover:bg-neutral-800 disabled:opacity-60 sm:px-3"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/12 bg-white/[0.06] px-3 text-xs font-bold text-white/85 shadow-sm transition hover:border-white/20 hover:bg-white/[0.1] disabled:opacity-60 sm:px-4"
           >
-            <Download size={13} aria-hidden />
+            <Download size={14} aria-hidden />
             <span className="sm:hidden">Free</span>
             <span className="hidden sm:inline">Free preview</span>
           </button>
           <button
             type="button" onClick={() => void verifyPremiumAndExport()} disabled={exporting || checkingAccess}
-            className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-blue-500 disabled:opacity-60 sm:gap-2 sm:px-4 sm:text-sm"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-blue-600 px-3 text-xs font-black text-white shadow-[0_10px_30px_-16px_rgba(37,99,235,0.9)] transition hover:bg-blue-500 disabled:opacity-60 sm:px-5 sm:text-sm"
           >
-            {premiumUnlocked ? <Download size={13} aria-hidden /> : <Crown size={13} aria-hidden />}
+            {premiumUnlocked ? <Download size={14} aria-hidden /> : <Crown size={14} aria-hidden />}
             {exporting ? 'Exporting...' : checkingAccess ? 'Checking...' : premiumUnlocked ? 'Export HD' : <><span className="sm:hidden">Premium</span><span className="hidden sm:inline">Premium PNG $1</span></>}
           </button>
         </div>
       </div>
-
       {/* ── Desktop controls (hidden on mobile) ─────────────────────────── */}
-      <div className="hidden shrink-0 border-b border-neutral-800 bg-neutral-900/90 px-4 py-1.5 md:block">
+      <div className="hidden shrink-0 border-b border-white/10 bg-[#10131b]/95 px-5 py-2.5 shadow-[0_8px_30px_-28px_rgba(0,0,0,0.9)] md:block">
         {renderControlRows()}
       </div>
 
@@ -501,10 +507,10 @@ export default function VSDesignerClient() {
         Canvas lives ONCE inside the center column — no duplication.
         On mobile the center column is full-width (sidebars not rendered).
       */}
-      <div className="flex min-h-0 flex-1">
+      <div className="flex min-h-0 flex-1 bg-[#070910]">
 
         {/* Left sidebar — desktop only */}
-        <div className="relative z-10 hidden w-56 shrink-0 flex-col border-r border-neutral-800 p-3 md:flex lg:w-72">
+        <div className="relative z-10 hidden w-[18rem] shrink-0 flex-col border-r border-white/10 bg-[#0b0e14] p-4 shadow-[18px_0_40px_-34px_rgba(0,0,0,0.9)] md:flex xl:w-[20rem]">
           <FlagSlider label="Left Side" entity={state.left} onSelect={(e) => onChange({ left: e })} />
         </div>
 
@@ -512,8 +518,8 @@ export default function VSDesignerClient() {
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
 
           {/* Canvas — always at top of center column */}
-          <div className="shrink-0 bg-black/40 p-2 md:p-3 lg:p-4">
-            <div ref={wrapperRef} className="w-full overflow-hidden rounded-xl shadow-2xl">
+          <div className="shrink-0 bg-[#070910] p-2 md:flex md:min-h-0 md:flex-1 md:items-center md:justify-center md:bg-[radial-gradient(circle_at_center,#111827_0%,#070910_72%)] md:p-5 lg:p-6">
+            <div ref={wrapperRef} className="w-full max-w-[1400px] overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_30px_90px_-52px_rgba(37,99,235,0.75)]">
               <div style={{ position: 'relative', paddingBottom: '56.25%' }}>
                 <div
                   ref={scaleRef}
@@ -571,11 +577,10 @@ export default function VSDesignerClient() {
           </div>
 
           {/* Desktop: fill remaining vertical space */}
-          <div className="hidden min-h-0 flex-1 md:block" />
         </div>
 
         {/* Right sidebar — desktop only */}
-        <div className="relative z-10 hidden w-56 shrink-0 flex-col border-l border-neutral-800 p-3 md:flex lg:w-72">
+        <div className="relative z-10 hidden w-[18rem] shrink-0 flex-col border-l border-white/10 bg-[#0b0e14] p-4 shadow-[-18px_0_40px_-34px_rgba(0,0,0,0.9)] md:flex xl:w-[20rem]">
           <FlagSlider label="Right Side" entity={state.right} onSelect={(e) => onChange({ right: e })} />
         </div>
       </div>
