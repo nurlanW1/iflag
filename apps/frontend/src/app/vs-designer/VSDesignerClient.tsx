@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Crown, Download, Lock, Settings2, X } from '
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
 import { PRICING_MARKETING } from '@/lib/marketing/pricing-config';
 import { defaultState, type VSDesignerState } from '@/lib/vs-designer-types';
-import VSCanvas from './components/VSCanvas';
+import VSCanvas, { renderVSDesignToCanvas } from './components/VSCanvas';
 import FlagSlider from './components/FlagSlider';
 
 const BG_PRESETS = [
@@ -36,28 +36,6 @@ const VS_DESIGNER_ASSET_GROUP_KEY = 'tool:vs-designer-export';
 const VS_DESIGNER_CHECKOUT_SUCCESS_PATH = '/vs-designer?checkout=vs-designer-export';
 const VS_DESIGNER_STATE_KEY = 'flagswing.vsDesigner.state';
 const VS_DESIGNER_PENDING_KEY = 'flagswing.vsDesigner.pendingPremiumExport';
-
-async function waitForCanvasAssets(root: HTMLElement): Promise<void> {
-  const images = Array.from(root.querySelectorAll('img'));
-  await Promise.all(
-    images.map((img) => {
-      if (img.complete && img.naturalWidth > 0) return;
-      return new Promise<void>((resolve) => {
-        const done = () => {
-          window.clearTimeout(timeout);
-          resolve();
-        };
-        const timeout = window.setTimeout(resolve, 3000);
-        img.addEventListener('load', done, { once: true });
-        img.addEventListener('error', done, { once: true });
-        void img.decode?.().then(done).catch(() => undefined);
-      });
-    }),
-  );
-  if (document.fonts?.ready) {
-    await document.fonts.ready;
-  }
-}
 
 function downloadCanvas(canvas: HTMLCanvasElement, filename: string) {
   const link = document.createElement('a');
@@ -283,43 +261,10 @@ export default function VSDesignerClient() {
   }, [checkoutPending, checkPremiumOwnership, markPremiumUnlockedAndExport]);
 
   async function renderExportCanvas(tier: ExportTier): Promise<HTMLCanvasElement | null> {
-    const el = canvasRef.current;
-    if (!el) return null;
-    let clone: HTMLDivElement | null = null;
-    try {
-      clone = el.cloneNode(true) as HTMLDivElement;
-      // Set only positioning props — do NOT use cssText (it wipes VSCanvas
-      // inline styles like display:flex, alignItems, etc., breaking layout).
-      clone.style.position       = 'fixed';
-      clone.style.top            = '0';
-      clone.style.left           = '-10000px';
-      clone.style.width          = '1920px';
-      clone.style.height         = '1080px';
-      clone.style.transform      = 'none';
-      clone.style.transformOrigin = 'top left';
-      clone.style.zIndex         = '2147483647';
-      clone.style.opacity        = '1';
-      clone.style.visibility     = 'visible';
-      clone.style.pointerEvents  = 'none';
-      clone.style.overflow       = 'hidden';
-      document.body.appendChild(clone);
-      await new Promise((r) => requestAnimationFrame(r));
-      await new Promise((r) => requestAnimationFrame(r));
-      await waitForCanvasAssets(clone);
-      const html2canvas = (await import('html2canvas')).default;
-      const png = await html2canvas(clone, {
-        width: 1920, height: 1080, scale: tier === 'premium' ? 2 : 1,
-        useCORS: true, allowTaint: false,
-        backgroundColor: state.bgColor, logging: false,
-        imageTimeout: 15_000, scrollX: 0, scrollY: 0,
-        windowWidth: 1920, windowHeight: 1080,
-      });
-      return tier === 'watermarked' ? makeWatermarkedPreview(png) : png;
-    } finally {
-      clone?.parentNode?.removeChild(clone);
-    }
+    const scale = tier === 'premium' ? 2 : 1;
+    const canvas = await renderVSDesignToCanvas(state, scale);
+    return tier === 'watermarked' ? makeWatermarkedPreview(canvas) : canvas;
   }
-
   async function handleExport(tier: ExportTier) {
     setExporting(true);
     try {
