@@ -47,6 +47,56 @@ const HOMEPAGE_TOOL_CARDS = [
   },
 ];
 
+const HOMEPAGE_QUICK_ACTIONS = [
+  {
+    title: 'Download a flag file',
+    copy: 'Search the country gallery and open published SVG, EPS, PNG, JPG, or WebP formats when available.',
+    href: '/gallery',
+    cta: 'Browse gallery',
+    icon: Globe2,
+    accent: '#2563eb',
+  },
+  {
+    title: 'Make a match graphic',
+    copy: 'Create a clean 1920x1080 VS image for football posts, thumbnails, and client previews.',
+    href: '/vs-designer',
+    cta: 'Open VS Designer',
+    icon: Crown,
+    accent: '#f59e0b',
+  },
+  {
+    title: 'Design a custom flag',
+    copy: 'Start from a blank canvas or a country flag, then add shapes, colors, text, and symbols.',
+    href: '/editor/blank',
+    cta: 'Open Flag Editor',
+    icon: PenTool,
+    accent: '#7c3aed',
+  },
+  {
+    title: 'Learn before you download',
+    copy: 'Practice world flags in the quiz, then jump back into the catalog for matching assets.',
+    href: '/flag-quiz',
+    cta: 'Play Flag Quiz',
+    icon: Star,
+    accent: '#059669',
+  },
+];
+
+const HOMEPAGE_FAQS = [
+  {
+    question: 'Can I download flags for free?',
+    answer: 'Yes. Published official flat country flags stay free where available, while premium variants and VS Designer clean exports use simple paid unlocks.',
+  },
+  {
+    question: 'What formats can I find?',
+    answer: 'Asset pages can include SVG, EPS, PNG, JPG, and WebP files. Available formats are shown on each design before download.',
+  },
+  {
+    question: 'What is VS Designer for?',
+    answer: 'VS Designer is for fast 1920x1080 match graphics with country flags, team names, events, scores, custom backgrounds, and PNG export.',
+  },
+];
+
 export default function HomePageClient() {
   const oneTimePrice = formatPricingMoney(ONE_TIME_STOCK.displayCents);
 
@@ -109,6 +159,60 @@ export default function HomePageClient() {
       <LandingFlagGalleryPreview />
 
       <LandingCategoryStrip />
+
+      <section className="border-t border-neutral-200/80 bg-white py-8 sm:py-10 lg:py-12" aria-labelledby="quick-start-heading">
+        <div className="marketplace-shell">
+          <SectionReveal
+            hidden={{ opacity: 0, y: 10 }}
+            visible={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
+          >
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-blue)]">Start faster</p>
+              <h2 id="quick-start-heading" className="mt-2 text-2xl font-semibold tracking-tight text-[#2a2a2a] sm:text-3xl">
+                Choose the shortest path to your flag work
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-6 text-neutral-600 sm:text-right">
+              Direct routes for downloads, match graphics, custom flag design, and learning tools.
+            </p>
+          </SectionReveal>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {HOMEPAGE_QUICK_ACTIONS.map((action, idx) => {
+              const ActionIcon = action.icon;
+              return (
+                <SectionReveal
+                  key={action.title}
+                  hidden={{ opacity: 0, y: 10 }}
+                  visible={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: idx * 0.04 }}
+                >
+                  <Link
+                    href={action.href}
+                    className="group flex h-full min-h-[12rem] flex-col rounded-2xl border border-neutral-200/90 bg-[#fafaf9] p-5 shadow-[0_10px_30px_-26px_rgba(15,23,42,0.5)] transition hover:-translate-y-0.5 hover:border-neutral-300 hover:bg-white hover:shadow-[0_18px_44px_-30px_rgba(15,23,42,0.55)]"
+                  >
+                    <span
+                      className="flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-sm"
+                      style={{ backgroundColor: action.accent }}
+                      aria-hidden
+                    >
+                      <ActionIcon size={20} strokeWidth={1.9} />
+                    </span>
+                    <h3 className="mt-4 text-lg font-semibold tracking-tight text-neutral-950">{action.title}</h3>
+                    <p className="mt-2 flex-1 text-sm leading-6 text-neutral-600">{action.copy}</p>
+                    <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-[var(--brand-blue)]">
+                      {action.cta}
+                      <ChevronRight size={14} className="transition-transform group-hover:translate-x-0.5" aria-hidden />
+                    </span>
+                  </Link>
+                </SectionReveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
       <section className="border-t border-neutral-200/80 bg-[#fafaf9] py-9 sm:py-11 lg:py-14">
         <div className="marketplace-shell">
           <SectionReveal
@@ -299,6 +403,38 @@ export default function HomePageClient() {
                 </Link>
               </div>
             </SectionReveal>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-neutral-200/80 bg-white py-9 sm:py-11 lg:py-14" aria-labelledby="homepage-faq-heading">
+        <div className="marketplace-shell">
+          <SectionReveal
+            hidden={{ opacity: 0, y: 10 }}
+            visible={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mx-auto mb-7 max-w-2xl text-center"
+          >
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-blue)]">Quick answers</p>
+            <h2 id="homepage-faq-heading" className="mt-2 text-2xl font-semibold tracking-tight text-[#2a2a2a] sm:text-3xl">
+              Common flag download and design questions
+            </h2>
+          </SectionReveal>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {HOMEPAGE_FAQS.map((item, idx) => (
+              <SectionReveal
+                key={item.question}
+                hidden={{ opacity: 0, y: 10 }}
+                visible={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: idx * 0.04 }}
+              >
+                <article className="h-full rounded-2xl border border-neutral-200/90 bg-[#fafaf9] p-5">
+                  <h3 className="text-base font-semibold text-neutral-950">{item.question}</h3>
+                  <p className="mt-3 text-sm leading-6 text-neutral-600">{item.answer}</p>
+                </article>
+              </SectionReveal>
+            ))}
           </div>
         </div>
       </section>
