@@ -1,8 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import { ChevronLeft, ChevronRight, Crown, Download, Lock, Settings2, X } from 'lucide-react';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
+import { useClerkUiEnabled } from '@/components/providers/ClerkUiProvider';
+import { useAuth as useLegacyAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { PRICING_MARKETING } from '@/lib/marketing/pricing-config';
 import { defaultState, type VSDesignerState } from '@/lib/vs-designer-types';
 import VSCanvas, { renderVSDesignToCanvas } from './components/VSCanvas';
@@ -81,6 +86,14 @@ function isDesignerState(value: unknown): value is VSDesignerState {
 }
 
 export default function VSDesignerClient() {
+  const router = useRouter();
+  const clerkUiEnabled = useClerkUiEnabled();
+  const { isLoaded: clerkUserLoaded, isSignedIn } = useUser();
+  const { user: legacyUser, loading: legacyAuthLoading } = useLegacyAuth();
+  const { openModal } = useAuthModal();
+  const accountReady = clerkUiEnabled ? clerkUserLoaded : !legacyAuthLoading;
+  const hasExportAccount = clerkUiEnabled ? Boolean(isSignedIn) : Boolean(legacyUser);
+
   const [state, setState]         = useState<VSDesignerState>(defaultState);
   const [exporting, setExporting] = useState(false);
   const [purchaseOpen, setPurchaseOpen] = useState(false);
@@ -100,6 +113,17 @@ export default function VSDesignerClient() {
   const onChange = useCallback((patch: Partial<VSDesignerState>) => {
     setState((prev) => ({ ...prev, ...patch }));
   }, []);
+
+  const requireExportAccount = useCallback(() => {
+    if (!accountReady) return false;
+    if (hasExportAccount) return true;
+    if (clerkUiEnabled) {
+      router.push(`/sign-up?redirect_url=${encodeURIComponent('/vs-designer')}`);
+    } else {
+      openModal('signup');
+    }
+    return false;
+  }, [accountReady, hasExportAccount, clerkUiEnabled, openModal, router]);
 
   useEffect(() => {
     try {
@@ -248,6 +272,7 @@ export default function VSDesignerClient() {
     return tier === 'watermarked' ? makeWatermarkedPreview(canvas) : canvas;
   }
   async function handleExport(tier: ExportTier) {
+    if (!requireExportAccount()) return;
     setExporting(true);
     try {
       const canvas = await renderExportCanvas(tier);
@@ -260,6 +285,7 @@ export default function VSDesignerClient() {
   }
 
   async function verifyPremiumAndExport() {
+    if (!requireExportAccount()) return;
     setAccessError(null);
     if (premiumUnlocked) {
       await handleExport('premium');
@@ -409,7 +435,7 @@ export default function VSDesignerClient() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            type="button" onClick={() => void handleExport('watermarked')} disabled={exporting || checkingAccess}
+            type="button" onClick={() => void handleExport('watermarked')} disabled={exporting || checkingAccess || !accountReady}
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/12 bg-white/[0.06] px-3 text-xs font-bold text-white/85 shadow-sm transition hover:border-white/20 hover:bg-white/[0.1] disabled:opacity-60 sm:px-4"
           >
             <Download size={14} aria-hidden />
@@ -417,7 +443,7 @@ export default function VSDesignerClient() {
             <span className="hidden sm:inline">Free preview</span>
           </button>
           <button
-            type="button" onClick={() => void verifyPremiumAndExport()} disabled={exporting || checkingAccess}
+            type="button" onClick={() => void verifyPremiumAndExport()} disabled={exporting || checkingAccess || !accountReady}
             className="inline-flex h-10 items-center gap-2 rounded-xl bg-blue-600 px-3 text-xs font-black text-white shadow-[0_10px_30px_-16px_rgba(37,99,235,0.9)] transition hover:bg-blue-500 disabled:opacity-60 sm:px-5 sm:text-sm"
           >
             {premiumUnlocked ? <Download size={14} aria-hidden /> : <Crown size={14} aria-hidden />}

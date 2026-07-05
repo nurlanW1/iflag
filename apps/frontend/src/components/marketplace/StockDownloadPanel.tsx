@@ -147,8 +147,12 @@ export function StockDownloadPanel({
     setBusy(true);
     void triggerApiFileDownload(downloadPath(productId, active.id), {
       onUnauthorized: () => {
-        toast.message('Sign in required');
-        router.push(`/sign-in?redirect_url=${encodeURIComponent(back)}`);
+        toast.message('Create a free account to download');
+        router.push(
+          clerkUiEnabled
+            ? `/sign-up?redirect_url=${encodeURIComponent(back)}`
+            : `/register?callbackUrl=${encodeURIComponent(back)}`,
+        );
       },
       onForbidden: () => toast.message('Buy this design for $1 to download'),
       onNotFound: () => toast.error('File unavailable'),

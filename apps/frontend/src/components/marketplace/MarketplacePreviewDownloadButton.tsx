@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { usePathname, useRouter } from 'next/navigation';
 import { Download } from 'lucide-react';
 import { triggerApiFileDownload } from '@/lib/client/trigger-api-download';
+import { useClerkUiEnabled } from '@/components/providers/ClerkUiProvider';
 
 /**
  * Opens preview download via hidden iframe after auth preflight — avoids navigating away from the PDP.
@@ -13,6 +14,7 @@ export function MarketplacePreviewDownloadButton({ apiPath }: { apiPath: string 
   const router = useRouter();
   const pathname = usePathname();
   const [busy, setBusy] = useState(false);
+  const clerkUiEnabled = useClerkUiEnabled();
 
   const returnTo = pathname || '/gallery';
 
@@ -24,7 +26,11 @@ export function MarketplacePreviewDownloadButton({ apiPath }: { apiPath: string 
         setBusy(true);
         void triggerApiFileDownload(apiPath, {
           onUnauthorized: () =>
-            router.push(`/login?callbackUrl=${encodeURIComponent(returnTo)}`),
+            router.push(
+              clerkUiEnabled
+                ? `/sign-up?redirect_url=${encodeURIComponent(returnTo)}`
+                : `/register?callbackUrl=${encodeURIComponent(returnTo)}`,
+            ),
           onForbidden: () =>
             router.push(`/pricing?callbackUrl=${encodeURIComponent(returnTo)}`),
           onNotFound: () => toast.error('File not found.'),

@@ -159,19 +159,20 @@ export async function GET(
     return legacy ?? null;
   }
 
+  const hasSignedInAccount = Boolean(user?.id || accessToken?.trim());
   const paidAllowed = await userOwnsPaidFlagFile(user, accessToken, row);
-  const allowed = freeCatalogDownload ? Boolean(user?.id) : paidAllowed;
+  const allowed = freeCatalogDownload ? hasSignedInAccount : paidAllowed;
 
   if (!allowed) {
     const returnPath = sanitizeCallbackUrl(
       new URL(request.url).pathname + new URL(request.url).search,
       '/gallery',
     );
-    if (!user?.id) {
+    if (!hasSignedInAccount) {
       if (isBrowserDocumentNavigation(request)) {
-        const login = new URL('/sign-in', request.url);
-        login.searchParams.set('redirect_url', returnPath);
-        return NextResponse.redirect(login, 302);
+        const signup = new URL('/sign-up', request.url);
+        signup.searchParams.set('redirect_url', returnPath);
+        return NextResponse.redirect(signup, 302);
       }
       return NextResponse.json({ error: 'Not signed in', code: 'NOT_AUTHENTICATED' }, { status: 401 });
     }

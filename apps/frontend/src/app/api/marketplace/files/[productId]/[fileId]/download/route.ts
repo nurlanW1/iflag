@@ -44,9 +44,9 @@ export async function GET(request: Request, { params }: RouteParams) {
   if (resolution.kind === 'denied') {
     const returnPath = sanitizeCallbackUrl(new URL(request.url).pathname + new URL(request.url).search, '/gallery');
     if (resolution.reason === 'NOT_AUTHENTICATED' && isBrowserDocumentNavigation(request)) {
-      const login = new URL('/sign-in', request.url);
-      login.searchParams.set('redirect_url', returnPath);
-      return NextResponse.redirect(login);
+      const signup = new URL('/sign-up', request.url);
+      signup.searchParams.set('redirect_url', returnPath);
+      return NextResponse.redirect(signup);
     }
     if (resolution.reason === 'NOT_ENTITLED' && isBrowserDocumentNavigation(request)) {
       const pricing = new URL('/pricing', request.url);
