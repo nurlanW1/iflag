@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { Download, Crown, ArrowLeft } from 'lucide-react';
 
 /**
@@ -12,7 +13,8 @@ import { Download, Crown, ArrowLeft } from 'lucide-react';
  */
 export default function LegacyRailsAssetDetailPage({ slug }: { slug: string }) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { openModal } = useAuthModal();
   const [asset, setAsset] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
@@ -50,8 +52,9 @@ export default function LegacyRailsAssetDetailPage({ slug }: { slug: string }) {
   const handleDownload = async () => {
     if (!asset) return;
 
-    if (asset.is_premium && !hasPremium && !user) {
-      router.push('/login?redirect=/assets/' + asset.slug);
+    if (!user) {
+      if (authLoading) return;
+      openModal('signup');
       return;
     }
 

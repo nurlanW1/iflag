@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { api } from '@/lib/api';
 import {
   ArrowLeft,
@@ -24,7 +25,8 @@ type FormatTab = 'vector' | 'raster' | 'video';
 
 export default function LegacyFlagDetailPage() {
   const params = useParams();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { openModal } = useAuthModal();
   const [flag, setFlag] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
@@ -91,6 +93,12 @@ export default function LegacyFlagDetailPage() {
   };
 
   const handleDownload = async (assetId: string, formatId: string, requiresSubscription: boolean) => {
+    if (!user) {
+      if (authLoading) return;
+      openModal('signup');
+      return;
+    }
+
     if (requiresSubscription && !hasPremium) {
       setShowPremiumCTA(true);
       return;

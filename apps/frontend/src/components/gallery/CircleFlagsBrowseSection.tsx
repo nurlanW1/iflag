@@ -1,7 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, type MouseEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import { Search, X, Download, Clock } from 'lucide-react';
+import { useClerkUiEnabled } from '@/components/providers/ClerkUiProvider';
+import { useAuth as useLegacyAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 
 export interface FlagIcon {
   code: string;
@@ -43,6 +48,14 @@ interface Props {
 }
 
 export function CircleFlagsBrowseSection({ rectFlags, circleFlags }: Props) {
+  const router = useRouter();
+  const clerkUiEnabled = useClerkUiEnabled();
+  const { isLoaded: clerkLoaded, isSignedIn } = useUser();
+  const { user: legacyUser, loading: legacyLoading } = useLegacyAuth();
+  const { openModal } = useAuthModal();
+  const accountReady = clerkUiEnabled ? clerkLoaded : !legacyLoading;
+  const hasDownloadAccount = clerkUiEnabled ? Boolean(isSignedIn) : Boolean(legacyUser);
+
   const [activeStyle, setActiveStyle] = useState<IconStyle>('none');
   const [q, setQ] = useState('');
 
@@ -58,6 +71,18 @@ export function CircleFlagsBrowseSection({ rectFlags, circleFlags }: Props) {
   }, [allFlags, q]);
 
   const activeCategory = STYLE_CATEGORIES.find(c => c.id === activeStyle)!;
+
+  const requireDownloadAccount = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.stopPropagation();
+    if (accountReady && hasDownloadAccount) return;
+    event.preventDefault();
+    if (!accountReady) return;
+    if (clerkUiEnabled) {
+      router.push('/sign-up?redirect_url=/flags');
+    } else {
+      openModal('signup');
+    }
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -146,7 +171,7 @@ export function CircleFlagsBrowseSection({ rectFlags, circleFlags }: Props) {
               <a href={src} download={`${code}.svg`}
                 className="absolute inset-0 flex items-center justify-center rounded-2xl opacity-0 group-hover:opacity-100 transition-all"
                 style={{ background: 'rgba(37,99,235,0.06)' }}
-                onClick={e => e.stopPropagation()} aria-label={`Download ${label}`}>
+                onClick={requireDownloadAccount} aria-label={`Download ${label}`}>
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
                   <Download size={14} className="text-[#2563eb]" />
                 </span>
@@ -166,7 +191,7 @@ export function CircleFlagsBrowseSection({ rectFlags, circleFlags }: Props) {
               <a href={src} download={`${code}.svg`}
                 className="absolute inset-0 flex items-center justify-center rounded-xl opacity-0 group-hover:opacity-100 transition-all"
                 style={{ background: 'rgba(37,99,235,0.06)' }}
-                onClick={e => e.stopPropagation()} aria-label={`Download ${label}`}>
+                onClick={requireDownloadAccount} aria-label={`Download ${label}`}>
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
                   <Download size={14} className="text-[#2563eb]" />
                 </span>
