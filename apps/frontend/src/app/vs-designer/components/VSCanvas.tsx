@@ -560,21 +560,6 @@ export async function renderVSDesignToCanvas(state: VSDesignerState, scale = 1):
     letterSpacing: 6,
     family: BODY_FONT,
   });
-  drawTextInRect(ctx, state.left.type === 'club' ? 'HOME SIDE' : 'COUNTRY FLAG', layout.leftTagline, {
-    weight: 700,
-    size: 22,
-    color: 'rgba(255,255,255,0.36)',
-    letterSpacing: 5,
-    family: BODY_FONT,
-  });
-  drawTextInRect(ctx, state.right.type === 'club' ? 'AWAY SIDE' : 'COUNTRY FLAG', layout.rightTagline, {
-    weight: 700,
-    size: 22,
-    color: 'rgba(255,255,255,0.36)',
-    letterSpacing: 5,
-    family: BODY_FONT,
-  });
-
   drawMeta(ctx, state, layout);
 
   return canvas;
