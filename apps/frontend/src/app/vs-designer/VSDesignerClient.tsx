@@ -1,15 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { ChevronLeft, ChevronRight, Crown, Download, Lock, Settings2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Crown, Download, Home, Image as ImageIcon, Layers3, Lock, Settings2, Sparkles, Trophy, Upload, Users, X } from 'lucide-react';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
 import { useClerkUiEnabled } from '@/components/providers/ClerkUiProvider';
 import { useAuth as useLegacyAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { PRICING_MARKETING } from '@/lib/marketing/pricing-config';
-import { defaultState, type VSDesignerState } from '@/lib/vs-designer-types';
+import { defaultState, type VSBannerTemplate, type VSEntity, type VSBackgroundStyle, type VSDesignerState } from '@/lib/vs-designer-types';
 import VSCanvas, { renderVSDesignToCanvas } from './components/VSCanvas';
 import FlagSlider from './components/FlagSlider';
 
@@ -22,6 +22,59 @@ const BG_PRESETS = [
   { label: 'Wine',     color: '#1a0608' },
   { label: 'Indigo',   color: '#1e1b4b' },
   { label: 'Purple',   color: '#1a0a2a' },
+];
+
+const TEMPLATE_PRESETS: Array<{
+  id: VSBannerTemplate;
+  label: string;
+  description: string;
+  icon: ReactNode;
+  patch: Partial<VSDesignerState>;
+}> = [
+  {
+    id: 'matchday',
+    label: 'Match Day',
+    description: 'Fixture poster for previews and announcements',
+    icon: <Sparkles size={14} />,
+    patch: {
+      template: 'matchday',
+      scoreMode: false,
+      eventTitle: 'MATCH DAY',
+      statusText: 'KICK OFF',
+      hashtag: '#MATCHDAY',
+    },
+  },
+  {
+    id: 'result',
+    label: 'Result',
+    description: 'Full-time score graphic for blogs and channels',
+    icon: <Trophy size={14} />,
+    patch: {
+      template: 'result',
+      scoreMode: true,
+      eventTitle: 'EL CLASICO',
+      statusText: 'FULL TIME',
+      hashtag: '#FULLTIME',
+    },
+  },
+  {
+    id: 'group',
+    label: 'Group',
+    description: 'Group lineup banner with four clubs or countries',
+    icon: <Users size={14} />,
+    patch: {
+      template: 'group',
+      eventTitle: 'GROUP STAGE',
+      statusText: 'DRAW',
+      hashtag: '#GROUPSTAGE',
+    },
+  },
+];
+
+const BACKGROUND_STYLES: Array<{ id: VSBackgroundStyle; label: string }> = [
+  { id: 'gradient', label: 'Gradient' },
+  { id: 'stadium', label: 'Stadium' },
+  { id: 'image', label: 'Image' },
 ];
 
 function ColorSwatch({ value, onChange, title }: { value: string; onChange: (v: string) => void; title?: string }) {
@@ -103,16 +156,53 @@ export default function VSDesignerClient() {
   const [premiumUnlocked, setPremiumUnlocked] = useState(false);
   const [stateRestored, setStateRestored] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>('left');
+  const [activeGroupSlot, setActiveGroupSlot] = useState(0);
 
   const canvasRef    = useRef<HTMLDivElement>(null);
   const scaleRef     = useRef<HTMLDivElement>(null);
   const wrapperRef   = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const backgroundInputRef = useRef<HTMLInputElement>(null);
+  const importedBackgroundUrlRef = useRef<string | null>(null);
   const autoExportedRef = useRef(false);
 
   const onChange = useCallback((patch: Partial<VSDesignerState>) => {
     setState((prev) => ({ ...prev, ...patch }));
   }, []);
+
+  const applyTemplate = useCallback((template: VSBannerTemplate) => {
+    const preset = TEMPLATE_PRESETS.find((item) => item.id === template);
+    if (!preset) return;
+    setState((prev) => ({
+      ...prev,
+      ...preset.patch,
+      template,
+      groupTeams: prev.groupTeams?.length ? prev.groupTeams : defaultState.groupTeams,
+    }));
+  }, []);
+
+  const updateGroupTeam = useCallback((index: number, team: VSEntity) => {
+    setState((prev) => {
+      const groupTeams = [...(prev.groupTeams?.length ? prev.groupTeams : defaultState.groupTeams)];
+      groupTeams[index] = team;
+      return { ...prev, groupTeams };
+    });
+  }, []);
+
+  const updateGroupTeamName = useCallback((index: number, name: string) => {
+    setState((prev) => {
+      const groupTeams = [...(prev.groupTeams?.length ? prev.groupTeams : defaultState.groupTeams)];
+      groupTeams[index] = { ...(groupTeams[index] ?? defaultState.groupTeams[index]), name };
+      return { ...prev, groupTeams };
+    });
+  }, []);
+
+  const handleBackgroundImport = useCallback((file: File) => {
+    if (importedBackgroundUrlRef.current) URL.revokeObjectURL(importedBackgroundUrlRef.current);
+    const url = URL.createObjectURL(file);
+    importedBackgroundUrlRef.current = url;
+    onChange({ backgroundStyle: 'image', backgroundImageUrl: url });
+  }, [onChange]);
 
   const requireExportAccount = useCallback(() => {
     if (!accountReady) return false;
@@ -215,12 +305,12 @@ export default function VSDesignerClient() {
   }, [state]);
 
   useEffect(() => {
-    const nav = document.querySelector('nav[aria-label="Primary"]') as HTMLElement | null;
-    const navH = nav?.offsetHeight ?? 64;
-    if (containerRef.current) containerRef.current.style.top = `${navH}px`;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
+    return () => {
+      document.body.style.overflow = prev;
+      if (importedBackgroundUrlRef.current) URL.revokeObjectURL(importedBackgroundUrlRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -311,6 +401,55 @@ export default function VSDesignerClient() {
   /* ─── Controls panel (shared between desktop panel + mobile settings tab) ── */
   const renderControlRows = () => (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:flex-nowrap md:overflow-x-auto md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden">
+      {/* TEMPLATE */}
+      <div className="flex shrink-0 items-center gap-1.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Template</span>
+        <div className="flex overflow-hidden rounded-lg border border-neutral-700 bg-neutral-900">
+          {TEMPLATE_PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              title={preset.description}
+              onClick={() => applyTemplate(preset.id)}
+              className={`inline-flex h-7 items-center gap-1.5 px-2.5 text-[10px] font-black uppercase tracking-wide transition ${
+                state.template === preset.id
+                  ? 'bg-blue-600 text-white'
+                  : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
+              }`}
+            >
+              {preset.icon}
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="h-4 w-px shrink-0 bg-neutral-700" />
+      {state.template === 'group' ? (
+        <>
+          <div className="flex shrink-0 items-center gap-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Group</span>
+            <input value={state.groupName ?? ''} placeholder="GROUP A" onChange={(e) => onChange({ groupName: e.target.value })}
+              className="w-24 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            {(state.groupTeams?.length ? state.groupTeams : defaultState.groupTeams).slice(0, 4).map((team, index) => (
+              <button
+                key={`${team.name}-${index}`}
+                type="button"
+                onClick={() => setActiveGroupSlot(index)}
+                className={`h-7 rounded-lg px-2 text-[10px] font-bold transition ${
+                  activeGroupSlot === index
+                    ? 'bg-blue-600 text-white'
+                    : 'border border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-white'
+                }`}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
+          <div className="h-4 w-px shrink-0 bg-neutral-700" />
+        </>
+      ) : null}
       {/* LEFT name */}
       <div className="flex shrink-0 items-center gap-1">
         <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Left</span>
@@ -394,12 +533,34 @@ export default function VSDesignerClient() {
       {/* BG presets */}
       <div className="flex shrink-0 items-center gap-1">
         <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">BG</span>
+        {BACKGROUND_STYLES.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => onChange({ backgroundStyle: item.id })}
+            className={`h-6 rounded-md px-2 text-[10px] font-bold uppercase transition ${
+              (state.backgroundStyle ?? 'gradient') === item.id
+                ? 'bg-blue-600 text-white'
+                : 'border border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-white'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
         {BG_PRESETS.map((p) => (
-          <button key={p.color} type="button" title={p.label} onClick={() => onChange({ bgColor: p.color })}
+          <button key={p.color} type="button" title={p.label} onClick={() => onChange({ bgColor: p.color, backgroundStyle: state.backgroundStyle === 'image' ? 'gradient' : state.backgroundStyle })}
             style={{ backgroundColor: p.color }}
             className={`h-6 w-6 shrink-0 rounded-md border-2 shadow-sm transition-transform hover:scale-110 ${
               state.bgColor === p.color ? 'border-blue-400 ring-2 ring-blue-400/30' : 'border-neutral-600'}`} />
         ))}
+        <button
+          type="button"
+          onClick={() => backgroundInputRef.current?.click()}
+          className="inline-flex h-6 items-center gap-1 rounded-md border border-neutral-700 bg-neutral-800 px-2 text-[10px] font-bold uppercase text-neutral-300 transition hover:border-blue-400 hover:text-white"
+        >
+          <Upload size={11} aria-hidden />
+          Import
+        </button>
         <label className="cursor-pointer" title="Custom">
           <div className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-dashed border-neutral-600 text-[11px] font-bold text-neutral-400 shadow-sm hover:border-blue-400"
             style={{ backgroundColor: BG_PRESETS.some((p) => p.color === state.bgColor) ? undefined : state.bgColor }}>+</div>
@@ -431,27 +592,92 @@ export default function VSDesignerClient() {
     </div>
   );
 
+  const groupTeams = (state.groupTeams?.length ? state.groupTeams : defaultState.groupTeams).slice(0, 4);
+  const activeGroupTeam = groupTeams[activeGroupSlot] ?? groupTeams[0] ?? defaultState.left;
+  const renderGroupSlotPicker = (compact = false) => (
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <div>
+        <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">Group lineup</div>
+        <div className="mt-2 grid grid-cols-2 gap-1.5">
+          {groupTeams.map((team, index) => (
+            <button
+              key={`${team.name}-${index}`}
+              type="button"
+              onClick={() => setActiveGroupSlot(index)}
+              className={`rounded-xl border px-2.5 py-2 text-left transition ${
+                activeGroupSlot === index
+                  ? 'border-blue-400 bg-blue-600/25 text-white'
+                  : 'border-white/10 bg-white/[0.055] text-white/55 hover:bg-white/[0.09] hover:text-white'
+              }`}
+            >
+              <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-white/35">Slot {index + 1}</span>
+              <span className="mt-1 block truncate text-xs font-bold">{team.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+        <label className="text-[10px] font-black uppercase tracking-[0.18em] text-white/35">Team name</label>
+        <input
+          value={activeGroupTeam.name}
+          onChange={(e) => updateGroupTeamName(activeGroupSlot, e.target.value)}
+          className="mt-2 h-9 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm font-bold text-white outline-none transition focus:border-blue-400"
+        />
+      </div>
+      <FlagSlider
+        label={`Choose slot ${activeGroupSlot + 1}`}
+        entity={activeGroupTeam}
+        onSelect={(team) => updateGroupTeam(activeGroupSlot, team)}
+        compact={compact}
+      />
+    </div>
+  );
+
   return (
     <div
       ref={containerRef}
-      className="fixed left-0 right-0 bottom-0 z-40 flex flex-col bg-[#070910] text-white"
-      style={{ top: 64 }}
+      className="fixed inset-0 z-[100] flex flex-col bg-[#070910] text-white"
     >
+      <input
+        ref={backgroundInputRef}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            handleBackgroundImport(file);
+            e.target.value = '';
+          }
+        }}
+      />
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-[#0b0e14]/95 px-3 shadow-[0_8px_30px_-24px_rgba(59,130,246,0.7)] backdrop-blur md:px-5" style={{ height: 64 }}>
         <div className="flex min-w-0 items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.055] text-white/70 transition hover:bg-white/[0.1] hover:text-white"
+            aria-label="Back to home"
+            title="Back to home"
+          >
+            <Home size={18} aria-hidden />
+          </button>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-blue-400/25 bg-blue-500/12 text-blue-200 shadow-[0_0_24px_rgba(37,99,235,0.18)]">
-            <Crown size={18} aria-hidden />
+            <Layers3 size={18} aria-hidden />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-black tracking-tight text-white md:text-lg">VS Designer</span>
+              <span className="text-sm font-black tracking-tight text-white md:text-lg">Football Banner Creator</span>
               <span className="hidden rounded-full border border-white/10 bg-white/[0.06] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white/55 sm:inline">
                 1920x1080
               </span>
+              <span className="hidden rounded-full border border-yellow-300/20 bg-yellow-300/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-yellow-100 lg:inline">
+                {state.template === 'group' ? 'Group lineup' : state.template === 'matchday' ? 'Match day' : 'Result'}
+              </span>
             </div>
             <p className="hidden truncate text-[11px] font-semibold text-white/45 md:block">
-              Match graphics, flags, scores, club logos, and clean PNG export
+              Create match day, full-time result, and group lineup banners for football blogs and live commentary
             </p>
           </div>
         </div>
@@ -488,7 +714,9 @@ export default function VSDesignerClient() {
 
         {/* Left sidebar — desktop only */}
         <div className="relative z-10 hidden w-[18rem] shrink-0 flex-col border-r border-white/10 bg-[#0b0e14] p-4 shadow-[18px_0_40px_-34px_rgba(0,0,0,0.9)] md:flex xl:w-[20rem]">
-          <FlagSlider label="Left Side" entity={state.left} onSelect={(e) => onChange({ left: e })} />
+          {state.template === 'group' ? renderGroupSlotPicker() : (
+            <FlagSlider label="Left Side" entity={state.left} onSelect={(e) => onChange({ left: e })} />
+          )}
         </div>
 
         {/* Center column — canvas always here, tabs below on mobile */}
@@ -537,7 +765,9 @@ export default function VSDesignerClient() {
             <div className="min-h-0 flex-1 overflow-y-auto">
               {mobileTab === 'left' && (
                 <div className="h-full p-3">
-                  <FlagSlider label="Left Side" entity={state.left} onSelect={(e) => onChange({ left: e })} compact />
+                  {state.template === 'group'
+                    ? renderGroupSlotPicker(true)
+                    : <FlagSlider label="Left Side" entity={state.left} onSelect={(e) => onChange({ left: e })} compact />}
                 </div>
               )}
               {mobileTab === 'right' && (
@@ -558,7 +788,33 @@ export default function VSDesignerClient() {
 
         {/* Right sidebar — desktop only */}
         <div className="relative z-10 hidden w-[18rem] shrink-0 flex-col border-l border-white/10 bg-[#0b0e14] p-4 shadow-[-18px_0_40px_-34px_rgba(0,0,0,0.9)] md:flex xl:w-[20rem]">
-          <FlagSlider label="Right Side" entity={state.right} onSelect={(e) => onChange({ right: e })} />
+          {state.template === 'group' ? (
+            <div className="flex h-full flex-col gap-3">
+              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">Studio tools</div>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-4">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-yellow-300/12 text-yellow-200">
+                  <ImageIcon size={18} aria-hidden />
+                </div>
+                <h3 className="text-sm font-black text-white">Background</h3>
+                <p className="mt-1 text-xs leading-5 text-white/45">
+                  Use Gradient, Stadium, or Import to place a stadium/photo behind the banner.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => backgroundInputRef.current?.click()}
+                  className="mt-4 inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-xs font-black text-white transition hover:bg-blue-500"
+                >
+                  <Upload size={14} aria-hidden />
+                  Import background
+                </button>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-xs leading-5 text-white/45">
+                Group template is built for draw graphics, group-stage announcements, and club lineup posts.
+              </div>
+            </div>
+          ) : (
+            <FlagSlider label="Right Side" entity={state.right} onSelect={(e) => onChange({ right: e })} />
+          )}
         </div>
       </div>
 

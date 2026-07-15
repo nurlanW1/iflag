@@ -89,6 +89,19 @@ function fitContain(srcWidth: number, srcHeight: number, box: Rect): Rect {
   };
 }
 
+function fitCover(srcWidth: number, srcHeight: number, box: Rect): Rect {
+  if (srcWidth <= 0 || srcHeight <= 0) return box;
+  const scale = Math.max(box.width / srcWidth, box.height / srcHeight);
+  const width = Math.round(srcWidth * scale);
+  const height = Math.round(srcHeight * scale);
+  return {
+    x: Math.round(box.x + (box.width - width) / 2),
+    y: Math.round(box.y + (box.height - height) / 2),
+    width,
+    height,
+  };
+}
+
 function loadImage(src: string): Promise<HTMLImageElement | null> {
   if (!src.trim()) return Promise.resolve(null);
   return new Promise((resolve) => {
@@ -307,18 +320,56 @@ function drawStadiumIcon(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.restore();
 }
 
-function drawBackground(ctx: CanvasRenderingContext2D, state: VSDesignerState) {
+async function drawBackground(ctx: CanvasRenderingContext2D, state: VSDesignerState) {
   ctx.fillStyle = state.bgColor;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
+  if (state.backgroundStyle === 'image' && state.backgroundImageUrl) {
+    const bg = await loadImage(state.backgroundImageUrl);
+    if (bg) {
+      const fit = fitCover(bg.naturalWidth || bg.width, bg.naturalHeight || bg.height, {
+        x: 0,
+        y: 0,
+        width: CANVAS_WIDTH,
+        height: CANVAS_HEIGHT,
+      });
+      ctx.drawImage(bg, fit.x, fit.y, fit.width, fit.height);
+    }
+  }
+
   const main = ctx.createLinearGradient(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-  main.addColorStop(0, 'rgba(247,236,198,0.78)');
-  main.addColorStop(0.28, 'rgba(25,40,82,0.92)');
-  main.addColorStop(0.56, 'rgba(7,21,57,0.98)');
-  main.addColorStop(0.78, 'rgba(63,19,86,0.96)');
-  main.addColorStop(1, 'rgba(185,12,54,0.88)');
+  main.addColorStop(0, state.backgroundStyle === 'image' ? 'rgba(7,12,28,0.58)' : 'rgba(247,236,198,0.78)');
+  main.addColorStop(0.28, 'rgba(25,40,82,0.88)');
+  main.addColorStop(0.56, 'rgba(7,21,57,0.94)');
+  main.addColorStop(0.78, 'rgba(63,19,86,0.9)');
+  main.addColorStop(1, 'rgba(185,12,54,0.84)');
   ctx.fillStyle = main;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  if (state.backgroundStyle === 'stadium') {
+    ctx.save();
+    const pitch = ctx.createLinearGradient(0, 740, 0, 1080);
+    pitch.addColorStop(0, 'rgba(6,60,40,0)');
+    pitch.addColorStop(1, 'rgba(11,105,60,0.36)');
+    ctx.fillStyle = pitch;
+    ctx.fillRect(0, 660, CANVAS_WIDTH, 420);
+    ctx.strokeStyle = 'rgba(255,255,255,0.11)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.ellipse(960, 960, 320, 82, 0, Math.PI, 0);
+    ctx.moveTo(0, 880);
+    ctx.lineTo(CANVAS_WIDTH, 880);
+    ctx.stroke();
+    for (const x of [230, 520, 1400, 1690]) {
+      const light = ctx.createRadialGradient(x, 118, 0, x, 118, 360);
+      light.addColorStop(0, 'rgba(255,244,200,0.32)');
+      light.addColorStop(0.4, 'rgba(255,244,200,0.08)');
+      light.addColorStop(1, 'rgba(255,244,200,0)');
+      ctx.fillStyle = light;
+      ctx.fillRect(x - 380, 0, 760, 520);
+    }
+    ctx.restore();
+  }
 
   const center = ctx.createRadialGradient(960, 500, 0, 960, 500, 580);
   center.addColorStop(0, 'rgba(255,255,255,0.16)');
@@ -489,6 +540,118 @@ function drawMeta(ctx: CanvasRenderingContext2D, state: VSDesignerState, layout:
   });
 }
 
+async function drawGroupBanner(ctx: CanvasRenderingContext2D, state: VSDesignerState) {
+  const teams = (state.groupTeams?.length ? state.groupTeams : [state.left, state.right]).slice(0, 4);
+  const paddedTeams = [...teams];
+  while (paddedTeams.length < 4) paddedTeams.push({ name: 'Team', imageUrl: '', type: 'club' });
+
+  ctx.save();
+  ctx.fillStyle = GOLD;
+  for (const [x, y, r] of [
+    [892, 105, 9],
+    [922, 88, 12],
+    [960, 76, 17],
+    [998, 88, 12],
+    [1028, 105, 9],
+  ]) {
+    drawStar(ctx, x, y, 5, r, r * 0.43);
+    ctx.fill();
+  }
+  ctx.restore();
+  drawTrophy(ctx, 960, 155, 0.78);
+  drawLineOrnament(ctx, 250);
+
+  drawTextInRect(ctx, state.eventTitle || 'GROUP STAGE', { x: 520, y: 235, width: 880, height: 82 }, {
+    weight: 900,
+    size: 62,
+    color: state.titleColor || WHITE,
+    letterSpacing: 5,
+    family: BODY_FONT,
+    shadow: true,
+  });
+  drawTextInRect(ctx, upper(state.groupName, 'GROUP A'), { x: 690, y: 318, width: 540, height: 56 }, {
+    weight: 900,
+    size: 38,
+    color: GOLD,
+    letterSpacing: 7,
+    family: BODY_FONT,
+  });
+
+  const cardW = 360;
+  const cardH = 360;
+  const gap = 42;
+  const startX = Math.round((CANVAS_WIDTH - cardW * 4 - gap * 3) / 2);
+  const y = 420;
+
+  await Promise.all(paddedTeams.map(async (team, index) => {
+    const x = startX + index * (cardW + gap);
+    ctx.save();
+    const cardGradient = ctx.createLinearGradient(x, y, x + cardW, y + cardH);
+    cardGradient.addColorStop(0, 'rgba(255,255,255,0.13)');
+    cardGradient.addColorStop(1, 'rgba(255,255,255,0.035)');
+    ctx.fillStyle = cardGradient;
+    ctx.strokeStyle = 'rgba(244,201,91,0.45)';
+    ctx.lineWidth = 2;
+    drawRoundedRect(ctx, { x, y, width: cardW, height: cardH }, 28);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(244,201,91,0.95)';
+    ctx.fillRect(x + 28, y + 28, 54, 4);
+    ctx.fillRect(x + cardW - 82, y + cardH - 32, 54, 4);
+    ctx.restore();
+
+    await drawEntityImage(ctx, team, {
+      x: x + 70,
+      y: y + 54,
+      width: cardW - 140,
+      height: 180,
+    });
+
+    drawTextInRect(ctx, team.name, { x: x + 24, y: y + 252, width: cardW - 48, height: 54 }, {
+      weight: 900,
+      size: 32,
+      color: state.nameColor || WHITE,
+      letterSpacing: 2.5,
+      family: BODY_FONT,
+      shadow: true,
+    });
+    drawTextInRect(ctx, `POT ${index + 1}`, { x: x + 24, y: y + 310, width: cardW - 48, height: 34 }, {
+      weight: 800,
+      size: 20,
+      color: GOLD,
+      letterSpacing: 4,
+      family: BODY_FONT,
+    });
+  }));
+
+  drawCalendarIcon(ctx, 628, 875);
+  drawStadiumIcon(ctx, 1010, 875);
+  drawTextInRect(ctx, getDateStr(state), { x: 704, y: 872, width: 290, height: 60 }, {
+    weight: 800,
+    size: 24,
+    color: WHITE,
+    letterSpacing: 1.4,
+    align: 'left',
+    family: BODY_FONT,
+  });
+  drawTextInRect(ctx, upper(state.venueName, 'DRAW STUDIO'), { x: 1090, y: 872, width: 430, height: 60 }, {
+    weight: 800,
+    size: 24,
+    color: WHITE,
+    letterSpacing: 1.4,
+    align: 'left',
+    family: BODY_FONT,
+  });
+  drawLineOrnament(ctx, 1000);
+  drawTextInRect(ctx, upper(state.hashtag, '#GROUPSTAGE'), { x: 760, y: 982, width: 400, height: 40 }, {
+    weight: 900,
+    size: 34,
+    color: WHITE,
+    letterSpacing: 1,
+    family: BODY_FONT,
+  });
+}
+
 export async function renderVSDesignToCanvas(state: VSDesignerState, scale = 1): Promise<HTMLCanvasElement> {
   const layout = getLayout(state);
   const canvas = document.createElement('canvas');
@@ -498,7 +661,12 @@ export async function renderVSDesignToCanvas(state: VSDesignerState, scale = 1):
   if (!ctx) return canvas;
 
   ctx.scale(scale, scale);
-  drawBackground(ctx, state);
+  await drawBackground(ctx, state);
+
+  if (state.template === 'group') {
+    await drawGroupBanner(ctx, state);
+    return canvas;
+  }
 
   ctx.save();
   ctx.fillStyle = GOLD;
