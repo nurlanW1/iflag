@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Crown, Download, Home, Image as ImageIcon, Layers3, Lock, Settings2, Sparkles, Trophy, Upload, Users, X } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Crown, Download, Home, Image as ImageIcon, Layers3, Lock, Palette, Settings2, Sparkles, Trophy, Type, Upload, Users, X } from 'lucide-react';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
 import { useClerkUiEnabled } from '@/components/providers/ClerkUiProvider';
 import { useAuth as useLegacyAuth } from '@/contexts/AuthContext';
@@ -78,12 +78,52 @@ const BACKGROUND_STYLES: Array<{ id: VSBackgroundStyle; label: string }> = [
 
 function ColorSwatch({ value, onChange, title }: { value: string; onChange: (v: string) => void; title?: string }) {
   return (
-    <label className="relative block h-8 w-8 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-white/15 shadow-sm ring-1 ring-black/20" title={title}>
+    <label className="relative block h-8 w-8 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-white/15 shadow-sm ring-1 ring-black/20" title={title}>
       <div className="h-full w-full" style={{ backgroundColor: value }} />
       <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="absolute inset-0 cursor-pointer opacity-0" />
     </label>
   );
 }
+
+function ControlSection({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-xl border border-white/10 bg-white/[0.045] p-2 shadow-[0_12px_30px_-28px_rgba(0,0,0,0.95)]">
+      <div className="mb-1.5 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.18em] text-white/35">
+        {icon}
+        {title}
+      </div>
+      <div className="space-y-1.5">{children}</div>
+    </section>
+  );
+}
+
+function MiniField({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <label className="block min-w-0">
+      <span className="mb-0.5 block text-[8px] font-black uppercase tracking-[0.14em] text-white/28">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+const inputClass =
+  'h-7 w-full rounded-lg border border-white/10 bg-black/25 px-2 text-[11px] font-bold text-white outline-none transition placeholder:text-white/20 focus:border-blue-400 focus:bg-black/35';
+const segmentClass =
+  'inline-flex h-7 items-center justify-center gap-1 rounded-lg px-2 text-[9px] font-black uppercase tracking-wide transition';
 
 type MobileTab = 'left' | 'settings' | 'right';
 type ExportTier = 'premium' | 'watermarked';
@@ -396,197 +436,198 @@ export default function VSDesignerClient() {
     }
   }
 
-  /* ─── Controls panel (shared between desktop panel + mobile settings tab) ── */
   const renderControlRows = () => (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:flex-nowrap md:overflow-x-auto md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden">
-      {/* TEMPLATE */}
-      <div className="flex shrink-0 items-center gap-1.5">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Template</span>
-        <div className="flex overflow-hidden rounded-lg border border-neutral-700 bg-neutral-900">
+    <div className="grid gap-2 md:flex md:min-w-max md:items-start">
+      <ControlSection title="Template" icon={<Sparkles size={13} aria-hidden />}>
+        <div className="grid w-[28rem] grid-cols-3 gap-1.5">
           {TEMPLATE_PRESETS.map((preset) => (
             <button
               key={preset.id}
               type="button"
               title={preset.description}
               onClick={() => applyTemplate(preset.id)}
-              className={`inline-flex h-7 items-center gap-1.5 px-2.5 text-[10px] font-black uppercase tracking-wide transition ${
+              className={`h-8 rounded-lg border px-2 text-left transition ${
                 state.template === preset.id
-                  ? 'bg-blue-600 text-white'
-                  : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
+                  ? 'border-blue-400 bg-blue-600 text-white shadow-[0_10px_24px_-18px_rgba(37,99,235,0.9)]'
+                  : 'border-white/10 bg-black/25 text-white/50 hover:bg-white/[0.07] hover:text-white'
               }`}
             >
-              {preset.icon}
-              {preset.label}
+              <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide">
+                {preset.icon}
+                {preset.label}
+              </span>
             </button>
           ))}
         </div>
-      </div>
-      <div className="h-4 w-px shrink-0 bg-neutral-700" />
-      {state.template === 'group' ? (
-        <>
-          <div className="flex shrink-0 items-center gap-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Group</span>
-            <input value={state.groupName ?? ''} placeholder="GROUP A" onChange={(e) => onChange({ groupName: e.target.value })}
-              className="w-24 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
+        {state.template === 'group' ? (
+          <div className="grid grid-cols-[1fr_auto] gap-2">
+            <MiniField label="Group name">
+              <input value={state.groupName ?? ''} placeholder="GROUP A" onChange={(e) => onChange({ groupName: e.target.value })} className={inputClass} />
+            </MiniField>
+            <div>
+              <span className="mb-0.5 block text-[8px] font-black uppercase tracking-[0.14em] text-white/28">Slot</span>
+              <div className="flex h-7 items-center gap-1">
+                {(state.groupTeams?.length ? state.groupTeams : defaultState.groupTeams).slice(0, 4).map((team, index) => (
+                  <button
+                    key={`${team.name}-${index}`}
+                    type="button"
+                    onClick={() => setActiveGroupSlot(index)}
+                    className={`h-7 w-7 rounded-lg text-[11px] font-black transition ${
+                      activeGroupSlot === index
+                        ? 'bg-blue-600 text-white'
+                        : 'border border-white/10 bg-black/25 text-white/45 hover:text-white'
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="flex shrink-0 items-center gap-1">
-            {(state.groupTeams?.length ? state.groupTeams : defaultState.groupTeams).slice(0, 4).map((team, index) => (
-              <button
-                key={`${team.name}-${index}`}
-                type="button"
-                onClick={() => setActiveGroupSlot(index)}
-                className={`h-7 rounded-lg px-2 text-[10px] font-bold transition ${
-                  activeGroupSlot === index
-                    ? 'bg-blue-600 text-white'
-                    : 'border border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-white'
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </div>
-          <div className="h-4 w-px shrink-0 bg-neutral-700" />
-        </>
-      ) : null}
-      {/* LEFT name */}
-      <div className="flex shrink-0 items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Left</span>
-        <input value={state.left.name} onChange={(e) => onChange({ left: { ...state.left, name: e.target.value } })}
-          className="w-20 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
-      </div>
-      {/* EVENT */}
-      <div className="flex shrink-0 items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Event</span>
-        <input value={state.eventTitle} onChange={(e) => onChange({ eventTitle: e.target.value })}
-          className="w-24 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
-      </div>
-      {/* STATUS */}
-      <div className="flex shrink-0 items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Status</span>
-        <input value={state.statusText ?? ''} placeholder="FULL TIME" onChange={(e) => onChange({ statusText: e.target.value })}
-          className="w-24 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
-      </div>
-      {/* RIGHT name */}
-      <div className="flex shrink-0 items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Right</span>
-        <input value={state.right.name} onChange={(e) => onChange({ right: { ...state.right, name: e.target.value } })}
-          className="w-20 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
-      </div>
-      <div className="h-4 w-px shrink-0 bg-neutral-700" />
-      {/* SCORE toggle + inputs */}
-      <div className="flex shrink-0 items-center gap-1">
-        <button type="button" onClick={() => onChange({ scoreMode: !state.scoreMode })}
-          className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide transition-colors ${
-            state.scoreMode ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'}`}>
-          Score
-        </button>
-        {state.scoreMode ? (
-          <div className="flex items-center gap-1">
-            <input type="text" value={state.leftScore} maxLength={3} onChange={(e) => onChange({ leftScore: e.target.value })}
-              className="w-9 rounded border border-neutral-700 bg-neutral-800 py-0.5 text-center text-xs font-bold text-white outline-none focus:border-blue-500" />
-            <span className="text-neutral-500">–</span>
-            <input type="text" value={state.rightScore} maxLength={3} onChange={(e) => onChange({ rightScore: e.target.value })}
-              className="w-9 rounded border border-neutral-700 bg-neutral-800 py-0.5 text-center text-xs font-bold text-white outline-none focus:border-blue-500" />
-          </div>
-        ) : (
-          <input type="text" value={state.vsText} onChange={(e) => onChange({ vsText: e.target.value })}
-            className="w-12 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-center text-xs font-bold text-white outline-none focus:border-blue-500" />
-        )}
-      </div>
-      <div className="h-4 w-px shrink-0 bg-neutral-700" />
-      {/* DATE */}
-      <div className="flex shrink-0 items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Date</span>
-        <div className="flex overflow-hidden rounded border border-neutral-700">
-          {(['auto', 'manual'] as const).map((m) => (
-            <button key={m} type="button" onClick={() => onChange({ dateMode: m })}
-              className={`px-1.5 py-0.5 text-[10px] font-semibold transition-colors ${
-                state.dateMode === m ? 'bg-blue-600 text-white' : 'bg-neutral-800 text-neutral-500 hover:bg-neutral-700'}`}>
-              {m === 'auto' ? 'Auto' : 'Custom'}
+        ) : null}
+      </ControlSection>
+
+      <ControlSection title="Text" icon={<Type size={13} aria-hidden />}>
+        <div className="grid w-[34rem] grid-cols-3 gap-1.5">
+          <MiniField label="Left name">
+            <input value={state.left.name} onChange={(e) => onChange({ left: { ...state.left, name: e.target.value } })} className={inputClass} />
+          </MiniField>
+          <MiniField label="Right name">
+            <input value={state.right.name} onChange={(e) => onChange({ right: { ...state.right, name: e.target.value } })} className={inputClass} />
+          </MiniField>
+          <MiniField label="Event title">
+            <input value={state.eventTitle} onChange={(e) => onChange({ eventTitle: e.target.value })} className={inputClass} />
+          </MiniField>
+          <MiniField label="Status">
+            <input value={state.statusText ?? ''} placeholder="FULL TIME" onChange={(e) => onChange({ statusText: e.target.value })} className={inputClass} />
+          </MiniField>
+          <MiniField label="Hashtag">
+            <input value={state.hashtag ?? ''} placeholder="#MATCHDAY" onChange={(e) => onChange({ hashtag: e.target.value })} className={inputClass} />
+          </MiniField>
+          <MiniField label="Date">
+            <div className="flex gap-1">
+              {(['auto', 'manual'] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => onChange({ dateMode: m })}
+                  className={`${segmentClass} flex-1 ${state.dateMode === m ? 'bg-blue-600 text-white' : 'border border-white/10 bg-black/25 text-white/45 hover:text-white'}`}
+                >
+                  {m === 'auto' ? 'Auto' : 'Custom'}
+                </button>
+              ))}
+            </div>
+          </MiniField>
+          {state.dateMode === 'manual' ? (
+            <MiniField label="Custom date">
+              <input value={state.dateText} placeholder="JUNE 26, 2026" onChange={(e) => onChange({ dateText: e.target.value })} className={inputClass} />
+            </MiniField>
+          ) : null}
+        </div>
+      </ControlSection>
+
+      <ControlSection title="Score & venue" icon={<CalendarDays size={13} aria-hidden />}>
+        <div className="grid w-[22rem] grid-cols-2 gap-1.5">
+          <MiniField label="Mode">
+            <button
+              type="button"
+              onClick={() => onChange({ scoreMode: !state.scoreMode })}
+              className={`h-7 w-full rounded-lg text-[11px] font-black uppercase tracking-wide transition ${state.scoreMode ? 'bg-blue-600 text-white' : 'border border-white/10 bg-black/25 text-white/50 hover:text-white'}`}
+            >
+              {state.scoreMode ? 'Score' : 'VS text'}
+            </button>
+          </MiniField>
+          {state.scoreMode ? (
+            <MiniField label="Result">
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1.5">
+                <input type="text" value={state.leftScore} maxLength={3} onChange={(e) => onChange({ leftScore: e.target.value })} className={`${inputClass} px-2 text-center text-sm`} />
+                <span className="text-white/28">-</span>
+                <input type="text" value={state.rightScore} maxLength={3} onChange={(e) => onChange({ rightScore: e.target.value })} className={`${inputClass} px-2 text-center text-sm`} />
+              </div>
+            </MiniField>
+          ) : (
+            <MiniField label="Center text">
+              <input type="text" value={state.vsText} onChange={(e) => onChange({ vsText: e.target.value })} className={`${inputClass} text-center`} />
+            </MiniField>
+          )}
+          <MiniField label="Venue">
+            <input value={state.venueName ?? ''} placeholder="NATIONAL STADIUM" onChange={(e) => onChange({ venueName: e.target.value })} className={inputClass} />
+          </MiniField>
+          <MiniField label="City">
+            <input value={state.venueCity ?? ''} placeholder="CITY" onChange={(e) => onChange({ venueCity: e.target.value })} className={inputClass} />
+          </MiniField>
+        </div>
+      </ControlSection>
+
+      <ControlSection title="Background" icon={<Palette size={13} aria-hidden />}>
+        <div className="flex w-[30rem] flex-wrap gap-1.5">
+          {BACKGROUND_STYLES.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onChange({ backgroundStyle: item.id })}
+              className={`${segmentClass} ${
+                (state.backgroundStyle ?? 'gradient') === item.id
+                  ? 'bg-blue-600 text-white'
+                  : 'border border-white/10 bg-black/25 text-white/45 hover:text-white'
+              }`}
+            >
+              {item.label}
             </button>
           ))}
-        </div>
-        {state.dateMode === 'manual' && (
-          <input value={state.dateText} placeholder="JUNE 26, 2026" onChange={(e) => onChange({ dateText: e.target.value })}
-            className="w-28 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
-        )}
-      </div>
-      <div className="h-4 w-px shrink-0 bg-neutral-700" />
-      {/* VENUE */}
-      <div className="flex shrink-0 items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Venue</span>
-        <input value={state.venueName ?? ''} placeholder="NATIONAL STADIUM" onChange={(e) => onChange({ venueName: e.target.value })}
-          className="w-32 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
-        <input value={state.venueCity ?? ''} placeholder="CITY" onChange={(e) => onChange({ venueCity: e.target.value })}
-          className="w-20 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
-      </div>
-      <div className="h-4 w-px shrink-0 bg-neutral-700" />
-      {/* HASHTAG */}
-      <div className="flex shrink-0 items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Tag</span>
-        <input value={state.hashtag ?? ''} placeholder="#MATCHDAY" onChange={(e) => onChange({ hashtag: e.target.value })}
-          className="w-24 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
-      </div>
-      <div className="h-4 w-px shrink-0 bg-neutral-700" />
-      {/* BG presets */}
-      <div className="flex shrink-0 items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">BG</span>
-        {BACKGROUND_STYLES.map((item) => (
           <button
-            key={item.id}
             type="button"
-            onClick={() => onChange({ backgroundStyle: item.id })}
-            className={`h-6 rounded-md px-2 text-[10px] font-bold uppercase transition ${
-              (state.backgroundStyle ?? 'gradient') === item.id
-                ? 'bg-blue-600 text-white'
-                : 'border border-neutral-700 bg-neutral-800 text-neutral-400 hover:text-white'
-            }`}
+            onClick={() => backgroundInputRef.current?.click()}
+            className="inline-flex h-7 items-center gap-1 rounded-lg border border-white/10 bg-black/25 px-2 text-[9px] font-black uppercase tracking-wide text-white/55 transition hover:border-blue-400/50 hover:text-white"
           >
-            {item.label}
+            <Upload size={12} aria-hidden />
+            Import
           </button>
-        ))}
-        {BG_PRESETS.map((p) => (
-          <button key={p.color} type="button" title={p.label} onClick={() => onChange({ bgColor: p.color, backgroundStyle: state.backgroundStyle === 'image' ? 'gradient' : state.backgroundStyle })}
-            style={{ backgroundColor: p.color }}
-            className={`h-6 w-6 shrink-0 rounded-md border-2 shadow-sm transition-transform hover:scale-110 ${
-              state.bgColor === p.color ? 'border-blue-400 ring-2 ring-blue-400/30' : 'border-neutral-600'}`} />
-        ))}
-        <button
-          type="button"
-          onClick={() => backgroundInputRef.current?.click()}
-          className="inline-flex h-6 items-center gap-1 rounded-md border border-neutral-700 bg-neutral-800 px-2 text-[10px] font-bold uppercase text-neutral-300 transition hover:border-blue-400 hover:text-white"
-        >
-          <Upload size={11} aria-hidden />
-          Import
-        </button>
-        <label className="cursor-pointer" title="Custom">
-          <div className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-dashed border-neutral-600 text-[11px] font-bold text-neutral-400 shadow-sm hover:border-blue-400"
-            style={{ backgroundColor: BG_PRESETS.some((p) => p.color === state.bgColor) ? undefined : state.bgColor }}>+</div>
-          <input type="color" value={state.bgColor} onChange={(e) => onChange({ bgColor: e.target.value })} className="sr-only" />
-        </label>
-      </div>
-      <div className="h-4 w-px shrink-0 bg-neutral-700" />
-      {/* NAME size + color */}
-      <div className="flex shrink-0 items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Name</span>
-        <input type="range" min={14} max={40} value={state.nameSize} onChange={(e) => onChange({ nameSize: Number(e.target.value) })} className="w-14 accent-blue-500" />
-        <span className="w-5 text-[10px] text-neutral-600">{state.nameSize}</span>
-        <ColorSwatch value={state.nameColor} onChange={(v) => onChange({ nameColor: v })} title="Name color" />
-      </div>
-      {/* TITLE size + color */}
-      <div className="flex shrink-0 items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Title</span>
-        <input type="range" min={14} max={56} value={state.titleSize} onChange={(e) => onChange({ titleSize: Number(e.target.value) })} className="w-14 accent-blue-500" />
-        <span className="w-5 text-[10px] text-neutral-600">{state.titleSize}</span>
-        <ColorSwatch value={state.titleColor} onChange={(v) => onChange({ titleColor: v })} title="Title color" />
-      </div>
-      {/* SCORE/VS size + color */}
-      <div className="flex shrink-0 items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">{state.scoreMode ? 'Score' : 'VS'}</span>
-        <input type="range" min={60} max={160} value={state.centerSize} onChange={(e) => onChange({ centerSize: Number(e.target.value) })} className="w-14 accent-blue-500" />
-        <span className="w-5 text-[10px] text-neutral-600">{state.centerSize}</span>
-        <ColorSwatch value={state.centerColor} onChange={(v) => onChange({ centerColor: v })} title="Score/VS color" />
-      </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {BG_PRESETS.map((p) => (
+            <button
+              key={p.color}
+              type="button"
+              title={p.label}
+              onClick={() => onChange({ bgColor: p.color, backgroundStyle: state.backgroundStyle === 'image' ? 'gradient' : state.backgroundStyle })}
+              style={{ backgroundColor: p.color }}
+              className={`h-7 w-7 shrink-0 rounded-lg border-2 shadow-sm transition-transform hover:scale-105 ${
+                state.bgColor === p.color ? 'border-blue-400 ring-2 ring-blue-400/30' : 'border-white/15'
+              }`}
+            />
+          ))}
+          <label className="cursor-pointer" title="Custom background color">
+            <div
+              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-dashed border-white/15 text-[11px] font-black text-white/45 shadow-sm hover:border-blue-400"
+              style={{ backgroundColor: BG_PRESETS.some((p) => p.color === state.bgColor) ? undefined : state.bgColor }}
+            >
+              +
+            </div>
+            <input type="color" value={state.bgColor} onChange={(e) => onChange({ bgColor: e.target.value })} className="sr-only" />
+          </label>
+        </div>
+        <div className="grid grid-cols-3 gap-1.5">
+          <MiniField label="Name">
+            <div className="flex items-center gap-2">
+              <input type="range" min={14} max={40} value={state.nameSize} onChange={(e) => onChange({ nameSize: Number(e.target.value) })} className="min-w-0 flex-1 accent-blue-500" />
+              <ColorSwatch value={state.nameColor} onChange={(v) => onChange({ nameColor: v })} title="Name color" />
+            </div>
+          </MiniField>
+          <MiniField label="Title">
+            <div className="flex items-center gap-2">
+              <input type="range" min={14} max={56} value={state.titleSize} onChange={(e) => onChange({ titleSize: Number(e.target.value) })} className="min-w-0 flex-1 accent-blue-500" />
+              <ColorSwatch value={state.titleColor} onChange={(v) => onChange({ titleColor: v })} title="Title color" />
+            </div>
+          </MiniField>
+          <MiniField label={state.scoreMode ? 'Score' : 'VS'}>
+            <div className="flex items-center gap-2">
+              <input type="range" min={60} max={160} value={state.centerSize} onChange={(e) => onChange({ centerSize: Number(e.target.value) })} className="min-w-0 flex-1 accent-blue-500" />
+              <ColorSwatch value={state.centerColor} onChange={(v) => onChange({ centerColor: v })} title="Center color" />
+            </div>
+          </MiniField>
+        </div>
+      </ControlSection>
     </div>
   );
 
@@ -698,7 +739,7 @@ export default function VSDesignerClient() {
         </div>
       </div>
       {/* ── Desktop controls (hidden on mobile) ─────────────────────────── */}
-      <div className="hidden shrink-0 border-b border-white/10 bg-[#10131b]/95 px-5 py-2.5 shadow-[0_8px_30px_-28px_rgba(0,0,0,0.9)] md:block">
+      <div className="hidden shrink-0 overflow-x-auto border-b border-white/10 bg-[#10131b]/95 px-5 py-3 shadow-[0_8px_30px_-28px_rgba(0,0,0,0.9)] [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.18)_transparent] md:block">
         {renderControlRows()}
       </div>
 
@@ -711,7 +752,7 @@ export default function VSDesignerClient() {
       <div className="flex min-h-0 flex-1 bg-[#070910]">
 
         {/* Left sidebar — desktop only */}
-        <div className="relative z-10 hidden w-[18rem] shrink-0 flex-col border-r border-white/10 bg-[#0b0e14] p-4 shadow-[18px_0_40px_-34px_rgba(0,0,0,0.9)] md:flex xl:w-[20rem]">
+        <div className="relative z-10 hidden w-[17rem] shrink-0 flex-col border-r border-white/10 bg-[#0b0e14] p-4 shadow-[18px_0_40px_-34px_rgba(0,0,0,0.9)] xl:flex 2xl:w-[20rem]">
           {state.template === 'group' ? renderGroupSlotPicker() : (
             <FlagSlider label="Left Side" entity={state.left} onSelect={(e) => onChange({ left: e })} />
           )}
@@ -735,7 +776,7 @@ export default function VSDesignerClient() {
           </div>
 
           {/* Mobile-only: tab bar + tab content */}
-          <div className="flex min-h-0 flex-1 flex-col md:hidden">
+          <div className="flex min-h-0 flex-1 flex-col xl:hidden">
             {/* Tab bar */}
             <div className="flex shrink-0 border-b border-t border-neutral-800 bg-neutral-900">
               {(
@@ -785,7 +826,7 @@ export default function VSDesignerClient() {
         </div>
 
         {/* Right sidebar — desktop only */}
-        <div className="relative z-10 hidden w-[18rem] shrink-0 flex-col border-l border-white/10 bg-[#0b0e14] p-4 shadow-[-18px_0_40px_-34px_rgba(0,0,0,0.9)] md:flex xl:w-[20rem]">
+        <div className="relative z-10 hidden w-[17rem] shrink-0 flex-col border-l border-white/10 bg-[#0b0e14] p-4 shadow-[-18px_0_40px_-34px_rgba(0,0,0,0.9)] xl:flex 2xl:w-[20rem]">
           {state.template === 'group' ? (
             <div className="flex h-full flex-col gap-3">
               <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">Studio tools</div>
