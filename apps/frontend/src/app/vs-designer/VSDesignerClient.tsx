@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { CalendarDays, ChevronLeft, ChevronRight, Crown, Download, Home, Image as ImageIcon, Lock, Palette, Settings2, Sparkles, Trophy, Type, Upload, Users, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Crown, Download, Home, Image as ImageIcon, Lock, Settings2, Sparkles, Trophy, Upload, Users, X } from 'lucide-react';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
 import { useClerkUiEnabled } from '@/components/providers/ClerkUiProvider';
 import { useAuth as useLegacyAuth } from '@/contexts/AuthContext';
@@ -82,26 +82,6 @@ function ColorSwatch({ value, onChange, title }: { value: string; onChange: (v: 
       <div className="h-full w-full" style={{ backgroundColor: value }} />
       <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="absolute inset-0 cursor-pointer opacity-0" />
     </label>
-  );
-}
-
-function ControlSection({
-  title,
-  icon,
-  children,
-}: {
-  title: string;
-  icon: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <section className="rounded-xl border border-white/10 bg-white/[0.045] p-2 shadow-[0_12px_30px_-28px_rgba(0,0,0,0.95)]">
-      <div className="mb-1.5 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.18em] text-white/35">
-        {icon}
-        {title}
-      </div>
-      <div className="space-y-1.5">{children}</div>
-    </section>
   );
 }
 
@@ -437,22 +417,26 @@ export default function VSDesignerClient() {
   }
 
   const renderControlRows = () => (
-    <div className="grid gap-2 md:flex md:min-w-max md:items-start">
-      <ControlSection title="Template" icon={<Sparkles size={13} aria-hidden />}>
-        <div className="grid w-[28rem] grid-cols-3 gap-1.5">
+    <div className="flex min-w-max items-stretch gap-3">
+      <section className="w-[25rem] rounded-2xl border border-white/10 bg-white/[0.045] p-3 shadow-[0_12px_30px_-28px_rgba(0,0,0,0.95)]">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/35">Banner type</span>
+          <span className="text-[10px] font-bold uppercase tracking-wide text-white/25">Main</span>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
           {TEMPLATE_PRESETS.map((preset) => (
             <button
               key={preset.id}
               type="button"
               title={preset.description}
               onClick={() => applyTemplate(preset.id)}
-              className={`h-8 rounded-lg border px-2 text-left transition ${
+              className={`min-h-12 rounded-xl border px-3 py-2 text-left transition ${
                 state.template === preset.id
-                  ? 'border-blue-400 bg-blue-600 text-white shadow-[0_10px_24px_-18px_rgba(37,99,235,0.9)]'
-                  : 'border-white/10 bg-black/25 text-white/50 hover:bg-white/[0.07] hover:text-white'
+                  ? 'border-blue-400 bg-blue-600 text-white shadow-[0_16px_34px_-22px_rgba(37,99,235,0.9)]'
+                  : 'border-white/10 bg-black/25 text-white/55 hover:bg-white/[0.075] hover:text-white'
               }`}
             >
-              <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide">
+              <span className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide">
                 {preset.icon}
                 {preset.label}
               </span>
@@ -460,19 +444,19 @@ export default function VSDesignerClient() {
           ))}
         </div>
         {state.template === 'group' ? (
-          <div className="grid grid-cols-[1fr_auto] gap-2">
+          <div className="mt-2 grid grid-cols-[1fr_auto] gap-2">
             <MiniField label="Group name">
-              <input value={state.groupName ?? ''} placeholder="GROUP A" onChange={(e) => onChange({ groupName: e.target.value })} className={inputClass} />
+              <input value={state.groupName ?? ''} placeholder="GROUP A" onChange={(e) => onChange({ groupName: e.target.value })} className="h-8 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-xs font-bold text-white outline-none transition placeholder:text-white/20 focus:border-blue-400" />
             </MiniField>
             <div>
               <span className="mb-0.5 block text-[8px] font-black uppercase tracking-[0.14em] text-white/28">Slot</span>
-              <div className="flex h-7 items-center gap-1">
+              <div className="flex h-8 items-center gap-1">
                 {(state.groupTeams?.length ? state.groupTeams : defaultState.groupTeams).slice(0, 4).map((team, index) => (
                   <button
                     key={`${team.name}-${index}`}
                     type="button"
                     onClick={() => setActiveGroupSlot(index)}
-                    className={`h-7 w-7 rounded-lg text-[11px] font-black transition ${
+                    className={`h-8 w-8 rounded-xl text-[11px] font-black transition ${
                       activeGroupSlot === index
                         ? 'bg-blue-600 text-white'
                         : 'border border-white/10 bg-black/25 text-white/45 hover:text-white'
@@ -485,18 +469,22 @@ export default function VSDesignerClient() {
             </div>
           </div>
         ) : null}
-      </ControlSection>
+      </section>
 
-      <ControlSection title="Text" icon={<Type size={13} aria-hidden />}>
-        <div className="grid w-[34rem] grid-cols-3 gap-1.5">
-          <MiniField label="Left name">
-            <input value={state.left.name} onChange={(e) => onChange({ left: { ...state.left, name: e.target.value } })} className={inputClass} />
+      <section className="w-[36rem] rounded-2xl border border-white/10 bg-white/[0.045] p-3 shadow-[0_12px_30px_-28px_rgba(0,0,0,0.95)]">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/35">Match text</span>
+          <span className="text-[10px] font-bold uppercase tracking-wide text-white/25">Important</span>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <MiniField label="Left team">
+            <input value={state.left.name} onChange={(e) => onChange({ left: { ...state.left, name: e.target.value } })} className="h-9 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm font-black text-white outline-none transition placeholder:text-white/20 focus:border-blue-400" />
           </MiniField>
-          <MiniField label="Right name">
-            <input value={state.right.name} onChange={(e) => onChange({ right: { ...state.right, name: e.target.value } })} className={inputClass} />
+          <MiniField label="Right team">
+            <input value={state.right.name} onChange={(e) => onChange({ right: { ...state.right, name: e.target.value } })} className="h-9 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm font-black text-white outline-none transition placeholder:text-white/20 focus:border-blue-400" />
           </MiniField>
           <MiniField label="Event title">
-            <input value={state.eventTitle} onChange={(e) => onChange({ eventTitle: e.target.value })} className={inputClass} />
+            <input value={state.eventTitle} onChange={(e) => onChange({ eventTitle: e.target.value })} className="h-9 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm font-black text-white outline-none transition placeholder:text-white/20 focus:border-blue-400" />
           </MiniField>
           <MiniField label="Status">
             <input value={state.statusText ?? ''} placeholder="FULL TIME" onChange={(e) => onChange({ statusText: e.target.value })} className={inputClass} />
@@ -524,32 +512,35 @@ export default function VSDesignerClient() {
             </MiniField>
           ) : null}
         </div>
-      </ControlSection>
+      </section>
 
-      <ControlSection title="Score & venue" icon={<CalendarDays size={13} aria-hidden />}>
-        <div className="grid w-[22rem] grid-cols-2 gap-1.5">
-          <MiniField label="Mode">
-            <button
-              type="button"
-              onClick={() => onChange({ scoreMode: !state.scoreMode })}
-              className={`h-7 w-full rounded-lg text-[11px] font-black uppercase tracking-wide transition ${state.scoreMode ? 'bg-blue-600 text-white' : 'border border-white/10 bg-black/25 text-white/50 hover:text-white'}`}
-            >
-              {state.scoreMode ? 'Score' : 'VS text'}
-            </button>
+      <section className="w-[24rem] rounded-2xl border border-blue-400/20 bg-blue-500/[0.06] p-3 shadow-[0_12px_30px_-28px_rgba(37,99,235,0.95)]">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-blue-100/70">Score</span>
+          <button
+            type="button"
+            onClick={() => onChange({ scoreMode: !state.scoreMode })}
+            className={`h-7 rounded-lg px-3 text-[10px] font-black uppercase tracking-wide transition ${state.scoreMode ? 'bg-blue-600 text-white' : 'border border-white/10 bg-black/25 text-white/55 hover:text-white'}`}
+          >
+            {state.scoreMode ? 'Score mode' : 'VS mode'}
+          </button>
+        </div>
+        {state.scoreMode ? (
+          <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+            <MiniField label="Left">
+              <input type="text" value={state.leftScore} maxLength={3} onChange={(e) => onChange({ leftScore: e.target.value })} className="h-12 w-full rounded-2xl border border-white/10 bg-black/30 px-3 text-center text-2xl font-black text-white outline-none transition focus:border-blue-400" />
+            </MiniField>
+            <span className="pb-3 text-xl font-black text-white/35">-</span>
+            <MiniField label="Right">
+              <input type="text" value={state.rightScore} maxLength={3} onChange={(e) => onChange({ rightScore: e.target.value })} className="h-12 w-full rounded-2xl border border-white/10 bg-black/30 px-3 text-center text-2xl font-black text-white outline-none transition focus:border-blue-400" />
+            </MiniField>
+          </div>
+        ) : (
+          <MiniField label="Center text">
+            <input type="text" value={state.vsText} onChange={(e) => onChange({ vsText: e.target.value })} className="h-12 w-full rounded-2xl border border-white/10 bg-black/30 px-3 text-center text-2xl font-black text-white outline-none transition focus:border-blue-400" />
           </MiniField>
-          {state.scoreMode ? (
-            <MiniField label="Result">
-              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1.5">
-                <input type="text" value={state.leftScore} maxLength={3} onChange={(e) => onChange({ leftScore: e.target.value })} className={`${inputClass} px-2 text-center text-sm`} />
-                <span className="text-white/28">-</span>
-                <input type="text" value={state.rightScore} maxLength={3} onChange={(e) => onChange({ rightScore: e.target.value })} className={`${inputClass} px-2 text-center text-sm`} />
-              </div>
-            </MiniField>
-          ) : (
-            <MiniField label="Center text">
-              <input type="text" value={state.vsText} onChange={(e) => onChange({ vsText: e.target.value })} className={`${inputClass} text-center`} />
-            </MiniField>
-          )}
+        )}
+        <div className="mt-2 grid grid-cols-2 gap-2">
           <MiniField label="Venue">
             <input value={state.venueName ?? ''} placeholder="NATIONAL STADIUM" onChange={(e) => onChange({ venueName: e.target.value })} className={inputClass} />
           </MiniField>
@@ -557,10 +548,21 @@ export default function VSDesignerClient() {
             <input value={state.venueCity ?? ''} placeholder="CITY" onChange={(e) => onChange({ venueCity: e.target.value })} className={inputClass} />
           </MiniField>
         </div>
-      </ControlSection>
+      </section>
 
-      <ControlSection title="Background" icon={<Palette size={13} aria-hidden />}>
-        <div className="flex w-[30rem] flex-wrap gap-1.5">
+      <section className="w-[31rem] rounded-2xl border border-white/10 bg-white/[0.045] p-3 shadow-[0_12px_30px_-28px_rgba(0,0,0,0.95)]">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/35">Background & style</span>
+          <button
+            type="button"
+            onClick={() => backgroundInputRef.current?.click()}
+            className="inline-flex h-9 items-center gap-2 rounded-xl bg-white text-black px-3 text-[11px] font-black uppercase tracking-wide transition hover:bg-blue-100"
+          >
+            <Upload size={13} aria-hidden />
+            Upload image
+          </button>
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
           {BACKGROUND_STYLES.map((item) => (
             <button
               key={item.id}
@@ -575,16 +577,6 @@ export default function VSDesignerClient() {
               {item.label}
             </button>
           ))}
-          <button
-            type="button"
-            onClick={() => backgroundInputRef.current?.click()}
-            className="inline-flex h-7 items-center gap-1 rounded-lg border border-white/10 bg-black/25 px-2 text-[9px] font-black uppercase tracking-wide text-white/55 transition hover:border-blue-400/50 hover:text-white"
-          >
-            <Upload size={12} aria-hidden />
-            Import
-          </button>
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5">
           {BG_PRESETS.map((p) => (
             <button
               key={p.color}
@@ -607,7 +599,7 @@ export default function VSDesignerClient() {
             <input type="color" value={state.bgColor} onChange={(e) => onChange({ bgColor: e.target.value })} className="sr-only" />
           </label>
         </div>
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className="mt-2 grid grid-cols-3 gap-2">
           <MiniField label="Name">
             <div className="flex items-center gap-2">
               <input type="range" min={14} max={40} value={state.nameSize} onChange={(e) => onChange({ nameSize: Number(e.target.value) })} className="min-w-0 flex-1 accent-blue-500" />
@@ -627,7 +619,7 @@ export default function VSDesignerClient() {
             </div>
           </MiniField>
         </div>
-      </ControlSection>
+      </section>
     </div>
   );
 
