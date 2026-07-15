@@ -430,9 +430,29 @@ export default function VSDesignerClient() {
     }
   }
 
-  const renderControlRows = () => (
-    <div className="grid min-w-[1120px] grid-cols-[0.72fr_1.62fr_1.02fr_1.18fr] items-stretch gap-2">
-      <section className="h-[88px] rounded-xl border border-white/10 bg-white/[0.04] p-2">
+  const renderControlRows = (includeActions = false) => (
+    <div
+      className={
+        includeActions
+          ? 'grid w-full min-w-0 grid-cols-[44px_minmax(210px,0.7fr)_minmax(430px,1.45fr)_minmax(310px,0.85fr)_minmax(380px,1.05fr)_minmax(230px,0.68fr)] items-stretch gap-2'
+          : 'grid min-w-[1120px] grid-cols-[0.72fr_1.62fr_1.02fr_1.18fr] items-stretch gap-2'
+      }
+    >
+      {includeActions ? (
+        <section className="flex h-[84px] items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.055] text-white/70 transition hover:bg-white/[0.1] hover:text-white"
+            aria-label="Back to home"
+            title="Back to home"
+          >
+            <Home size={18} aria-hidden />
+          </button>
+        </section>
+      ) : null}
+
+      <section className="h-[84px] rounded-xl border border-white/10 bg-white/[0.04] p-2">
         <div className="mb-1.5 flex items-center justify-between">
           <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/35">Type</span>
           <span className="text-[8px] font-black uppercase tracking-wide text-white/20">Banner</span>
@@ -457,7 +477,7 @@ export default function VSDesignerClient() {
         </div>
       </section>
 
-      <section className="h-[88px] rounded-xl border border-white/10 bg-white/[0.04] p-2">
+      <section className="h-[84px] rounded-xl border border-white/10 bg-white/[0.04] p-2">
         <div className="mb-1.5 flex items-center justify-between">
           <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/35">Text</span>
           <span className="text-[8px] font-black uppercase tracking-wide text-white/20">Main fields</span>
@@ -503,7 +523,7 @@ export default function VSDesignerClient() {
         </div>
       </section>
 
-      <section className="h-[88px] rounded-xl border border-blue-400/20 bg-blue-500/[0.055] p-2">
+      <section className="h-[84px] rounded-xl border border-blue-400/20 bg-blue-500/[0.055] p-2">
         <div className="mb-1.5 flex items-center justify-between">
           <span className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-100/70">Score</span>
           <button
@@ -540,7 +560,7 @@ export default function VSDesignerClient() {
         </div>
       </section>
 
-      <section className="h-[88px] rounded-xl border border-white/10 bg-white/[0.04] p-2">
+      <section className="h-[84px] rounded-xl border border-white/10 bg-white/[0.04] p-2">
         <div className="mb-1.5 flex items-center justify-between gap-2">
           <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/35">Background</span>
           <button
@@ -613,6 +633,29 @@ export default function VSDesignerClient() {
           </label>
         </div>
       </section>
+
+      {includeActions ? (
+        <section className="flex h-[84px] flex-col justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-2">
+          <button
+            type="button"
+            onClick={() => void handleExport('watermarked')}
+            disabled={exporting || checkingAccess || !accountReady}
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/[0.06] px-3 text-xs font-bold text-white/85 shadow-sm transition hover:border-white/20 hover:bg-white/[0.1] disabled:opacity-60"
+          >
+            <Download size={14} aria-hidden />
+            Free preview
+          </button>
+          <button
+            type="button"
+            onClick={() => void verifyPremiumAndExport()}
+            disabled={exporting || checkingAccess || !accountReady}
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-xs font-black text-white shadow-[0_10px_30px_-16px_rgba(37,99,235,0.9)] transition hover:bg-blue-500 disabled:opacity-60"
+          >
+            {premiumUnlocked ? <Download size={14} aria-hidden /> : <Crown size={14} aria-hidden />}
+            {exporting ? 'Exporting...' : checkingAccess ? 'Checking...' : premiumUnlocked ? 'Export HD' : 'Premium PNG $1'}
+          </button>
+        </section>
+      ) : null}
     </div>
   );
 
@@ -677,7 +720,7 @@ export default function VSDesignerClient() {
         }}
       />
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-[#0b0e14]/95 px-3 shadow-[0_8px_30px_-24px_rgba(59,130,246,0.7)] backdrop-blur md:px-5" style={{ height: 54 }}>
+      <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-[#0b0e14]/95 px-3 shadow-[0_8px_30px_-24px_rgba(59,130,246,0.7)] backdrop-blur md:hidden" style={{ height: 54 }}>
         <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
@@ -708,8 +751,8 @@ export default function VSDesignerClient() {
         </div>
       </div>
       {/* ── Desktop controls (hidden on mobile) ─────────────────────────── */}
-      <div className="relative z-20 hidden shrink-0 overflow-x-auto border-b border-white/10 bg-[#10131b]/95 px-4 py-2 shadow-[0_8px_30px_-28px_rgba(0,0,0,0.9)] [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.18)_transparent] md:block">
-        {renderControlRows()}
+      <div className="relative z-20 hidden shrink-0 overflow-hidden border-b border-white/10 bg-[#10131b]/95 px-3 py-1.5 shadow-[0_8px_30px_-28px_rgba(0,0,0,0.9)] md:block">
+        {renderControlRows(true)}
       </div>
 
       {/* ── Body ────────────────────────────────────────────────────────── */}
