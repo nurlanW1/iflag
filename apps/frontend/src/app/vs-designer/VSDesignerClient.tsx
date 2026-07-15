@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { CalendarDays, ChevronLeft, ChevronRight, Crown, Download, Home, Image as ImageIcon, Layers3, Lock, Palette, Settings2, Sparkles, Trophy, Type, Upload, Users, X } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Crown, Download, Home, Image as ImageIcon, Lock, Palette, Settings2, Sparkles, Trophy, Type, Upload, Users, X } from 'lucide-react';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
 import { useClerkUiEnabled } from '@/components/providers/ClerkUiProvider';
 import { useAuth as useLegacyAuth } from '@/contexts/AuthContext';
@@ -691,34 +691,17 @@ export default function VSDesignerClient() {
         }}
       />
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-[#0b0e14]/95 px-3 shadow-[0_8px_30px_-24px_rgba(59,130,246,0.7)] backdrop-blur md:px-5" style={{ height: 64 }}>
+      <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-[#0b0e14]/95 px-3 shadow-[0_8px_30px_-24px_rgba(59,130,246,0.7)] backdrop-blur md:px-5" style={{ height: 54 }}>
         <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
             onClick={() => router.push('/')}
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.055] text-white/70 transition hover:bg-white/[0.1] hover:text-white"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.055] text-white/70 transition hover:bg-white/[0.1] hover:text-white"
             aria-label="Back to home"
             title="Back to home"
           >
             <Home size={18} aria-hidden />
           </button>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-blue-400/25 bg-blue-500/12 text-blue-200 shadow-[0_0_24px_rgba(37,99,235,0.18)]">
-            <Layers3 size={18} aria-hidden />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-black tracking-tight text-white md:text-lg">Football Banner Creator</span>
-              <span className="hidden rounded-full border border-white/10 bg-white/[0.06] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white/55 sm:inline">
-                1920x1080
-              </span>
-              <span className="hidden rounded-full border border-yellow-300/20 bg-yellow-300/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-yellow-100 lg:inline">
-                {state.template === 'group' ? 'Group lineup' : state.template === 'matchday' ? 'Match day' : 'Result'}
-              </span>
-            </div>
-            <p className="hidden truncate text-[11px] font-semibold text-white/45 md:block">
-              Create match day, full-time result, and group lineup banners for football blogs and live commentary
-            </p>
-          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
