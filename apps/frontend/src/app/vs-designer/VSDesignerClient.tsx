@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Crown, Download, Home, Image as ImageIcon, Lock, Settings2, Sparkles, Trophy, Upload, Users, X } from 'lucide-react';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
@@ -87,12 +88,27 @@ function ColorSwatch({ value, onChange, title }: { value: string; onChange: (v: 
 
 type MobileTab = 'left' | 'settings' | 'right';
 type ExportTier = 'premium' | 'watermarked';
+type ExportAccountState = { ready: boolean; signedIn: boolean };
 
 const VS_DESIGNER_PRODUCT_SLUG = 'vs-designer-export';
 const VS_DESIGNER_ASSET_GROUP_KEY = 'tool:vs-designer-export';
 const VS_DESIGNER_CHECKOUT_SUCCESS_PATH = '/vs-designer?checkout=vs-designer-export';
 const VS_DESIGNER_STATE_KEY = 'flagswing.vsDesigner.state';
 const VS_DESIGNER_PENDING_KEY = 'flagswing.vsDesigner.pendingPremiumExport';
+
+function ClerkExportAccountSync({
+  onChange,
+}: {
+  onChange: (state: ExportAccountState) => void;
+}) {
+  const { isLoaded, isSignedIn } = useUser();
+
+  useEffect(() => {
+    onChange({ ready: isLoaded, signedIn: Boolean(isSignedIn) });
+  }, [isLoaded, isSignedIn, onChange]);
+
+  return null;
+}
 
 function downloadCanvas(canvas: HTMLCanvasElement, filename: string) {
   const link = document.createElement('a');
@@ -142,8 +158,6 @@ export default function VSDesignerClient() {
   const clerkUiEnabled = useClerkUiEnabled();
   const { user: legacyUser, loading: legacyAuthLoading } = useLegacyAuth();
   const { openModal } = useAuthModal();
-  const accountReady = !legacyAuthLoading;
-  const hasExportAccount = Boolean(legacyUser);
 
   const [state, setState]         = useState<VSDesignerState>(defaultState);
   const [exporting, setExporting] = useState(false);
@@ -163,6 +177,26 @@ export default function VSDesignerClient() {
   const backgroundInputRef = useRef<HTMLInputElement>(null);
   const importedBackgroundUrlRef = useRef<string | null>(null);
   const autoExportedRef = useRef(false);
+
+  const [clerkExportAccount, setClerkExportAccount] = useState<ExportAccountState>({
+    ready: !clerkUiEnabled,
+    signedIn: false,
+  });
+  const syncClerkExportAccount = useCallback((next: ExportAccountState) => {
+    setClerkExportAccount((prev) =>
+      prev.ready === next.ready && prev.signedIn === next.signedIn ? prev : next,
+    );
+  }, []);
+  useEffect(() => {
+    if (!clerkUiEnabled) {
+      setClerkExportAccount((prev) =>
+        prev.ready && !prev.signedIn ? prev : { ready: true, signedIn: false },
+      );
+    }
+  }, [clerkUiEnabled]);
+
+  const accountReady = clerkUiEnabled ? clerkExportAccount.ready : !legacyAuthLoading;
+  const hasExportAccount = clerkUiEnabled ? clerkExportAccount.signedIn : Boolean(legacyUser);
 
   const onChange = useCallback((patch: Partial<VSDesignerState>) => {
     setState((prev) => ({ ...prev, ...patch }));
@@ -628,6 +662,7 @@ export default function VSDesignerClient() {
       ref={containerRef}
       className="fixed inset-0 z-[100] flex flex-col bg-[#070910] text-white"
     >
+      {clerkUiEnabled ? <ClerkExportAccountSync onChange={syncClerkExportAccount} /> : null}
       <input
         ref={backgroundInputRef}
         type="file"
