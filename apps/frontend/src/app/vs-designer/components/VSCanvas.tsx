@@ -3,26 +3,16 @@
 import { forwardRef, useEffect, useRef } from 'react';
 import type { VSEntity, VSDesignerState } from '@/lib/vs-designer-types';
 
-const FONT_FAMILY = '"Arial Black", "Arial Bold", Arial, system-ui, sans-serif';
+const FONT_FAMILY = '"Impact", "Arial Black", "Arial Bold", Arial, system-ui, sans-serif';
+const BODY_FONT = '"Arial Black", "Arial Bold", Arial, system-ui, sans-serif';
 const CANVAS_WIDTH = 1920;
 const CANVAS_HEIGHT = 1080;
-const SIDE_COLUMN_WIDTH = CANVAS_WIDTH * 0.38;
-const CENTER_COLUMN_LEFT = SIDE_COLUMN_WIDTH;
-const CENTER_COLUMN_WIDTH = CANVAS_WIDTH * 0.24;
-const RIGHT_COLUMN_LEFT = SIDE_COLUMN_WIDTH + CENTER_COLUMN_WIDTH;
-const FLAG_IMAGE_SIZE = { width: 510, height: 340 };
-const CLUB_IMAGE_SIZE = { width: 300, height: 300 };
-const SIDE_GAP = 44;
+const GOLD = '#f4c95b';
+const GOLD_DARK = '#9a6617';
+const WHITE = '#fffaf0';
 
 export const VS_EXPORT_WIDTH = CANVAS_WIDTH;
 export const VS_EXPORT_HEIGHT = CANVAS_HEIGHT;
-
-function getDateStr(s: VSDesignerState): string {
-  if (s.dateMode === 'manual') return s.dateText;
-  return new Date()
-    .toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-    .toUpperCase();
-}
 
 type Rect = { x: number; y: number; width: number; height: number };
 
@@ -32,69 +22,57 @@ type VSLayout = {
   rightImage: Rect;
   leftName: Rect;
   rightName: Rect;
+  leftTagline: Rect;
+  rightTagline: Rect;
   title: Rect;
   scoreLeft: Rect;
   scoreRight: Rect;
-  scoreLine: Rect;
+  scoreDash: Rect;
   centerText: Rect;
+  status: Rect;
   date: Rect;
+  venue: Rect;
+  hashtag: Rect;
 };
 
-function imageSize(entity: VSEntity) {
-  return entity.type === 'club' ? CLUB_IMAGE_SIZE : FLAG_IMAGE_SIZE;
+function upper(value: string | undefined, fallback = '') {
+  return (value?.trim() || fallback).toUpperCase();
 }
 
-function sideLayout(columnLeft: number, entity: VSEntity, nameSize: number) {
-  const img = imageSize(entity);
-  const nameHeight = Math.round(nameSize * 1.28);
-  const groupHeight = img.height + SIDE_GAP + nameHeight;
-  const imageX = Math.round(columnLeft + (SIDE_COLUMN_WIDTH - img.width) / 2);
-  const imageY = Math.round((CANVAS_HEIGHT - groupHeight) / 2);
-  const nameY = imageY + img.height + SIDE_GAP;
-  return {
-    image: { x: imageX, y: imageY, width: img.width, height: img.height },
-    name: { x: Math.round(columnLeft + 70), y: nameY, width: Math.round(SIDE_COLUMN_WIDTH - 140), height: nameHeight },
-  };
+function getDateStr(s: VSDesignerState): string {
+  if (s.dateMode === 'manual') return upper(s.dateText);
+  return new Date()
+    .toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+    .toUpperCase();
 }
 
 function getLayout(state: VSDesignerState): VSLayout {
-  const dateStr = getDateStr(state);
-  const left = sideLayout(0, state.left, state.nameSize);
-  const right = sideLayout(RIGHT_COLUMN_LEFT, state.right, state.nameSize);
-
-  const scoreCenterY = 485;
-  const scoreHeight = Math.round(state.centerSize * 1.04);
-  const scoreTop = Math.round(scoreCenterY - scoreHeight / 2);
-  const scoreLineWidth = Math.round(state.centerSize * 0.32);
-  const scoreLineHeight = Math.max(3, Math.round(state.centerSize * 0.035));
-  const scoreNumberWidth = Math.round(state.centerSize * 1.08);
-  const scoreGap = Math.round(state.centerSize * 0.06);
-  const scoreGroupWidth = (scoreNumberWidth * 2) + scoreLineWidth + (scoreGap * 2);
-  const scoreGroupLeft = Math.round(CENTER_COLUMN_LEFT + (CENTER_COLUMN_WIDTH - scoreGroupWidth) / 2);
-  const scoreLineTop = Math.round(scoreCenterY - scoreLineHeight / 2);
-  const dateHeight = 34;
-  const dateCenterY = Math.round(scoreCenterY + state.centerSize * 0.6 + 61);
-  const dateTop = Math.round(dateCenterY - dateHeight / 2);
-  const titleHeight = Math.round(state.titleSize * 1.24);
-  const titleTop = Math.round(scoreTop - titleHeight - 48);
+  const leftClub = state.left.type === 'club';
+  const rightClub = state.right.type === 'club';
+  const leftImage = leftClub
+    ? { x: 160, y: 230, width: 400, height: 400 }
+    : { x: 110, y: 300, width: 520, height: 330 };
+  const rightImage = rightClub
+    ? { x: 1360, y: 230, width: 400, height: 400 }
+    : { x: 1290, y: 300, width: 520, height: 330 };
 
   return {
-    dateStr,
-    leftImage: left.image,
-    rightImage: right.image,
-    leftName: left.name,
-    rightName: right.name,
-    title: { x: CENTER_COLUMN_LEFT, y: titleTop, width: CENTER_COLUMN_WIDTH, height: titleHeight },
-    scoreLeft: { x: scoreGroupLeft, y: scoreTop, width: scoreNumberWidth, height: scoreHeight },
-    scoreRight: {
-      x: scoreGroupLeft + scoreNumberWidth + scoreGap + scoreLineWidth + scoreGap,
-      y: scoreTop,
-      width: scoreNumberWidth,
-      height: scoreHeight,
-    },
-    scoreLine: { x: scoreGroupLeft + scoreNumberWidth + scoreGap, y: scoreLineTop, width: scoreLineWidth, height: scoreLineHeight },
-    centerText: { x: CENTER_COLUMN_LEFT, y: scoreTop, width: CENTER_COLUMN_WIDTH, height: scoreHeight },
-    date: { x: CENTER_COLUMN_LEFT, y: dateTop, width: CENTER_COLUMN_WIDTH, height: dateHeight },
+    dateStr: getDateStr(state),
+    leftImage,
+    rightImage,
+    leftName: { x: 90, y: 695, width: 600, height: 74 },
+    rightName: { x: 1230, y: 695, width: 600, height: 74 },
+    leftTagline: { x: 90, y: 777, width: 600, height: 42 },
+    rightTagline: { x: 1230, y: 777, width: 600, height: 42 },
+    title: { x: 710, y: 252, width: 500, height: 68 },
+    scoreLeft: { x: 640, y: 365, width: 300, height: 230 },
+    scoreRight: { x: 980, y: 365, width: 300, height: 230 },
+    scoreDash: { x: 930, y: 480, width: 60, height: 12 },
+    centerText: { x: 660, y: 395, width: 600, height: 170 },
+    status: { x: 630, y: 650, width: 660, height: 92 },
+    date: { x: 650, y: 832, width: 360, height: 58 },
+    venue: { x: 1110, y: 832, width: 430, height: 58 },
+    hashtag: { x: 760, y: 970, width: 400, height: 40 },
   };
 }
 
@@ -129,8 +107,8 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
   });
 }
 
-function setFont(ctx: CanvasRenderingContext2D, weight: number, size: number) {
-  ctx.font = `${weight} ${size}px ${FONT_FAMILY}`;
+function setFont(ctx: CanvasRenderingContext2D, weight: number, size: number, family = FONT_FAMILY) {
+  ctx.font = `${weight} ${size}px ${family}`;
 }
 
 function measureSpacedText(ctx: CanvasRenderingContext2D, text: string, letterSpacing: number) {
@@ -148,13 +126,14 @@ function drawSpacedText(
   textRaw: string,
   x: number,
   y: number,
-  opts: { align: 'left' | 'center' | 'right'; letterSpacing: number },
+  opts: { align: 'left' | 'center' | 'right'; letterSpacing: number; stroke?: boolean },
 ) {
   const text = textRaw || '';
   const width = measureSpacedText(ctx, text, opts.letterSpacing);
   let cursor = opts.align === 'center' ? x - width / 2 : opts.align === 'right' ? x - width : x;
   for (let i = 0; i < text.length; i++) {
     const ch = text[i]!;
+    if (opts.stroke) ctx.strokeText(ch, cursor, y);
     ctx.fillText(ch, cursor, y);
     cursor += ctx.measureText(ch).width + opts.letterSpacing;
   }
@@ -164,15 +143,39 @@ function drawTextInRect(
   ctx: CanvasRenderingContext2D,
   text: string,
   rect: Rect,
-  opts: { weight: number; size: number; color: string; letterSpacing: number; align?: 'left' | 'center' | 'right' },
+  opts: {
+    weight: number;
+    size: number;
+    color: string;
+    letterSpacing?: number;
+    align?: 'left' | 'center' | 'right';
+    family?: string;
+    strokeColor?: string;
+    strokeWidth?: number;
+    shadow?: boolean;
+  },
 ) {
   ctx.save();
-  setFont(ctx, opts.weight, opts.size);
+  setFont(ctx, opts.weight, opts.size, opts.family);
   ctx.fillStyle = opts.color;
   ctx.textBaseline = 'middle';
+  if (opts.strokeColor && opts.strokeWidth) {
+    ctx.strokeStyle = opts.strokeColor;
+    ctx.lineWidth = opts.strokeWidth;
+    ctx.lineJoin = 'round';
+  }
+  if (opts.shadow) {
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 22;
+    ctx.shadowOffsetY = 8;
+  }
   const align = opts.align ?? 'center';
   const x = align === 'left' ? rect.x : align === 'right' ? rect.x + rect.width : rect.x + rect.width / 2;
-  drawSpacedText(ctx, text.toUpperCase(), x, rect.y + rect.height / 2, { align, letterSpacing: opts.letterSpacing });
+  drawSpacedText(ctx, upper(text), x, rect.y + rect.height / 2, {
+    align,
+    letterSpacing: opts.letterSpacing ?? 0,
+    stroke: Boolean(opts.strokeColor && opts.strokeWidth),
+  });
   ctx.restore();
 }
 
@@ -191,24 +194,299 @@ function drawRoundedRect(ctx: CanvasRenderingContext2D, rect: Rect, radius: numb
   ctx.closePath();
 }
 
+function drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, spikes: number, outer: number, inner: number) {
+  let rot = Math.PI / 2 * 3;
+  let x = cx;
+  let y = cy;
+  const step = Math.PI / spikes;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - outer);
+  for (let i = 0; i < spikes; i++) {
+    x = cx + Math.cos(rot) * outer;
+    y = cy + Math.sin(rot) * outer;
+    ctx.lineTo(x, y);
+    rot += step;
+    x = cx + Math.cos(rot) * inner;
+    y = cy + Math.sin(rot) * inner;
+    ctx.lineTo(x, y);
+    rot += step;
+  }
+  ctx.lineTo(cx, cy - outer);
+  ctx.closePath();
+}
+
+function drawTrophy(ctx: CanvasRenderingContext2D, x: number, y: number, scale: number) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+  const grad = ctx.createLinearGradient(-40, -70, 40, 80);
+  grad.addColorStop(0, '#fff0a5');
+  grad.addColorStop(0.45, GOLD);
+  grad.addColorStop(1, GOLD_DARK);
+  ctx.fillStyle = grad;
+  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  ctx.lineWidth = 2;
+
+  ctx.beginPath();
+  ctx.moveTo(-36, -52);
+  ctx.lineTo(36, -52);
+  ctx.quadraticCurveTo(30, 28, 0, 40);
+  ctx.quadraticCurveTo(-30, 28, -36, -52);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(-42, -32, 24, Math.PI * 0.55, Math.PI * 1.45, false);
+  ctx.strokeStyle = GOLD;
+  ctx.lineWidth = 8;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(42, -32, 24, Math.PI * 1.55, Math.PI * 0.45, false);
+  ctx.stroke();
+
+  ctx.fillRect(-8, 40, 16, 28);
+  ctx.fillRect(-34, 68, 68, 12);
+  ctx.fillRect(-48, 80, 96, 12);
+  ctx.restore();
+}
+
+function drawLineOrnament(ctx: CanvasRenderingContext2D, y: number) {
+  ctx.save();
+  ctx.strokeStyle = GOLD;
+  ctx.fillStyle = GOLD;
+  ctx.globalAlpha = 0.95;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(720, y);
+  ctx.lineTo(820, y);
+  ctx.moveTo(1100, y);
+  ctx.lineTo(1200, y);
+  ctx.stroke();
+  drawStar(ctx, 704, y, 4, 12, 4);
+  drawStar(ctx, 1216, y, 4, 12, 4);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawCalendarIcon(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  ctx.save();
+  ctx.strokeStyle = GOLD;
+  ctx.fillStyle = GOLD;
+  ctx.lineWidth = 5;
+  drawRoundedRect(ctx, { x, y, width: 54, height: 54 }, 8);
+  ctx.stroke();
+  ctx.fillRect(x + 10, y + 17, 34, 5);
+  ctx.fillRect(x + 14, y + 30, 7, 7);
+  ctx.fillRect(x + 29, y + 30, 7, 7);
+  ctx.fillRect(x + 14, y + 42, 7, 7);
+  ctx.fillRect(x + 29, y + 42, 7, 7);
+  ctx.restore();
+}
+
+function drawStadiumIcon(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  ctx.save();
+  ctx.strokeStyle = GOLD;
+  ctx.fillStyle = GOLD;
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.ellipse(x + 32, y + 30, 38, 20, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(x + 32, y + 30, 22, 10, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  for (let i = 0; i < 5; i++) {
+    const px = x + 8 + i * 12;
+    ctx.beginPath();
+    ctx.moveTo(px, y + 7);
+    ctx.lineTo(px, y + 20);
+    ctx.stroke();
+    drawStar(ctx, px, y + 4, 4, 4, 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawBackground(ctx: CanvasRenderingContext2D, state: VSDesignerState) {
+  ctx.fillStyle = state.bgColor;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  const main = ctx.createLinearGradient(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  main.addColorStop(0, 'rgba(247,236,198,0.78)');
+  main.addColorStop(0.28, 'rgba(25,40,82,0.92)');
+  main.addColorStop(0.56, 'rgba(7,21,57,0.98)');
+  main.addColorStop(0.78, 'rgba(63,19,86,0.96)');
+  main.addColorStop(1, 'rgba(185,12,54,0.88)');
+  ctx.fillStyle = main;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  const center = ctx.createRadialGradient(960, 500, 0, 960, 500, 580);
+  center.addColorStop(0, 'rgba(255,255,255,0.16)');
+  center.addColorStop(0.38, 'rgba(33,63,118,0.22)');
+  center.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = center;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  const leftGlow = ctx.createRadialGradient(250, 460, 0, 250, 460, 520);
+  leftGlow.addColorStop(0, 'rgba(255,231,142,0.28)');
+  leftGlow.addColorStop(1, 'rgba(255,231,142,0)');
+  ctx.fillStyle = leftGlow;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  const rightGlow = ctx.createRadialGradient(1650, 460, 0, 1650, 460, 520);
+  rightGlow.addColorStop(0, 'rgba(255,28,88,0.28)');
+  rightGlow.addColorStop(1, 'rgba(255,28,88,0)');
+  ctx.fillStyle = rightGlow;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.055)';
+  ctx.fillRect(CANVAS_WIDTH / 2 - 0.5, 110, 1, 860);
+}
+
 async function drawEntityImage(ctx: CanvasRenderingContext2D, entity: VSEntity, box: Rect) {
   const img = await loadImage(entity.imageUrl);
+  ctx.save();
+  ctx.shadowColor = entity.type === 'club' ? 'rgba(0,0,0,0.58)' : 'rgba(0,0,0,0.42)';
+  ctx.shadowBlur = entity.type === 'club' ? 38 : 24;
+  ctx.shadowOffsetY = 18;
+
   if (!img) {
-    ctx.save();
-    ctx.fillStyle = 'rgba(255,255,255,0.05)';
-    drawRoundedRect(ctx, box, 8);
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    drawRoundedRect(ctx, box, 16);
     ctx.fill();
     ctx.restore();
     return;
   }
 
   const fit = fitContain(img.naturalWidth || img.width, img.naturalHeight || img.height, box);
-  ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.6)';
-  ctx.shadowBlur = 48;
-  ctx.shadowOffsetY = 12;
   ctx.drawImage(img, fit.x, fit.y, fit.width, fit.height);
   ctx.restore();
+}
+
+function drawStatusRibbon(ctx: CanvasRenderingContext2D, rect: Rect, label: string) {
+  ctx.save();
+  ctx.strokeStyle = GOLD;
+  ctx.fillStyle = 'rgba(5,15,45,0.42)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(rect.x + 70, rect.y + 8);
+  ctx.lineTo(rect.x + rect.width - 70, rect.y + 8);
+  ctx.lineTo(rect.x + rect.width - 118, rect.y + rect.height - 8);
+  ctx.lineTo(rect.x + 118, rect.y + rect.height - 8);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.shadowColor = GOLD;
+  ctx.shadowBlur = 18;
+  ctx.fillStyle = GOLD;
+  ctx.fillRect(rect.x + 250, rect.y + 7, 160, 3);
+  ctx.fillRect(rect.x + 250, rect.y + rect.height - 10, 160, 3);
+  ctx.restore();
+
+  drawTextInRect(ctx, label, rect, {
+    weight: 900,
+    size: 48,
+    color: GOLD,
+    letterSpacing: 12,
+    family: BODY_FONT,
+    shadow: true,
+  });
+}
+
+function drawScore(ctx: CanvasRenderingContext2D, state: VSDesignerState, layout: VSLayout) {
+  ctx.save();
+  ctx.shadowColor = 'rgba(255,255,255,0.42)';
+  ctx.shadowBlur = 26;
+  const scoreSize = Math.min(220, Math.max(120, state.centerSize * 1.65));
+  if (state.scoreMode) {
+    drawTextInRect(ctx, state.leftScore || '0', layout.scoreLeft, {
+      weight: 900,
+      size: scoreSize,
+      color: state.centerColor || WHITE,
+      strokeColor: GOLD,
+      strokeWidth: 4,
+      align: 'right',
+      shadow: true,
+    });
+    ctx.shadowBlur = 0;
+    const dash = layout.scoreDash;
+    const dashGradient = ctx.createLinearGradient(dash.x, dash.y, dash.x + dash.width, dash.y);
+    dashGradient.addColorStop(0, 'rgba(255,255,255,0.25)');
+    dashGradient.addColorStop(0.5, GOLD);
+    dashGradient.addColorStop(1, 'rgba(255,255,255,0.25)');
+    ctx.fillStyle = dashGradient;
+    drawRoundedRect(ctx, dash, 999);
+    ctx.fill();
+    drawTextInRect(ctx, state.rightScore || '0', layout.scoreRight, {
+      weight: 900,
+      size: scoreSize,
+      color: state.centerColor || WHITE,
+      strokeColor: GOLD,
+      strokeWidth: 4,
+      align: 'left',
+      shadow: true,
+    });
+  } else {
+    drawTextInRect(ctx, state.vsText || 'VS', layout.centerText, {
+      weight: 900,
+      size: Math.min(170, Math.max(90, state.centerSize * 1.25)),
+      color: state.centerColor || WHITE,
+      strokeColor: GOLD,
+      strokeWidth: 4,
+      letterSpacing: 10,
+      shadow: true,
+    });
+  }
+  ctx.restore();
+}
+
+function drawMeta(ctx: CanvasRenderingContext2D, state: VSDesignerState, layout: VSLayout) {
+  drawCalendarIcon(ctx, 575, 835);
+  drawStadiumIcon(ctx, 1028, 835);
+
+  drawTextInRect(ctx, layout.dateStr, layout.date, {
+    weight: 800,
+    size: 24,
+    color: WHITE,
+    letterSpacing: 1.5,
+    align: 'left',
+    family: BODY_FONT,
+  });
+  drawTextInRect(ctx, upper(state.venueName, 'NATIONAL STADIUM'), layout.venue, {
+    weight: 800,
+    size: 24,
+    color: WHITE,
+    letterSpacing: 1.5,
+    align: 'left',
+    family: BODY_FONT,
+  });
+  drawTextInRect(ctx, upper(state.venueCity, 'FLAGS WING'), { x: layout.venue.x, y: layout.venue.y + 36, width: layout.venue.width, height: 32 }, {
+    weight: 700,
+    size: 19,
+    color: GOLD,
+    letterSpacing: 2.5,
+    align: 'left',
+    family: BODY_FONT,
+  });
+
+  ctx.save();
+  ctx.strokeStyle = GOLD;
+  ctx.globalAlpha = 0.95;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(1068, 835);
+  ctx.lineTo(1068, 900);
+  ctx.stroke();
+  ctx.restore();
+
+  drawLineOrnament(ctx, 984);
+  drawTextInRect(ctx, upper(state.hashtag, '#MATCHDAY'), layout.hashtag, {
+    weight: 900,
+    size: 36,
+    color: WHITE,
+    letterSpacing: 1,
+    family: BODY_FONT,
+  });
 }
 
 export async function renderVSDesignToCanvas(state: VSDesignerState, scale = 1): Promise<HTMLCanvasElement> {
@@ -220,85 +498,77 @@ export async function renderVSDesignToCanvas(state: VSDesignerState, scale = 1):
   if (!ctx) return canvas;
 
   ctx.scale(scale, scale);
-  ctx.fillStyle = state.bgColor;
-  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  drawBackground(ctx, state);
 
-  const glow = ctx.createRadialGradient(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 0, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 650);
-  glow.addColorStop(0, 'rgba(255,255,255,0.04)');
-  glow.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  ctx.save();
+  ctx.fillStyle = GOLD;
+  const stars = [
+    [892, 132, 9],
+    [922, 116, 12],
+    [960, 104, 17],
+    [998, 116, 12],
+    [1028, 132, 9],
+  ];
+  for (const [x, y, r] of stars) {
+    drawStar(ctx, x, y, 5, r, r * 0.43);
+    ctx.fill();
+  }
+  ctx.restore();
+  drawTrophy(ctx, 960, 185, 0.95);
 
-  ctx.fillStyle = 'rgba(255,255,255,0.08)';
-  ctx.fillRect(CANVAS_WIDTH / 2 - 0.5, CANVAS_HEIGHT * 0.1, 1, CANVAS_HEIGHT * 0.8);
+  drawLineOrnament(ctx, 305);
 
   await Promise.all([
     drawEntityImage(ctx, state.left, layout.leftImage),
     drawEntityImage(ctx, state.right, layout.rightImage),
   ]);
 
+  drawTextInRect(ctx, state.eventTitle || 'MATCHDAY', layout.title, {
+    weight: 900,
+    size: Math.min(62, Math.max(30, state.titleSize * 1.28)),
+    color: state.titleColor || WHITE,
+    letterSpacing: 5,
+    family: BODY_FONT,
+    shadow: true,
+  });
+
+  drawScore(ctx, state, layout);
+  drawStatusRibbon(ctx, layout.status, upper(state.statusText, 'FULL TIME'));
+
   drawTextInRect(ctx, state.left.name, layout.leftName, {
     weight: 900,
-    size: state.nameSize,
-    color: state.nameColor,
-    letterSpacing: 6,
+    size: Math.min(62, Math.max(34, state.nameSize * 1.45)),
+    color: state.nameColor || WHITE,
+    letterSpacing: 4,
+    family: BODY_FONT,
+    strokeColor: 'rgba(0,0,0,0.18)',
+    strokeWidth: 2,
   });
   drawTextInRect(ctx, state.right.name, layout.rightName, {
     weight: 900,
-    size: state.nameSize,
-    color: state.nameColor,
-    letterSpacing: 6,
+    size: Math.min(62, Math.max(34, state.nameSize * 1.45)),
+    color: state.nameColor || WHITE,
+    letterSpacing: 4,
+    family: BODY_FONT,
+    strokeColor: 'rgba(0,0,0,0.18)',
+    strokeWidth: 2,
   });
-  drawTextInRect(ctx, state.eventTitle, layout.title, {
-    weight: 800,
-    size: state.titleSize,
-    color: state.titleColor,
+  drawTextInRect(ctx, state.left.type === 'club' ? 'HOME SIDE' : 'COUNTRY FLAG', layout.leftTagline, {
+    weight: 700,
+    size: 26,
+    color: GOLD,
     letterSpacing: 7,
+    family: BODY_FONT,
+  });
+  drawTextInRect(ctx, state.right.type === 'club' ? 'AWAY SIDE' : 'COUNTRY FLAG', layout.rightTagline, {
+    weight: 700,
+    size: 26,
+    color: GOLD,
+    letterSpacing: 7,
+    family: BODY_FONT,
   });
 
-  ctx.save();
-  ctx.shadowColor = state.centerColor;
-  ctx.shadowBlur = 64;
-  if (state.scoreMode) {
-    drawTextInRect(ctx, state.leftScore || '0', layout.scoreLeft, {
-      weight: 900,
-      size: state.centerSize,
-      color: state.centerColor,
-      letterSpacing: -4,
-      align: 'right',
-    });
-    ctx.shadowBlur = 0;
-    ctx.globalAlpha = 0.28;
-    ctx.fillStyle = state.centerColor;
-    drawRoundedRect(ctx, layout.scoreLine, 999);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.shadowBlur = 64;
-    drawTextInRect(ctx, state.rightScore || '0', layout.scoreRight, {
-      weight: 900,
-      size: state.centerSize,
-      color: state.centerColor,
-      letterSpacing: -4,
-      align: 'left',
-    });
-  } else {
-    drawTextInRect(ctx, state.vsText, layout.centerText, {
-      weight: 900,
-      size: state.centerSize,
-      color: state.centerColor,
-      letterSpacing: 14,
-    });
-  }
-  ctx.restore();
-
-  if (layout.dateStr) {
-    drawTextInRect(ctx, layout.dateStr, layout.date, {
-      weight: 500,
-      size: 20,
-      color: state.dateColor,
-      letterSpacing: 4,
-    });
-  }
+  drawMeta(ctx, state, layout);
 
   return canvas;
 }

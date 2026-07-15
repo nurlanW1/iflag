@@ -310,7 +310,7 @@ export default function VSDesignerClient() {
 
   /* ─── Controls panel (shared between desktop panel + mobile settings tab) ── */
   const renderControlRows = () => (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:flex-nowrap md:overflow-x-auto">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:flex-nowrap md:overflow-x-auto md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden">
       {/* LEFT name */}
       <div className="flex shrink-0 items-center gap-1">
         <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Left</span>
@@ -321,6 +321,12 @@ export default function VSDesignerClient() {
       <div className="flex shrink-0 items-center gap-1">
         <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Event</span>
         <input value={state.eventTitle} onChange={(e) => onChange({ eventTitle: e.target.value })}
+          className="w-24 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
+      </div>
+      {/* STATUS */}
+      <div className="flex shrink-0 items-center gap-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Status</span>
+        <input value={state.statusText ?? ''} placeholder="FULL TIME" onChange={(e) => onChange({ statusText: e.target.value })}
           className="w-24 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
       </div>
       {/* RIGHT name */}
@@ -367,6 +373,22 @@ export default function VSDesignerClient() {
           <input value={state.dateText} placeholder="JUNE 26, 2026" onChange={(e) => onChange({ dateText: e.target.value })}
             className="w-28 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
         )}
+      </div>
+      <div className="h-4 w-px shrink-0 bg-neutral-700" />
+      {/* VENUE */}
+      <div className="flex shrink-0 items-center gap-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Venue</span>
+        <input value={state.venueName ?? ''} placeholder="NATIONAL STADIUM" onChange={(e) => onChange({ venueName: e.target.value })}
+          className="w-32 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
+        <input value={state.venueCity ?? ''} placeholder="CITY" onChange={(e) => onChange({ venueCity: e.target.value })}
+          className="w-20 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
+      </div>
+      <div className="h-4 w-px shrink-0 bg-neutral-700" />
+      {/* HASHTAG */}
+      <div className="flex shrink-0 items-center gap-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Tag</span>
+        <input value={state.hashtag ?? ''} placeholder="#MATCHDAY" onChange={(e) => onChange({ hashtag: e.target.value })}
+          className="w-24 rounded border border-neutral-700 bg-neutral-800 px-1.5 py-0.5 text-xs text-white outline-none focus:border-blue-500" />
       </div>
       <div className="h-4 w-px shrink-0 bg-neutral-700" />
       {/* BG presets */}

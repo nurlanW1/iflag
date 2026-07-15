@@ -15,6 +15,10 @@ export interface VSDesignerState {
   vsText: string;
   dateMode: 'auto' | 'manual';
   dateText: string;
+  statusText: string;
+  venueName: string;
+  venueCity: string;
+  hashtag: string;
   titleSize: number;
   centerSize: number;
   nameSize: number;
@@ -25,19 +29,23 @@ export interface VSDesignerState {
 }
 
 export const defaultState: VSDesignerState = {
-  left:  { name: 'Uzbekistan', imageUrl: 'https://flagcdn.com/w320/uz.png', type: 'flag' },
-  right: { name: 'Portugal',   imageUrl: 'https://flagcdn.com/w320/pt.png', type: 'flag' },
-  leftScore:  '0',
-  rightScore: '0',
+  left:  { name: 'Real Madrid',  imageUrl: 'https://media.api-sports.io/football/teams/541.png', type: 'club' },
+  right: { name: 'FC Barcelona', imageUrl: 'https://media.api-sports.io/football/teams/529.png', type: 'club' },
+  leftScore:  '3',
+  rightScore: '2',
   scoreMode:  true,
   bgColor:    '#0A1628',
-  eventTitle: 'WORLD CUP',
+  eventTitle: 'EL CLASICO',
   vsText:     'VS',
   dateMode:   'auto',
   dateText:   '',
-  titleSize:  30,
-  centerSize: 120,
-  nameSize:   24,
+  statusText: 'FULL TIME',
+  venueName:  'SANTIAGO BERNABEU',
+  venueCity:  'MADRID',
+  hashtag:    '#ELCLASICO',
+  titleSize:  32,
+  centerSize: 130,
+  nameSize:   34,
   titleColor:  '#FFFFFF',
   centerColor: '#FFFFFF',
   nameColor:   '#CCCCCC',
