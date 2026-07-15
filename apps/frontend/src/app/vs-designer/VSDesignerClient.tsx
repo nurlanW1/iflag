@@ -78,32 +78,12 @@ const BACKGROUND_STYLES: Array<{ id: VSBackgroundStyle; label: string }> = [
 
 function ColorSwatch({ value, onChange, title }: { value: string; onChange: (v: string) => void; title?: string }) {
   return (
-    <label className="relative block h-8 w-8 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-white/15 shadow-sm ring-1 ring-black/20" title={title}>
+    <label className="relative block h-6 w-6 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-white/15 shadow-sm ring-1 ring-black/20" title={title}>
       <div className="h-full w-full" style={{ backgroundColor: value }} />
       <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="absolute inset-0 cursor-pointer opacity-0" />
     </label>
   );
 }
-
-function MiniField({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <label className="block min-w-0">
-      <span className="mb-0.5 block text-[8px] font-black uppercase tracking-[0.14em] text-white/28">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-const inputClass =
-  'h-7 w-full rounded-lg border border-white/10 bg-black/25 px-2 text-[11px] font-bold text-white outline-none transition placeholder:text-white/20 focus:border-blue-400 focus:bg-black/35';
-const segmentClass =
-  'inline-flex h-7 items-center justify-center gap-1 rounded-lg px-2 text-[9px] font-black uppercase tracking-wide transition';
 
 type MobileTab = 'left' | 'settings' | 'right';
 type ExportTier = 'premium' | 'watermarked';
@@ -417,161 +397,137 @@ export default function VSDesignerClient() {
   }
 
   const renderControlRows = () => (
-    <div className="flex min-w-max items-stretch gap-3">
-      <section className="w-[25rem] rounded-2xl border border-white/10 bg-white/[0.045] p-3 shadow-[0_12px_30px_-28px_rgba(0,0,0,0.95)]">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/35">Banner type</span>
-          <span className="text-[10px] font-bold uppercase tracking-wide text-white/25">Main</span>
+    <div className="grid min-w-[1120px] grid-cols-[0.72fr_1.62fr_1.02fr_1.18fr] items-stretch gap-2">
+      <section className="h-[88px] rounded-xl border border-white/10 bg-white/[0.04] p-2">
+        <div className="mb-1.5 flex items-center justify-between">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/35">Type</span>
+          <span className="text-[8px] font-black uppercase tracking-wide text-white/20">Banner</span>
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-1.5">
           {TEMPLATE_PRESETS.map((preset) => (
             <button
               key={preset.id}
               type="button"
               title={preset.description}
               onClick={() => applyTemplate(preset.id)}
-              className={`min-h-12 rounded-xl border px-3 py-2 text-left transition ${
+              className={`flex h-12 flex-col items-center justify-center gap-1 rounded-lg border px-1 text-center transition ${
                 state.template === preset.id
-                  ? 'border-blue-400 bg-blue-600 text-white shadow-[0_16px_34px_-22px_rgba(37,99,235,0.9)]'
-                  : 'border-white/10 bg-black/25 text-white/55 hover:bg-white/[0.075] hover:text-white'
+                  ? 'border-blue-400 bg-blue-600 text-white shadow-[0_12px_26px_-18px_rgba(37,99,235,0.9)]'
+                  : 'border-white/10 bg-black/25 text-white/48 hover:bg-white/[0.075] hover:text-white'
               }`}
             >
-              <span className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide">
-                {preset.icon}
-                {preset.label}
-              </span>
+              {preset.icon}
+              <span className="text-[9px] font-black uppercase leading-none tracking-wide">{preset.label}</span>
             </button>
           ))}
         </div>
-        {state.template === 'group' ? (
-          <div className="mt-2 grid grid-cols-[1fr_auto] gap-2">
-            <MiniField label="Group name">
-              <input value={state.groupName ?? ''} placeholder="GROUP A" onChange={(e) => onChange({ groupName: e.target.value })} className="h-8 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-xs font-bold text-white outline-none transition placeholder:text-white/20 focus:border-blue-400" />
-            </MiniField>
-            <div>
-              <span className="mb-0.5 block text-[8px] font-black uppercase tracking-[0.14em] text-white/28">Slot</span>
-              <div className="flex h-8 items-center gap-1">
-                {(state.groupTeams?.length ? state.groupTeams : defaultState.groupTeams).slice(0, 4).map((team, index) => (
-                  <button
-                    key={`${team.name}-${index}`}
-                    type="button"
-                    onClick={() => setActiveGroupSlot(index)}
-                    className={`h-8 w-8 rounded-xl text-[11px] font-black transition ${
-                      activeGroupSlot === index
-                        ? 'bg-blue-600 text-white'
-                        : 'border border-white/10 bg-black/25 text-white/45 hover:text-white'
-                    }`}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : null}
       </section>
 
-      <section className="w-[36rem] rounded-2xl border border-white/10 bg-white/[0.045] p-3 shadow-[0_12px_30px_-28px_rgba(0,0,0,0.95)]">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/35">Match text</span>
-          <span className="text-[10px] font-bold uppercase tracking-wide text-white/25">Important</span>
+      <section className="h-[88px] rounded-xl border border-white/10 bg-white/[0.04] p-2">
+        <div className="mb-1.5 flex items-center justify-between">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/35">Text</span>
+          <span className="text-[8px] font-black uppercase tracking-wide text-white/20">Main fields</span>
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          <MiniField label="Left team">
-            <input value={state.left.name} onChange={(e) => onChange({ left: { ...state.left, name: e.target.value } })} className="h-9 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm font-black text-white outline-none transition placeholder:text-white/20 focus:border-blue-400" />
-          </MiniField>
-          <MiniField label="Right team">
-            <input value={state.right.name} onChange={(e) => onChange({ right: { ...state.right, name: e.target.value } })} className="h-9 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm font-black text-white outline-none transition placeholder:text-white/20 focus:border-blue-400" />
-          </MiniField>
-          <MiniField label="Event title">
-            <input value={state.eventTitle} onChange={(e) => onChange({ eventTitle: e.target.value })} className="h-9 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm font-black text-white outline-none transition placeholder:text-white/20 focus:border-blue-400" />
-          </MiniField>
-          <MiniField label="Status">
-            <input value={state.statusText ?? ''} placeholder="FULL TIME" onChange={(e) => onChange({ statusText: e.target.value })} className={inputClass} />
-          </MiniField>
-          <MiniField label="Hashtag">
-            <input value={state.hashtag ?? ''} placeholder="#MATCHDAY" onChange={(e) => onChange({ hashtag: e.target.value })} className={inputClass} />
-          </MiniField>
-          <MiniField label="Date">
+        <div className="grid grid-cols-6 gap-1.5">
+          <label className="col-span-2">
+            <span className="mb-0.5 block text-[8px] font-black uppercase tracking-wide text-white/30">Left</span>
+            <input value={state.left.name} onChange={(e) => onChange({ left: { ...state.left, name: e.target.value } })} className="h-7 w-full rounded-lg border border-white/10 bg-black/25 px-2 text-xs font-black text-white outline-none focus:border-blue-400" />
+          </label>
+          <label className="col-span-2">
+            <span className="mb-0.5 block text-[8px] font-black uppercase tracking-wide text-white/30">Right</span>
+            <input value={state.right.name} onChange={(e) => onChange({ right: { ...state.right, name: e.target.value } })} className="h-7 w-full rounded-lg border border-white/10 bg-black/25 px-2 text-xs font-black text-white outline-none focus:border-blue-400" />
+          </label>
+          <label className="col-span-2">
+            <span className="mb-0.5 block text-[8px] font-black uppercase tracking-wide text-white/30">Event</span>
+            <input value={state.eventTitle} onChange={(e) => onChange({ eventTitle: e.target.value })} className="h-7 w-full rounded-lg border border-white/10 bg-black/25 px-2 text-xs font-black text-white outline-none focus:border-blue-400" />
+          </label>
+          <label className="col-span-2">
+            <span className="mb-0.5 block text-[8px] font-black uppercase tracking-wide text-white/24">Status</span>
+            <input value={state.statusText ?? ''} placeholder="FULL TIME" onChange={(e) => onChange({ statusText: e.target.value })} className="h-6 w-full rounded-lg border border-white/10 bg-black/20 px-2 text-[11px] font-bold text-white/80 outline-none focus:border-blue-400" />
+          </label>
+          <label className="col-span-2">
+            <span className="mb-0.5 block text-[8px] font-black uppercase tracking-wide text-white/24">Tag</span>
+            <input value={state.hashtag ?? ''} placeholder="#MATCHDAY" onChange={(e) => onChange({ hashtag: e.target.value })} className="h-6 w-full rounded-lg border border-white/10 bg-black/20 px-2 text-[11px] font-bold text-white/80 outline-none focus:border-blue-400" />
+          </label>
+          <div className="col-span-2">
+            <span className="mb-0.5 block text-[8px] font-black uppercase tracking-wide text-white/24">Date</span>
             <div className="flex gap-1">
               {(['auto', 'manual'] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
                   onClick={() => onChange({ dateMode: m })}
-                  className={`${segmentClass} flex-1 ${state.dateMode === m ? 'bg-blue-600 text-white' : 'border border-white/10 bg-black/25 text-white/45 hover:text-white'}`}
+                  className={`h-6 flex-1 rounded-lg text-[9px] font-black uppercase tracking-wide transition ${
+                    state.dateMode === m ? 'bg-blue-600 text-white' : 'border border-white/10 bg-black/20 text-white/45 hover:text-white'
+                  }`}
                 >
                   {m === 'auto' ? 'Auto' : 'Custom'}
                 </button>
               ))}
             </div>
-          </MiniField>
-          {state.dateMode === 'manual' ? (
-            <MiniField label="Custom date">
-              <input value={state.dateText} placeholder="JUNE 26, 2026" onChange={(e) => onChange({ dateText: e.target.value })} className={inputClass} />
-            </MiniField>
-          ) : null}
+          </div>
         </div>
       </section>
 
-      <section className="w-[24rem] rounded-2xl border border-blue-400/20 bg-blue-500/[0.06] p-3 shadow-[0_12px_30px_-28px_rgba(37,99,235,0.95)]">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-blue-100/70">Score</span>
+      <section className="h-[88px] rounded-xl border border-blue-400/20 bg-blue-500/[0.055] p-2">
+        <div className="mb-1.5 flex items-center justify-between">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-100/70">Score</span>
           <button
             type="button"
             onClick={() => onChange({ scoreMode: !state.scoreMode })}
-            className={`h-7 rounded-lg px-3 text-[10px] font-black uppercase tracking-wide transition ${state.scoreMode ? 'bg-blue-600 text-white' : 'border border-white/10 bg-black/25 text-white/55 hover:text-white'}`}
+            className={`h-6 rounded-lg px-2 text-[9px] font-black uppercase tracking-wide transition ${state.scoreMode ? 'bg-blue-600 text-white' : 'border border-white/10 bg-black/25 text-white/55 hover:text-white'}`}
           >
-            {state.scoreMode ? 'Score mode' : 'VS mode'}
+            {state.scoreMode ? 'Score' : 'VS'}
           </button>
         </div>
-        {state.scoreMode ? (
-          <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
-            <MiniField label="Left">
-              <input type="text" value={state.leftScore} maxLength={3} onChange={(e) => onChange({ leftScore: e.target.value })} className="h-12 w-full rounded-2xl border border-white/10 bg-black/30 px-3 text-center text-2xl font-black text-white outline-none transition focus:border-blue-400" />
-            </MiniField>
-            <span className="pb-3 text-xl font-black text-white/35">-</span>
-            <MiniField label="Right">
-              <input type="text" value={state.rightScore} maxLength={3} onChange={(e) => onChange({ rightScore: e.target.value })} className="h-12 w-full rounded-2xl border border-white/10 bg-black/30 px-3 text-center text-2xl font-black text-white outline-none transition focus:border-blue-400" />
-            </MiniField>
+        <div className="grid grid-cols-[5rem_auto_5rem_1fr] items-end gap-1.5">
+          {state.scoreMode ? (
+            <>
+              <label>
+                <span className="mb-0.5 block text-[8px] font-black uppercase text-white/35">Left</span>
+                <input type="text" value={state.leftScore} maxLength={3} onChange={(e) => onChange({ leftScore: e.target.value })} className="h-9 w-full rounded-xl border border-white/10 bg-black/30 px-2 text-center text-lg font-black text-white outline-none focus:border-blue-400" />
+              </label>
+              <span className="pb-2 text-sm font-black text-white/35">-</span>
+              <label>
+                <span className="mb-0.5 block text-[8px] font-black uppercase text-white/35">Right</span>
+                <input type="text" value={state.rightScore} maxLength={3} onChange={(e) => onChange({ rightScore: e.target.value })} className="h-9 w-full rounded-xl border border-white/10 bg-black/30 px-2 text-center text-lg font-black text-white outline-none focus:border-blue-400" />
+              </label>
+            </>
+          ) : (
+            <label className="col-span-3">
+              <span className="mb-0.5 block text-[8px] font-black uppercase text-white/35">Center</span>
+              <input type="text" value={state.vsText} onChange={(e) => onChange({ vsText: e.target.value })} className="h-9 w-full rounded-xl border border-white/10 bg-black/30 px-2 text-center text-lg font-black text-white outline-none focus:border-blue-400" />
+            </label>
+          )}
+          <div className="grid grid-cols-1 gap-1">
+            <input value={state.venueName ?? ''} placeholder="Venue" onChange={(e) => onChange({ venueName: e.target.value })} className="h-5 rounded-md border border-white/10 bg-black/20 px-2 text-[10px] font-bold text-white/65 outline-none focus:border-blue-400" />
+            <input value={state.venueCity ?? ''} placeholder="City" onChange={(e) => onChange({ venueCity: e.target.value })} className="h-5 rounded-md border border-white/10 bg-black/20 px-2 text-[10px] font-bold text-white/65 outline-none focus:border-blue-400" />
           </div>
-        ) : (
-          <MiniField label="Center text">
-            <input type="text" value={state.vsText} onChange={(e) => onChange({ vsText: e.target.value })} className="h-12 w-full rounded-2xl border border-white/10 bg-black/30 px-3 text-center text-2xl font-black text-white outline-none transition focus:border-blue-400" />
-          </MiniField>
-        )}
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          <MiniField label="Venue">
-            <input value={state.venueName ?? ''} placeholder="NATIONAL STADIUM" onChange={(e) => onChange({ venueName: e.target.value })} className={inputClass} />
-          </MiniField>
-          <MiniField label="City">
-            <input value={state.venueCity ?? ''} placeholder="CITY" onChange={(e) => onChange({ venueCity: e.target.value })} className={inputClass} />
-          </MiniField>
         </div>
       </section>
 
-      <section className="w-[31rem] rounded-2xl border border-white/10 bg-white/[0.045] p-3 shadow-[0_12px_30px_-28px_rgba(0,0,0,0.95)]">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/35">Background & style</span>
+      <section className="h-[88px] rounded-xl border border-white/10 bg-white/[0.04] p-2">
+        <div className="mb-1.5 flex items-center justify-between gap-2">
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/35">Background</span>
           <button
             type="button"
             onClick={() => backgroundInputRef.current?.click()}
-            className="inline-flex h-9 items-center gap-2 rounded-xl bg-white text-black px-3 text-[11px] font-black uppercase tracking-wide transition hover:bg-blue-100"
+            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-lg bg-white px-2.5 text-[9px] font-black uppercase tracking-wide text-black transition hover:bg-blue-100"
           >
-            <Upload size={13} aria-hidden />
-            Upload image
+            <Upload size={12} aria-hidden />
+            Upload
           </button>
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex items-center gap-1.5">
           {BACKGROUND_STYLES.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => onChange({ backgroundStyle: item.id })}
-              className={`${segmentClass} ${
+              className={`h-6 rounded-lg px-2 text-[9px] font-black uppercase tracking-wide transition ${
                 (state.backgroundStyle ?? 'gradient') === item.id
                   ? 'bg-blue-600 text-white'
-                  : 'border border-white/10 bg-black/25 text-white/45 hover:text-white'
+                  : 'border border-white/10 bg-black/20 text-white/45 hover:text-white'
               }`}
             >
               {item.label}
@@ -584,14 +540,14 @@ export default function VSDesignerClient() {
               title={p.label}
               onClick={() => onChange({ bgColor: p.color, backgroundStyle: state.backgroundStyle === 'image' ? 'gradient' : state.backgroundStyle })}
               style={{ backgroundColor: p.color }}
-              className={`h-7 w-7 shrink-0 rounded-lg border-2 shadow-sm transition-transform hover:scale-105 ${
+              className={`h-6 w-6 shrink-0 rounded-md border-2 shadow-sm transition-transform hover:scale-105 ${
                 state.bgColor === p.color ? 'border-blue-400 ring-2 ring-blue-400/30' : 'border-white/15'
               }`}
             />
           ))}
           <label className="cursor-pointer" title="Custom background color">
             <div
-              className="flex h-7 w-7 items-center justify-center rounded-lg border-2 border-dashed border-white/15 text-[11px] font-black text-white/45 shadow-sm hover:border-blue-400"
+              className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-dashed border-white/15 text-[10px] font-black text-white/45 shadow-sm hover:border-blue-400"
               style={{ backgroundColor: BG_PRESETS.some((p) => p.color === state.bgColor) ? undefined : state.bgColor }}
             >
               +
@@ -599,25 +555,28 @@ export default function VSDesignerClient() {
             <input type="color" value={state.bgColor} onChange={(e) => onChange({ bgColor: e.target.value })} className="sr-only" />
           </label>
         </div>
-        <div className="mt-2 grid grid-cols-3 gap-2">
-          <MiniField label="Name">
-            <div className="flex items-center gap-2">
+        <div className="mt-1.5 grid grid-cols-3 gap-2">
+          <label>
+            <span className="mb-0.5 block text-[8px] font-black uppercase text-white/26">Name</span>
+            <div className="flex items-center gap-1.5">
               <input type="range" min={14} max={40} value={state.nameSize} onChange={(e) => onChange({ nameSize: Number(e.target.value) })} className="min-w-0 flex-1 accent-blue-500" />
               <ColorSwatch value={state.nameColor} onChange={(v) => onChange({ nameColor: v })} title="Name color" />
             </div>
-          </MiniField>
-          <MiniField label="Title">
-            <div className="flex items-center gap-2">
+          </label>
+          <label>
+            <span className="mb-0.5 block text-[8px] font-black uppercase text-white/26">Title</span>
+            <div className="flex items-center gap-1.5">
               <input type="range" min={14} max={56} value={state.titleSize} onChange={(e) => onChange({ titleSize: Number(e.target.value) })} className="min-w-0 flex-1 accent-blue-500" />
               <ColorSwatch value={state.titleColor} onChange={(v) => onChange({ titleColor: v })} title="Title color" />
             </div>
-          </MiniField>
-          <MiniField label={state.scoreMode ? 'Score' : 'VS'}>
-            <div className="flex items-center gap-2">
+          </label>
+          <label>
+            <span className="mb-0.5 block text-[8px] font-black uppercase text-white/26">Score</span>
+            <div className="flex items-center gap-1.5">
               <input type="range" min={60} max={160} value={state.centerSize} onChange={(e) => onChange({ centerSize: Number(e.target.value) })} className="min-w-0 flex-1 accent-blue-500" />
               <ColorSwatch value={state.centerColor} onChange={(v) => onChange({ centerColor: v })} title="Center color" />
             </div>
-          </MiniField>
+          </label>
         </div>
       </section>
     </div>
@@ -714,7 +673,7 @@ export default function VSDesignerClient() {
         </div>
       </div>
       {/* ── Desktop controls (hidden on mobile) ─────────────────────────── */}
-      <div className="hidden shrink-0 overflow-x-auto border-b border-white/10 bg-[#10131b]/95 px-5 py-3 shadow-[0_8px_30px_-28px_rgba(0,0,0,0.9)] [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.18)_transparent] md:block">
+      <div className="relative z-20 hidden shrink-0 overflow-x-auto border-b border-white/10 bg-[#10131b]/95 px-4 py-2 shadow-[0_8px_30px_-28px_rgba(0,0,0,0.9)] [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.18)_transparent] md:block">
         {renderControlRows()}
       </div>
 
@@ -724,7 +683,7 @@ export default function VSDesignerClient() {
         Canvas lives ONCE inside the center column — no duplication.
         On mobile the center column is full-width (sidebars not rendered).
       */}
-      <div className="flex min-h-0 flex-1 bg-[#070910]">
+      <div className="relative z-0 flex min-h-0 flex-1 bg-[#070910]">
 
         {/* Left sidebar — desktop only */}
         <div className="relative z-10 hidden w-[17rem] shrink-0 flex-col border-r border-white/10 bg-[#0b0e14] p-4 shadow-[18px_0_40px_-34px_rgba(0,0,0,0.9)] xl:flex 2xl:w-[20rem]">
@@ -737,7 +696,7 @@ export default function VSDesignerClient() {
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
 
           {/* Canvas — always at top of center column */}
-          <div className="shrink-0 bg-[#070910] p-2 md:flex md:min-h-0 md:flex-1 md:items-center md:justify-center md:bg-[radial-gradient(circle_at_center,#111827_0%,#070910_72%)] md:p-5 lg:p-6">
+          <div className="relative z-0 shrink-0 bg-[#070910] p-2 md:flex md:min-h-0 md:flex-1 md:items-center md:justify-center md:bg-[radial-gradient(circle_at_center,#111827_0%,#070910_72%)] md:p-5 lg:p-6">
             <div ref={wrapperRef} className="w-full max-w-[1400px] overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_30px_90px_-52px_rgba(37,99,235,0.75)]">
               <div style={{ position: 'relative', paddingBottom: '56.25%' }}>
                 <div
