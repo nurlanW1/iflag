@@ -8,6 +8,15 @@ const clerkPublishableKey =
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() ||
   process.env.CLERK_PUBLISHABLE_KEY?.trim() ||
   '';
+const allowLiveClerkInLocal =
+  process.env.NEXT_PUBLIC_ALLOW_LIVE_CLERK_LOCAL === 'true' ||
+  process.env.ALLOW_LIVE_CLERK_LOCAL === 'true';
+const safeClerkPublishableKey =
+  process.env.NODE_ENV !== 'production' &&
+  clerkPublishableKey.startsWith('pk_live_') &&
+  !allowLiveClerkInLocal
+    ? ''
+    : clerkPublishableKey;
 
 /** Fallback owner allow-list when env is omitted (comma/newline-separated list allowed). */
 const DEFAULT_ADMIN_OWNER = 'nurlanrahmonqulov@gmail.com';
@@ -97,7 +106,7 @@ const nextConfig = {
    * Maps the common `CLERK_PUBLISHABLE_KEY` typo/alias to what @clerk/nextjs expects.
    */
   env: {
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: clerkPublishableKey,
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: safeClerkPublishableKey,
     NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST: publicAdminAllowlist,
     NEXT_PUBLIC_ADMIN_EMAIL: publicAdminEmailFirst,
     NEXT_PUBLIC_MARKETPLACE_OWNER_DOWNLOAD_EMAILS: marketplaceOwnerDownloadPublic,

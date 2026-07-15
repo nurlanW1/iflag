@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
 import { ChevronLeft, ChevronRight, Crown, Download, Home, Image as ImageIcon, Layers3, Lock, Settings2, Sparkles, Trophy, Upload, Users, X } from 'lucide-react';
 import { CheckoutButton } from '@/components/billing/CheckoutButton';
 import { useClerkUiEnabled } from '@/components/providers/ClerkUiProvider';
@@ -141,11 +140,10 @@ function isDesignerState(value: unknown): value is VSDesignerState {
 export default function VSDesignerClient() {
   const router = useRouter();
   const clerkUiEnabled = useClerkUiEnabled();
-  const { isLoaded: clerkUserLoaded, isSignedIn } = useUser();
   const { user: legacyUser, loading: legacyAuthLoading } = useLegacyAuth();
   const { openModal } = useAuthModal();
-  const accountReady = clerkUiEnabled ? clerkUserLoaded : !legacyAuthLoading;
-  const hasExportAccount = clerkUiEnabled ? Boolean(isSignedIn) : Boolean(legacyUser);
+  const accountReady = !legacyAuthLoading;
+  const hasExportAccount = Boolean(legacyUser);
 
   const [state, setState]         = useState<VSDesignerState>(defaultState);
   const [exporting, setExporting] = useState(false);

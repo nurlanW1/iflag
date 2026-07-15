@@ -4,11 +4,20 @@
  * `CLERK_PUBLISHABLE_KEY`; `next.config.mjs` also maps that into NEXT_PUBLIC at build time.
  */
 export function getClerkPublishableKey(): string {
-  return (
+  const key = (
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() ||
     process.env.CLERK_PUBLISHABLE_KEY?.trim() ||
     ''
   );
+  const allowLiveClerkInLocal =
+    process.env.NEXT_PUBLIC_ALLOW_LIVE_CLERK_LOCAL === 'true' ||
+    process.env.ALLOW_LIVE_CLERK_LOCAL === 'true';
+
+  if (process.env.NODE_ENV !== 'production' && key.startsWith('pk_live_') && !allowLiveClerkInLocal) {
+    return '';
+  }
+
+  return key;
 }
 
 /**
