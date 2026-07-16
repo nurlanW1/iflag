@@ -559,7 +559,7 @@ export default function VSDesignerClient() {
               <span className="text-[8px] font-black uppercase tracking-[0.14em] text-white/35">Background</span>
               <span className="text-[8px] font-black uppercase tracking-wide text-white/20">Style</span>
             </div>
-            <div className="grid grid-cols-[auto_minmax(0,1fr)_90px] items-center gap-1.5">
+            <div className="grid grid-cols-[minmax(0,1fr)_90px] items-center gap-1.5">
               <div className="flex min-w-0 gap-1">
                 {BACKGROUND_STYLES.map((item) => (
                   <button
@@ -576,7 +576,16 @@ export default function VSDesignerClient() {
                   </button>
                 ))}
               </div>
-              <div className="flex min-w-0 justify-end gap-1">
+              <button
+                type="button"
+                onClick={() => backgroundInputRef.current?.click()}
+                className="inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-lg bg-white px-2 text-[9px] font-black uppercase tracking-wide text-black shadow-sm transition hover:bg-blue-100"
+              >
+                <Upload size={13} aria-hidden />
+                Upload
+              </button>
+            </div>
+            <div className="mt-1 flex min-w-0 items-center gap-1">
                 {BG_PRESETS.map((p) => (
                   <button
                     key={p.color}
@@ -584,31 +593,22 @@ export default function VSDesignerClient() {
                     title={p.label}
                     onClick={() => onChange({ bgColor: p.color, backgroundStyle: state.backgroundStyle === 'image' ? 'gradient' : state.backgroundStyle })}
                     style={{ backgroundColor: p.color }}
-                    className={`h-6 w-6 shrink-0 rounded-md border-2 shadow-sm transition-transform hover:scale-105 ${
+                    className={`h-[22px] w-[22px] shrink-0 rounded-md border-2 shadow-sm transition-transform hover:scale-105 ${
                       state.bgColor === p.color ? 'border-blue-400 ring-2 ring-blue-400/30' : 'border-white/15'
                     }`}
                   />
                 ))}
                 <label className="shrink-0 cursor-pointer" title="Custom background color">
                   <div
-                    className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-dashed border-white/15 text-[10px] font-black text-white/45 shadow-sm hover:border-blue-400"
+                    className="flex h-[22px] w-[22px] items-center justify-center rounded-md border-2 border-dashed border-white/15 text-[10px] font-black text-white/45 shadow-sm hover:border-blue-400"
                     style={{ backgroundColor: BG_PRESETS.some((p) => p.color === state.bgColor) ? undefined : state.bgColor }}
                   >
                     +
                   </div>
                   <input type="color" value={state.bgColor} onChange={(e) => onChange({ bgColor: e.target.value })} className="sr-only" />
                 </label>
-              </div>
-              <button
-                type="button"
-                onClick={() => backgroundInputRef.current?.click()}
-                className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-white px-2 text-[9px] font-black uppercase tracking-wide text-black shadow-sm transition hover:bg-blue-100"
-              >
-                <Upload size={13} aria-hidden />
-                Upload
-              </button>
             </div>
-            <div className="mt-1 grid grid-cols-3 gap-1.5">
+            <div className="mt-0.5 grid grid-cols-3 gap-1.5">
               <label className="min-w-0">
                 <span className="block text-[7px] font-black uppercase leading-none text-white/26">Name</span>
                 <div className="flex items-center gap-1">
