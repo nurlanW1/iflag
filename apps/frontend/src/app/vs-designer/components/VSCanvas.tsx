@@ -8,6 +8,7 @@ const BODY_FONT = '"Arial Black", "Arial Bold", Arial, system-ui, sans-serif';
 const CANVAS_WIDTH = 1920;
 const CANVAS_HEIGHT = 1080;
 const WHITE = '#fffaf0';
+const STADIUM_THEME_BACKGROUND = '/images/vs-designer/stadium-theme.jpg';
 
 export const VS_EXPORT_WIDTH = CANVAS_WIDTH;
 export const VS_EXPORT_HEIGHT = CANVAS_HEIGHT;
@@ -223,8 +224,15 @@ async function drawBackground(ctx: CanvasRenderingContext2D, state: VSDesignerSt
   ctx.fillStyle = state.bgColor;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  if (state.backgroundStyle === 'image' && state.backgroundImageUrl) {
-    const bg = await loadImage(state.backgroundImageUrl);
+  const backgroundImageSrc =
+    state.backgroundStyle === 'image'
+      ? state.backgroundImageUrl
+      : state.backgroundStyle === 'stadium'
+        ? STADIUM_THEME_BACKGROUND
+        : undefined;
+
+  if (backgroundImageSrc) {
+    const bg = await loadImage(backgroundImageSrc);
     if (bg) {
       const fit = fitCover(bg.naturalWidth || bg.width, bg.naturalHeight || bg.height, {
         x: 0,
@@ -247,7 +255,7 @@ async function drawBackground(ctx: CanvasRenderingContext2D, state: VSDesignerSt
     ctx.save();
     const pitch = ctx.createLinearGradient(0, 730, 0, 1080);
     pitch.addColorStop(0, 'rgba(12,86,57,0)');
-    pitch.addColorStop(1, 'rgba(24,118,75,0.26)');
+    pitch.addColorStop(1, 'rgba(24,118,75,0.12)');
     ctx.fillStyle = pitch;
     ctx.fillRect(0, 660, CANVAS_WIDTH, 420);
     for (const x of [230, 520, 1400, 1690]) {
