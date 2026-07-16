@@ -331,7 +331,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
 
             <Link
               href="/vs-designer"
-              className={`nav-vs-designer-link relative hidden items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold tracking-tight transition-colors duration-200 min-[1060px]:flex lg:gap-1.5 lg:px-3 lg:py-1 lg:text-sm ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-rose-50 text-rose-700 hover:bg-rose-100'}`}
+              className={`relative hidden items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold tracking-tight transition-colors duration-200 min-[1060px]:flex lg:gap-1.5 lg:px-3 lg:py-1 lg:text-sm ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-rose-50 text-rose-700 hover:bg-rose-100'}`}
             >
               <span className="nav-vs-soccer-icon" aria-hidden />
               VS Designer

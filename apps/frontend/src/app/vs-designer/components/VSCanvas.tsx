@@ -242,6 +242,9 @@ async function drawBackground(ctx: CanvasRenderingContext2D, state: VSDesignerSt
         height: CANVAS_HEIGHT,
       });
       ctx.drawImage(bg, fit.x, fit.y, fit.width, fit.height);
+      if (state.backgroundStyle === 'stadium') {
+        return;
+      }
     }
   }
 

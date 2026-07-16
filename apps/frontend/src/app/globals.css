@@ -11,40 +11,6 @@
   100% { transform: translateX(0); }
 }
 
-@keyframes vs-designer-border-spin {
-  to { transform: rotate(360deg); }
-}
-
-.nav-vs-designer-link {
-  isolation: isolate;
-  overflow: visible;
-}
-
-.nav-vs-designer-link::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  z-index: 0;
-  border-radius: 9999px;
-  padding: 1px;
-  background:
-    conic-gradient(
-      from 0deg,
-      transparent 0deg,
-      transparent 255deg,
-      rgba(250, 204, 21, 0.2) 276deg,
-      #facc15 306deg,
-      #fde047 332deg,
-      transparent 360deg
-    );
-  animation: vs-designer-border-spin 2.8s linear infinite;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  pointer-events: none;
-}
-
 .nav-vs-soccer-icon {
   position: relative;
   display: inline-flex;
