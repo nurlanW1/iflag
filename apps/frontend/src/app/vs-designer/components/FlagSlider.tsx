@@ -47,7 +47,7 @@ export default function FlagSlider({ entity, onSelect, compact = false }: FlagSl
   }, []);
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-2.5">
       <input
         ref={fileRef}
         type="file"
@@ -62,9 +62,15 @@ export default function FlagSlider({ entity, onSelect, compact = false }: FlagSl
         }}
       />
 
-      <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-3">
-        <div className="flex items-center gap-3">
-          <div className="flex h-14 w-20 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/25">
+      <div className="rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.075),rgba(255,255,255,0.035))] p-3 shadow-[0_18px_40px_-34px_rgba(59,130,246,0.9)]">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/32">Selected</span>
+          <span className="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-white/35">
+            {entity.type === 'club' ? 'Club' : 'Country'}
+          </span>
+        </div>
+        <div className="grid grid-cols-[4.75rem_minmax(0,1fr)] items-center gap-3">
+          <div className="flex h-14 w-[4.75rem] shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black/30 ring-1 ring-white/[0.03]">
             {entity.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -78,26 +84,26 @@ export default function FlagSlider({ entity, onSelect, compact = false }: FlagSl
             )}
           </div>
           <label className="min-w-0 flex-1">
-            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/35">Display name</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.16em] text-white/32">Display name</span>
             <input
               type="text"
               value={entity.name}
               onChange={(e) => onSelect({ ...entity, name: e.target.value })}
-              className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm font-bold text-white outline-none transition placeholder:text-white/20 focus:border-blue-400"
+              className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-black/30 px-3 text-sm font-bold text-white outline-none transition placeholder:text-white/20 focus:border-blue-400 focus:bg-black/40"
               placeholder="Team name"
             />
           </label>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-1.5 rounded-2xl border border-white/10 bg-black/20 p-1.5">
+      <div className="grid grid-cols-3 gap-1 rounded-2xl border border-white/10 bg-black/25 p-1.5 shadow-inner shadow-black/20">
         <button
           type="button"
           onClick={() => {
             setMode('flag');
             setQuery('');
           }}
-          className={`${modeButtonBase} ${mode === 'flag' ? 'bg-blue-600 text-white shadow-[0_10px_24px_-18px_rgba(37,99,235,0.9)]' : modeButtonInactive}`}
+          className={`${modeButtonBase} ${mode === 'flag' ? 'bg-blue-600 text-white shadow-[0_12px_26px_-18px_rgba(37,99,235,0.95)]' : modeButtonInactive}`}
         >
           <Flag size={16} className={mode === 'flag' ? 'text-white' : 'text-blue-300'} aria-hidden />
           Country
@@ -108,7 +114,7 @@ export default function FlagSlider({ entity, onSelect, compact = false }: FlagSl
             setMode('club');
             setQuery('');
           }}
-          className={`${modeButtonBase} ${mode === 'club' ? 'bg-amber-500 text-black shadow-[0_10px_24px_-18px_rgba(245,158,11,0.9)]' : modeButtonInactive}`}
+          className={`${modeButtonBase} ${mode === 'club' ? 'bg-amber-500 text-black shadow-[0_12px_26px_-18px_rgba(245,158,11,0.95)]' : modeButtonInactive}`}
         >
           <Trophy size={16} className={mode === 'club' ? 'text-black' : 'text-amber-300'} aria-hidden />
           Club
@@ -116,7 +122,7 @@ export default function FlagSlider({ entity, onSelect, compact = false }: FlagSl
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className={`${modeButtonBase} ${mode === 'import' ? 'bg-emerald-500 text-black shadow-[0_10px_24px_-18px_rgba(16,185,129,0.9)]' : modeButtonInactive}`}
+          className={`${modeButtonBase} ${mode === 'import' ? 'bg-emerald-500 text-black shadow-[0_12px_26px_-18px_rgba(16,185,129,0.95)]' : modeButtonInactive}`}
         >
           <Upload size={16} className={mode === 'import' ? 'text-black' : 'text-emerald-300'} aria-hidden />
           Import
