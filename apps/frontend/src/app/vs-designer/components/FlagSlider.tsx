@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Globe, Search, Trophy, Upload } from 'lucide-react';
+import { Flag, Search, Trophy, Upload } from 'lucide-react';
 import { ALL_COUNTRIES } from '@/lib/flag-search';
 import { POPULAR_TEAMS } from '@/lib/sport-logos';
 import type { VSEntity } from '@/lib/vs-designer-types';
@@ -17,6 +17,7 @@ interface FlagSliderProps {
 
 const modeButtonBase =
   'inline-flex h-9 items-center justify-center gap-2 rounded-xl px-3 text-xs font-bold transition';
+const modeButtonInactive = 'bg-transparent text-white/45 hover:bg-white/[0.07] hover:text-white';
 
 export default function FlagSlider({ label, entity, onSelect, compact = false }: FlagSliderProps) {
   const [mode, setMode] = useState<Mode>(entity.type === 'club' ? 'club' : 'flag');
@@ -111,9 +112,9 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
             setMode('flag');
             setQuery('');
           }}
-          className={`${modeButtonBase} ${mode === 'flag' ? 'bg-blue-600 text-white' : 'text-white/45 hover:bg-white/[0.07] hover:text-white'}`}
+          className={`${modeButtonBase} ${mode === 'flag' ? 'bg-blue-600 text-white shadow-[0_10px_24px_-18px_rgba(37,99,235,0.9)]' : modeButtonInactive}`}
         >
-          <Globe size={15} aria-hidden />
+          <Flag size={16} className={mode === 'flag' ? 'text-white' : 'text-blue-300'} aria-hidden />
           Country
         </button>
         <button
@@ -122,17 +123,17 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
             setMode('club');
             setQuery('');
           }}
-          className={`${modeButtonBase} ${mode === 'club' ? 'bg-blue-600 text-white' : 'text-white/45 hover:bg-white/[0.07] hover:text-white'}`}
+          className={`${modeButtonBase} ${mode === 'club' ? 'bg-amber-500 text-black shadow-[0_10px_24px_-18px_rgba(245,158,11,0.9)]' : modeButtonInactive}`}
         >
-          <Trophy size={15} aria-hidden />
+          <Trophy size={16} className={mode === 'club' ? 'text-black' : 'text-amber-300'} aria-hidden />
           Club
         </button>
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className={`${modeButtonBase} ${mode === 'import' ? 'bg-blue-600 text-white' : 'text-white/45 hover:bg-white/[0.07] hover:text-white'}`}
+          className={`${modeButtonBase} ${mode === 'import' ? 'bg-emerald-500 text-black shadow-[0_10px_24px_-18px_rgba(16,185,129,0.9)]' : modeButtonInactive}`}
         >
-          <Upload size={15} aria-hidden />
+          <Upload size={16} className={mode === 'import' ? 'text-black' : 'text-emerald-300'} aria-hidden />
           Import
         </button>
       </div>
