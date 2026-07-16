@@ -20,7 +20,6 @@ import {
   Search,
   Gamepad2,
   PenTool,
-  Swords,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -332,10 +331,9 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
 
             <Link
               href="/vs-designer"
-              className={`relative hidden items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold tracking-tight transition-colors duration-200 min-[1060px]:flex lg:gap-1.5 lg:px-3 lg:py-1 lg:text-sm ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-rose-50 text-rose-700 hover:bg-rose-100'}`}
+              className={`nav-vs-designer-link relative hidden items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold tracking-tight transition-colors duration-200 min-[1060px]:flex lg:gap-1.5 lg:px-3 lg:py-1 lg:text-sm ${isHero ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-rose-50 text-rose-700 hover:bg-rose-100'}`}
             >
-              <Swords size={12} className="shrink-0 lg:hidden" aria-hidden />
-              <Swords size={14} className="hidden shrink-0 lg:block" aria-hidden />
+              <span className="nav-vs-soccer-icon" aria-hidden />
               VS Designer
               <span className="absolute -right-1 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-emerald-500 px-0.5 text-[8px] font-bold uppercase leading-none text-white lg:h-4 lg:min-w-4 lg:px-1 lg:text-[9px]">
                 NEW
@@ -438,7 +436,7 @@ export default function Navbar({ clerkUiEnabled = true }: NavbarProps) {
                     className="relative flex min-h-[3rem] items-center gap-3 px-4 py-2 text-base font-semibold text-rose-700 hover:bg-rose-50"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Swords size={20} aria-hidden />
+                    <span className="nav-vs-soccer-icon nav-vs-soccer-icon-mobile" aria-hidden />
                     VS Designer
                     <span className="ml-auto flex h-5 items-center justify-center rounded-full bg-emerald-500 px-2 text-[10px] font-bold uppercase text-white">
                       NEW
