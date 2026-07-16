@@ -19,7 +19,7 @@ const modeButtonBase =
   'inline-flex h-9 items-center justify-center gap-2 rounded-xl px-3 text-xs font-bold transition';
 const modeButtonInactive = 'bg-transparent text-white/45 hover:bg-white/[0.07] hover:text-white';
 
-export default function FlagSlider({ label, entity, onSelect, compact = false }: FlagSliderProps) {
+export default function FlagSlider({ entity, onSelect, compact = false }: FlagSliderProps) {
   const [mode, setMode] = useState<Mode>(entity.type === 'club' ? 'club' : 'flag');
   const [query, setQuery] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
@@ -61,21 +61,6 @@ export default function FlagSlider({ label, entity, onSelect, compact = false }:
           }
         }}
       />
-
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">{label}</div>
-          <div className="mt-1 truncate text-sm font-black text-white">{entity.name || 'Select team'}</div>
-        </div>
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          className="inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 text-xs font-bold text-white/75 transition hover:border-blue-400/50 hover:bg-blue-500/15 hover:text-white"
-        >
-          <Upload size={14} aria-hidden />
-          Upload
-        </button>
-      </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-3">
         <div className="flex items-center gap-3">
