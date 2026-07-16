@@ -243,6 +243,8 @@ async function drawBackground(ctx: CanvasRenderingContext2D, state: VSDesignerSt
       });
       ctx.drawImage(bg, fit.x, fit.y, fit.width, fit.height);
       if (state.backgroundStyle === 'stadium') {
+        ctx.fillStyle = 'rgba(0,0,0,0.32)';
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
         return;
       }
     }
