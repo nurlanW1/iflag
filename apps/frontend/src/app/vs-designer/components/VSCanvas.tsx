@@ -250,13 +250,6 @@ async function drawBackground(ctx: CanvasRenderingContext2D, state: VSDesignerSt
     pitch.addColorStop(1, 'rgba(24,118,75,0.26)');
     ctx.fillStyle = pitch;
     ctx.fillRect(0, 660, CANVAS_WIDTH, 420);
-    ctx.strokeStyle = 'rgba(255,255,255,0.075)';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.ellipse(960, 960, 320, 82, 0, Math.PI, 0);
-    ctx.moveTo(0, 880);
-    ctx.lineTo(CANVAS_WIDTH, 880);
-    ctx.stroke();
     for (const x of [230, 520, 1400, 1690]) {
       const light = ctx.createRadialGradient(x, 118, 0, x, 118, 360);
       light.addColorStop(0, 'rgba(255,255,255,0.14)');
