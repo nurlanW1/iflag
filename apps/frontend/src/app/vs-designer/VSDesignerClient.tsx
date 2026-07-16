@@ -433,12 +433,12 @@ export default function VSDesignerClient() {
   const renderControlRows = (includeActions = false) => {
     if (includeActions) {
       return (
-        <div className="grid h-[112px] w-full min-w-0 grid-cols-[44px_230px_minmax(360px,1.45fr)_285px_minmax(330px,1fr)_210px] items-stretch gap-2">
+        <div className="grid h-[112px] w-full min-w-0 grid-cols-[44px_230px_minmax(360px,1.45fr)_285px_minmax(330px,1fr)_210px] items-stretch gap-1.5">
           <section className="flex min-w-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
             <button
               type="button"
               onClick={() => router.push('/')}
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.055] text-white/70 transition hover:bg-white/[0.1] hover:text-white"
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.055] text-white/70 transition hover:bg-white/[0.1] hover:text-white"
               aria-label="Back to home"
               title="Back to home"
             >
@@ -446,66 +446,66 @@ export default function VSDesignerClient() {
             </button>
           </section>
 
-          <section className="min-w-0 rounded-xl border border-white/10 bg-white/[0.04] p-2">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/35">Type</span>
+          <section className="min-w-0 rounded-xl border border-white/10 bg-white/[0.04] p-1.5">
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-[8px] font-black uppercase tracking-[0.14em] text-white/35">Type</span>
               <span className="text-[8px] font-black uppercase tracking-wide text-white/20">Banner</span>
             </div>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1">
               {TEMPLATE_PRESETS.map((preset) => (
                 <button
                   key={preset.id}
                   type="button"
                   title={preset.description}
                   onClick={() => applyTemplate(preset.id)}
-                  className={`flex h-[70px] flex-col items-center justify-center gap-1.5 rounded-lg border px-1 text-center transition ${
+                  className={`flex h-[60px] flex-col items-center justify-center gap-1 rounded-lg border px-1 text-center transition ${
                     state.template === preset.id
                       ? 'border-blue-400 bg-blue-600 text-white shadow-[0_12px_26px_-18px_rgba(37,99,235,0.9)]'
                       : 'border-white/10 bg-black/25 text-white/48 hover:bg-white/[0.075] hover:text-white'
                   }`}
                 >
                   {preset.icon}
-                  <span className="text-[9px] font-black uppercase leading-tight tracking-wide">{preset.label}</span>
+                  <span className="text-[8px] font-black uppercase leading-none tracking-wide">{preset.label}</span>
                 </button>
               ))}
             </div>
           </section>
 
-          <section className="min-w-0 rounded-xl border border-white/10 bg-white/[0.04] p-2">
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/35">Text</span>
+          <section className="min-w-0 rounded-xl border border-white/10 bg-white/[0.04] p-1.5">
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-[8px] font-black uppercase tracking-[0.14em] text-white/35">Text</span>
               <span className="text-[8px] font-black uppercase tracking-wide text-white/20">Main fields</span>
             </div>
-            <div className="grid grid-cols-6 gap-1.5">
+            <div className="grid grid-cols-6 gap-1">
               <label className="col-span-2 min-w-0">
-                <span className="mb-0.5 block text-[8px] font-black uppercase tracking-wide text-white/30">Left</span>
-                <input value={state.left.name} onChange={(e) => onChange({ left: { ...state.left, name: e.target.value } })} className="h-8 w-full rounded-lg border border-white/10 bg-black/25 px-2 text-xs font-black text-white outline-none focus:border-blue-400" />
+                <span className="block text-[7px] font-black uppercase tracking-wide text-white/30">Left</span>
+                <input value={state.left.name} onChange={(e) => onChange({ left: { ...state.left, name: e.target.value } })} className="h-7 w-full rounded-lg border border-white/10 bg-black/25 px-2 text-[11px] font-black text-white outline-none focus:border-blue-400" />
               </label>
               <label className="col-span-2 min-w-0">
-                <span className="mb-0.5 block text-[8px] font-black uppercase tracking-wide text-white/30">Right</span>
-                <input value={state.right.name} onChange={(e) => onChange({ right: { ...state.right, name: e.target.value } })} className="h-8 w-full rounded-lg border border-white/10 bg-black/25 px-2 text-xs font-black text-white outline-none focus:border-blue-400" />
+                <span className="block text-[7px] font-black uppercase tracking-wide text-white/30">Right</span>
+                <input value={state.right.name} onChange={(e) => onChange({ right: { ...state.right, name: e.target.value } })} className="h-7 w-full rounded-lg border border-white/10 bg-black/25 px-2 text-[11px] font-black text-white outline-none focus:border-blue-400" />
               </label>
               <label className="col-span-2 min-w-0">
-                <span className="mb-0.5 block text-[8px] font-black uppercase tracking-wide text-white/30">Event</span>
-                <input value={state.eventTitle} onChange={(e) => onChange({ eventTitle: e.target.value })} className="h-8 w-full rounded-lg border border-white/10 bg-black/25 px-2 text-xs font-black text-white outline-none focus:border-blue-400" />
+                <span className="block text-[7px] font-black uppercase tracking-wide text-white/30">Event</span>
+                <input value={state.eventTitle} onChange={(e) => onChange({ eventTitle: e.target.value })} className="h-7 w-full rounded-lg border border-white/10 bg-black/25 px-2 text-[11px] font-black text-white outline-none focus:border-blue-400" />
               </label>
               <label className="col-span-2 min-w-0">
-                <span className="mb-0.5 block text-[8px] font-black uppercase tracking-wide text-white/24">Status</span>
-                <input value={state.statusText ?? ''} placeholder="FULL TIME" onChange={(e) => onChange({ statusText: e.target.value })} className="h-7 w-full rounded-lg border border-white/10 bg-black/20 px-2 text-[11px] font-bold text-white/80 outline-none focus:border-blue-400" />
+                <span className="block text-[7px] font-black uppercase tracking-wide text-white/24">Status</span>
+                <input value={state.statusText ?? ''} placeholder="FULL TIME" onChange={(e) => onChange({ statusText: e.target.value })} className="h-6 w-full rounded-lg border border-white/10 bg-black/20 px-2 text-[10px] font-bold text-white/80 outline-none focus:border-blue-400" />
               </label>
               <label className="col-span-2 min-w-0">
-                <span className="mb-0.5 block text-[8px] font-black uppercase tracking-wide text-white/24">Tag</span>
-                <input value={state.hashtag ?? ''} placeholder="#MATCHDAY" onChange={(e) => onChange({ hashtag: e.target.value })} className="h-7 w-full rounded-lg border border-white/10 bg-black/20 px-2 text-[11px] font-bold text-white/80 outline-none focus:border-blue-400" />
+                <span className="block text-[7px] font-black uppercase tracking-wide text-white/24">Tag</span>
+                <input value={state.hashtag ?? ''} placeholder="#MATCHDAY" onChange={(e) => onChange({ hashtag: e.target.value })} className="h-6 w-full rounded-lg border border-white/10 bg-black/20 px-2 text-[10px] font-bold text-white/80 outline-none focus:border-blue-400" />
               </label>
               <div className="col-span-2 min-w-0">
-                <span className="mb-0.5 block text-[8px] font-black uppercase tracking-wide text-white/24">Date</span>
+                <span className="block text-[7px] font-black uppercase tracking-wide text-white/24">Date</span>
                 <div className="flex gap-1">
                   {(['auto', 'manual'] as const).map((m) => (
                     <button
                       key={m}
                       type="button"
                       onClick={() => onChange({ dateMode: m })}
-                      className={`h-7 flex-1 rounded-lg text-[9px] font-black uppercase tracking-wide transition ${
+                      className={`h-6 flex-1 rounded-lg text-[8px] font-black uppercase tracking-wide transition ${
                         state.dateMode === m ? 'bg-blue-600 text-white' : 'border border-white/10 bg-black/20 text-white/45 hover:text-white'
                       }`}
                     >
@@ -517,63 +517,63 @@ export default function VSDesignerClient() {
             </div>
           </section>
 
-          <section className="min-w-0 rounded-xl border border-blue-400/20 bg-blue-500/[0.055] p-2">
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-100/70">Score</span>
+          <section className="min-w-0 rounded-xl border border-blue-400/20 bg-blue-500/[0.055] p-1.5">
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-[8px] font-black uppercase tracking-[0.14em] text-blue-100/70">Score</span>
               <button
                 type="button"
                 onClick={() => onChange({ scoreMode: !state.scoreMode })}
-                className={`h-6 rounded-lg px-3 text-[9px] font-black uppercase tracking-wide transition ${state.scoreMode ? 'bg-blue-600 text-white' : 'border border-white/10 bg-black/25 text-white/55 hover:text-white'}`}
+                className={`h-5 rounded-lg px-2.5 text-[8px] font-black uppercase tracking-wide transition ${state.scoreMode ? 'bg-blue-600 text-white' : 'border border-white/10 bg-black/25 text-white/55 hover:text-white'}`}
               >
                 {state.scoreMode ? 'Score' : 'VS'}
               </button>
             </div>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-1.5">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-1">
               {state.scoreMode ? (
                 <>
                   <label className="min-w-0">
-                    <span className="mb-0.5 block text-[8px] font-black uppercase text-white/35">Left</span>
-                    <input type="text" value={state.leftScore} maxLength={3} onChange={(e) => onChange({ leftScore: e.target.value })} className="h-9 w-full rounded-xl border border-white/10 bg-black/30 px-2 text-center text-lg font-black text-white outline-none focus:border-blue-400" />
+                    <span className="block text-[7px] font-black uppercase text-white/35">Left</span>
+                    <input type="text" value={state.leftScore} maxLength={3} onChange={(e) => onChange({ leftScore: e.target.value })} className="h-8 w-full rounded-xl border border-white/10 bg-black/30 px-2 text-center text-base font-black text-white outline-none focus:border-blue-400" />
                   </label>
                   <span className="pb-2 text-sm font-black text-white/35">-</span>
                   <label className="min-w-0">
-                    <span className="mb-0.5 block text-[8px] font-black uppercase text-white/35">Right</span>
-                    <input type="text" value={state.rightScore} maxLength={3} onChange={(e) => onChange({ rightScore: e.target.value })} className="h-9 w-full rounded-xl border border-white/10 bg-black/30 px-2 text-center text-lg font-black text-white outline-none focus:border-blue-400" />
+                    <span className="block text-[7px] font-black uppercase text-white/35">Right</span>
+                    <input type="text" value={state.rightScore} maxLength={3} onChange={(e) => onChange({ rightScore: e.target.value })} className="h-8 w-full rounded-xl border border-white/10 bg-black/30 px-2 text-center text-base font-black text-white outline-none focus:border-blue-400" />
                   </label>
                 </>
               ) : (
                 <label className="col-span-3 min-w-0">
-                  <span className="mb-0.5 block text-[8px] font-black uppercase text-white/35">Center</span>
-                  <input type="text" value={state.vsText} onChange={(e) => onChange({ vsText: e.target.value })} className="h-9 w-full rounded-xl border border-white/10 bg-black/30 px-2 text-center text-lg font-black text-white outline-none focus:border-blue-400" />
+                  <span className="block text-[7px] font-black uppercase text-white/35">Center</span>
+                  <input type="text" value={state.vsText} onChange={(e) => onChange({ vsText: e.target.value })} className="h-8 w-full rounded-xl border border-white/10 bg-black/30 px-2 text-center text-base font-black text-white outline-none focus:border-blue-400" />
                 </label>
               )}
             </div>
-            <div className="mt-1.5 grid grid-cols-2 gap-1.5">
-              <input value={state.venueName ?? ''} placeholder="Venue" onChange={(e) => onChange({ venueName: e.target.value })} className="h-7 min-w-0 rounded-lg border border-white/10 bg-black/20 px-2 text-[10px] font-bold text-white/65 outline-none focus:border-blue-400" />
-              <input value={state.venueCity ?? ''} placeholder="City" onChange={(e) => onChange({ venueCity: e.target.value })} className="h-7 min-w-0 rounded-lg border border-white/10 bg-black/20 px-2 text-[10px] font-bold text-white/65 outline-none focus:border-blue-400" />
+            <div className="mt-1 grid grid-cols-2 gap-1">
+              <input value={state.venueName ?? ''} placeholder="Venue" onChange={(e) => onChange({ venueName: e.target.value })} className="h-6 min-w-0 rounded-lg border border-white/10 bg-black/20 px-2 text-[10px] font-bold text-white/65 outline-none focus:border-blue-400" />
+              <input value={state.venueCity ?? ''} placeholder="City" onChange={(e) => onChange({ venueCity: e.target.value })} className="h-6 min-w-0 rounded-lg border border-white/10 bg-black/20 px-2 text-[10px] font-bold text-white/65 outline-none focus:border-blue-400" />
             </div>
           </section>
 
-          <section className="min-w-0 rounded-xl border border-white/10 bg-white/[0.04] p-2">
-            <div className="mb-1.5 flex items-center justify-between gap-2">
-              <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white/35">Background</span>
+          <section className="min-w-0 rounded-xl border border-white/10 bg-white/[0.04] p-1.5">
+            <div className="mb-1 flex items-center justify-between gap-1.5">
+              <span className="text-[8px] font-black uppercase tracking-[0.14em] text-white/35">Background</span>
               <button
                 type="button"
                 onClick={() => backgroundInputRef.current?.click()}
-                className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-lg bg-white px-3 text-[9px] font-black uppercase tracking-wide text-black transition hover:bg-blue-100"
+                className="inline-flex h-6 shrink-0 items-center gap-1 rounded-lg bg-white px-2.5 text-[8px] font-black uppercase tracking-wide text-black transition hover:bg-blue-100"
               >
                 <Upload size={12} aria-hidden />
                 Upload
               </button>
             </div>
-            <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+            <div className="grid grid-cols-[auto_1fr] items-center gap-1.5">
               <div className="flex min-w-0 gap-1">
                 {BACKGROUND_STYLES.map((item) => (
                   <button
                     key={item.id}
                     type="button"
                     onClick={() => onChange({ backgroundStyle: item.id })}
-                    className={`h-7 rounded-lg px-2 text-[9px] font-black uppercase tracking-wide transition ${
+                    className={`h-6 rounded-lg px-1.5 text-[8px] font-black uppercase tracking-wide transition ${
                       (state.backgroundStyle ?? 'gradient') === item.id
                         ? 'bg-blue-600 text-white'
                         : 'border border-white/10 bg-black/20 text-white/45 hover:text-white'
@@ -591,14 +591,14 @@ export default function VSDesignerClient() {
                     title={p.label}
                     onClick={() => onChange({ bgColor: p.color, backgroundStyle: state.backgroundStyle === 'image' ? 'gradient' : state.backgroundStyle })}
                     style={{ backgroundColor: p.color }}
-                    className={`h-7 w-7 shrink-0 rounded-md border-2 shadow-sm transition-transform hover:scale-105 ${
+                    className={`h-6 w-6 shrink-0 rounded-md border-2 shadow-sm transition-transform hover:scale-105 ${
                       state.bgColor === p.color ? 'border-blue-400 ring-2 ring-blue-400/30' : 'border-white/15'
                     }`}
                   />
                 ))}
                 <label className="shrink-0 cursor-pointer" title="Custom background color">
                   <div
-                    className="flex h-7 w-7 items-center justify-center rounded-md border-2 border-dashed border-white/15 text-[10px] font-black text-white/45 shadow-sm hover:border-blue-400"
+                    className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-dashed border-white/15 text-[10px] font-black text-white/45 shadow-sm hover:border-blue-400"
                     style={{ backgroundColor: BG_PRESETS.some((p) => p.color === state.bgColor) ? undefined : state.bgColor }}
                   >
                     +
@@ -607,24 +607,24 @@ export default function VSDesignerClient() {
                 </label>
               </div>
             </div>
-            <div className="mt-2 grid grid-cols-3 gap-2">
+            <div className="mt-1 grid grid-cols-3 gap-1.5">
               <label className="min-w-0">
-                <span className="mb-0.5 block text-[8px] font-black uppercase text-white/26">Name</span>
-                <div className="flex items-center gap-1.5">
+                <span className="block text-[7px] font-black uppercase leading-none text-white/26">Name</span>
+                <div className="flex items-center gap-1">
                   <input type="range" min={14} max={40} value={state.nameSize} onChange={(e) => onChange({ nameSize: Number(e.target.value) })} className="min-w-0 flex-1 accent-blue-500" />
                   <ColorSwatch value={state.nameColor} onChange={(v) => onChange({ nameColor: v })} title="Name color" />
                 </div>
               </label>
               <label className="min-w-0">
-                <span className="mb-0.5 block text-[8px] font-black uppercase text-white/26">Title</span>
-                <div className="flex items-center gap-1.5">
+                <span className="block text-[7px] font-black uppercase leading-none text-white/26">Title</span>
+                <div className="flex items-center gap-1">
                   <input type="range" min={14} max={56} value={state.titleSize} onChange={(e) => onChange({ titleSize: Number(e.target.value) })} className="min-w-0 flex-1 accent-blue-500" />
                   <ColorSwatch value={state.titleColor} onChange={(v) => onChange({ titleColor: v })} title="Title color" />
                 </div>
               </label>
               <label className="min-w-0">
-                <span className="mb-0.5 block text-[8px] font-black uppercase text-white/26">Score</span>
-                <div className="flex items-center gap-1.5">
+                <span className="block text-[7px] font-black uppercase leading-none text-white/26">Score</span>
+                <div className="flex items-center gap-1">
                   <input type="range" min={60} max={160} value={state.centerSize} onChange={(e) => onChange({ centerSize: Number(e.target.value) })} className="min-w-0 flex-1 accent-blue-500" />
                   <ColorSwatch value={state.centerColor} onChange={(v) => onChange({ centerColor: v })} title="Center color" />
                 </div>
@@ -632,12 +632,12 @@ export default function VSDesignerClient() {
             </div>
           </section>
 
-          <section className="flex min-w-0 flex-col justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-2">
+          <section className="flex min-w-0 flex-col justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] p-1.5">
             <button
               type="button"
               onClick={() => void handleExport('watermarked')}
               disabled={exporting || checkingAccess || !accountReady}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/[0.06] px-3 text-xs font-bold text-white/85 shadow-sm transition hover:border-white/20 hover:bg-white/[0.1] disabled:opacity-60"
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/[0.06] px-3 text-xs font-bold text-white/85 shadow-sm transition hover:border-white/20 hover:bg-white/[0.1] disabled:opacity-60"
             >
               <Download size={14} aria-hidden />
               Free preview
@@ -646,7 +646,7 @@ export default function VSDesignerClient() {
               type="button"
               onClick={() => void verifyPremiumAndExport()}
               disabled={exporting || checkingAccess || !accountReady}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-xs font-black text-white shadow-[0_10px_30px_-16px_rgba(37,99,235,0.9)] transition hover:bg-blue-500 disabled:opacity-60"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-xs font-black text-white shadow-[0_10px_30px_-16px_rgba(37,99,235,0.9)] transition hover:bg-blue-500 disabled:opacity-60"
             >
               {premiumUnlocked ? <Download size={14} aria-hidden /> : <Crown size={14} aria-hidden />}
               {exporting ? 'Exporting...' : checkingAccess ? 'Checking...' : premiumUnlocked ? 'Export HD' : 'Premium PNG $1'}
