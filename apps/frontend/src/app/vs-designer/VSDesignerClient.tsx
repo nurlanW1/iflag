@@ -557,16 +557,9 @@ export default function VSDesignerClient() {
           <section className="min-w-0 rounded-xl border border-white/10 bg-white/[0.04] p-1.5">
             <div className="mb-1 flex items-center justify-between gap-1.5">
               <span className="text-[8px] font-black uppercase tracking-[0.14em] text-white/35">Background</span>
-              <button
-                type="button"
-                onClick={() => backgroundInputRef.current?.click()}
-                className="inline-flex h-6 shrink-0 items-center gap-1 rounded-lg bg-white px-2.5 text-[8px] font-black uppercase tracking-wide text-black transition hover:bg-blue-100"
-              >
-                <Upload size={12} aria-hidden />
-                Upload
-              </button>
+              <span className="text-[8px] font-black uppercase tracking-wide text-white/20">Style</span>
             </div>
-            <div className="grid grid-cols-[auto_1fr] items-center gap-1.5">
+            <div className="grid grid-cols-[auto_minmax(0,1fr)_90px] items-center gap-1.5">
               <div className="flex min-w-0 gap-1">
                 {BACKGROUND_STYLES.map((item) => (
                   <button
@@ -606,6 +599,14 @@ export default function VSDesignerClient() {
                   <input type="color" value={state.bgColor} onChange={(e) => onChange({ bgColor: e.target.value })} className="sr-only" />
                 </label>
               </div>
+              <button
+                type="button"
+                onClick={() => backgroundInputRef.current?.click()}
+                className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-white px-2 text-[9px] font-black uppercase tracking-wide text-black shadow-sm transition hover:bg-blue-100"
+              >
+                <Upload size={13} aria-hidden />
+                Upload
+              </button>
             </div>
             <div className="mt-1 grid grid-cols-3 gap-1.5">
               <label className="min-w-0">
