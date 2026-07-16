@@ -16,7 +16,7 @@ interface FlagSliderProps {
 }
 
 const modeButtonBase =
-  'inline-flex h-9 items-center justify-center gap-2 rounded-xl px-3 text-xs font-bold transition';
+  'inline-flex h-9 items-center justify-center gap-1.5 rounded-xl px-2 text-xs font-bold transition';
 const modeButtonInactive = 'bg-transparent text-white/45 hover:bg-white/[0.07] hover:text-white';
 
 export default function FlagSlider({ entity, onSelect, compact = false }: FlagSliderProps) {
@@ -105,7 +105,12 @@ export default function FlagSlider({ entity, onSelect, compact = false }: FlagSl
           }}
           className={`${modeButtonBase} ${mode === 'flag' ? 'bg-blue-600 text-white shadow-[0_12px_26px_-18px_rgba(37,99,235,0.95)]' : modeButtonInactive}`}
         >
-          <Flag size={16} className={mode === 'flag' ? 'text-white' : 'text-blue-300'} aria-hidden />
+          <Flag
+            size={18}
+            strokeWidth={2.8}
+            className={`shrink-0 drop-shadow-sm ${mode === 'flag' ? 'text-cyan-200' : 'text-sky-400'}`}
+            aria-hidden
+          />
           Country
         </button>
         <button
