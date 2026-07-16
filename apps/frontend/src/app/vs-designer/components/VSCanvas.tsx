@@ -165,6 +165,7 @@ function drawTextInRect(
     strokeWidth?: number;
     shadow?: boolean;
     minSize?: number;
+    offsetY?: number;
   },
 ) {
   ctx.save();
@@ -195,7 +196,7 @@ function drawTextInRect(
   }
   const align = opts.align ?? 'center';
   const x = align === 'left' ? rect.x : align === 'right' ? rect.x + rect.width : rect.x + rect.width / 2;
-  drawSpacedText(ctx, displayText, x, rect.y + rect.height / 2, {
+  drawSpacedText(ctx, displayText, x, rect.y + rect.height / 2 + (opts.offsetY ?? 0), {
     align,
     letterSpacing,
     stroke: Boolean(opts.strokeColor && opts.strokeWidth),
@@ -432,6 +433,7 @@ async function drawGroupBanner(ctx: CanvasRenderingContext2D, state: VSDesignerS
     letterSpacing: 5,
     family: BODY_FONT,
     shadow: true,
+    offsetY: -5,
   });
   drawTextInRect(ctx, upper(state.groupName, 'GROUP A'), { x: 690, y: 270, width: 540, height: 44 }, {
     weight: 900,
@@ -555,6 +557,7 @@ export async function renderVSDesignToCanvas(state: VSDesignerState, scale = 1):
     letterSpacing: 5,
     family: BODY_FONT,
     shadow: true,
+    offsetY: -7,
   });
 
   drawScore(ctx, state, layout);
