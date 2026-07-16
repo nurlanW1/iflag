@@ -164,10 +164,23 @@ function drawTextInRect(
     strokeColor?: string;
     strokeWidth?: number;
     shadow?: boolean;
+    minSize?: number;
   },
 ) {
   ctx.save();
-  setFont(ctx, opts.weight, opts.size, opts.family);
+  const letterSpacing = opts.letterSpacing ?? 0;
+  const displayText = upper(text);
+  const minSize = opts.minSize ?? Math.max(10, Math.round(opts.size * 0.55));
+  let fittedSize = Math.min(opts.size, Math.max(minSize, Math.floor(rect.height * 0.92)));
+  setFont(ctx, opts.weight, fittedSize, opts.family);
+  while (fittedSize > minSize && measureSpacedText(ctx, displayText, letterSpacing) > rect.width) {
+    fittedSize -= 1;
+    setFont(ctx, opts.weight, fittedSize, opts.family);
+  }
+
+  ctx.beginPath();
+  ctx.rect(rect.x, rect.y, rect.width, rect.height);
+  ctx.clip();
   ctx.fillStyle = opts.color;
   ctx.textBaseline = 'middle';
   if (opts.strokeColor && opts.strokeWidth) {
@@ -182,9 +195,9 @@ function drawTextInRect(
   }
   const align = opts.align ?? 'center';
   const x = align === 'left' ? rect.x : align === 'right' ? rect.x + rect.width : rect.x + rect.width / 2;
-  drawSpacedText(ctx, upper(text), x, rect.y + rect.height / 2, {
+  drawSpacedText(ctx, displayText, x, rect.y + rect.height / 2, {
     align,
-    letterSpacing: opts.letterSpacing ?? 0,
+    letterSpacing,
     stroke: Boolean(opts.strokeColor && opts.strokeWidth),
   });
   ctx.restore();
@@ -460,9 +473,10 @@ async function drawGroupBanner(ctx: CanvasRenderingContext2D, state: VSDesignerS
 
     drawTextInRect(ctx, team.name, { x: x + 24, y: y + 252, width: cardW - 48, height: 54 }, {
       weight: 900,
-      size: 32,
+      size: 28,
+      minSize: 13,
       color: state.nameColor || WHITE,
-      letterSpacing: 2.5,
+      letterSpacing: 1.1,
       family: BODY_FONT,
       shadow: true,
     });
