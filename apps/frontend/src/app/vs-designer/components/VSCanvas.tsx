@@ -8,6 +8,7 @@ const BODY_FONT = '"Arial Black", "Arial Bold", Arial, system-ui, sans-serif';
 const CANVAS_WIDTH = 1920;
 const CANVAS_HEIGHT = 1080;
 const WHITE = '#fffaf0';
+const VS_FLAME_COLOR = '#f5b301';
 const STADIUM_THEME_BACKGROUND = '/images/vs-designer/stadium-theme.jpg';
 
 export const VS_EXPORT_WIDTH = CANVAS_WIDTH;
@@ -362,7 +363,7 @@ function drawScore(ctx: CanvasRenderingContext2D, state: VSDesignerState, layout
     drawTextInRect(ctx, state.vsText || 'VS', layout.centerText, {
       weight: 900,
       size: Math.min(170, Math.max(90, state.centerSize * 1.25)),
-      color: state.centerColor || WHITE,
+      color: VS_FLAME_COLOR,
       letterSpacing: 10,
       shadow: true,
     });
@@ -670,7 +671,7 @@ async function drawCleanMatchdayBanner(ctx: CanvasRenderingContext2D, state: VSD
   drawTextInRect(ctx, centerLabel, { x: 760, y: 315, width: 400, height: 110 }, {
     weight: 900,
     size: state.scoreMode ? Math.min(110, Math.max(64, state.centerSize * 0.8)) : Math.min(96, Math.max(54, state.centerSize * 0.72)),
-    color: ink,
+    color: state.scoreMode ? ink : VS_FLAME_COLOR,
     letterSpacing: state.scoreMode ? 4 : 2,
     family: BODY_FONT,
     shadow: false,
