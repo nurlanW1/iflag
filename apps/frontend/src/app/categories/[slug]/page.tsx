@@ -9,6 +9,7 @@ import { ProductBrowseSection } from '@/components/marketplace/ProductBrowseSect
 import { CountryHubBrowseSection } from '@/components/gallery/CountryHubBrowseSection';
 import { FlagVideoBrowseSection } from '@/components/gallery/FlagVideoBrowseSection';
 import { CircleFlagsBrowseSection } from '@/components/gallery/CircleFlagsBrowseSection';
+import { FootballClubLogoBrowseSection } from '@/components/football/FootballClubLogoBrowseSection';
 import { CategoryStockSection } from '@/components/flags/CategoryStockSection';
 import {
   categoryUsesCountryHubGrid,
@@ -67,8 +68,9 @@ export default async function CategoryPage({ params }: Props) {
   const useCircleFlags = category.kind === 'flag_icons';
   const useFlagVideos = !useCircleFlags && categoryUsesFlagVideoGallery(category);
   const useCountryHubs = !useCircleFlags && !useFlagVideos && categoryUsesCountryHubGrid(category);
+  const useFootballClubs = category.kind === 'football_clubs';
   const products =
-    useCircleFlags || useFlagVideos || useCountryHubs ? [] : listPublishedProducts({ categoryId: category.id });
+    useCircleFlags || useFlagVideos || useCountryHubs || useFootballClubs ? [] : listPublishedProducts({ categoryId: category.id });
   const vis = visualsForCategoryKind(category.kind);
   const Icon = vis.Icon;
 
@@ -125,6 +127,8 @@ export default async function CategoryPage({ params }: Props) {
             <FlagVideoBrowseSection />
           ) : useCountryHubs ? (
             <CountryHubBrowseSection fetchPath={galleryApiPathForCategory(category)} />
+          ) : useFootballClubs ? (
+            <FootballClubLogoBrowseSection />
           ) : (
             <Suspense fallback={
               <div className="flex items-center gap-2 py-8 text-sm text-neutral-400">
@@ -135,7 +139,9 @@ export default async function CategoryPage({ params }: Props) {
               <ProductBrowseSection fixedCategorySlug={category.slug} syncUrl={false} />
             </Suspense>
           )}
-          <CategoryStockSection key={category.slug} categoryName={category.name} categoryKind={category.kind} />
+          {!useFootballClubs ? (
+            <CategoryStockSection key={category.slug} categoryName={category.name} categoryKind={category.kind} />
+          ) : null}
           <section className="mt-12 border-t border-neutral-200 pt-8" aria-labelledby="related-hubs-heading">
             <h2 id="related-hubs-heading" className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-neutral-400">
               Explore more

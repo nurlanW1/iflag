@@ -4,6 +4,8 @@ export interface FootballTeam {
   league: string;
   country: string;
   logoUrl: string;
+  fileKey?: string;
+  downloadUrl?: string;
 }
 
 export const POPULAR_TEAMS: FootballTeam[] = [

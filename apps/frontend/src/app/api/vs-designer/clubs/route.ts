@@ -62,6 +62,8 @@ function buildClubFromKey(key: string): FootballTeam | null {
     league: leagueSlug ? titleCaseSegment(leagueSlug) : 'Football Clubs',
     country: titleCaseSegment(countrySlug),
     logoUrl,
+    fileKey: normalizedKey,
+    downloadUrl: `/api/vs-designer/clubs/download?path=${encodeURIComponent(normalizedKey)}`,
   };
 }
 
