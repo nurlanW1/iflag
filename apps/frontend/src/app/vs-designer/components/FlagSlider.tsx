@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Flag, Search, Trophy, Upload } from 'lucide-react';
 import { ALL_COUNTRIES } from '@/lib/flag-search';
-import { POPULAR_TEAMS } from '@/lib/sport-logos';
+import { POPULAR_TEAMS, type FootballTeam } from '@/lib/sport-logos';
 import type { VSEntity } from '@/lib/vs-designer-types';
 
 type Mode = 'flag' | 'club' | 'import';
@@ -19,17 +19,41 @@ const modeButtonBase =
   'inline-flex h-9 items-center justify-center gap-1.5 rounded-xl px-2 text-xs font-bold transition';
 const modeButtonInactive = 'bg-transparent text-white/45 hover:bg-white/[0.07] hover:text-white';
 
+let r2ClubLogoCache: FootballTeam[] | null = null;
+let r2ClubLogoPromise: Promise<FootballTeam[]> | null = null;
+
+async function loadR2ClubLogos(): Promise<FootballTeam[]> {
+  if (r2ClubLogoCache) return r2ClubLogoCache;
+  r2ClubLogoPromise ??= fetch('/api/vs-designer/clubs', { cache: 'no-store' })
+    .then((res) => (res.ok ? res.json() : { clubs: [] }))
+    .then((data) => (Array.isArray(data.clubs) ? data.clubs as FootballTeam[] : []))
+    .catch(() => []);
+
+  r2ClubLogoCache = await r2ClubLogoPromise;
+  return r2ClubLogoCache;
+}
+
 export default function FlagSlider({ entity, onSelect, compact = false }: FlagSliderProps) {
   const [mode, setMode] = useState<Mode>(entity.type === 'club' ? 'club' : 'flag');
   const [query, setQuery] = useState('');
+  const [r2ClubLogos, setR2ClubLogos] = useState<FootballTeam[]>(r2ClubLogoCache ?? []);
   const fileRef = useRef<HTMLInputElement>(null);
   const importedUrlRef = useRef<string | null>(null);
 
   const q = query.toLowerCase();
   const flagItems = q ? ALL_COUNTRIES.filter((c) => c.name.toLowerCase().includes(q)) : ALL_COUNTRIES;
+  const allClubItems = [
+    ...r2ClubLogos,
+    ...POPULAR_TEAMS.filter((team) =>
+      !r2ClubLogos.some((r2Team) => r2Team.name.toLowerCase() === team.name.toLowerCase()),
+    ),
+  ];
   const clubItems = q
-    ? POPULAR_TEAMS.filter((t) => t.name.toLowerCase().includes(q) || t.league.toLowerCase().includes(q))
-    : POPULAR_TEAMS;
+    ? allClubItems.filter((t) =>
+        t.name.toLowerCase().includes(q) ||
+        t.league.toLowerCase().includes(q) ||
+        t.country.toLowerCase().includes(q))
+    : allClubItems;
   const items = mode === 'flag' ? flagItems : mode === 'club' ? clubItems : [];
 
   function handleFileImport(file: File) {
@@ -43,6 +67,16 @@ export default function FlagSlider({ entity, onSelect, compact = false }: FlagSl
   useEffect(() => {
     return () => {
       if (importedUrlRef.current) URL.revokeObjectURL(importedUrlRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    void loadR2ClubLogos().then((clubs) => {
+      if (active) setR2ClubLogos(clubs);
+    });
+    return () => {
+      active = false;
     };
   }, []);
 
