@@ -27,10 +27,14 @@ async function loadR2ClubLogos(): Promise<FootballTeam[]> {
   r2ClubLogoPromise ??= fetch('/api/vs-designer/clubs', { cache: 'no-store' })
     .then((res) => (res.ok ? res.json() : { clubs: [] }))
     .then((data) => (Array.isArray(data.clubs) ? data.clubs as FootballTeam[] : []))
-    .catch(() => []);
+    .catch(() => {
+      r2ClubLogoPromise = null;
+      return [];
+    });
 
-  r2ClubLogoCache = await r2ClubLogoPromise;
-  return r2ClubLogoCache;
+  const clubs = await r2ClubLogoPromise;
+  if (clubs.length > 0) r2ClubLogoCache = clubs;
+  return clubs;
 }
 
 export default function FlagSlider({ entity, onSelect, compact = false }: FlagSliderProps) {
@@ -198,7 +202,7 @@ export default function FlagSlider({ entity, onSelect, compact = false }: FlagSl
                 const isSelected = entity.imageUrl === url;
                 return (
                   <button
-                    key={item.name}
+                    key={'id' in item ? item.id : item.name}
                     type="button"
                     onClick={() => onSelect({ name: item.name, imageUrl: url, type: mode as 'flag' | 'club' })}
                     className={`group flex min-h-[72px] flex-col items-center justify-center gap-1 rounded-xl border p-1.5 transition ${

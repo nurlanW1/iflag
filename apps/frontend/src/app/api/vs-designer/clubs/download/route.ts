@@ -39,10 +39,14 @@ export async function GET(request: NextRequest) {
   }
 
   const fileName = path.split('/').pop() || 'football-club-logo.png';
+  const inline = request.nextUrl.searchParams.get('inline') === '1';
+  const disposition = inline ? 'inline' : `attachment; filename="${fileName.replace(/"/g, '')}"`;
+
   return new NextResponse(upstream.body, {
     headers: {
       'Content-Type': upstream.headers.get('content-type') || contentTypeForPath(path),
-      'Content-Disposition': `attachment; filename="${fileName.replace(/"/g, '')}"`,
+      'Content-Disposition': disposition,
+      'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'public, max-age=86400, s-maxage=86400',
     },
   });

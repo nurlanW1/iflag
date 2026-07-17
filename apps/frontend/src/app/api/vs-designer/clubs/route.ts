@@ -55,22 +55,24 @@ function buildClubFromKey(key: string): FootballTeam | null {
   const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
   if (!LOGO_EXTENSIONS.has(ext)) return null;
 
-  const logoUrl = getPublicR2FileUrl(normalizedKey);
-  if (!logoUrl) return null;
+  const publicLogoUrl = getPublicR2FileUrl(normalizedKey);
+  if (!publicLogoUrl) return null;
 
   const countrySlug = parts[1] ?? 'clubs';
   const leagueSlug = parts.length > 3 ? parts[2] : '';
   const clubSlug = cleanClubSlug(fileName);
   if (!clubSlug) return null;
 
+  const proxyPath = `/api/vs-designer/clubs/download?path=${encodeURIComponent(normalizedKey)}`;
+
   return {
     id: `r2-${parts.slice(1).join('-').replace(/[^a-z0-9-]+/gi, '-').toLowerCase()}`,
     name: titleCaseSegment(clubSlug),
     league: leagueSlug ? titleCaseSegment(leagueSlug) : 'Football Clubs',
     country: titleCaseSegment(countrySlug),
-    logoUrl,
+    logoUrl: `${proxyPath}&inline=1`,
     fileKey: normalizedKey,
-    downloadUrl: `/api/vs-designer/clubs/download?path=${encodeURIComponent(normalizedKey)}`,
+    downloadUrl: proxyPath,
   };
 }
 
