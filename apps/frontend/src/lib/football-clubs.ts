@@ -5,6 +5,7 @@ import type { FootballTeam } from '@/lib/sport-logos';
 const CLUB_PREFIX = 'football-clubs/';
 const MAX_CLUB_LOGOS = 20000;
 const LOGO_EXTENSIONS = new Set(['png', 'webp', 'jpg', 'jpeg', 'svg']);
+const COUNTRY_SORT_PRIORITY = ['England', 'Spain'];
 
 export type FootballClubLogo = FootballTeam & {
   slug: string;
@@ -40,6 +41,20 @@ function cleanClubSlug(fileName: string): string {
     .replace(/[^a-z0-9_-]+/gi, '-')
     .replace(/^-+|-+$/g, '')
     .toLowerCase();
+}
+
+function countrySortRank(country: string): number {
+  const index = COUNTRY_SORT_PRIORITY.findIndex((item) => item.toLowerCase() === country.toLowerCase());
+  return index === -1 ? COUNTRY_SORT_PRIORITY.length : index;
+}
+
+function compareFootballClubs(a: FootballClubLogo, b: FootballClubLogo): number {
+  return (
+    countrySortRank(a.country) - countrySortRank(b.country) ||
+    a.country.localeCompare(b.country) ||
+    a.league.localeCompare(b.league) ||
+    a.name.localeCompare(b.name)
+  );
 }
 
 function loadManifestKeys(): string[] {
@@ -107,7 +122,7 @@ export async function listFootballClubLogos(): Promise<{ clubs: FootballClubLogo
     clubs.push(club);
   }
 
-  clubs.sort((a, b) => a.country.localeCompare(b.country) || a.league.localeCompare(b.league) || a.name.localeCompare(b.name));
+  clubs.sort(compareFootballClubs);
   return { clubs, source };
 }
 

@@ -28,8 +28,19 @@ type LogoGroup = {
   clubs: ClubLogo[];
 };
 
+const COUNTRY_SORT_PRIORITY = ['England', 'Spain'];
+
+function countrySortRank(country: string): number {
+  const index = COUNTRY_SORT_PRIORITY.findIndex((item) => item.toLowerCase() === country.toLowerCase());
+  return index === -1 ? COUNTRY_SORT_PRIORITY.length : index;
+}
+
+function compareCountries(a: string, b: string): number {
+  return countrySortRank(a) - countrySortRank(b) || a.localeCompare(b);
+}
+
 function uniqueSorted(values: string[]): string[] {
-  return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  return [...new Set(values.filter(Boolean))].sort(compareCountries);
 }
 
 function groupClubLogos(clubs: ClubLogo[]): LogoGroup[] {
@@ -51,7 +62,7 @@ function groupClubLogos(clubs: ClubLogo[]): LogoGroup[] {
   }
 
   return [...groups.values()].sort(
-    (a, b) => a.country.localeCompare(b.country) || a.league.localeCompare(b.league),
+    (a, b) => compareCountries(a.country, b.country) || a.league.localeCompare(b.league),
   );
 }
 
