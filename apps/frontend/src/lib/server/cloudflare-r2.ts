@@ -69,6 +69,7 @@ export function loadR2ConfigFromEnv(): FrontendR2Config | null {
   const publicUrlBase = (
     process.env.CLOUDFLARE_R2_PUBLIC_URL?.trim() ||
     process.env.R2_PUBLIC_URL?.trim() ||
+    process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL?.trim() ||
     ''
   ).replace(/\/+$/, '');
 
@@ -191,6 +192,7 @@ export function getPublicR2PublicBaseUrl(): string | null {
   const pub =
     process.env.CLOUDFLARE_R2_PUBLIC_URL?.trim() ||
     process.env.R2_PUBLIC_URL?.trim() ||
+    process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL?.trim() ||
     '';
   return pub ? pub.replace(/\/+$/, '') : null;
 }
