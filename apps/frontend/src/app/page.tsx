@@ -6,9 +6,9 @@ import { breadcrumbJsonLd } from '@/lib/seo/structured-data';
 import { SITE_NAME, getSiteOrigin } from '@/lib/seo/site-config';
 import { PRIMARY_HUB_LINKS } from '@/lib/seo/internal-links';
 
-const homeTitle = 'Free Flag SVG PNG Downloads, VS Designer & Flag Quiz';
+const homeTitle = 'Free Flag Downloads, Football Banner Creator & Flag Quiz';
 const homeDescription =
-  'Download world flag SVG, PNG, EPS and WebP files, create 1920x1080 VS match graphics, design custom flags, and learn flags with a fast quiz.';
+  'Download world flag SVG, PNG, EPS and WebP files, create 1920x1080 football match day banners, score graphics, VS posters, and learn flags with a fast quiz.';
 
 export const metadata: Metadata = {
   title: homeTitle,
@@ -20,6 +20,15 @@ export const metadata: Metadata = {
     'world flags',
     'country flag vector',
     'vs designer',
+    'football banner creator',
+    'football banner maker',
+    'football poster maker',
+    'match day banner',
+    'football score graphic',
+    'football result banner',
+    'group lineup banner',
+    'soccer banner maker',
+    'football thumbnail maker',
     'match graphic maker',
     'flag editor',
     'flag quiz',
@@ -56,7 +65,7 @@ export default function HomePage() {
     description: homeDescription,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'World flag gallery', url: `${origin}/gallery` },
-      { '@type': 'ListItem', position: 2, name: 'VS Designer match graphic maker', url: `${origin}/vs-designer` },
+      { '@type': 'ListItem', position: 2, name: 'Football banner creator and VS Designer', url: `${origin}/vs-designer` },
       { '@type': 'ListItem', position: 3, name: 'Flag Editor custom flag maker', url: `${origin}/editor/blank` },
       { '@type': 'ListItem', position: 4, name: 'Flag Quiz learning game', url: `${origin}/flag-quiz` },
       { '@type': 'ListItem', position: 5, name: 'Pricing and licenses', url: `${origin}/pricing` },
@@ -79,7 +88,15 @@ export default function HomePage() {
         name: 'Can I create football match graphics online?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes. VS Designer creates 1920x1080 country and football matchup graphics with flags, team names, scores, events, and PNG export.',
+          text: 'Yes. VS Designer creates 1920x1080 football match day banners, score graphics, result posters, group lineup banners, and VS matchup graphics with flags, team names, club logos, stadium backgrounds, and PNG export.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Can football bloggers and commentators make banners on Flagswing?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes. Football bloggers, commentators, and social media creators can make match day posts, full-time score graphics, football thumbnails, and club or country VS banners online.',
         },
       },
       {

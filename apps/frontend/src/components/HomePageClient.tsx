@@ -20,8 +20,8 @@ import { ONE_TIME_STOCK, PRICING_MARKETING, formatPricingMoney } from '@/lib/mar
 const HOMEPAGE_TOOL_CARDS = [
   {
     title: 'VS Designer',
-    promise: 'Create match graphics in 30 seconds',
-    copy: 'Build 1920x1080 football and country matchup graphics. Free watermark preview, $1 clean HD export.',
+    promise: 'Create football banners in 30 seconds',
+    copy: 'Build 1920x1080 match day banners, score graphics, football thumbnails, and country VS posters. Free watermark preview, $1 clean HD export.',
     href: '/vs-designer',
     badge: 'Premium export',
     icon: Crown,
@@ -57,8 +57,8 @@ const HOMEPAGE_QUICK_ACTIONS = [
     accent: '#2563eb',
   },
   {
-    title: 'Make a match graphic',
-    copy: 'Create a clean 1920x1080 VS image for football posts, thumbnails, and client previews.',
+    title: 'Make a football banner',
+    copy: 'Create a clean 1920x1080 match day banner, result graphic, VS image, or football thumbnail for posts and client previews.',
     href: '/vs-designer',
     cta: 'Open VS Designer',
     icon: Crown,
@@ -93,7 +93,7 @@ const HOMEPAGE_FAQS = [
   },
   {
     question: 'What is VS Designer for?',
-    answer: 'VS Designer is for fast 1920x1080 match graphics with country flags, team names, events, scores, custom backgrounds, and PNG export.',
+    answer: 'VS Designer is for fast 1920x1080 football banners, match day posters, score graphics, country VS images, team names, events, stadium backgrounds, and PNG export.',
   },
 ];
 

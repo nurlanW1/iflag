@@ -6,7 +6,7 @@ export const PRIMARY_HUB_LINKS = [
   { href: '/pricing', label: 'Pricing' },
   { href: '/gallery', label: 'Country gallery' },
   { href: '/assets', label: 'All assets' },
-  { href: '/vs-designer', label: 'VS Designer' },
+  { href: '/vs-designer', label: 'Football banner creator' },
   { href: '/editor/blank', label: 'Flag Editor' },
   { href: '/flag-quiz', label: 'Flag Quiz' },
   { href: '/categories/country-flags', label: 'Country flags category' },

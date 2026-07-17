@@ -5,7 +5,7 @@ export const SITE_NAME = 'Flagswing';
 
 /** Short default description; override per-page with `description` in metadata. */
 export const SITE_DESCRIPTION =
-  'Download country flags in SVG, PNG, EPS formats, design custom flags, create VS matchup graphics, and play a world flag quiz. Free flat flags + premium flag assets.';
+  'Download country flags in SVG, PNG, EPS formats, design custom flags, create football match day banners and VS matchup graphics, and play a world flag quiz.';
 
 /**
  * Canonical site origin for metadataBase, sitemap, and robots.
@@ -63,6 +63,19 @@ export function buildDefaultMetadata(): Metadata {
       'flag editor',
       'flag maker',
       'vs designer',
+      'football banner creator',
+      'football banner maker',
+      'football poster maker',
+      'football graphic maker',
+      'match day banner',
+      'matchday poster maker',
+      'football score graphic',
+      'football result banner',
+      'football club banner',
+      'group lineup banner',
+      'soccer banner maker',
+      'football thumbnail maker',
+      'sports banner maker',
       'match graphic maker',
       'flag quiz',
       'football match poster',
@@ -72,7 +85,7 @@ export function buildDefaultMetadata(): Metadata {
       locale: 'en_US',
       siteName: SITE_NAME,
       title: `${SITE_NAME} — Flag Assets SVG PNG Free Download`,
-      description: 'Country flag downloads, custom flag editor, VS matchup graphic maker, and a world flag quiz for creators.',
+      description: 'Country flag downloads, custom flag editor, football banner creator, VS matchup graphic maker, and a world flag quiz for creators.',
       url: origin,
       images: [
         {
@@ -86,7 +99,7 @@ export function buildDefaultMetadata(): Metadata {
     twitter: {
       card: 'summary_large_image',
       title: `${SITE_NAME} — Flag Assets SVG PNG Free Download`,
-      description: 'Flag downloads, editor tools, VS graphics, and a world flag quiz.',
+      description: 'Flag downloads, football banner creator, editor tools, VS graphics, and a world flag quiz.',
       images: ['/og-image-v2.png'],
     },
     robots: {
