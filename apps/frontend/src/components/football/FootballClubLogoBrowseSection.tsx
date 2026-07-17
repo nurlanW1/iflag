@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Download, Search, Shield, Trophy } from 'lucide-react';
+import { Download, Flag, Search, Trophy } from 'lucide-react';
 
 type ClubLogo = {
   id: string;
@@ -18,8 +18,38 @@ type ClubsResponse = {
   count?: number;
 };
 
+type LogoGroup = {
+  key: string;
+  country: string;
+  league: string;
+  clubs: ClubLogo[];
+};
+
 function uniqueSorted(values: string[]): string[] {
   return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+}
+
+function groupClubLogos(clubs: ClubLogo[]): LogoGroup[] {
+  const groups = new Map<string, LogoGroup>();
+
+  for (const club of clubs) {
+    const key = `${club.country}__${club.league}`;
+    const existing = groups.get(key);
+    if (existing) {
+      existing.clubs.push(club);
+    } else {
+      groups.set(key, {
+        key,
+        country: club.country,
+        league: club.league,
+        clubs: [club],
+      });
+    }
+  }
+
+  return [...groups.values()].sort(
+    (a, b) => a.country.localeCompare(b.country) || a.league.localeCompare(b.league),
+  );
 }
 
 export function FootballClubLogoBrowseSection() {
@@ -72,20 +102,22 @@ export function FootballClubLogoBrowseSection() {
     });
   }, [clubs, country, league, query]);
 
+  const groupedClubs = useMemo(() => groupClubLogos(visibleClubs), [visibleClubs]);
+
   return (
-    <section aria-labelledby="football-club-logo-heading">
-      <div className="mb-5 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <section aria-labelledby="football-club-logo-heading" className="space-y-6">
+      <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(36rem,0.9fr)] lg:items-end">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-400">Free PNG logos</p>
-            <h2 id="football-club-logo-heading" className="mt-1 text-xl font-semibold tracking-tight text-[#2a2a2a]">
-              Browse football club logos by country and league
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-400">Club logo gallery</p>
+            <h2 id="football-club-logo-heading" className="mt-1 text-xl font-semibold tracking-tight text-neutral-950 sm:text-2xl">
+              Football logos
             </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-neutral-600">
-              Logos uploaded to R2 under <code className="rounded bg-neutral-100 px-1.5 py-0.5">football-clubs/</code> are available here for free download.
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-600">
+              Small logo gallery separated by country and league, with direct free downloads.
             </p>
           </div>
-          <div className="grid gap-2 sm:grid-cols-3 lg:min-w-[42rem]">
+          <div className="grid gap-2 sm:grid-cols-3">
             <label className="min-w-0">
               <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-400">Country</span>
               <select
@@ -118,7 +150,7 @@ export function FootballClubLogoBrowseSection() {
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Club, league..."
+                  placeholder="Club or league"
                   className="h-10 w-full rounded-lg border border-neutral-200 bg-white py-2 pl-9 pr-3 text-sm font-medium text-neutral-800 outline-none placeholder:text-neutral-400 focus:border-blue-500"
                 />
               </span>
@@ -132,41 +164,57 @@ export function FootballClubLogoBrowseSection() {
           <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-neutral-200 border-t-[var(--brand-blue)]" />
           Loading football club logos...
         </div>
-      ) : visibleClubs.length === 0 ? (
+      ) : groupedClubs.length === 0 ? (
         <div className="rounded-xl border border-dashed border-neutral-200 bg-white px-5 py-12 text-center text-sm text-neutral-500">
-          No football club logos found. Upload PNG files under <strong>football-clubs/country/league/</strong> in R2.
+          No football club logos found.
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {visibleClubs.map((club) => (
-            <article key={`${club.id}-${club.logoUrl}`} className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-              <div className="flex aspect-[4/3] items-center justify-center bg-[radial-gradient(circle_at_center,#ffffff_0%,#f4f4f5_76%)] p-6">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={club.logoUrl} alt={`${club.name} football club logo`} className="max-h-full max-w-full object-contain" loading="lazy" />
-              </div>
-              <div className="space-y-3 border-t border-neutral-100 p-4">
+        <div className="space-y-8">
+          {groupedClubs.map((group) => (
+            <section key={group.key} aria-label={`${group.country} ${group.league}`} className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 pb-2">
                 <div>
-                  <h3 className="truncate text-sm font-semibold text-neutral-950">{club.name}</h3>
-                  <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] font-medium text-neutral-500">
+                  <h3 className="text-base font-semibold text-neutral-950">{group.country}</h3>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs font-medium text-neutral-500">
                     <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5">
-                      <Shield size={11} aria-hidden />
-                      {club.country}
+                      <Trophy size={12} aria-hidden />
+                      {group.league}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-amber-700">
-                      <Trophy size={11} aria-hidden />
-                      {club.league}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-blue-700">
+                      <Flag size={12} aria-hidden />
+                      {group.clubs.length} logos
                     </span>
                   </div>
                 </div>
-                <a
-                  href={club.downloadUrl || club.logoUrl}
-                  className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-[var(--brand-blue)] px-3 text-xs font-semibold text-white transition hover:bg-[var(--brand-blue-hover)]"
-                >
-                  <Download size={14} aria-hidden />
-                  Free download
-                </a>
               </div>
-            </article>
+
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
+                {group.clubs.map((club) => (
+                  <article
+                    key={`${club.id}-${club.logoUrl}`}
+                    className="rounded-lg border border-neutral-200 bg-white p-3 text-center shadow-sm transition hover:border-blue-200 hover:shadow-md"
+                  >
+                    <div className="mx-auto flex h-24 w-full items-center justify-center rounded-md bg-neutral-50 p-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={club.logoUrl}
+                        alt={`${club.name} football club logo`}
+                        className="max-h-full max-w-full object-contain"
+                        loading="lazy"
+                      />
+                    </div>
+                    <h4 className="mt-2 truncate text-xs font-semibold text-neutral-950" title={club.name}>{club.name}</h4>
+                    <a
+                      href={club.downloadUrl || club.logoUrl}
+                      className="mt-2 inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-2 text-[11px] font-semibold text-white transition hover:bg-blue-600"
+                    >
+                      <Download size={13} aria-hidden />
+                      Download
+                    </a>
+                  </article>
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       )}
