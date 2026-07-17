@@ -363,7 +363,7 @@ function drawScore(ctx: CanvasRenderingContext2D, state: VSDesignerState, layout
     drawTextInRect(ctx, state.vsText || 'VS', layout.centerText, {
       weight: 900,
       size: Math.min(170, Math.max(90, state.centerSize * 1.25)),
-      color: state.centerColor || WHITE,
+      color: WHITE,
       letterSpacing: 10,
       shadow: true,
     });
