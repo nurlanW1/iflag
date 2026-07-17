@@ -282,11 +282,6 @@ async function drawBackground(ctx: CanvasRenderingContext2D, state: VSDesignerSt
   ctx.fillStyle = center;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  ctx.fillStyle = 'rgba(255,255,255,0.045)';
-  ctx.fillRect(CANVAS_WIDTH / 2 - 0.5, 96, 1, 888);
-  ctx.fillStyle = 'rgba(255,255,255,0.035)';
-  ctx.fillRect(90, 96, CANVAS_WIDTH - 180, 1);
-  ctx.fillRect(90, 984, CANVAS_WIDTH - 180, 1);
 }
 
 async function drawEntityImage(ctx: CanvasRenderingContext2D, entity: VSEntity, box: Rect) {
@@ -527,6 +522,253 @@ async function drawGroupBanner(ctx: CanvasRenderingContext2D, state: VSDesignerS
   });
 }
 
+function drawCleanBallIcon(ctx: CanvasRenderingContext2D, x: number, y: number, r: number) {
+  ctx.save();
+  ctx.fillStyle = '#2563eb';
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(x, y, r * 0.46, 0, Math.PI * 2);
+  ctx.stroke();
+  for (let i = 0; i < 5; i += 1) {
+    const angle = -Math.PI / 2 + i * ((Math.PI * 2) / 5);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + Math.cos(angle) * r * 0.82, y + Math.sin(angle) * r * 0.82);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+async function drawCleanEntityImage(ctx: CanvasRenderingContext2D, entity: VSEntity, box: Rect) {
+  const img = await loadImage(entity.imageUrl);
+  ctx.save();
+  if (!img) {
+    ctx.fillStyle = 'rgba(37,99,235,0.08)';
+    drawRoundedRect(ctx, box, 24);
+    ctx.fill();
+    ctx.restore();
+    return;
+  }
+  ctx.shadowColor = 'rgba(15,23,42,0.14)';
+  ctx.shadowBlur = 22;
+  ctx.shadowOffsetY = 12;
+  const fit = fitContain(img.naturalWidth || img.width, img.naturalHeight || img.height, box);
+  ctx.drawImage(img, fit.x, fit.y, fit.width, fit.height);
+  ctx.restore();
+}
+
+function drawCleanInfoCell(
+  ctx: CanvasRenderingContext2D,
+  icon: 'calendar' | 'stadium',
+  title: string,
+  subtitle: string,
+  rect: Rect,
+) {
+  ctx.save();
+  const iconX = rect.x + 58;
+  const iconY = rect.y + rect.height / 2;
+  ctx.strokeStyle = '#2563eb';
+  ctx.fillStyle = '#2563eb';
+  ctx.lineWidth = 5;
+  if (icon === 'calendar') {
+    drawRoundedRect(ctx, { x: iconX - 22, y: iconY - 24, width: 44, height: 46 }, 7);
+    ctx.stroke();
+    ctx.fillRect(iconX - 12, iconY - 33, 5, 14);
+    ctx.fillRect(iconX + 8, iconY - 33, 5, 14);
+    ctx.fillRect(iconX - 13, iconY - 4, 8, 8);
+    ctx.fillRect(iconX + 4, iconY - 4, 8, 8);
+    ctx.fillRect(iconX - 13, iconY + 12, 8, 8);
+    ctx.fillRect(iconX + 4, iconY + 12, 8, 8);
+  } else {
+    ctx.beginPath();
+    ctx.ellipse(iconX, iconY + 2, 32, 16, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(iconX, iconY + 2, 18, 8, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillRect(iconX - 30, iconY + 18, 60, 5);
+  }
+  ctx.restore();
+
+  drawTextInRect(ctx, title, { x: rect.x + 110, y: rect.y + 18, width: rect.width - 140, height: 34 }, {
+    weight: 900,
+    size: 27,
+    color: '#172033',
+    letterSpacing: 1.2,
+    align: 'left',
+    family: BODY_FONT,
+  });
+  drawTextInRect(ctx, subtitle, { x: rect.x + 110, y: rect.y + 52, width: rect.width - 140, height: 34 }, {
+    weight: 800,
+    size: 22,
+    color: '#7b8494',
+    letterSpacing: 1.6,
+    align: 'left',
+    family: BODY_FONT,
+  });
+}
+
+async function drawCleanMatchdayBanner(ctx: CanvasRenderingContext2D, state: VSDesignerState, layout: VSLayout) {
+  const accent = state.titleColor && state.titleColor !== '#FFFFFF' ? state.titleColor : '#2563eb';
+  const ink = state.centerColor && state.centerColor !== '#FFFFFF' ? state.centerColor : '#172033';
+  const muted = '#7b8494';
+
+  ctx.save();
+  const page = ctx.createLinearGradient(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  page.addColorStop(0, '#f8fafc');
+  page.addColorStop(1, '#e9eef6');
+  ctx.fillStyle = page;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  ctx.shadowColor = 'rgba(15,23,42,0.14)';
+  ctx.shadowBlur = 42;
+  ctx.shadowOffsetY = 20;
+  ctx.fillStyle = '#ffffff';
+  drawRoundedRect(ctx, { x: 48, y: 50, width: 1824, height: 980 }, 28);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  const footer = ctx.createLinearGradient(0, 880, 0, 1030);
+  footer.addColorStop(0, 'rgba(248,250,252,0)');
+  footer.addColorStop(1, 'rgba(226,232,240,0.92)');
+  ctx.fillStyle = footer;
+  drawRoundedRect(ctx, { x: 48, y: 50, width: 1824, height: 980 }, 28);
+  ctx.fill();
+  ctx.restore();
+
+  drawCleanBallIcon(ctx, 792, 130, 25);
+  drawTextInRect(ctx, state.eventTitle || 'MATCH DAY', { x: 830, y: 103, width: 430, height: 56 }, {
+    weight: 900,
+    size: Math.min(48, Math.max(26, state.titleSize * 1.2)),
+    color: accent,
+    letterSpacing: 10,
+    align: 'left',
+    family: BODY_FONT,
+  });
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(37,99,235,0.12)';
+  ctx.fillRect(705, 245, 2, 405);
+  ctx.fillRect(1213, 245, 2, 405);
+  ctx.restore();
+
+  await Promise.all([
+    drawCleanEntityImage(ctx, state.left, state.left.type === 'club'
+      ? { x: 210, y: 220, width: 380, height: 380 }
+      : { x: 145, y: 280, width: 510, height: 320 }),
+    drawCleanEntityImage(ctx, state.right, state.right.type === 'club'
+      ? { x: 1330, y: 220, width: 380, height: 380 }
+      : { x: 1265, y: 280, width: 510, height: 320 }),
+  ]);
+
+  const centerLabel = state.scoreMode ? `${state.leftScore || '0'}-${state.rightScore || '0'}` : (state.vsText || 'VS');
+  drawTextInRect(ctx, centerLabel, { x: 760, y: 315, width: 400, height: 110 }, {
+    weight: 900,
+    size: state.scoreMode ? Math.min(110, Math.max(64, state.centerSize * 0.8)) : Math.min(96, Math.max(54, state.centerSize * 0.72)),
+    color: ink,
+    letterSpacing: state.scoreMode ? 4 : 2,
+    family: BODY_FONT,
+    shadow: false,
+  });
+
+  ctx.save();
+  ctx.fillStyle = accent;
+  drawRoundedRect(ctx, { x: 782, y: 455, width: 356, height: 54 }, 10);
+  ctx.fill();
+  ctx.restore();
+  drawTextInRect(ctx, upper(state.statusText, 'KICK OFF'), { x: 782, y: 458, width: 356, height: 48 }, {
+    weight: 900,
+    size: 26,
+    color: '#ffffff',
+    letterSpacing: 1.6,
+    family: BODY_FONT,
+  });
+
+  if (!state.scoreMode) {
+    drawTextInRect(ctx, state.dateMode === 'manual' ? upper(state.dateText, '20:00') : '20:00', { x: 790, y: 535, width: 340, height: 66 }, {
+      weight: 900,
+      size: 54,
+      color: ink,
+      letterSpacing: 1.2,
+      family: BODY_FONT,
+    });
+    drawTextInRect(ctx, 'LOCAL TIME', { x: 790, y: 600, width: 340, height: 34 }, {
+      weight: 800,
+      size: 22,
+      color: muted,
+      letterSpacing: 3,
+      family: BODY_FONT,
+    });
+  }
+
+  drawTextInRect(ctx, state.left.name, { x: 145, y: 635, width: 510, height: 70 }, {
+    weight: 900,
+    size: Math.min(58, Math.max(34, state.nameSize * 1.45)),
+    color: state.nameColor && state.nameColor !== '#CCCCCC' ? state.nameColor : ink,
+    letterSpacing: 2,
+    family: BODY_FONT,
+  });
+  drawTextInRect(ctx, state.left.type === 'club' ? 'CLUB' : 'COUNTRY', { x: 145, y: 700, width: 510, height: 42 }, {
+    weight: 800,
+    size: 22,
+    color: muted,
+    letterSpacing: 2.5,
+    family: BODY_FONT,
+  });
+  drawTextInRect(ctx, state.right.name, { x: 1265, y: 635, width: 510, height: 70 }, {
+    weight: 900,
+    size: Math.min(58, Math.max(34, state.nameSize * 1.45)),
+    color: state.nameColor && state.nameColor !== '#CCCCCC' ? state.nameColor : ink,
+    letterSpacing: 2,
+    family: BODY_FONT,
+  });
+  drawTextInRect(ctx, state.right.type === 'club' ? 'CLUB' : 'COUNTRY', { x: 1265, y: 700, width: 510, height: 42 }, {
+    weight: 800,
+    size: 22,
+    color: muted,
+    letterSpacing: 2.5,
+    family: BODY_FONT,
+  });
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(37,99,235,0.16)';
+  ctx.fillStyle = 'rgba(255,255,255,0.82)';
+  ctx.lineWidth = 2;
+  drawRoundedRect(ctx, { x: 240, y: 760, width: 1440, height: 128 }, 14);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(37,99,235,0.12)';
+  ctx.fillRect(958, 790, 2, 70);
+  ctx.restore();
+
+  const dateValue = state.dateMode === 'manual' ? upper(state.dateText, layout.dateStr) : layout.dateStr;
+  const dateParts = dateValue.split(',');
+  drawCleanInfoCell(ctx, 'calendar', dateParts[0] || dateValue, dateParts.slice(1).join(',').trim() || dateValue, {
+    x: 355,
+    y: 780,
+    width: 500,
+    height: 86,
+  });
+  drawCleanInfoCell(ctx, 'stadium', upper(state.venueName, 'NATIONAL STADIUM'), upper(state.venueCity, 'FLAGS WING'), {
+    x: 1045,
+    y: 780,
+    width: 520,
+    height: 86,
+  });
+
+  drawTextInRect(ctx, upper(state.hashtag, '#MATCHDAY'), { x: 760, y: 940, width: 400, height: 44 }, {
+    weight: 900,
+    size: 26,
+    color: accent,
+    letterSpacing: 2,
+    family: BODY_FONT,
+  });
+}
 export async function renderVSDesignToCanvas(state: VSDesignerState, scale = 1): Promise<HTMLCanvasElement> {
   const layout = getLayout(state);
   const canvas = document.createElement('canvas');
@@ -536,6 +778,10 @@ export async function renderVSDesignToCanvas(state: VSDesignerState, scale = 1):
   if (!ctx) return canvas;
 
   ctx.scale(scale, scale);
+  if (state.backgroundStyle === 'clean' && state.template !== 'group') {
+    await drawCleanMatchdayBanner(ctx, state, layout);
+    return canvas;
+  }
   await drawBackground(ctx, state);
 
   if (state.template === 'group') {

@@ -5,7 +5,7 @@ export interface VSEntity {
 }
 
 export type VSBannerTemplate = 'matchday' | 'result' | 'group';
-export type VSBackgroundStyle = 'gradient' | 'stadium' | 'image';
+export type VSBackgroundStyle = 'gradient' | 'stadium' | 'image' | 'clean';
 
 export interface VSDesignerState {
   template: VSBannerTemplate;

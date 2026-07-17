@@ -14,14 +14,10 @@ import VSCanvas, { renderVSDesignToCanvas } from './components/VSCanvas';
 import FlagSlider from './components/FlagSlider';
 
 const BG_PRESETS = [
-  { label: 'Navy',     color: '#0A1628' },
-  { label: 'Black',    color: '#000000' },
-  { label: 'Slate',    color: '#0f172a' },
-  { label: 'Charcoal', color: '#111827' },
-  { label: 'Forest',   color: '#0a1a0a' },
-  { label: 'Wine',     color: '#1a0608' },
-  { label: 'Indigo',   color: '#1e1b4b' },
-  { label: 'Purple',   color: '#1a0a2a' },
+  { label: 'Navy',  color: '#0A1628' },
+  { label: 'Black', color: '#000000' },
+  { label: 'Slate', color: '#0f172a' },
+  { label: 'White', color: '#f8fafc' },
 ];
 
 const TEMPLATE_PRESETS: Array<{
@@ -74,6 +70,7 @@ const TEMPLATE_PRESETS: Array<{
 const BACKGROUND_STYLES: Array<{ id: VSBackgroundStyle; label: string }> = [
   { id: 'gradient', label: 'Gradient' },
   { id: 'stadium', label: 'Stadium' },
+  { id: 'clean', label: 'Clean' },
   { id: 'image', label: 'Image' },
 ];
 
@@ -235,6 +232,26 @@ export default function VSDesignerClient() {
     importedBackgroundUrlRef.current = url;
     onChange({ backgroundStyle: 'image', backgroundImageUrl: url });
   }, [onChange]);
+  const applyBackgroundStyle = useCallback((backgroundStyle: VSBackgroundStyle) => {
+    if (backgroundStyle !== 'clean') {
+      setState((prev) => ({ ...prev, backgroundStyle }));
+      return;
+    }
+
+    setState((prev) => ({
+      ...prev,
+      backgroundStyle: 'clean',
+      template: 'matchday',
+      scoreMode: false,
+      eventTitle: 'MATCH DAY',
+      statusText: 'KICK OFF',
+      vsText: prev.vsText?.trim() || 'VS',
+      titleColor: '#2563eb',
+      centerColor: '#172033',
+      nameColor: '#172033',
+      dateColor: '#7b8494',
+    }));
+  }, []);
 
   const requireExportAccount = useCallback(() => {
     if (!accountReady) return false;
@@ -572,7 +589,7 @@ export default function VSDesignerClient() {
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => onChange({ backgroundStyle: item.id })}
+                    onClick={() => applyBackgroundStyle(item.id)}
                     className={`h-6 rounded-lg px-1.5 text-[8px] font-black uppercase tracking-wide transition ${
                       (state.backgroundStyle ?? 'gradient') === item.id
                         ? 'bg-blue-600 text-white'
@@ -750,7 +767,7 @@ export default function VSDesignerClient() {
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
             {BACKGROUND_STYLES.map((item) => (
-              <button key={item.id} type="button" onClick={() => onChange({ backgroundStyle: item.id })} className={`h-6 rounded-lg px-2 text-[9px] font-black uppercase tracking-wide transition ${(state.backgroundStyle ?? 'gradient') === item.id ? 'bg-blue-600 text-white' : 'border border-white/10 bg-black/20 text-white/45 hover:text-white'}`}>
+              <button key={item.id} type="button" onClick={() => applyBackgroundStyle(item.id)} className={`h-6 rounded-lg px-2 text-[9px] font-black uppercase tracking-wide transition ${(state.backgroundStyle ?? 'gradient') === item.id ? 'bg-blue-600 text-white' : 'border border-white/10 bg-black/20 text-white/45 hover:text-white'}`}>
                 {item.label}
               </button>
             ))}
