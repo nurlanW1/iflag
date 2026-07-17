@@ -433,7 +433,7 @@ export default function VSDesignerClient() {
   const renderControlRows = (includeActions = false) => {
     if (includeActions) {
       return (
-        <div className="grid h-[112px] w-full min-w-0 grid-cols-[44px_230px_minmax(360px,1.45fr)_285px_minmax(330px,1fr)_210px] items-stretch gap-1.5">
+        <div className="grid h-[112px] w-full min-w-0 grid-cols-[44px_204px_minmax(360px,1.45fr)_285px_minmax(330px,1fr)_210px] items-stretch gap-1.5 2xl:grid-cols-[44px_250px_minmax(360px,1.45fr)_285px_minmax(330px,1fr)_210px]">
           <section className="flex min-w-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
             <button
               type="button"
@@ -872,7 +872,7 @@ export default function VSDesignerClient() {
       <div className="relative z-0 flex min-h-0 flex-1 bg-[#070910]">
 
         {/* Left sidebar — desktop only */}
-        <div className="relative z-10 hidden w-[17rem] shrink-0 flex-col border-r border-white/10 bg-[#0b0e14] p-4 shadow-[18px_0_40px_-34px_rgba(0,0,0,0.9)] xl:flex 2xl:w-[20rem]">
+        <div className="relative z-10 hidden w-[17rem] shrink-0 flex-col border-r border-white/10 bg-[#0b0e14] p-3 shadow-[18px_0_40px_-34px_rgba(0,0,0,0.9)] xl:flex 2xl:w-[20rem]">
           {state.template === 'group' ? renderGroupSlotPicker() : (
             <FlagSlider label="Left Side" entity={state.left} onSelect={(e) => onChange({ left: e })} />
           )}
@@ -946,7 +946,7 @@ export default function VSDesignerClient() {
         </div>
 
         {/* Right sidebar — desktop only */}
-        <div className="relative z-10 hidden w-[17rem] shrink-0 flex-col border-l border-white/10 bg-[#0b0e14] p-4 shadow-[-18px_0_40px_-34px_rgba(0,0,0,0.9)] xl:flex 2xl:w-[20rem]">
+        <div className="relative z-10 hidden w-[17rem] shrink-0 flex-col border-l border-white/10 bg-[#0b0e14] p-3 shadow-[-18px_0_40px_-34px_rgba(0,0,0,0.9)] xl:flex 2xl:w-[20rem]">
           {state.template === 'group' ? (
             <div className="flex h-full flex-col gap-3">
               <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35">Studio tools</div>
