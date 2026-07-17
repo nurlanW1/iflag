@@ -147,7 +147,7 @@ export function slugLooksLikeFileAsset(slug: string): boolean {
   if (s === 'new-folder') return true;
   if (s.includes('_')) return true;
   if (
-    /\b(flag|flags|flagpole|flagpoles|vector|wave|waves|waving|circle|heart|sphere|mockup|banner|icon|image|images|pack|background|grunge|folder)\b/.test(
+    /\b(flag|flags|flagpole|flagpoles|vector|wave|waves|waving|circle|heart|sphere|mockup|banner|icon|logo|logos|crest|crests|football|club|clubs|image|images|pack|background|grunge|folder)\b/.test(
       s,
     )
   ) {

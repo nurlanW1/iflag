@@ -346,6 +346,9 @@ async function fetchGalleryCountriesFromDbOnce(
        LIMIT 1
      ) fx0 ON TRUE
      WHERE (
+         NOT ($1::text IS NULL AND lower(trim(coalesce(c.category::text, 'country'))) = 'football')
+       )
+       AND (
          $1::text IS NULL
          OR lower(trim(coalesce(c.category::text, 'country'))) = lower(trim($1))
          OR (
