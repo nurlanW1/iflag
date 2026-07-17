@@ -22,6 +22,7 @@ interface StockImage {
 interface Props {
   categoryName: string;
   categoryKind: CategoryKind;
+  searchQuery?: string;
 }
 
 const STOCK_PAGE_SIZE = 12;
@@ -78,9 +79,9 @@ function interleaveStockGroups(groups: StockImage[][]): StockImage[] {
   return output;
 }
 
-function queryForSource(kind: CategoryKind, source: StockSource): string {
-  const base = CATEGORY_SEARCH[kind]?.query || 'flag design collection';
-  if (source === 'shutterstock') return base;
+function queryForSource(kind: CategoryKind, source: StockSource, searchQuery?: string): string {
+  const base = searchQuery?.trim() || CATEGORY_SEARCH[kind]?.query || 'flag design collection';
+  if (source === 'shutterstock' || searchQuery?.trim()) return base;
   if (kind === 'country_flags') return 'country flag';
   if (kind === 'historical_flags') return 'historical flag';
   if (kind === 'flag_icons') return 'flag icon vector';
@@ -89,7 +90,7 @@ function queryForSource(kind: CategoryKind, source: StockSource): string {
   return base.replace(/\bnational\b/gi, '').replace(/\s+/g, ' ').trim();
 }
 
-export function CategoryStockSection({ categoryName, categoryKind }: Props) {
+export function CategoryStockSection({ categoryName, categoryKind, searchQuery }: Props) {
   const initialFilter = CATEGORY_SEARCH[categoryKind]?.defaultFilter ?? 'all';
   const [stockImages, setStockImages] = useState<StockImage[]>([]);
   const [stockLoading, setStockLoading] = useState(false);
@@ -107,7 +108,7 @@ export function CategoryStockSection({ categoryName, categoryKind }: Props) {
       );
       const settled = await Promise.allSettled(
         endpoints.map(async (source) => {
-          const q = encodeURIComponent(queryForSource(categoryKind, source));
+          const q = encodeURIComponent(queryForSource(categoryKind, source, searchQuery));
           const r = await fetch(`/api/${source}/search?q=${q}&per_page=${STOCK_PAGE_SIZE}&page=${page}&filter=${filter}`);
           const res = r.ok
             ? (await r.json()) as { results?: StockImage[]; hasMore?: boolean }
@@ -137,10 +138,10 @@ export function CategoryStockSection({ categoryName, categoryKind }: Props) {
       setStockLoading(false);
       setStockFetched(true);
     }
-  }, [categoryKind]);
+  }, [categoryKind, searchQuery]);
 
   useEffect(() => {
-    const requestKey = `${categoryKind}|${stockFilter}`;
+    const requestKey = `${categoryKind}|${searchQuery ?? ''}|${stockFilter}`;
     if (requestKeyRef.current === requestKey) return;
     requestKeyRef.current = requestKey;
     stockPageRef.current = 1;
@@ -148,7 +149,7 @@ export function CategoryStockSection({ categoryName, categoryKind }: Props) {
     setStockFetched(false);
     setStockHasMore(false);
     void fetchStockImages(1, stockFilter);
-  }, [categoryKind, stockFilter, fetchStockImages]);
+  }, [categoryKind, searchQuery, stockFilter, fetchStockImages]);
 
   const sentinelRef = useCallback((el: HTMLDivElement | null) => {
     if (!el) return;

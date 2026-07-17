@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Download, Flag, Search, Trophy } from 'lucide-react';
+import { CategoryStockSection } from '@/components/flags/CategoryStockSection';
 
 type ClubLogo = {
   id: string;
@@ -58,6 +59,7 @@ export function FootballClubLogoBrowseSection() {
   const [query, setQuery] = useState('');
   const [country, setCountry] = useState('all');
   const [league, setLeague] = useState('all');
+  const [selectedClub, setSelectedClub] = useState<ClubLogo | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -104,6 +106,13 @@ export function FootballClubLogoBrowseSection() {
 
   const groupedClubs = useMemo(() => groupClubLogos(visibleClubs), [visibleClubs]);
 
+  useEffect(() => {
+    if (!selectedClub) return;
+    if (!visibleClubs.some((club) => club.id === selectedClub.id)) {
+      setSelectedClub(null);
+    }
+  }, [selectedClub, visibleClubs]);
+
   return (
     <section aria-labelledby="football-club-logo-heading" className="space-y-6">
       <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm sm:p-5">
@@ -114,7 +123,7 @@ export function FootballClubLogoBrowseSection() {
               Football logos
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-600">
-              Small logo gallery separated by country and league, with direct free downloads.
+              Small logo gallery separated by country and league. Select a logo to see related stock provider results.
             </p>
           </div>
           <div className="grid gap-2 sm:grid-cols-3">
@@ -189,35 +198,57 @@ export function FootballClubLogoBrowseSection() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
-                {group.clubs.map((club) => (
-                  <article
-                    key={`${club.id}-${club.logoUrl}`}
-                    className="rounded-lg border border-neutral-200 bg-white p-3 text-center shadow-sm transition hover:border-blue-200 hover:shadow-md"
-                  >
-                    <div className="mx-auto flex h-24 w-full items-center justify-center rounded-md bg-neutral-50 p-3">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={club.logoUrl}
-                        alt={`${club.name} football club logo`}
-                        className="max-h-full max-w-full object-contain"
-                        loading="lazy"
-                      />
-                    </div>
-                    <h4 className="mt-2 truncate text-xs font-semibold text-neutral-950" title={club.name}>{club.name}</h4>
-                    <a
-                      href={club.downloadUrl || club.logoUrl}
-                      className="mt-2 inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-2 text-[11px] font-semibold text-white transition hover:bg-blue-600"
+                {group.clubs.map((club) => {
+                  const selected = selectedClub?.id === club.id;
+                  return (
+                    <article
+                      key={`${club.id}-${club.logoUrl}`}
+                      className={`rounded-lg border bg-white p-3 text-center shadow-sm transition hover:border-blue-200 hover:shadow-md ${selected ? 'border-blue-500 ring-2 ring-blue-100' : 'border-neutral-200'}`}
                     >
-                      <Download size={13} aria-hidden />
-                      Download
-                    </a>
-                  </article>
-                ))}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedClub(club)}
+                        className="block w-full text-center"
+                        aria-pressed={selected}
+                      >
+                        <span className="mx-auto flex h-24 w-full items-center justify-center rounded-md bg-neutral-50 p-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={club.logoUrl}
+                            alt={`${club.name} football club logo`}
+                            className="max-h-full max-w-full object-contain"
+                            loading="lazy"
+                          />
+                        </span>
+                        <span className="mt-2 block truncate text-xs font-semibold text-neutral-950" title={club.name}>{club.name}</span>
+                        <span className="mt-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
+                          {selected ? 'Selected' : 'Show stock'}
+                        </span>
+                      </button>
+                      <a
+                        href={club.downloadUrl || club.logoUrl}
+                        className="mt-2 inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-2 text-[11px] font-semibold text-white transition hover:bg-blue-600"
+                      >
+                        <Download size={13} aria-hidden />
+                        Download
+                      </a>
+                    </article>
+                  );
+                })}
               </div>
             </section>
           ))}
         </div>
       )}
+
+      {selectedClub ? (
+        <CategoryStockSection
+          key={selectedClub.id}
+          categoryName={`${selectedClub.name} football club logo`}
+          categoryKind="football_clubs"
+          searchQuery={`${selectedClub.name} football club logo crest`}
+        />
+      ) : null}
     </section>
   );
 }
