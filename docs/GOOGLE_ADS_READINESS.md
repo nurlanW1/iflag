@@ -34,7 +34,7 @@ NEXT_PUBLIC_CONTACT_PHONE_TEL=+998975667996
 NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 
 # Google Ads tag, if using conversion tracking / remarketing
-NEXT_PUBLIC_GOOGLE_ADS_ID=AW-XXXXXXXXXX
+NEXT_PUBLIC_GOOGLE_ADS_ID=AW-16493801100
 
 # Search Console meta verification if not using the static HTML file
 NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=your-verification-token
@@ -42,12 +42,18 @@ NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=your-verification-token
 
 Search Console can also be verified with the existing static file under `apps/frontend/public/googlecd630c82a2f34c07.html`.
 
+## Current Google Ads base tag
+
+- Google Ads ID: `AW-16493801100`
+- The base `gtag.js` tag is loaded globally from the Next.js root layout.
+- Add a conversion action label later if you want purchase/export conversion events, for example `AW-16493801100/CONVERSION_LABEL`.
+
 ## Manual Google-side steps
 
 1. Add and verify `https://flagswing.com` in Google Search Console.
 2. Submit `https://flagswing.com/sitemap.xml`.
 3. Create a GA4 property and set `NEXT_PUBLIC_GA_ID`.
-4. Create/link a Google Ads account and set `NEXT_PUBLIC_GOOGLE_ADS_ID` when you enable conversion tracking.
+4. Create/link a Google Ads account and set `NEXT_PUBLIC_GOOGLE_ADS_ID=AW-16493801100` when you enable conversion tracking.
 5. In Google Ads, use final URLs that match the visible domain, for example `https://flagswing.com/vs-designer`, `/gallery`, or `/pricing`.
 
 ## Do not do
