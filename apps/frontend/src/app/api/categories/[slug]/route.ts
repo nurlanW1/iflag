@@ -6,7 +6,7 @@ import {
   type GalleryCountryListFilters,
 } from '@/lib/server/gallery-from-db';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 /**
  * Geography / taxonomy hubs that mirror Neon `countries.region` and `countries.category`.
@@ -34,7 +34,7 @@ export async function GET(
 ) {
   try {
     if (!process.env.DATABASE_URL?.trim()) {
-      return NextResponse.json({ countries: [] }, { headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json({ countries: [] }, { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=1800' } });
     }
     const { slug } = await context.params;
     const key = slug?.trim().toLowerCase();
@@ -43,13 +43,13 @@ export async function GET(
     }
     const filt = SLUG_FILTERS[key];
     if (!filt) {
-      return NextResponse.json({ countries: [] }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json({ countries: [] }, { status: 404, headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=1800' } });
     }
     const pool = getDb();
     const rows = await fetchGalleryCountriesFromDb(pool, filt);
     return NextResponse.json(
       { countries: applyGalleryDisplayNames(rows) },
-      { headers: { 'Cache-Control': 'no-store' } },
+      { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=1800' } },
     );
   } catch (e) {
     console.error('[api/categories/[slug]]', e);

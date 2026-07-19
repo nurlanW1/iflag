@@ -18,7 +18,7 @@ export default function HomeGalleryPreview() {
 
   const loadCountries = async () => {
     try {
-      const res = await fetch('/api/gallery/landing-preview', { cache: 'no-store' });
+      const res = await fetch('/api/gallery/landing-preview');
       if (res.ok) {
         const data = await res.json();
         setAllCountries(data.countries || []);

@@ -81,7 +81,7 @@ export function FootballClubLogoBrowseSection() {
   useEffect(() => {
     let active = true;
     setLoading(true);
-    fetch('/api/vs-designer/clubs', { cache: 'no-store' })
+    fetch('/api/vs-designer/clubs')
       .then((res) => (res.ok ? res.json() as Promise<ClubsResponse> : { clubs: [] }))
       .then((data) => {
         if (active) setClubs(Array.isArray(data.clubs) ? data.clubs : []);

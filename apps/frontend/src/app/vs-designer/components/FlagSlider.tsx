@@ -24,7 +24,7 @@ let r2ClubLogoPromise: Promise<FootballTeam[]> | null = null;
 
 async function loadR2ClubLogos(): Promise<FootballTeam[]> {
   if (r2ClubLogoCache) return r2ClubLogoCache;
-  r2ClubLogoPromise ??= fetch('/api/vs-designer/clubs', { cache: 'no-store' })
+  r2ClubLogoPromise ??= fetch('/api/vs-designer/clubs')
     .then((res) => (res.ok ? res.json() : { clubs: [] }))
     .then((data) => (Array.isArray(data.clubs) ? data.clubs as FootballTeam[] : []))
     .catch(() => {

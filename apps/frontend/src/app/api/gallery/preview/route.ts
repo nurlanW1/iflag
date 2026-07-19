@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   try {
     if (!process.env.DATABASE_URL?.trim()) {
-      return NextResponse.json({ data: [] }, { headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json({ data: [] }, { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=1800' } });
     }
 
     const { searchParams } = new URL(request.url);
@@ -41,9 +41,9 @@ export async function GET(request: Request) {
       file_url: null,
     }));
 
-    return NextResponse.json({ data }, { headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json({ data }, { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=1800' } });
   } catch (e) {
     console.error('[api/gallery/preview]', e);
-    return NextResponse.json({ data: [] }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json({ data: [] }, { status: 200, headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=1800' } });
   }
 }

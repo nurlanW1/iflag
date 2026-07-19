@@ -274,7 +274,7 @@ export function FlagGame({ onClose }: { onClose: () => void }) {
 
     async function loadCountries() {
       try {
-        const res = await fetch('/api/gallery/landing-preview?full=1', { cache: 'no-store' });
+        const res = await fetch('/api/gallery/landing-preview?full=1');
         const data = await res.json();
         const loaded = normalizeApiCountries(data);
         if (cancelled) return;

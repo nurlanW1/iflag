@@ -4,6 +4,11 @@ import type { FootballTeam } from '@/lib/sport-logos';
 
 const CLUB_PREFIX = 'football-clubs/';
 const MAX_CLUB_LOGOS = 20000;
+const CLUB_LOGO_CACHE_TTL_MS = 5 * 60 * 1000;
+
+type ClubLogoListResult = { clubs: FootballClubLogo[]; source: 'r2' | 'manifest' };
+let clubLogoCache: { value: ClubLogoListResult; expiresAt: number } | null = null;
+let clubLogoCachePromise: Promise<ClubLogoListResult> | null = null;
 const LOGO_EXTENSIONS = new Set(['png', 'webp', 'jpg', 'jpeg', 'svg']);
 const COUNTRY_SORT_PRIORITY = ['England', 'Spain'];
 
@@ -107,7 +112,7 @@ export function buildFootballClubLogoFromKey(key: string): FootballClubLogo | nu
   };
 }
 
-export async function listFootballClubLogos(): Promise<{ clubs: FootballClubLogo[]; source: 'r2' | 'manifest' }> {
+async function loadFootballClubLogosUncached(): Promise<ClubLogoListResult> {
   const liveObjects = await listR2Objects(CLUB_PREFIX, MAX_CLUB_LOGOS);
   const keys = liveObjects.length > 0 ? liveObjects.map((obj) => obj.key) : loadManifestKeys();
   const source = liveObjects.length > 0 ? 'r2' : 'manifest';
@@ -124,6 +129,19 @@ export async function listFootballClubLogos(): Promise<{ clubs: FootballClubLogo
 
   clubs.sort(compareFootballClubs);
   return { clubs, source };
+}
+
+export async function listFootballClubLogos(): Promise<ClubLogoListResult> {
+  const now = Date.now();
+  if (clubLogoCache && clubLogoCache.expiresAt > now) return clubLogoCache.value;
+
+  clubLogoCachePromise ??= loadFootballClubLogosUncached().finally(() => {
+    clubLogoCachePromise = null;
+  });
+
+  const value = await clubLogoCachePromise;
+  clubLogoCache = { value, expiresAt: now + CLUB_LOGO_CACHE_TTL_MS };
+  return value;
 }
 
 export async function getFootballClubLogoBySlug(slug: string): Promise<FootballClubLogo | null> {

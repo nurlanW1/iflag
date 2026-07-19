@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'R2 public URL is not configured' }, { status: 503 });
   }
 
-  const upstream = await fetch(publicUrl, { cache: 'no-store' });
+  const upstream = await fetch(publicUrl, { next: { revalidate: 86400 } });
   if (!upstream.ok || !upstream.body) {
     return new NextResponse('Club logo not found', { status: upstream.status || 404 });
   }
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       'Content-Type': upstream.headers.get('content-type') || contentTypeForPath(path),
       'Content-Disposition': disposition,
       'Access-Control-Allow-Origin': '*',
-      'Cache-Control': 'public, max-age=86400, s-maxage=86400',
+      'Cache-Control': 'public, max-age=31536000, immutable',
     },
   });
 }
