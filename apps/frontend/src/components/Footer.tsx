@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { Flag, Mail, Twitter, Facebook, Instagram, Linkedin, Github, X, CheckCircle } from 'lucide-react';
+import { Flag, Mail, Phone, Twitter, Facebook, Instagram, Linkedin, Github, X, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SITE_NAME } from '@/lib/seo/site-config';
-import { getPublicContactEmail, P } from '@/lib/legal/legal-placeholders';
+import { getPublicContactEmail, getPublicContactPhoneDisplay, getPublicContactPhoneHref, P } from '@/lib/legal/legal-placeholders';
 import { PageShell } from '@/components/layout';
 
 const linkMuted =
@@ -25,6 +25,8 @@ function LinkColumn({ title, children }: { title: string; children: React.ReactN
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const contactEmail = getPublicContactEmail();
+  const contactPhone = getPublicContactPhoneDisplay();
+  const contactPhoneHref = getPublicContactPhoneHref();
   const [email, setEmail] = useState('');
   const [showNotification, setShowNotification] = useState(false);
   const [newsletterState, setNewsletterState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
@@ -221,6 +223,11 @@ export default function Footer() {
                 FAQ
               </Link>
             </li>
+            <li>
+              <a href={contactPhoneHref} className={linkMuted}>
+                {contactPhone}
+              </a>
+            </li>
           </LinkColumn>
         </div>
 
@@ -265,9 +272,8 @@ export default function Footer() {
         </div>
 
         <p className="mt-5 text-xs leading-relaxed text-neutral-500">
-          Trust &amp; billing transparency: payments and subscriptions may be processed by {P.PAYMENT_PROCESSOR}. Legal
-          pages are published as customizable templates — replace bracketed placeholders with your finalized information
-          and have counsel review for each market you serve.
+          Trust &amp; billing transparency: payments and subscriptions may be processed by {P.PAYMENT_PROCESSOR}. Support,
+          licensing, privacy, refund, and legal requests are handled through the published email and phone contact details.
         </p>
 
         <div className="mt-5 flex flex-col gap-3 border-t border-neutral-200/90 pt-5 text-sm md:flex-row md:items-center md:justify-between">
@@ -299,6 +305,13 @@ export default function Footer() {
             >
               <Mail size={14} aria-hidden />
               {contactEmail}
+            </a>
+            <a
+              href={contactPhoneHref}
+              className="inline-flex items-center gap-1.5 text-sm text-neutral-600 underline-offset-4 hover:text-[var(--brand-blue)] hover:underline"
+            >
+              <Phone size={14} aria-hidden />
+              {contactPhone}
             </a>
           </div>
         </div>

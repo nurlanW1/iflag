@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { LEGAL_TEMPLATE_NOTICE } from '@/lib/legal/legal-placeholders';
 import { ContentReadable } from '@/components/layout';
 
 type Props = {
@@ -32,39 +31,36 @@ export function LegalDocumentShell({ title, subtitle, icon, children, lastUpdate
             ) : null}
           </header>
 
-          <aside
-            className="mb-10 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
-            aria-label="Template notice"
+          <nav
+            className="mb-10 rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-600 shadow-sm"
+            aria-label="Policy links"
           >
-            <p>{LEGAL_TEMPLATE_NOTICE}</p>
-            <p className="mt-2">
-              Related:{' '}
-              <Link href="/privacy-policy" className="font-medium text-amber-900 underline">
-                Privacy
-              </Link>
-              {' · '}
-              <Link href="/terms-of-service" className="font-medium text-amber-900 underline">
-                Terms
-              </Link>
-              {' · '}
-              <Link href="/refunds" className="font-medium text-amber-900 underline">
-                Refunds
-              </Link>
-              {' · '}
-              <Link href="/licenses" className="font-medium text-amber-900 underline">
-                Licensing
-              </Link>
-              {' · '}
-              <Link href="/cookies" className="font-medium text-amber-900 underline">
-                Cookies
-              </Link>
-              {' · '}
-              <Link href="/contact" className="font-medium text-amber-900 underline">
-                Contact
-              </Link>
-              .
-            </p>
-          </aside>
+            <span className="font-medium text-neutral-900">Policies:</span>{' '}
+            <Link href="/privacy-policy" className="font-medium text-[var(--brand-blue)] underline-offset-4 hover:underline">
+              Privacy
+            </Link>
+            {' | '}
+            <Link href="/terms-of-service" className="font-medium text-[var(--brand-blue)] underline-offset-4 hover:underline">
+              Terms
+            </Link>
+            {' | '}
+            <Link href="/refunds" className="font-medium text-[var(--brand-blue)] underline-offset-4 hover:underline">
+              Refunds
+            </Link>
+            {' | '}
+            <Link href="/licenses" className="font-medium text-[var(--brand-blue)] underline-offset-4 hover:underline">
+              Licensing
+            </Link>
+            {' | '}
+            <Link href="/cookies" className="font-medium text-[var(--brand-blue)] underline-offset-4 hover:underline">
+              Cookies
+            </Link>
+            {' | '}
+            <Link href="/contact" className="font-medium text-[var(--brand-blue)] underline-offset-4 hover:underline">
+              Contact
+            </Link>
+            .
+          </nav>
 
           <div className="space-y-8 text-base leading-relaxed text-neutral-700">{children}</div>
         </ContentReadable>

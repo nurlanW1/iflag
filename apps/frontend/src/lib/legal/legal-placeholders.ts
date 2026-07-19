@@ -1,20 +1,26 @@
 /**
- * Legal / trust page placeholders — replace with your finalized details.
+ * Public legal / trust details used by contact, footer, SEO, and policy pages.
  * Do not invent registration numbers, addresses, or entity IDs.
- *
- * Owner support email shown in contact, footer, FAQ, and legal pages.
  */
 
 import { SITE_NAME } from '@/lib/seo/site-config';
 
 export const DEFAULT_PUBLIC_CONTACT_EMAIL = 'nurlanrahmonqulov@gmail.com';
-
-export const LEGAL_TEMPLATE_NOTICE =
-  'Bracketed text such as [PLACEHOLDER: …] must be replaced with your accurate details. This template is not legal advice; have qualified counsel review it for your markets and products.';
+export const DEFAULT_PUBLIC_CONTACT_PHONE_DISPLAY = '+998 97 566 79 96';
+export const DEFAULT_PUBLIC_CONTACT_PHONE_TEL = '+998975667996';
 
 /** Public support / contact email shown in footers and legal pages. */
 export function getPublicContactEmail(): string {
-  return DEFAULT_PUBLIC_CONTACT_EMAIL;
+  return process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || DEFAULT_PUBLIC_CONTACT_EMAIL;
+}
+
+export function getPublicContactPhoneDisplay(): string {
+  return process.env.NEXT_PUBLIC_CONTACT_PHONE_DISPLAY?.trim() || DEFAULT_PUBLIC_CONTACT_PHONE_DISPLAY;
+}
+
+export function getPublicContactPhoneHref(): string {
+  const raw = process.env.NEXT_PUBLIC_CONTACT_PHONE_TEL?.trim() || DEFAULT_PUBLIC_CONTACT_PHONE_TEL;
+  return `tel:${raw.replace(/[^+\d]/g, '')}`;
 }
 
 export const P = {

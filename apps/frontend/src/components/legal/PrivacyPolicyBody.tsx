@@ -1,8 +1,10 @@
 import Link from 'next/link';
-import { P, getPublicContactEmail } from '@/lib/legal/legal-placeholders';
+import { P, getPublicContactEmail, getPublicContactPhoneDisplay, getPublicContactPhoneHref } from '@/lib/legal/legal-placeholders';
 
 export function PrivacyPolicyBody() {
   const contactEmail = getPublicContactEmail();
+  const contactPhone = getPublicContactPhoneDisplay();
+  const contactPhoneHref = getPublicContactPhoneHref();
 
   return (
     <>
@@ -17,15 +19,14 @@ export function PrivacyPolicyBody() {
           <a className="font-medium text-[var(--brand-blue)] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>
-          . If you maintain a separate address for privacy requests, publish it here once finalized.
-        </p>
-        <p>
-          <strong>Registered / principal address (if you publish one):</strong> {P.REGISTERED_OFFICE}.{' '}
-          <strong>Tax / company identifiers (only if you choose to publish):</strong> {P.VAT_OR_TAX_ID}.
+{' '}or by phone at{' '}
+          <a className="font-medium text-[var(--brand-blue)] hover:underline" href={contactPhoneHref}>
+            {contactPhone}
+          </a>
+          .
         </p>
         <p className="text-sm text-neutral-500">
-          Effective date: {P.EFFECTIVE_DATE}. Update this date whenever you publish a new version users
-          should read.
+          Effective date: {P.EFFECTIVE_DATE}.
         </p>
       </section>
 
@@ -52,8 +53,7 @@ export function PrivacyPolicyBody() {
           preferences where permitted.
         </p>
         <p>
-          List the specific tools you rely on (hosting, analytics, email, ads, CRM) in an internal data map,
-          and expand this section when you add a new vendor that processes personal data.
+          Analytics and advertising tools may be used only as described in this policy and the Cookie Policy.
         </p>
         <p>We do not knowingly collect special-category data unless a feature explicitly requires it.</p>
       </section>
@@ -70,8 +70,8 @@ export function PrivacyPolicyBody() {
           <li>Communicate service and security notices (contract / legitimate interests).</li>
           <li>Respond to requests and enforce our terms (legitimate interests / legal obligation).</li>
           <li>
-            Run optional analytics or advertising where you have consented or law permits (consent /
-            legitimate interests). Map each purpose to the legal bases that apply in your markets with qualified counsel.
+            Run optional analytics or advertising where you have consented or where law permits (consent /
+            legitimate interests).
           </li>
         </ul>
       </section>
@@ -85,16 +85,15 @@ export function PrivacyPolicyBody() {
         </p>
         <p>
           We may disclose information if required by law, to protect rights and safety, or as part of a
-          business transfer subject to safeguards. Maintain a subprocessor or vendor list if your regulator
-          or customers expect it.
+          business transfer subject to safeguards.
         </p>
       </section>
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-[#2a2a2a]">6. International transfers</h2>
         <p>
-          We may process data in countries other than where you live. Describe the transfer tools you rely
-          on (for example Standard Contractual Clauses or adequacy decisions) with advice from counsel.
+          We may process data in countries other than where you live, using vendor, contractual, and technical
+          safeguards appropriate to the services we use.
         </p>
       </section>
 
@@ -102,8 +101,8 @@ export function PrivacyPolicyBody() {
         <h2 className="text-lg font-semibold text-[#2a2a2a]">7. Retention</h2>
         <p>
           We keep personal data only as long as needed for the purposes above, including legal, tax, and
-          dispute resolution needs. Add concrete retention periods for accounts, invoices, marketing
-          consents, and logs as your operations mature.
+          dispute resolution needs. Account and purchase records are retained while needed to provide access,
+          support billing, and meet legal obligations.
         </p>
       </section>
 
@@ -112,11 +111,11 @@ export function PrivacyPolicyBody() {
         <p>
           Depending on your location, you may have rights to access, correct, delete, restrict, or object to
           certain processing, and to data portability. You may withdraw consent where processing is
-          consent-based. Explain how to exercise rights and any verification steps you require.
+          consent-based. Contact us using the details on this page to exercise these rights; we may need to
+          verify your request before acting on it.
         </p>
         <p>
-          You may lodge a complaint with a supervisory authority: {P.SUPER_AUTHORITY}. Add the authority
-          name and website when finalized.
+          You may lodge a complaint with a supervisory authority where applicable in your location.
         </p>
       </section>
 
@@ -127,15 +126,16 @@ export function PrivacyPolicyBody() {
           <Link href="/cookies" className="font-medium text-[var(--brand-blue)] hover:underline">
             Cookie Policy
           </Link>
-          . If you use advertising or cross-site analytics, describe your consent tool and opt-out links.
+          . Where required, optional analytics or advertising cookies are controlled through the cookie notice
+          or browser-level settings.
         </p>
       </section>
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-[#2a2a2a]">10. Children</h2>
         <p>
-          The Service is not directed to children under the age required in your region. State the minimum
-          age you enforce and how you handle parental consent if minors may use the Service.
+          The Service is not directed to children under the age required in their region. If you believe a child
+          provided personal data, contact us so we can review and remove it where appropriate.
         </p>
       </section>
 
@@ -151,8 +151,7 @@ export function PrivacyPolicyBody() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-[#2a2a2a]">12. Automated decision-making</h2>
         <p>
-          State whether you use solely automated decisions that produce legal or similarly significant
-          effects. If you do not, say so plainly.
+          We do not use solely automated decisions that produce legal or similarly significant effects.
         </p>
       </section>
 
@@ -160,8 +159,7 @@ export function PrivacyPolicyBody() {
         <h2 className="text-lg font-semibold text-[#2a2a2a]">13. Changes</h2>
         <p>
           We may update this Privacy Policy from time to time. We will post the updated version and revise
-          the effective date. Describe how you notify users of material changes (email, banner, or account
-          message).
+          the effective date. Material changes may be announced by email, account notice, or a prominent site notice.
         </p>
       </section>
 
@@ -172,7 +170,7 @@ export function PrivacyPolicyBody() {
           <a className="font-medium text-[var(--brand-blue)] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>
-          . Add a Data Protection Officer or EU/UK representative only if you appoint one.
+.
         </p>
       </section>
     </>

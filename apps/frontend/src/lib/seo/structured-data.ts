@@ -1,3 +1,4 @@
+import { getPublicContactEmail, getPublicContactPhoneDisplay } from '@/lib/legal/legal-placeholders';
 import { getSiteOrigin, SITE_DESCRIPTION, SITE_NAME } from './site-config';
 import type { AssetSeoPayload } from './asset-metadata';
 import type { Category } from '@/types/marketplace';
@@ -26,11 +27,26 @@ export function websiteJsonLd(): Record<string, unknown> {
 
 export function organizationJsonLd(): Record<string, unknown> {
   const origin = getSiteOrigin();
+  const email = getPublicContactEmail();
+  const telephone = getPublicContactPhoneDisplay();
+
   return {
     '@context': context,
     '@type': 'Organization',
     name: SITE_NAME,
+    legalName: SITE_NAME,
     url: origin,
+    email,
+    telephone,
+    contactPoint: [
+      {
+        '@type': 'ContactPoint',
+        contactType: 'customer support',
+        email,
+        telephone,
+        availableLanguage: ['en', 'uz'],
+      },
+    ],
   };
 }
 

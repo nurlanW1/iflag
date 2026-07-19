@@ -25,6 +25,10 @@ export const env = {
   /** Support / contact email shown in footer and legal pages */
   contactEmail: optional('NEXT_PUBLIC_CONTACT_EMAIL', 'nurlanrahmonqulov@gmail.com'),
 
+  /** Public support phone shown in contact and trust pages */
+  contactPhoneDisplay: optional('NEXT_PUBLIC_CONTACT_PHONE_DISPLAY', '+998 97 566 79 96'),
+  contactPhoneTel: optional('NEXT_PUBLIC_CONTACT_PHONE_TEL', '+998975667996'),
+
   /** Clerk publishable key — NEXT_PUBLIC_* so it's safe in the browser */
   clerkPublishableKey: optional('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'),
 

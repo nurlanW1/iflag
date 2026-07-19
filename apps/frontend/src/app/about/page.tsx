@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Building2 } from 'lucide-react';
 import { LegalDocumentShell } from '@/components/legal/LegalDocumentShell';
 import { legalPageMetadata } from '@/lib/legal/legal-page-metadata';
-import { P, getPublicContactEmail } from '@/lib/legal/legal-placeholders';
+import { P, getPublicContactEmail, getPublicContactPhoneDisplay, getPublicContactPhoneHref } from '@/lib/legal/legal-placeholders';
 import { SITE_NAME } from '@/lib/seo/site-config';
 
 export const metadata = legalPageMetadata(
@@ -13,6 +13,8 @@ export const metadata = legalPageMetadata(
 
 export default function AboutPage() {
   const contactEmail = getPublicContactEmail();
+  const contactPhone = getPublicContactPhoneDisplay();
+  const contactPhoneHref = getPublicContactPhoneHref();
 
   return (
     <LegalDocumentShell
@@ -28,9 +30,6 @@ export default function AboutPage() {
           catalog structure that helps you find the right asset for presentations, apps, print, and video
           work—without overstating affiliation with any government or organization.
         </p>
-        <p>
-          <strong>Registered / principal address (if you publish one):</strong> {P.REGISTERED_OFFICE}.
-        </p>
       </section>
 
       <section className="space-y-3">
@@ -42,8 +41,8 @@ export default function AboutPage() {
           <Link href="/licenses" className="font-medium text-[var(--brand-blue)] hover:underline">
             licensing page
           </Link>{' '}
-          explains how usage rights apply. Replace bracketed placeholders across legal documents with your
-          finalized business details before publishing to customers.
+          explains how usage rights apply. Pricing, checkout terms, refund rules, and support contacts are
+          published before users complete a purchase.
         </p>
       </section>
 
@@ -79,8 +78,8 @@ export default function AboutPage() {
           </li>
         </ul>
         <p className="text-sm text-neutral-500">
-          {P.VAT_OR_TAX_ID} List regulatory registrations or industry memberships only when they are
-          accurate and verifiable.
+          We do not imply affiliation with governments, football clubs, federations, or stock providers unless
+          that relationship is stated on the relevant page.
         </p>
       </section>
 
@@ -90,7 +89,11 @@ export default function AboutPage() {
           <a className="font-medium text-[var(--brand-blue)] hover:underline" href={`mailto:${contactEmail}`}>
             {contactEmail}
           </a>{' '}
-          ·{' '}
+          |{' '}
+          <a className="font-medium text-[var(--brand-blue)] hover:underline" href={contactPhoneHref}>
+            {contactPhone}
+          </a>{' '}
+          |{' '}
           <Link href="/contact" className="font-medium text-[var(--brand-blue)] hover:underline">
             Contact form
           </Link>

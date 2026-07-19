@@ -1,15 +1,17 @@
 'use client';
 
-import { Flag, Mail, MessageSquare, Send, X, CheckCircle } from 'lucide-react';
+import { Flag, Mail, MessageSquare, Phone, Send, X, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { PageShell } from '@/components/layout';
-import { getPublicContactEmail } from '@/lib/legal/legal-placeholders';
+import { getPublicContactEmail, getPublicContactPhoneDisplay, getPublicContactPhoneHref } from '@/lib/legal/legal-placeholders';
 import { SITE_NAME } from '@/lib/seo/site-config';
 
 export default function ContactForm() {
   const contactEmail = getPublicContactEmail();
+  const contactPhone = getPublicContactPhoneDisplay();
+  const contactPhoneHref = getPublicContactPhoneHref();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -137,13 +139,25 @@ export default function ContactForm() {
               </div>
 
               <div className="flex items-start gap-4">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50">
+                  <Phone className="h-4 w-4 text-emerald-600" aria-hidden />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Phone</p>
+                  <a href={contactPhoneHref} className="mt-0.5 text-sm font-medium text-[var(--brand-blue)] hover:underline">
+                    {contactPhone}
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-neutral-100">
                   <MessageSquare className="h-4 w-4 text-neutral-500" aria-hidden />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Postal address</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Business inquiries</p>
                   <p className="mt-0.5 text-sm text-neutral-500">
-                    Available on request for legal matters.
+                    Licensing, billing, support, privacy, and legal notices are handled through this contact page.
                   </p>
                 </div>
               </div>
