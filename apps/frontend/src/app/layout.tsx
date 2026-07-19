@@ -23,7 +23,10 @@ import { Inter, Libre_Baskerville } from 'next/font/google';
 import type { ReactNode } from 'react';
 import type { Viewport } from 'next';
 
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+const GOOGLE_TAG_IDS = [process.env.NEXT_PUBLIC_GA_ID, process.env.NEXT_PUBLIC_GOOGLE_ADS_ID]
+  .map((id) => id?.trim())
+  .filter((id): id is string => Boolean(id));
+const GOOGLE_TAG_LOADER_ID = GOOGLE_TAG_IDS[0];
 
 const inter = Inter({
   subsets: ['latin'],
@@ -110,18 +113,18 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         ) : (
           inner
         )}
-        {GA_ID && (
+        {GOOGLE_TAG_LOADER_ID && (
           <>
             <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_TAG_LOADER_ID}`}
               strategy="afterInteractive"
             />
-            <Script id="google-analytics" strategy="afterInteractive">
+            <Script id="google-tag" strategy="afterInteractive">
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${GA_ID}');
+                ${GOOGLE_TAG_IDS.map((id) => `gtag('config', '${id}');`).join('\n                ')}
               `}
             </Script>
           </>
